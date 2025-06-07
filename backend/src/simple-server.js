@@ -146,7 +146,7 @@ app.post('/api/validate/ticker', (req, res) => {
 });
 
 // Catch-all for unknown routes
-app.use('*', (req, res) => {
+app.all('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: 'The requested endpoint does not exist',
