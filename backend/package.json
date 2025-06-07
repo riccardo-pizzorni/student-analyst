@@ -14,10 +14,12 @@
     "postinstall": "echo 'Ready for deployment'",
     "railway:build": "echo 'Railway build complete'",
     "railway:start": "npm run start",
-    "test": "npm run test:health && npm run test:endpoints",
+    "test": "npm run test:health && npm run test:endpoints && npm run test:monitoring",
     "test:health": "node scripts/test-health.js",
     "test:endpoints": "node scripts/test-endpoints.js",
     "test:integration": "node scripts/test-integration.js",
+    "test:monitoring": "node scripts/monitoring-test.js",
+    "monitor": "node scripts/monitoring-test.js",
     "ci:test": "npm run test",
     "ci:deploy": "echo 'Backend ready for deployment'"
   },

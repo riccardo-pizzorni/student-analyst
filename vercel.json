@@ -4,6 +4,12 @@
   "outputDirectory": "dist",
   "installCommand": "npm ci",
   "framework": "vite",
+  "analytics": {
+    "enable": true
+  },
+  "speedInsights": {
+    "enable": true
+  },
   "rewrites": [
     {
       "source": "/(.*)",

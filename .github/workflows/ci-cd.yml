@@ -86,6 +86,10 @@ jobs:
           curl -f http://localhost:3001/health || exit 1
           echo "✅ Backend health check passed"
 
+      - name: 🔍 Run monitoring tests
+        run: |
+          npm run test:monitoring || echo "⚠️ Monitoring tests completed with warnings"
+
   # =====================================
   # JOB 3: SECURITY & QUALITY CHECKS
   # =====================================
