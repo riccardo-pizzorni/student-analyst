@@ -1,16 +1,16 @@
-# 🚂 RAILWAY DEPLOYMENT GUIDE - STUDENT ANALYST BACKEND
+# 🎨 RENDER DEPLOYMENT GUIDE - STUDENT ANALYST BACKEND
 
 ## 📋 **COSA STAI PER FARE**
 
-In parole semplici: stai per mettere il "cervello" del tuo sito web (il backend) su un server online gratuito chiamato Railway. È come trasformare la tua macchina da modellino a vera automobile che può viaggiare ovunque su internet.
+In parole semplici: stai per mettere il "cervello" del tuo sito web (il backend) su un server online gratuito chiamato Render. È come trasformare la tua macchina da modellino a vera automobile che può viaggiare ovunque su internet.
 
 ---
 
 ## 🎯 **PREREQUISITI (COSA TI SERVE)**
 
-### **1. Account Railway (GRATUITO)**
-- Vai su [railway.app](https://railway.app)
-- Clicca "Start a New Project"
+### **1. Account Render (GRATUITO SEMPRE)**
+- Vai su [render.com](https://render.com)
+- Clicca "Get Started for Free"
 - Collegati con il tuo account GitHub (quello dove hai caricato il progetto)
 
 ### **2. Progetto GitHub Pronto**
