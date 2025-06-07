@@ -100,7 +100,7 @@ export interface SectorAllocation {
 const SECTOR_DATABASE: Record<string, string> = {
   // Technology
   'AAPL': 'Technology', 'MSFT': 'Technology', 'GOOGL': 'Technology', 'GOOG': 'Technology',
-  'NVDA': 'Technology', 'META': 'Technology', 'NFLX': 'Technology', 'AMD': 'Technology',
+  'NVDA': 'Technology', 'META': 'Technology', 'AMD': 'Technology',
   'INTC': 'Technology', 'ORCL': 'Technology', 'CRM': 'Technology', 'ADBE': 'Technology',
   'AVGO': 'Technology', 'TXN': 'Technology', 'QCOM': 'Technology', 'IBM': 'Technology',
   
