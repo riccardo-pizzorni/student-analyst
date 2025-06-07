@@ -1,63 +1,48 @@
 /**
- * STUDENT ANALYST - Backend Server (Simple Version)
- * =================================================
+ * STUDENT ANALYST - Backend Server (Ultra Simple Version)
+ * ======================================================
  * 
- * Server Express.js semplificato per Railway deployment
- * Versione minima ma funzionale senza TypeScript
+ * Server Express.js ultra-semplificato per Render deployment
+ * Versione minimale senza middleware problematici
  */
 
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 
-// Trust proxy for Railway deployment
+// Trust proxy for deployment
 app.set('trust proxy', 1);
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests',
-    message: 'You have exceeded the rate limit. Please try again later.'
-  }
-});
-
-// Apply rate limiting to all requests
-app.use(limiter);
-
-// Security headers
-app.use(helmet({
-  contentSecurityPolicy: false, // Disable for API
-  crossOriginEmbedderPolicy: false
-}));
-
-// CORS configuration
+// Basic CORS
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://student-analyst.vercel.app',
-    process.env.FRONTEND_URL,
-    process.env.PRODUCTION_URL
-  ].filter(Boolean),
-  credentials: true,
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Logging
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Hello World from Student Analyst Backend! 🚀',
+    version: '1.0.0',
+    description: 'Professional Financial Analysis API - Ultra Simple Version',
+    status: 'running',
+    deployment: 'Render',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      test: '/api/test',
+      status: '/api/status'
+    }
+  });
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -67,30 +52,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     version: '1.0.0',
-    features: ['CORS enabled', 'Rate limiting active', 'Security headers']
-  });
-});
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Hello World from Student Analyst Backend! 🚀',
-    version: '1.0.0',
-    description: 'Professional Financial Analysis API - Simple Version',
-    status: 'running',
-    deployment: 'Railway',
-    endpoints: {
-      health: '/health',
-      test: '/api/test',
-      status: '/api/status'
-    },
-    features: [
-      'CORS Configuration',
-      'Rate Limiting',
-      'Security Headers',
-      'Request Logging',
-      'Health Monitoring'
-    ]
+    uptime: Math.floor(process.uptime()),
+    memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB'
   });
 });
 
@@ -100,8 +63,8 @@ app.get('/api/test', (req, res) => {
     success: true,
     message: 'API is working correctly',
     timestamp: new Date().toISOString(),
-    requestHeaders: req.headers,
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    server: 'Ultra Simple Express'
   });
 });
 
@@ -118,49 +81,62 @@ app.get('/api/status', (req, res) => {
       total: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`
     },
     environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    node_version: process.version
   });
 });
 
-// Basic API endpoint for financial data simulation
+// Basic API endpoint for ticker validation
 app.post('/api/validate/ticker', (req, res) => {
-  const { ticker } = req.body;
-  
-  if (!ticker) {
-    return res.status(400).json({
+  try {
+    const { ticker } = req.body;
+    
+    if (!ticker) {
+      return res.status(400).json({
+        success: false,
+        error: 'Ticker symbol is required'
+      });
+    }
+    
+    // Simple ticker validation
+    const cleanTicker = ticker.toString().toUpperCase().trim();
+    const isValid = /^[A-Z]{1,5}$/.test(cleanTicker);
+    
+    res.json({
+      success: true,
+      ticker: cleanTicker,
+      valid: isValid,
+      message: isValid ? 'Ticker is valid' : 'Invalid ticker format',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: 'Ticker symbol is required'
+      error: 'Internal server error',
+      message: error.message
     });
   }
-  
-  // Simple ticker validation
-  const cleanTicker = ticker.toString().toUpperCase().trim();
-  const isValid = /^[A-Z]{1,5}$/.test(cleanTicker);
-  
-  res.json({
-    success: true,
-    ticker: cleanTicker,
-    valid: isValid,
-    message: isValid ? 'Ticker is valid' : 'Invalid ticker format'
-  });
 });
 
-// Catch-all for unknown routes
-app.all('*', (req, res) => {
+// Simple 404 handler - NO WILDCARDS
+app.use((req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: 'The requested endpoint does not exist',
+    path: req.path,
+    method: req.method,
     availableEndpoints: [
       'GET /',
       'GET /health',
       'GET /api/test',
       'GET /api/status',
       'POST /api/validate/ticker'
-    ]
+    ],
+    timestamp: new Date().toISOString()
   });
 });
 
-// Error handling middleware
+// Simple error handler
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
   
@@ -173,11 +149,11 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Student Analyst Backend (Simple) running on port ${PORT}`);
+  console.log(`🚀 Student Analyst Backend (Ultra Simple) running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔒 Security: Rate limiting, CORS, Helmet active`);
+  console.log(`🌐 Deployment: Render ready`);
   console.log(`📡 Health check: http://localhost:${PORT}/health`);
-  console.log(`🌐 Deployment: Railway ready`);
+  console.log(`⚡ Ultra simple version - no problematic middleware`);
 });
 
 module.exports = app; 
