@@ -8,7 +8,14 @@
     "build": "vite build",
     "build-with-types": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "npm run test:lint && npm run test:build && npm run test:bundle-size",
+    "test:lint": "eslint . --max-warnings 100",
+    "test:build": "npm run build",
+    "test:bundle-size": "npm run build && node scripts/check-bundle-size.js",
+    "test:integration": "node scripts/integration-tests.js",
+    "ci:test": "npm run test:lint && npm run test:build",
+    "ci:deploy": "npm run build && echo 'Ready for deployment'"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

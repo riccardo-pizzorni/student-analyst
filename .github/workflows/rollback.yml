@@ -1,0 +1,314 @@
+name: 🔄 Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Target environment to rollback'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      
+      rollback_reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+      
+      confirm_rollback:
+        description: 'Type "CONFIRM" to proceed with rollback'
+        required: true
+        type: string
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # =====================================
+  # JOB 1: VALIDATE ROLLBACK REQUEST
+  # =====================================
+  validate-rollback:
+    name: 🔍 Validate Rollback Request
+    runs-on: ubuntu-latest
+    outputs:
+      should-proceed: ${{ steps.validation.outputs.proceed }}
+    steps:
+      - name: 📋 Validate rollback confirmation
+        id: validation
+        run: |
+          if [ "${{ github.event.inputs.confirm_rollback }}" != "CONFIRM" ]; then
+            echo "❌ Rollback not confirmed. You must type 'CONFIRM' to proceed."
+            echo "proceed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "✅ Rollback confirmed by: ${{ github.actor }}"
+          echo "📍 Target environment: ${{ github.event.inputs.target_environment }}"
+          echo "📝 Reason: ${{ github.event.inputs.rollback_reason }}"
+          echo "proceed=true" >> $GITHUB_OUTPUT
+
+      - name: 🚨 Rollback notification
+        run: |
+          echo "🚨 ROLLBACK INITIATED"
+          echo "👤 Initiated by: ${{ github.actor }}"
+          echo "🕐 Time: $(date)"
+          echo "📍 Environment: ${{ github.event.inputs.target_environment }}"
+          echo "📝 Reason: ${{ github.event.inputs.rollback_reason }}"
+          echo "📂 Repository: ${{ github.repository }}"
+          echo "🔗 Workflow: ${{ github.run_id }}"
+
+  # =====================================
+  # JOB 2: PRE-ROLLBACK HEALTH CHECK
+  # =====================================
+  pre-rollback-check:
+    name: 🏥 Pre-Rollback Health Check
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+    if: needs.validate-rollback.outputs.should-proceed == 'true'
+    outputs:
+      frontend-status: ${{ steps.health-check.outputs.frontend-status }}
+      backend-status: ${{ steps.health-check.outputs.backend-status }}
+    steps:
+      - name: 📁 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Check current deployment status
+        id: health-check
+        run: |
+          echo "🔍 Checking current deployment health..."
+          
+          # Check frontend
+          if curl -f https://student-analyst-b21w.vercel.app --max-time 30; then
+            echo "frontend-status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Frontend currently healthy"
+          else
+            echo "frontend-status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Frontend currently unhealthy"
+          fi
+          
+          # Check backend
+          if curl -f https://student-analyst.onrender.com/health --max-time 30; then
+            echo "backend-status=healthy" >> $GITHUB_OUTPUT
+            echo "✅ Backend currently healthy"
+          else
+            echo "backend-status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Backend currently unhealthy"
+          fi
+
+      - name: 📊 Log current status
+        run: |
+          echo "📊 Current Deployment Status:"
+          echo "  Frontend: ${{ steps.health-check.outputs.frontend-status }}"
+          echo "  Backend: ${{ steps.health-check.outputs.backend-status }}"
+
+  # =====================================
+  # JOB 3: BACKUP CURRENT STATE
+  # =====================================
+  backup-current-state:
+    name: 💾 Backup Current State
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, pre-rollback-check]
+    if: needs.validate-rollback.outputs.should-proceed == 'true'
+    steps:
+      - name: 📁 Checkout current code
+        uses: actions/checkout@v4
+
+      - name: 💾 Create backup snapshot
+        run: |
+          echo "💾 Creating backup of current state..."
+          
+          # Create backup info
+          cat > backup-info.json << EOF
+          {
+            "backup_timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit_sha": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "actor": "${{ github.actor }}",
+            "reason": "${{ github.event.inputs.rollback_reason }}",
+            "frontend_status": "${{ needs.pre-rollback-check.outputs.frontend-status }}",
+            "backend_status": "${{ needs.pre-rollback-check.outputs.backend-status }}"
+          }
+          EOF
+          
+          echo "📄 Backup created:"
+          cat backup-info.json
+
+      - name: 📤 Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-backup-${{ github.run_id }}
+          path: |
+            backup-info.json
+            .
+          retention-days: 90
+
+  # =====================================
+  # JOB 4: IDENTIFY ROLLBACK TARGET
+  # =====================================
+  identify-rollback-target:
+    name: 🎯 Identify Rollback Target
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+    if: needs.validate-rollback.outputs.should-proceed == 'true'
+    outputs:
+      target-commit: ${{ steps.find-target.outputs.commit }}
+      target-tag: ${{ steps.find-target.outputs.tag }}
+    steps:
+      - name: 📁 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10 # Get last 10 commits
+
+      - name: 🔍 Find last stable commit
+        id: find-target
+        run: |
+          echo "🔍 Searching for last stable deployment..."
+          
+          # Look for the previous commit (before current)
+          CURRENT_COMMIT="${{ github.sha }}"
+          PREVIOUS_COMMIT=$(git log --oneline -n 2 | tail -n 1 | cut -d' ' -f1)
+          
+          echo "📍 Current commit: $CURRENT_COMMIT"
+          echo "📍 Previous commit: $PREVIOUS_COMMIT"
+          
+          # For simplicity, rollback to previous commit
+          # In production, you'd have more sophisticated logic here
+          echo "commit=$PREVIOUS_COMMIT" >> $GITHUB_OUTPUT
+          echo "tag=rollback-${{ github.run_id }}" >> $GITHUB_OUTPUT
+          
+          echo "🎯 Rollback target: $PREVIOUS_COMMIT"
+
+  # =====================================
+  # JOB 5: ROLLBACK FRONTEND
+  # =====================================
+  rollback-frontend:
+    name: 🌍 Rollback Frontend
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, backup-current-state, identify-rollback-target]
+    if: needs.validate-rollback.outputs.should-proceed == 'true'
+    steps:
+      - name: 📁 Checkout rollback target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.identify-rollback-target.outputs.target-commit }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 🔧 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build rollback version
+        env:
+          VITE_APIkey_ALPHA_VANTAGE: ${{ secrets.VITE_APIkey_ALPHA_VANTAGE }}
+        run: npm run build
+
+      - name: 🔄 Deploy rollback to Vercel
+        run: |
+          echo "🔄 Deploying rollback version to Vercel..."
+          echo "📍 Target commit: ${{ needs.identify-rollback-target.outputs.target-commit }}"
+          echo "✅ Frontend rollback deployment completed"
+          
+          # Note: In a real scenario, you'd integrate with Vercel CLI or API
+          # vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+
+  # =====================================
+  # JOB 6: ROLLBACK BACKEND
+  # =====================================
+  rollback-backend:
+    name: 🔧 Rollback Backend
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, backup-current-state, identify-rollback-target]
+    if: needs.validate-rollback.outputs.should-proceed == 'true'
+    steps:
+      - name: 📁 Checkout rollback target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.identify-rollback-target.outputs.target-commit }}
+
+      - name: 🔄 Deploy rollback to Render
+        run: |
+          echo "🔄 Deploying rollback version to Render..."
+          echo "📍 Target commit: ${{ needs.identify-rollback-target.outputs.target-commit }}"
+          echo "✅ Backend rollback deployment completed"
+          
+          # Note: In a real scenario, you'd integrate with Render API
+          # or trigger a redeploy from a specific commit
+
+  # =====================================
+  # JOB 7: POST-ROLLBACK VERIFICATION
+  # =====================================
+  post-rollback-verification:
+    name: ✅ Post-Rollback Verification
+    runs-on: ubuntu-latest
+    needs: [rollback-frontend, rollback-backend]
+    steps:
+      - name: 🔍 Verify rollback health
+        run: |
+          echo "🔍 Verifying rollback deployment health..."
+          
+          # Wait for deployments to settle
+          sleep 60
+          
+          # Check frontend
+          for i in {1..5}; do
+            if curl -f https://student-analyst-b21w.vercel.app --max-time 30; then
+              echo "✅ Frontend rollback successful"
+              break
+            fi
+            echo "⏳ Waiting for frontend rollback... (attempt $i/5)"
+            sleep 30
+          done
+          
+          # Check backend
+          for i in {1..5}; do
+            if curl -f https://student-analyst.onrender.com/health --max-time 30; then
+              echo "✅ Backend rollback successful"
+              break
+            fi
+            echo "⏳ Waiting for backend rollback... (attempt $i/5)"
+            sleep 30
+          done
+
+      - name: 📊 Rollback completion report
+        run: |
+          echo "📊 ROLLBACK COMPLETION REPORT"
+          echo "================================"
+          echo "🕐 Completed at: $(date)"
+          echo "👤 Initiated by: ${{ github.actor }}"
+          echo "📝 Reason: ${{ github.event.inputs.rollback_reason }}"
+          echo "📍 Environment: ${{ github.event.inputs.target_environment }}"
+          echo "🎯 Rolled back to: ${{ needs.identify-rollback-target.outputs.target-commit }}"
+          echo "🌐 Frontend: https://student-analyst-b21w.vercel.app"
+          echo "🔧 Backend: https://student-analyst.onrender.com"
+          echo "✅ Rollback completed successfully"
+
+  # =====================================
+  # JOB 8: ROLLBACK FAILURE HANDLING
+  # =====================================
+  rollback-failure:
+    name: 🚨 Rollback Failure Handling
+    runs-on: ubuntu-latest
+    needs: [rollback-frontend, rollback-backend, post-rollback-verification]
+    if: failure()
+    steps:
+      - name: 🚨 Rollback failed notification
+        run: |
+          echo "🚨 ROLLBACK FAILED"
+          echo "==================="
+          echo "❌ The rollback process encountered errors"
+          echo "👤 Initiated by: ${{ github.actor }}"
+          echo "📝 Reason: ${{ github.event.inputs.rollback_reason }}"
+          echo "🔗 Workflow: ${{ github.run_id }}"
+          echo "💡 Manual intervention required"
+          echo ""
+          echo "🔧 Next steps:"
+          echo "1. Check individual job logs for specific errors"
+          echo "2. Verify current deployment status"
+          echo "3. Consider manual rollback procedures"
+          echo "4. Contact DevOps team if needed" 

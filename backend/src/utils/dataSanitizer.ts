@@ -46,7 +46,7 @@ export class DataSanitizer {
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
       /(UNION\s+SELECT)/gi,
       /(\|\||&&|\-\-|\/\*|\*\/)/g,
-      /((\')|(\'\')|(\-\-)|(\;)|(\/*)|(\*/))/g,
+      /((\')|(\'\')|(\-\-)|(\;)|(\/))/g,
       /(0x[0-9a-f]+)/gi
     ],
     

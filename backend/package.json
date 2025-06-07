@@ -14,7 +14,12 @@
     "postinstall": "echo 'Ready for deployment'",
     "railway:build": "echo 'Railway build complete'",
     "railway:start": "npm run start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run test:health && npm run test:endpoints",
+    "test:health": "node scripts/test-health.js",
+    "test:endpoints": "node scripts/test-endpoints.js",
+    "test:integration": "node scripts/test-integration.js",
+    "ci:test": "npm run test",
+    "ci:deploy": "echo 'Backend ready for deployment'"
   },
   "engines": {
     "node": ">=18.0.0",
