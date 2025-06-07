@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina Non Trovata - STUDENT ANALYST</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .error-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+        
+        .error-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .error-message {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .home-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .home-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            opacity: 0.7;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="logo">📊 STUDENT ANALYST</div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Pagina Non Trovata</h1>
+        <p class="error-message">
+            La pagina che stai cercando non esiste o è stata spostata. 
+            Torna alla homepage per continuare la tua analisi finanziaria.
+        </p>
+        <a href="/" class="home-button">🏠 Torna alla Homepage</a>
+    </div>
+</body>
+</html> 

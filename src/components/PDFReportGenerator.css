@@ -1,0 +1,543 @@
+/**
+ * STUDENT ANALYST - PDF Report Generator Styles
+ * Professional styling for PDF generation interface
+ */
+
+.pdf-report-generator {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Generator Header */
+.generator-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.generator-header h2 {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.generator-header p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* PDF Settings */
+.pdf-settings {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.pdf-settings h3 {
+  margin: 0 0 24px 0;
+  color: #1e293b;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.setting-select {
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  color: #374151;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.setting-select:hover {
+  border-color: #d1d5db;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.setting-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.setting-checkbox:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.setting-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  margin: 0;
+}
+
+.setting-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+  cursor: pointer;
+}
+
+/* Generation Controls */
+.generation-controls {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.generate-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 
+    0 4px 14px 0 rgba(102, 126, 234, 0.4),
+    0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  justify-content: center;
+}
+
+.generate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px 0 rgba(102, 126, 234, 0.5),
+    0 4px 10px 0 rgba(0, 0, 0, 0.15);
+}
+
+.generate-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.generate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.generate-btn.generating {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  animation: pulse 2s infinite;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Generation Progress */
+.generation-progress {
+  margin-top: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
+  100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+}
+
+.progress-status {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Report Preview */
+.report-preview {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.report-preview h3 {
+  margin: 0 0 20px 0;
+  color: #1e293b;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-item strong {
+  color: #374151;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+/* Features List */
+.features-list {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.features-list h3 {
+  margin: 0 0 24px 0;
+  color: #1e293b;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.feature-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.feature-item span:last-child {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pdf-report-generator {
+    padding: 20px;
+    margin: 16px;
+  }
+  
+  .generator-header {
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  
+  .generator-header h2 {
+    font-size: 24px;
+  }
+  
+  .pdf-settings,
+  .generation-controls,
+  .report-preview,
+  .features-list {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .settings-grid,
+  .preview-info,
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .generate-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pdf-report-generator {
+    padding: 16px;
+    margin: 12px;
+    border-radius: 12px;
+  }
+  
+  .generator-header {
+    padding: 16px;
+  }
+  
+  .generator-header h2 {
+    font-size: 22px;
+  }
+  
+  .generator-header p {
+    font-size: 14px;
+  }
+  
+  .pdf-settings,
+  .generation-controls,
+  .report-preview,
+  .features-list {
+    padding: 16px;
+  }
+  
+  .setting-group,
+  .setting-checkbox {
+    gap: 6px;
+  }
+  
+  .features-grid {
+    gap: 12px;
+  }
+  
+  .feature-item {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .pdf-report-generator {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    background: white;
+  }
+  
+  .generation-controls {
+    display: none;
+  }
+  
+  .generate-btn {
+    display: none;
+  }
+  
+  .features-list {
+    page-break-inside: avoid;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .pdf-report-generator {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+    color: #f1f5f9;
+  }
+  
+  .pdf-settings,
+  .generation-controls,
+  .report-preview,
+  .features-list {
+    background: #334155;
+    border-color: #475569;
+  }
+  
+  .pdf-settings h3,
+  .report-preview h3,
+  .features-list h3 {
+    color: #f1f5f9;
+  }
+  
+  .setting-label,
+  .info-item strong,
+  .feature-item span:last-child {
+    color: #f1f5f9;
+  }
+  
+  .setting-select {
+    background: #475569;
+    border-color: #64748b;
+    color: #f1f5f9;
+  }
+  
+  .setting-checkbox {
+    background: #475569;
+    border-color: #64748b;
+  }
+  
+  .info-item,
+  .feature-item,
+  .setting-checkbox:hover {
+    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+    border-color: #64748b;
+  }
+  
+  .progress-status {
+    color: #cbd5e1;
+  }
+  
+  .progress-bar {
+    background: #475569;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .generate-btn,
+  .feature-item,
+  .info-item,
+  .setting-checkbox,
+  .progress-fill,
+  .spinner {
+    animation: none;
+    transition: none;
+  }
+  
+  .generate-btn:hover,
+  .feature-item:hover,
+  .info-item:hover {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .pdf-report-generator {
+    border: 2px solid #000;
+  }
+  
+  .generate-btn {
+    border: 2px solid #000;
+  }
+  
+  .setting-select,
+  .setting-checkbox {
+    border: 2px solid #000;
+  }
+  
+  .info-item,
+  .feature-item {
+    border: 1px solid #000;
+  }
+} 

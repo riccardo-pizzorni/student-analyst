@@ -1,0 +1,245 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  margin: 0 0 24px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statCardTitle {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #374151;
+}
+
+.statCardValue {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.statCardValue.blue {
+  color: #3B82F6;
+}
+
+.statCardValue.green {
+  color: #10B981;
+}
+
+.statCardValue.purple {
+  color: #8B5CF6;
+}
+
+.statCardValue.amber {
+  color: #F59E0B;
+}
+
+.statCardSubtext {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.card {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+}
+
+.cardHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cardContent {
+  padding: 24px;
+}
+
+.configGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.configSection h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #374151;
+}
+
+.formGroup {
+  margin-bottom: 12px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.formInput {
+  padding: 8px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.formSelect {
+  padding: 8px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.formRange {
+  width: 100%;
+}
+
+.buttonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.button.primary {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.button.success {
+  background-color: #10B981;
+  color: white;
+}
+
+.button.secondary {
+  background-color: #8B5CF6;
+  color: white;
+}
+
+.button.warning {
+  background-color: #F59E0B;
+  color: white;
+}
+
+.button.info {
+  background-color: #0EA5E9;
+  color: white;
+}
+
+.button.small {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.operationCard {
+  padding: 16px;
+  background-color: #F0F9FF;
+  border-radius: 8px;
+  border: 1px solid #0EA5E9;
+  margin-bottom: 12px;
+}
+
+.operationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.operationTitle {
+  font-weight: 600;
+  color: #0C4A6E;
+}
+
+.operationSubtitle {
+  font-size: 14px;
+  color: #0369A1;
+}
+
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.historyTable th,
+.historyTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.historyTable th {
+  background-color: #F9FAFB;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.historyTable td {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.layerBadge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.layerBadge.l1 {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.layerBadge.l2 {
+  background-color: #EDE9FE;
+  color: #7C3AED;
+}
+
+.layerBadge.l3 {
+  background-color: #FEF3C7;
+  color: #D97706;
+}
+
+.loadingContainer {
+  padding: 20px;
+} 

@@ -1,0 +1,375 @@
+/**
+ * STUDENT ANALYST - Alpha Vantage Service Tester
+ * ==============================================
+ * 
+ * Professional testing component for the Alpha Vantage service
+ * Provides comprehensive validation of all API functionality
+ */
+
+import React, { useState, useCallback } from 'react';
+import { 
+  alphaVantageService, 
+  type StockData, 
+  type AlphaVantageError, 
+  type Timeframe 
+} from '../services/AlphaVantageService';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+
+interface TestResult {
+  success: boolean;
+  data?: StockData;
+  error?: AlphaVantageError;
+  duration: number;
+  timestamp: string;
+}
+
+export function AlphaVantageTester() {
+  const [symbol, setSymbol] = useState('AAPL');
+  const [timeframe, setTimeframe] = useState<Timeframe>('DAILY');
+  const [isLoading, setIsLoading] = useState(false);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [usageStats, setUsageStats] = useState(alphaVantageService.getUsageStats());
+
+  const updateUsageStats = useCallback(() => {
+    setUsageStats(alphaVantageService.getUsageStats());
+  }, []);
+
+  const addTestResult = useCallback((result: TestResult) => {
+    setTestResults(prev => [result, ...prev.slice(0, 4)]); // Keep last 5 results
+    updateUsageStats();
+  }, [updateUsageStats]);
+
+  const testGetStockData = async () => {
+    if (!symbol.trim()) {
+      alert('Please enter a symbol');
+      return;
+    }
+
+    setIsLoading(true);
+    const startTime = Date.now();
+    
+    try {
+      console.log(`🔍 Testing getStockData for ${symbol} (${timeframe})`);
+      
+      const data = await alphaVantageService.getStockData({
+        symbol: symbol.trim(),
+        timeframe
+      });
+      
+      const duration = Date.now() - startTime;
+      
+      addTestResult({
+        success: true,
+        data,
+        duration,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      
+      console.log('✅ Alpha Vantage test successful:', data);
+      
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      addTestResult({
+        success: false,
+        error: error as AlphaVantageError,
+        duration,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      
+      console.error('❌ Alpha Vantage test failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testInvalidSymbol = async () => {
+    setIsLoading(true);
+    const startTime = Date.now();
+    
+    try {
+      await alphaVantageService.getStockData({
+        symbol: 'INVALID123'
+      });
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      addTestResult({
+        success: false,
+        error: error as AlphaVantageError,
+        duration,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      
+      console.log('✅ Invalid symbol test passed (expected error):', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testRateLimiting = async () => {
+    setIsLoading(true);
+    
+         // Make multiple rapid requests to test rate limiting
+     const promises = Array(6).fill(null).map(() => 
+       alphaVantageService.getStockData({
+         symbol: 'AAPL'
+       }).catch(error => error)
+     );
+    
+    try {
+      const results = await Promise.all(promises);
+      console.log('📊 Rate limiting test results:', results);
+      
+      const rateLimitedResults = results.filter(result => 
+        result?.type === 'RATE_LIMITED'
+      );
+      
+      if (rateLimitedResults.length > 0) {
+        addTestResult({
+          success: true,
+          duration: 0,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        console.log('✅ Rate limiting working correctly');
+      }
+    } catch (error) {
+      console.error('❌ Rate limiting test error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDuration = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
+  };
+
+  const formatDataSummary = (data: StockData) => {
+    const latestPoint = data.data[0];
+    return `${data.data.length} points, Latest: $${latestPoint.close.toFixed(2)} (${latestPoint.date})`;
+  };
+
+  return (
+    <div className="space-y-6 p-6 max-w-4xl mx-auto">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          📊 Alpha Vantage Service Tester
+        </h2>
+        <p className="text-gray-600">
+          Test and validate Alpha Vantage API integration with comprehensive error handling
+        </p>
+      </div>
+
+      {/* Usage Statistics */}
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-3">📈 API Usage Statistics</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">
+              {usageStats.requestsThisMinute}
+            </div>
+            <div className="text-gray-600">This Minute</div>
+            <div className="text-xs text-gray-500">
+              (Max: {usageStats.maxRequestsPerMinute})
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {usageStats.requestsToday}
+            </div>
+            <div className="text-gray-600">Today</div>
+            <div className="text-xs text-gray-500">
+              (Max: {usageStats.maxRequestsPerDay})
+            </div>
+          </div>
+          <div className="text-center">
+            <div className={`text-2xl font-bold ${usageStats.canMakeRequest ? 'text-green-600' : 'text-red-600'}`}>
+              {usageStats.canMakeRequest ? '✅' : '❌'}
+            </div>
+            <div className="text-gray-600">Can Request</div>
+          </div>
+          <div className="text-center">
+            <Button 
+              onClick={updateUsageStats}
+              variant="outline"
+              size="sm"
+            >
+              🔄 Refresh
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Test Controls */}
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-3">🧪 Test Controls</h3>
+        
+        <div className="space-y-4">
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Stock Symbol
+              </label>
+              <Input
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                placeholder="Enter symbol (e.g., AAPL)"
+                className="uppercase"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Timeframe
+              </label>
+                             <select
+                 value={timeframe}
+                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTimeframe(e.target.value as Timeframe)}
+                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 aria-label="Select timeframe"
+               >
+                <option value="DAILY">Daily</option>
+                <option value="WEEKLY">Weekly</option>
+                <option value="MONTHLY">Monthly</option>
+                <option value="INTRADAY_1MIN">1-Minute</option>
+                <option value="INTRADAY_5MIN">5-Minute</option>
+                <option value="INTRADAY_15MIN">15-Minute</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              onClick={testGetStockData}
+              disabled={isLoading || !usageStats.canMakeRequest}
+              className="flex-1 sm:flex-none"
+            >
+              {isLoading ? '⏳ Testing...' : '📊 Test getStockData()'}
+            </Button>
+
+            <Button
+              onClick={testInvalidSymbol}
+              disabled={isLoading || !usageStats.canMakeRequest}
+              variant="outline"
+              className="flex-1 sm:flex-none"
+            >
+              🚫 Test Invalid Symbol
+            </Button>
+
+            <Button
+              onClick={testRateLimiting}
+              disabled={isLoading}
+              variant="outline"
+              className="flex-1 sm:flex-none"
+            >
+              ⏱️ Test Rate Limiting
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Test Results */}
+      {testResults.length > 0 && (
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold mb-3">📋 Test Results</h3>
+          
+          <div className="space-y-3">
+            {testResults.map((result, index) => (
+              <div
+                key={index}
+                className={`p-3 rounded-lg border ${
+                  result.success 
+                    ? 'border-green-200 bg-green-50' 
+                    : 'border-red-200 bg-red-50'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {result.success ? '✅' : '❌'}
+                    </span>
+                    <span className="font-medium">
+                      {result.success ? 'Success' : 'Error'}
+                    </span>
+                  </div>
+                  <div className="text-right text-sm text-gray-600">
+                    <div>{result.timestamp}</div>
+                    <div>{formatDuration(result.duration)}</div>
+                  </div>
+                </div>
+
+                {result.success && result.data ? (
+                  <div className="text-sm space-y-1">
+                    <div><strong>Symbol:</strong> {result.data.symbol}</div>
+                    <div><strong>Timeframe:</strong> {result.data.timeframe}</div>
+                    <div><strong>Data:</strong> {formatDataSummary(result.data)}</div>
+                    <div><strong>Source:</strong> {result.data.metadata.dataSource}</div>
+                    <div><strong>Last Refreshed:</strong> {result.data.metadata.lastRefreshed}</div>
+                  </div>
+                ) : result.error ? (
+                  <div className="text-sm space-y-1">
+                    <div><strong>Type:</strong> {result.error.type}</div>
+                    <div><strong>Message:</strong> {result.error.userFriendlyMessage}</div>
+                    {result.error.retryable && (
+                      <div><strong>Retryable:</strong> Yes {result.error.retryAfter && `(after ${result.error.retryAfter}s)`}</div>
+                    )}
+                    {result.error.suggestedAction && (
+                      <div><strong>Suggestion:</strong> {result.error.suggestedAction}</div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Documentation */}
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-3">📚 Alpha Vantage Service Features</h3>
+        
+        <div className="space-y-4 text-sm">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">✨ Key Features:</h4>
+            <ul className="list-disc list-inside space-y-1 text-gray-700">
+              <li><strong>Multiple Timeframes:</strong> Daily, Weekly, Monthly, and Intraday (1min, 5min, 15min)</li>
+              <li><strong>Rate Limiting:</strong> Respects 5 requests/minute and 25 requests/day limits</li>
+              <li><strong>Error Handling:</strong> Comprehensive error classification and user-friendly messages</li>
+              <li><strong>Data Validation:</strong> Validates all stock data points for consistency</li>
+              <li><strong>Circuit Breaker:</strong> Automatic service protection and recovery</li>
+              <li><strong>Standardized Output:</strong> Consistent data format regardless of input timeframe</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">🔧 Error Types Handled:</h4>
+            <ul className="list-disc list-inside space-y-1 text-gray-700">
+              <li><strong>RATE_LIMITED:</strong> Automatic retry with intelligent backoff</li>
+              <li><strong>SYMBOL_NOT_FOUND:</strong> Clear feedback with symbol validation</li>
+              <li><strong>INVALID_API_KEY:</strong> Configuration guidance for users</li>
+              <li><strong>NETWORK_ERROR:</strong> Connection timeout and retry logic</li>
+              <li><strong>SERVICE_UNAVAILABLE:</strong> Alpha Vantage server issues</li>
+              <li><strong>INVALID_REQUEST:</strong> Input validation and formatting</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">📊 Usage Examples:</h4>
+                         <div className="bg-gray-100 p-3 rounded-lg font-mono text-xs">
+               <div>// Get daily data for Apple</div>
+               <div>await alphaVantageService.getStockData({`{ symbol: 'AAPL' }`});</div>
+               <br />
+               <div>// Get 5-minute intraday data</div>
+               <div>await alphaVantageService.getStockData({`{`}</div>
+               <div>&nbsp;&nbsp;symbol: 'MSFT',</div>
+               <div>&nbsp;&nbsp;timeframe: 'INTRADAY_5MIN'</div>
+               <div>{`}`});</div>
+             </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+} 

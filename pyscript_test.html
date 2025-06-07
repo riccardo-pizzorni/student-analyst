@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyScript Test - Student Analyst</title>
+    
+    <!-- PyScript CDN -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    
+    <!-- PyScript Configuration -->
+    <py-config>
+      packages = ["numpy"]
+      
+      [splashscreen]
+      autoclose = true
+      
+      [logging]
+      level = "INFO"
+    </py-config>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .loading { background-color: #fff3cd; border: 1px solid #ffeeba; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        #output {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border: 1px solid #dee2e6;
+            min-height: 200px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 PyScript Financial Calculator Test</h1>
+        <p>Testing PyScript integration for Student Analyst platform</p>
+        
+        <div id="status" class="status loading">
+            🔄 Loading PyScript and NumPy...
+        </div>
+        
+        <div>
+            <button onclick="runPortfolioAnalysis()" id="portfolioBtn" disabled>
+                📊 Run Portfolio Analysis
+            </button>
+            <button onclick="runMonteCarloSimulation()" id="monteCarloBtn" disabled>
+                🎲 Run Monte Carlo Simulation
+            </button>
+            <button onclick="clearOutput()">🗑️ Clear Output</button>
+        </div>
+        
+        <h3>📈 Calculation Output:</h3>
+        <div id="output">Waiting for PyScript to load...</div>
+    </div>
+
+    <!-- PyScript Code -->
+    <py-script>
+        import numpy as np
+        from datetime import datetime
+        import js
+        
+        # Update status when PyScript is ready
+        def update_status(message, status_class="success"):
+            status_element = js.document.getElementById("status")
+            status_element.innerHTML = message
+            status_element.className = f"status {status_class}"
+        
+        def update_output(message):
+            output_element = js.document.getElementById("output")
+            current_content = output_element.innerHTML
+            output_element.innerHTML = current_content + message + "\n"
+        
+        def enable_buttons():
+            js.document.getElementById("portfolioBtn").disabled = False
+            js.document.getElementById("monteCarloBtn").disabled = False
+        
+        # Initialize PyScript
+        update_output("🐍 PyScript Financial Calculator Loading...")
+        update_output(f"📊 NumPy version: {np.__version__}")
+        update_output(f"🕐 Loaded at: {datetime.now().strftime('%H:%M:%S')}")
+        update_status("✅ PyScript Ready - NumPy Loaded Successfully!", "success")
+        enable_buttons()
+        
+        # Portfolio Analysis Functions
+        def calculate_portfolio_stats(returns):
+            """Calculate basic portfolio statistics"""
+            mean_return = np.mean(returns)
+            volatility = np.std(returns)
+            sharpe_ratio = mean_return / volatility if volatility > 0 else 0
+            
+            return {
+                'mean_return': round(mean_return * 100, 2),
+                'volatility': round(volatility * 100, 2), 
+                'sharpe_ratio': round(sharpe_ratio, 3)
+            }
+        
+        def monte_carlo_simulation(initial_price, mu, sigma, days, simulations):
+            """Monte Carlo price simulation"""
+            dt = 1/252  # Daily time step
+            prices = np.zeros((simulations, days + 1))
+            prices[:, 0] = initial_price
+            
+            for t in range(1, days + 1):
+                z = np.random.standard_normal(simulations)
+                prices[:, t] = prices[:, t-1] * np.exp((mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z)
+            
+            return prices
+        
+        # Expose functions to JavaScript
+        def run_portfolio_analysis():
+            update_output("\n🔄 Running Portfolio Analysis...")
+            
+            # Sample returns data
+            sample_returns = np.array([0.02, -0.01, 0.03, 0.005, -0.02, 0.015, 0.008, 0.012, -0.008, 0.025])
+            stats = calculate_portfolio_stats(sample_returns)
+            
+            update_output("📈 Sample Portfolio Statistics:")
+            update_output(f"  Average Return: {stats['mean_return']}%")
+            update_output(f"  Volatility: {stats['volatility']}%")
+            update_output(f"  Sharpe Ratio: {stats['sharpe_ratio']}")
+            update_output("✅ Portfolio Analysis Complete!")
+        
+        def run_monte_carlo():
+            update_output("\n🔄 Running Monte Carlo Simulation...")
+            
+            # Set random seed for reproducible results
+            np.random.seed(42)
+            
+            # Simulation parameters
+            initial_price = 100
+            mu = 0.1  # Expected annual return
+            sigma = 0.2  # Annual volatility
+            days = 30
+            simulations = 1000
+            
+            prices = monte_carlo_simulation(initial_price, mu, sigma, days, simulations)
+            final_prices = prices[:, -1]
+            
+            update_output("🎲 Monte Carlo Simulation Results (30 days, 1000 paths):")
+            update_output(f"  Initial Price: ${initial_price:.2f}")
+            update_output(f"  Expected Final Price: ${np.mean(final_prices):.2f}")
+            update_output(f"  Price Range: ${np.min(final_prices):.2f} - ${np.max(final_prices):.2f}")
+            update_output(f"  Standard Deviation: ${np.std(final_prices):.2f}")
+            update_output(f"  95% Confidence Interval: ${np.percentile(final_prices, 2.5):.2f} - ${np.percentile(final_prices, 97.5):.2f}")
+            update_output("✅ Monte Carlo Simulation Complete!")
+        
+        # Make functions available to JavaScript
+        js.runPortfolioAnalysis = run_portfolio_analysis
+        js.runMonteCarloSimulation = run_monte_carlo
+        
+        update_output("🚀 All functions ready for testing!")
+    </py-script>
+
+    <script>
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        // Functions will be set by PyScript
+        function runPortfolioAnalysis() {
+            if (window.runPortfolioAnalysis) {
+                window.runPortfolioAnalysis();
+            }
+        }
+        
+        function runMonteCarloSimulation() {
+            if (window.runMonteCarloSimulation) {
+                window.runMonteCarloSimulation();
+            }
+        }
+    </script>
+</body>
+</html> 
