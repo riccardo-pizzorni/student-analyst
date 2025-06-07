@@ -1,0 +1,23 @@
+{
+  "name": "student-analyst-backend",
+  "runtime": "nodejs",
+  "build": {
+    "command": "npm run build",
+    "output": "dist"
+  },
+  "start": {
+    "command": "npm start"
+  },
+  "environment": {
+    "NODE_ENV": "production"
+  },
+  "healthcheck": {
+    "path": "/health",
+    "timeout": 30,
+    "interval": 60
+  },
+  "resources": {
+    "memory": "512MB",
+    "cpu": "0.5"
+  }
+} 
