@@ -6,16 +6,15 @@
  * strategie di recovery e monitoraggio dello stato del sistema.
  */
 
-import { Router, Request, Response } from 'express';
-import { ErrorCodeHandler, SystemErrorType, ErrorContext, ClassifiedError } from '../services/errorCodeHandler';
-import { 
-  NetworkResilienceService, 
-  NetworkResilienceConfig, 
-  CircuitBreakerState,
-  FallbackService 
-} from '../services/networkResilienceService';
-import { AlphaVantageService, AlphaVantageError } from '../services/alphaVantageService';
+import { Request, Response, Router } from 'express';
 import { sanitizationMiddleware } from '../middleware/sanitizationMiddleware';
+import { ClassifiedError, ErrorCodeHandler, ErrorContext, SystemErrorType } from '../services/errorCodeHandler';
+import {
+    CircuitBreakerState,
+    FallbackService,
+    NetworkResilienceConfig,
+    NetworkResilienceService
+} from '../services/networkResilienceService';
 
 const router = Router();
 
@@ -72,12 +71,12 @@ router.post('/classify', async (req: Request, res: Response) => {
         error: 'Bad Request',
         message: 'Fields "error" and "context" are required',
         required: {
-          error: { message: 'string', stack?: 'string' },
+          error: { message: 'string', stack: 'string (optional)' },
           context: { 
             operation: 'string', 
             apiService: 'string',
-            symbol?: 'string',
-            timeframe?: 'string'
+            symbol: 'string (optional)',
+            timeframe: 'string (optional)'
           }
         }
       });
@@ -609,4 +608,4 @@ function generateHealthActions(criticalErrors: number, openCircuitBreakers: numb
   return actions;
 }
 
-export { router as errorHandlingRoutes }; 
+export { router as errorHandlingRoutes };

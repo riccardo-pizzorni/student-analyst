@@ -14,7 +14,11 @@
     "test:build": "npm run build",
     "test:bundle-size": "npm run build && node scripts/check-bundle-size.js",
     "test:integration": "node scripts/integration-tests.js",
-    "ci:test": "npm run test:lint && npm run test:build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:install": "playwright install",
+    "ci:test": "npm run test:lint && npm run test:build && npm run test:e2e",
     "ci:deploy": "npm run build && echo 'Ready for deployment'"
   },
   "dependencies": {
@@ -35,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@playwright/test": "^1.52.0",
     "@types/node": "^22.15.30",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

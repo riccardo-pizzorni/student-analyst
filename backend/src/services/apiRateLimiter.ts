@@ -173,8 +173,6 @@ export class ApiRateLimiter extends EventEmitter {
       this.log(`Batch processing completed. Success: ${results.filter(r => r.status === 'fulfilled').length}/${symbols.length}`);
       return resultMap;
 
-    } catch (error) {
-      throw error;
     } finally {
       this.currentBatchId = undefined;
     }

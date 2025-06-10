@@ -496,7 +496,7 @@ export class VolumeHandler {
     ];
 
     for (const field of volumeFields) {
-      if (item.hasOwnProperty(field) && item[field] != null) {
+      if (Object.prototype.hasOwnProperty.call(item, field) && item[field] != null) {
         return field;
       }
     }

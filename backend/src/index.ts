@@ -6,12 +6,12 @@
  * per l'analisi finanziaria professionale
  */
 
-import express, { Request, Response } from 'express';
-import morgan from 'morgan';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import express, { NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import cors from 'cors';
+import morgan from 'morgan';
 
 // Load environment variables
 dotenv.config();
@@ -215,7 +215,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((error: Error, req: Request, res: Response, next: any) => {
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error handler:', error);
   
   res.status(500).json({

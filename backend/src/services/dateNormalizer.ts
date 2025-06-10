@@ -364,7 +364,7 @@ export class DateNormalizer {
     ];
 
     for (const field of dateFields) {
-      if (item.hasOwnProperty(field) && item[field] != null) {
+      if (Object.prototype.hasOwnProperty.call(item, field) && item[field] != null) {
         return field;
       }
     }
