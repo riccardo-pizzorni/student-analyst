@@ -3,7 +3,7 @@
  * Comprehensive manual testing system for quality assurance
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './ManualTestingChecklist.css';
 
 interface BrowserInfo {
@@ -60,7 +60,7 @@ const ManualTestingChecklist: React.FC = () => {
     let name = 'Unknown';
     let version = 'Unknown';
     let engine = 'Unknown';
-    let mobile = /Mobi|Android/i.test(ua);
+    const mobile = /Mobi|Android/i.test(ua);
     
     // Browser detection logic
     if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edge') === -1) {
