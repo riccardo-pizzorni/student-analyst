@@ -8,7 +8,7 @@
  * - Risoluzione conflitti
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'offline' | 'conflict';
 
@@ -321,7 +321,7 @@ class AutoSaveService {
             localStorage.removeItem(key);
           }
         } catch {
-          localStorage.removeItem(key); // Rimuovi dati corrotti
+          // Ignore invalid JSON data in localStorage
         }
       });
     } catch (error) {
@@ -530,7 +530,9 @@ class AutoSaveService {
           if (data.timestamp && data.timestamp < oldestTimestamp) {
             oldestTimestamp = data.timestamp;
           }
-        } catch {}
+        } catch {
+          // Ignore invalid JSON data in localStorage
+        }
       });
       
       return {
