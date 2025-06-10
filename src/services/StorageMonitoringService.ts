@@ -272,7 +272,9 @@ class StorageMonitoringService {
       // Cleanup
       try {
         localStorage.removeItem(testKey);
-      } catch {}
+      } catch {
+        // Ignore cleanup errors - test key may not exist
+      }
 
       if (quota > 0) {
         return {
@@ -921,9 +923,5 @@ export default StorageMonitoringService;
 
 // Export types
 export type {
-  StorageUsage,
-  StorageQuota,
-  StorageWarning,
-  StorageHealth,
-  MonitoringConfig
-}; 
+    MonitoringConfig, StorageHealth, StorageQuota, StorageUsage, StorageWarning
+};
