@@ -9,7 +9,7 @@ export interface SecurityTestResult {
   test: string;
   passed: boolean;
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 export class SecurityTester {
