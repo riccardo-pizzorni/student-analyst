@@ -147,7 +147,7 @@ class ApiKeyManager {
    * Chiamata diretta Alpha Vantage tramite proxy sicuro
    * Utilizzato dal nostro AlphaVantageService
    */
-  async callAlphaVantageAPI(queryParams: Record<string, string>): Promise<any> {
+  async callAlphaVantageAPI(queryParams: Record<string, string>): Promise<unknown> {
     const apiKey = this.getCurrentApiKey();
     
     if (!apiKey || apiKey === 'your_alpha_vantage_api_key_here') {
