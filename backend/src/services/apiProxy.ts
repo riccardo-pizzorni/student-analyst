@@ -23,7 +23,7 @@ export interface ApiKeyConfig {
 
 export interface ApiCallResult {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
   source: 'alpha-vantage' | 'yahoo-finance' | 'cache';
   timestamp: Date;
@@ -49,7 +49,7 @@ export interface ApiUsageLog {
 class ApiKeyManager {
   private alphaVantageKeys: ApiKeyConfig;
   private usageLogs: ApiUsageLog[] = [];
-  private cache: Map<string, { data: any; timestamp: Date; ttl: number }> = new Map();
+  private cache: Map<string, { data: unknown; timestamp: Date; ttl: number }> = new Map();
   
   constructor() {
     this.alphaVantageKeys = {
@@ -202,7 +202,8 @@ class ApiKeyManager {
       }
       
       // Salva in cache solo se è una risposta valida
-      if (!data['Error Message'] && !data['Note'] && !data['Information']) {
+      const dataAsRecord = data as Record<string, unknown>;
+      if (!dataAsRecord['Error Message'] && !dataAsRecord['Note'] && !dataAsRecord['Information']) {
         this.cache.set(cacheKey, {
           data,
           timestamp: new Date(),
