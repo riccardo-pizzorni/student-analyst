@@ -1,5 +1,4 @@
-import React from 'react';
-import { TheoryButton, WithTheory, TheoryContent } from './ui/TheoryButton';
+import { TheoryButton, TheoryContent, WithTheory } from './ui/TheoryButton';
 import './ui/TheoryButton.css';
 
 // Sample theory contents for financial concepts
@@ -264,7 +263,7 @@ const varTheory: TheoryContent = {
   title: "Value at Risk (VaR)",
   category: "Risk Management",
   overview: "Il Value at Risk è una misura statistica che quantifica il potenziale di perdita di un portafoglio in condizioni normali di mercato, entro un orizzonte temporale e livello di confidenza specificati.",
-  theory: `Il VaR risponde alla domanda: \"Quale è la massima perdita attesa con probabilità α in un periodo T?\"
+  theory: `Il VaR risponde alla domanda: "Quale è la massima perdita attesa con probabilità α in un periodo T?"
 
 Formalmente, per un portafoglio con P&L $X$:
 $$\\text{VaR}_\\alpha(X) = -\\inf\\{x \\in \\mathbb{R} : P(X \\leq x) > \\alpha\\}$$

@@ -68,7 +68,7 @@ export class DataSanitizer {
     
     // Command injection patterns
     command: [
-      /(\||&&|;|\$\(|\`)/g,
+      /(\||&&|;|\$\(|`)/g,
       /(\.\.\/|\.\.\\)/g,
       /(\/bin\/|\/usr\/|\/etc\/)/g,
       /(curl|wget|nc|netcat)/gi
@@ -103,7 +103,7 @@ export class DataSanitizer {
       return '';
     }
 
-    return input.replace(/[&<>"'`=\/]/g, (char) => 
+    return input.replace(/[&<>"'`=/]/g, (char) => 
       DataSanitizer.HTML_ESCAPE_MAP[char] || char
     );
   }
