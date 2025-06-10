@@ -1,6 +1,6 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
-import { ErrorCodeHandler, ErrorContext, SystemErrorType } from './errorCodeHandler';
-import { NetworkResilienceService, NetworkResilienceConfig } from './networkResilienceService';
+import axios, { AxiosError, AxiosResponse } from 'axios';
+import { ErrorCodeHandler } from './errorCodeHandler';
+import { NetworkResilienceConfig, NetworkResilienceService } from './networkResilienceService';
 
 /**
  * Interface per i dati standard OHLCV (Open, High, Low, Close, Volume)
@@ -98,7 +98,7 @@ export enum AlphaVantageErrorType {
 export class AlphaVantageError extends Error {
   public readonly type: AlphaVantageErrorType;
   public readonly originalError?: Error;
-  public readonly response?: any;
+  public readonly response?: unknown;
   public readonly retryable: boolean;
   public readonly timestamp: string;
 
@@ -106,7 +106,7 @@ export class AlphaVantageError extends Error {
     type: AlphaVantageErrorType,
     message: string,
     originalError?: Error,
-    response?: any,
+    response?: unknown,
     retryable: boolean = false
   ) {
     super(message);
@@ -272,7 +272,7 @@ export class AlphaVantageService {
   private async makeApiCall(
     symbol: string,
     timeframe: AlphaVantageTimeframe,
-    options?: any
+    options?: Record<string, unknown>
   ): Promise<AlphaVantageResponse> {
     let lastError: Error;
     
@@ -304,7 +304,7 @@ export class AlphaVantageService {
   private async executeApiRequest(
     symbol: string,
     timeframe: AlphaVantageTimeframe,
-    options?: any
+    options?: Record<string, unknown>
   ): Promise<AlphaVantageResponse> {
     try {
       // Determina la funzione API da utilizzare
@@ -387,7 +387,7 @@ export class AlphaVantageService {
     apiFunction: AlphaVantageFunction,
     symbol: string,
     timeframe: AlphaVantageTimeframe,
-    options?: any
+    options?: Record<string, unknown>
   ): Record<string, string> {
     const params: Record<string, string> = {
       function: apiFunction,
