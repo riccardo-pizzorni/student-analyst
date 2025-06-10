@@ -6,14 +6,14 @@
  * a tutte le richieste in ingresso
  */
 
-import { Request, Response, NextFunction } from 'express';
-import DataSanitizer, { ValidationResult } from '../utils/dataSanitizer';
+import { NextFunction, Request, Response } from 'express';
 import { suspiciousActivityLogger } from '../services/suspiciousActivityLogger';
+import DataSanitizer, { ValidationResult } from '../utils/dataSanitizer';
 
 export interface SanitizedRequest extends Request {
-  sanitizedBody?: any;
-  sanitizedParams?: any;
-  sanitizedQuery?: any;
+  sanitizedBody?: Record<string, unknown>;
+  sanitizedParams?: Record<string, string>;
+  sanitizedQuery?: Record<string, string | string[]>;
   validationResults?: {
     body?: ValidationResult;
     params?: ValidationResult;
@@ -316,7 +316,7 @@ export function dateRangeValidationMiddleware(req: SanitizedRequest, res: Respon
     }
 
     // Sostituisci con date sanitizzate
-    const sanitizedDates = validation.sanitizedValue as any;
+    const sanitizedDates = validation.sanitizedValue as { startDate: string; endDate: string };
     req.query.startDate = sanitizedDates.startDate;
     req.query.endDate = sanitizedDates.endDate;
     req.sanitizedQuery = { 
@@ -358,7 +358,7 @@ export function numericValidationMiddleware(
 
       // Sostituisci con valore sanitizzato
       if (req.query[fieldName] !== undefined) {
-        req.query[fieldName] = validation.sanitizedValue as any;
+        req.query[fieldName] = validation.sanitizedValue as string;
         req.sanitizedQuery = { 
           ...req.sanitizedQuery, 
           [fieldName]: validation.sanitizedValue 
