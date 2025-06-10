@@ -6,15 +6,14 @@
  * e forniscono endpoints puliti al frontend
  */
 
-import { Router, Request, Response } from 'express';
-import { ApiProxyService } from '../services/apiProxy';
-import { AlphaVantageService, AlphaVantageTimeframe, AlphaVantageError, AlphaVantageErrorType } from '../services/alphaVantageService';
-import { 
-  sanitizationMiddleware, 
-  tickerValidationMiddleware, 
-  dateRangeValidationMiddleware,
-  numericValidationMiddleware 
+import { Request, Response, Router } from 'express';
+import {
+    dateRangeValidationMiddleware,
+    sanitizationMiddleware,
+    tickerValidationMiddleware
 } from '../middleware/sanitizationMiddleware';
+import { AlphaVantageError, AlphaVantageErrorType, AlphaVantageService, AlphaVantageTimeframe } from '../services/alphaVantageService';
+import { ApiProxyService } from '../services/apiProxy';
 import { batchRoutes } from './batchRoutes';
 
 const router = Router();
@@ -321,12 +320,12 @@ router.post('/stock/batch', async (req: Request, res: Response) => {
     
     const successfulResults = results
       .filter(result => result.status === 'fulfilled')
-      .map(result => (result as PromiseFulfilledResult<any>).value)
+      .map(result => (result as PromiseFulfilledResult<{ success: boolean; symbol?: string; price?: number; [key: string]: unknown }>).value)
       .filter(result => result.success);
     
     const failedResults = results
       .filter(result => result.status === 'fulfilled')
-      .map(result => (result as PromiseFulfilledResult<any>).value)
+      .map(result => (result as PromiseFulfilledResult<{ success: boolean; symbol?: string; error?: string; [key: string]: unknown }>).value)
       .filter(result => !result.success);
     
     const rejectedResults = results
@@ -657,4 +656,4 @@ function getStatusCodeFromErrorType(errorType: AlphaVantageErrorType): number {
   }
 }
 
-export { router as apiRoutes }; 
+export { router as apiRoutes };

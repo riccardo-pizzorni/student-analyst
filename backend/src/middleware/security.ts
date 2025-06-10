@@ -9,10 +9,10 @@
  * - Logging e monitoraggio degli accessi
  */
 
+import cors from 'cors';
+import { NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
-import cors from 'cors';
-import { Request, Response, NextFunction } from 'express';
 
 /**
  * Configurazione Rate Limiting
@@ -189,7 +189,7 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction) 
   
   // Override del res.end per loggare la risposta
   const originalEnd = res.end;
-  res.end = function(...args: any[]) {
+  res.end = function(...args: unknown[]) {
     const duration = Date.now() - startTime;
     const statusColor = res.statusCode >= 400 ? '🔴' : '🟢';
     

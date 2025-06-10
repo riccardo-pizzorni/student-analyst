@@ -6,13 +6,12 @@
  * con progress tracking in tempo reale e rate limiting intelligente
  */
 
-import { Router, Request, Response } from 'express';
-import { BatchProcessor, BatchRequest, BatchResult, BatchStatus } from '../services/batchProcessor';
-import { AlphaVantageService, AlphaVantageTimeframe } from '../services/alphaVantageService';
-import { 
-  tickerValidationMiddleware, 
-  sanitizationMiddleware 
+import { Request, Response, Router } from 'express';
+import {
+    sanitizationMiddleware
 } from '../middleware/sanitizationMiddleware';
+import { AlphaVantageService, AlphaVantageTimeframe } from '../services/alphaVantageService';
+import { BatchProcessor, BatchRequest, BatchResult } from '../services/batchProcessor';
 
 const router = Router();
 
@@ -406,8 +405,8 @@ router.post('/multi-timeframe', async (req: Request, res: Response) => {
     }
 
     // Valida timeframes
-    const invalidTimeframes = timeframes.filter((tf: any) => 
-      !Object.values(AlphaVantageTimeframe).includes(tf)
+    const invalidTimeframes = timeframes.filter((tf: unknown) => 
+      !Object.values(AlphaVantageTimeframe).includes(tf as AlphaVantageTimeframe)
     );
 
     if (invalidTimeframes.length > 0) {
@@ -531,4 +530,4 @@ router.delete('/cancel-all', (req: Request, res: Response) => {
   }
 });
 
-export { router as batchRoutes }; 
+export { router as batchRoutes };
