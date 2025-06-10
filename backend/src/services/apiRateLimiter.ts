@@ -33,9 +33,9 @@ export interface QueuedRequest {
   priority: number;
   timestamp: Date;
   retryCount: number;
-  options?: any;
-  resolve: (value: any) => void;
-  reject: (error: any) => void;
+  options?: Record<string, unknown>;
+  resolve: (value: unknown) => void;
+  reject: (error: unknown) => void;
 }
 
 /**
@@ -113,8 +113,8 @@ export class ApiRateLimiter extends EventEmitter {
     symbol: string, 
     timeframe: string, 
     priority: number = 1,
-    options?: any
-  ): Promise<any> {
+    options?: Record<string, unknown>
+  ): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const requestId = `${symbol}-${timeframe}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
@@ -146,8 +146,8 @@ export class ApiRateLimiter extends EventEmitter {
   async queueBatch(
     symbols: string[], 
     timeframe: string, 
-    options?: any
-  ): Promise<Map<string, any>> {
+    options?: Record<string, unknown>
+  ): Promise<Map<string, unknown>> {
     const batchId = `batch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     this.currentBatchId = batchId;
 
@@ -159,7 +159,7 @@ export class ApiRateLimiter extends EventEmitter {
 
     try {
       const results = await Promise.allSettled(promises);
-      const resultMap = new Map<string, any>();
+      const resultMap = new Map<string, unknown>();
 
       results.forEach((result, index) => {
         const symbol = symbols[index];
@@ -269,7 +269,7 @@ export class ApiRateLimiter extends EventEmitter {
   /**
    * Simula chiamata API
    */
-  private async makeApiCall(request: QueuedRequest): Promise<any> {
+  private async makeApiCall(request: QueuedRequest): Promise<unknown> {
     await this.delay(100 + Math.random() * 500); // Simula latenza API
 
     // Simula risultato

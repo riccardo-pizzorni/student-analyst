@@ -320,12 +320,12 @@ router.post('/stock/batch', async (req: Request, res: Response) => {
     
     const successfulResults = results
       .filter(result => result.status === 'fulfilled')
-      .map(result => (result as PromiseFulfilledResult<{ success: boolean; symbol?: string; price?: number; [key: string]: unknown }>).value)
+      .map(result => (result as PromiseFulfilledResult<unknown>).value)
       .filter(result => result.success);
     
     const failedResults = results
       .filter(result => result.status === 'fulfilled')
-      .map(result => (result as PromiseFulfilledResult<{ success: boolean; symbol?: string; error?: string; [key: string]: unknown }>).value)
+      .map(result => (result as PromiseFulfilledResult<unknown>).value)
       .filter(result => !result.success);
     
     const rejectedResults = results
@@ -390,7 +390,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
     }
     
     // Valida ogni simbolo
-    const validSymbols = symbols.filter((symbol: any) => 
+    const validSymbols = symbols.filter((symbol: unknown) => 
       typeof symbol === 'string' && 
       symbol.length <= 10 && 
       /^[A-Za-z0-9.-]+$/.test(symbol)
@@ -420,7 +420,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
     
     const successfulResults = results
       .filter(result => result.status === 'fulfilled')
-      .map(result => (result as PromiseFulfilledResult<any>).value);
+      .map(result => (result as PromiseFulfilledResult<unknown>).value);
     
     const failedResults = results
       .filter(result => result.status === 'rejected')
