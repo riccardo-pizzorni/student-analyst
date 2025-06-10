@@ -7,7 +7,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { ErrorCodeHandler, SystemErrorType, ErrorContext, ClassifiedError } from './errorCodeHandler';
+import { ClassifiedError, ErrorCodeHandler, ErrorContext } from './errorCodeHandler';
 
 /**
  * Stato del Circuit Breaker
@@ -273,7 +273,7 @@ export class NetworkResilienceService extends EventEmitter {
     const serviceName = context.apiService;
     let retryCount = 0;
     let lastError: Error;
-    let fallbackUsed = false;
+    const fallbackUsed = false;
 
     // Configurazione specifica per questa operazione
     const opConfig = {
