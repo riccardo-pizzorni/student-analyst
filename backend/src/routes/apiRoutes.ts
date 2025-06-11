@@ -401,7 +401,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
         error: 'Invalid Symbols',
         message: 'All symbols must be alphanumeric and less than 10 characters',
         validSymbols,
-        invalidSymbols: symbols.filter((s: any) => !validSymbols.includes(s))
+        invalidSymbols: symbols.filter((s: unknown) => !validSymbols.includes(s))
       });
     }
     
