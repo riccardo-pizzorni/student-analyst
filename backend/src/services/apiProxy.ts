@@ -227,7 +227,7 @@ class ApiKeyManager {
   /**
    * Ottiene dati con gestione intelligente della cache
    */
-  async fetchWithCache(url: string, cacheKey: string, ttl: number = 300000): Promise<any> {
+  async fetchWithCache(url: string, cacheKey: string, ttl: number = 300000): Promise<unknown> {
     // Controlla cache prima
     const cached = this.cache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp.getTime()) < cached.ttl) {
@@ -310,7 +310,7 @@ class ApiKeyManager {
   /**
    * Statistiche di utilizzo per monitoring
    */
-  getUsageStats(): any {
+  getUsageStats(): unknown {
     const now = Date.now();
     const last24h = this.usageLogs.filter(
       l => now - l.timestamp.getTime() < 24 * 60 * 60 * 1000
