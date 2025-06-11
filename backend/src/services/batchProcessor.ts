@@ -152,7 +152,7 @@ export class BatchProcessor extends EventEmitter {
 
       // Strategia cache-first se abilitata
       let symbolsToProcess = optimizedSymbols;
-      let cacheResults = new Map<string, any>();
+      let cacheResults = new Map<string, unknown>();
 
       if (this.config.cacheFirstStrategy) {
         const cacheResult = await this.checkCacheFirst(optimizedSymbols, request.timeframe, request.options);
