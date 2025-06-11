@@ -8,8 +8,8 @@
  */
 
 import { EventEmitter } from 'events';
+import { AlphaVantageService, AlphaVantageTimeframe } from './alphaVantageService';
 import { ApiRateLimiter, ProgressEvent, RateLimitStats } from './apiRateLimiter';
-import { AlphaVantageService, AlphaVantageTimeframe, AlphaVantageError } from './alphaVantageService';
 
 /**
  * Configurazione batch processor
@@ -51,7 +51,7 @@ export interface BatchResult {
   cacheHits: number;
   apiCalls: number;
   executionTimeMs: number;
-  results: Map<string, any>;
+  results: Map<string, unknown>;
   errors: Map<string, Error>;
   rateLimitStats: RateLimitStats;
 }
@@ -225,9 +225,9 @@ export class BatchProcessor extends EventEmitter {
   async processMultipleSymbols(
     symbols: string[], 
     timeframes: AlphaVantageTimeframe[], 
-    options?: any
-  ): Promise<Map<string, Map<AlphaVantageTimeframe, any>>> {
-    const results = new Map<string, Map<AlphaVantageTimeframe, any>>();
+    options?: Record<string, unknown>
+  ): Promise<Map<string, Map<AlphaVantageTimeframe, unknown>>> {
+    const results = new Map<string, Map<AlphaVantageTimeframe, unknown>>();
 
     // Crea richieste batch per ogni timeframe
     const batchPromises = timeframes.map(async (timeframe) => {
@@ -247,7 +247,7 @@ export class BatchProcessor extends EventEmitter {
 
     // Organizza risultati per simbolo e timeframe
     for (const symbol of symbols) {
-      const symbolResults = new Map<AlphaVantageTimeframe, any>();
+      const symbolResults = new Map<AlphaVantageTimeframe, unknown>();
       
       batchResults.forEach((result, index) => {
         if (result.status === 'fulfilled') {
