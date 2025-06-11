@@ -709,15 +709,15 @@ export class AlphaVantageService {
   /**
    * Gestione generale degli errori
    */
-  private handleError(error: any, symbol: string, timeframe: AlphaVantageTimeframe): AlphaVantageError {
+  private handleError(error: unknown, symbol: string, timeframe: AlphaVantageTimeframe): AlphaVantageError {
     if (error instanceof AlphaVantageError) {
       return error;
     }
 
     return new AlphaVantageError(
       AlphaVantageErrorType.NETWORK_ERROR,
-      `Errore inaspettato per ${symbol} (${timeframe}): ${error.message}`,
-      error,
+      `Errore inaspettato per ${symbol} (${timeframe}): ${(error as Error).message}`,
+      error as Error,
       undefined,
       false
     );
@@ -726,7 +726,7 @@ export class AlphaVantageService {
   /**
    * Cache management
    */
-  private generateCacheKey(symbol: string, timeframe: AlphaVantageTimeframe, options?: any): string {
+  private generateCacheKey(symbol: string, timeframe: AlphaVantageTimeframe, options?: Record<string, unknown>): string {
     const optionsStr = options ? JSON.stringify(options) : '';
     return `${symbol}_${timeframe}_${optionsStr}`;
   }
