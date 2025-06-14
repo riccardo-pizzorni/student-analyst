@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import DesktopLayout from './DesktopLayout';
-import MobileLayout from './MobileLayout';
 
 interface LayoutManagerProps {
   children: React.ReactNode;
@@ -12,9 +11,7 @@ interface LayoutManagerProps {
   className?: string;
 }
 
-const DESKTOP_MIN_WIDTH = 1024;
-
-export const LayoutManager: React.FC<LayoutManagerProps> = ({
+const LayoutManager: React.FC<LayoutManagerProps> = ({
   children,
   currentStep = 1,
   totalSteps = 4,
@@ -23,41 +20,18 @@ export const LayoutManager: React.FC<LayoutManagerProps> = ({
   headerContent,
   className = '',
 }) => {
-  const [width, setWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200);
-
-  useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  if (width >= DESKTOP_MIN_WIDTH) {
-    return (
-      <DesktopLayout
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        onStepChange={onStepChange}
-        sidebarContent={sidebarContent}
-        headerContent={headerContent}
-        className={className}
-      >
-        {children}
-      </DesktopLayout>
-    );
-  } else {
-    return (
-      <MobileLayout
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        onStepChange={onStepChange}
-        sidebarContent={sidebarContent}
-        headerContent={headerContent}
-        className={className}
-      >
-        {children}
-      </MobileLayout>
-    );
-  }
+  return (
+    <DesktopLayout
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      onStepChange={onStepChange}
+      sidebarContent={sidebarContent}
+      headerContent={headerContent}
+      className={className}
+    >
+      {children}
+    </DesktopLayout>
+  );
 };
 
 export default LayoutManager; 

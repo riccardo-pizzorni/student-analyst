@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipText, WithTooltip } from '@/components/ui/Tooltip';
-import { 
-  InfoIcon, 
-  SettingsIcon, 
-  ChartBarIcon, 
-  SaveIcon,
-  CheckIcon,
-  AlertTriangleIcon,
-  HelpCircleIcon,
-  TrendingUpIcon,
-  PieChartIcon,
-  CalculatorIcon,
-  DownloadIcon,
-  StarIcon
+import {
+    AlertTriangleIcon,
+    CalculatorIcon,
+    ChartBarIcon,
+    CheckIcon,
+    DownloadIcon,
+    HelpCircleIcon,
+    InfoIcon,
+    PieChartIcon,
+    SaveIcon,
+    SettingsIcon,
+    StarIcon,
+    TrendingUpIcon
 } from '@/components/ui/icons';
+import { Tooltip, TooltipText, WithTooltip } from '@/components/ui/Tooltip';
+import { useState } from 'react';
 
 interface DemoSettings {
   delay: number;
@@ -316,7 +316,6 @@ export function TooltipDemo() {
         <h3 className="font-semibold text-blue-900 mb-2">How to Test</h3>
         <ul className="text-blue-800 text-sm space-y-1">
           <li>• <strong>Desktop:</strong> Hover over elements to see tooltips after the delay</li>
-          <li>• <strong>Touch devices:</strong> Tap elements to show/hide tooltips</li>
           <li>• <strong>Positioning:</strong> Move elements near screen edges to see smart repositioning</li>
           <li>• <strong>Content:</strong> Try different max line settings to see truncation</li>
         </ul>

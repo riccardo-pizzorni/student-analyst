@@ -4,7 +4,7 @@
  * Area principale responsive con auto-save, loading states e error boundary per step
  */
 
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import AutoSaveIndicator, { AutoSaveStatus } from './AutoSaveIndicator';
 import { ErrorBoundary } from './ErrorBoundary';
 import LoadingState from './LoadingState';
@@ -43,9 +43,6 @@ export interface MainContentAreaProps {
   // Error boundary props
   errorFallback?: ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-  
-  // Responsive props
-  mobileBreakpoint?: string;
 }
 
 export const MainContentArea: React.FC<MainContentAreaProps> = ({
@@ -74,23 +71,7 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
   // Error boundary
   errorFallback,
   onError,
-  
-  // Responsive
-  mobileBreakpoint = '768px',
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const width = window.innerWidth;
-      setIsMobile(width < parseInt(mobileBreakpoint));
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, [mobileBreakpoint]);
-
   const getMaxWidthClass = () => {
     switch (maxWidth) {
       case 'sm': return 'max-w-sm';
@@ -114,24 +95,16 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
     }
   };
 
-  const getResponsivePadding = () => {
-    if (isMobile) {
-      return 'p-4'; // Sempre padding ridotto su mobile
-    }
-    return getPaddingClass(); // Padding completo su desktop
-  };
-
   const containerClasses = `
     w-full mx-auto
     ${getMaxWidthClass()}
-    ${getResponsivePadding()}
-    ${isMobile ? 'min-h-screen' : 'min-h-[600px]'}
+    ${getPaddingClass()}
+    ${isLoading ? 'min-h-[400px]' : 'min-h-[600px]'}
     ${className}
   `;
 
   const headerClasses = `
     flex flex-col space-y-4 mb-6
-    ${isMobile ? 'pb-4 border-b border-gray-200' : ''}
   `;
 
   const contentClasses = `
@@ -186,8 +159,8 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
                   status={autoSaveStatus}
                   lastSaved={lastSaved}
                   stepName={stepName}
-                  variant={isMobile ? 'compact' : 'full'}
-                  showStepName={!isMobile}
+                  variant="full"
+                  showStepName={true}
                   showLastSaved={true}
                 />
               </div>
@@ -195,7 +168,7 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
           </div>
           
           {/* Progress indicator for mobile */}
-          {isMobile && isLoading && loadingProgress !== undefined && (
+          {isLoading && loadingProgress !== undefined && (
             <div className="w-full">
               <LoadingState
                 isLoading={true}
@@ -218,24 +191,19 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
             variant={loadingVariant}
             message={loadingMessage}
             progress={loadingProgress}
-            size={isMobile ? 'md' : 'lg'}
-            overlay={!isMobile} // Overlay solo su desktop
-            fullScreen={isMobile && isLoading} // Full screen loading su mobile
+            size="lg"
+            overlay={true}
+            fullScreen={isLoading}
           >
             {/* Responsive content wrapper */}
             <div className={`
-              ${isMobile ? 'space-y-4' : 'space-y-6'}
+              space-y-6
             `}>
               {children}
             </div>
           </LoadingState>
         </StepErrorBoundary>
       </div>
-
-      {/* Bottom spacing for mobile navigation */}
-      {isMobile && (
-        <div className="h-20" />
-      )}
     </div>
   );
 };
