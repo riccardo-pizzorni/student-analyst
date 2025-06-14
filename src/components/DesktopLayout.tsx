@@ -3,7 +3,7 @@
  * Advanced desktop experience with full sidebar, keyboard shortcuts, and multiple panels
  */
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './DesktopLayout.css';
 
 interface DesktopLayoutProps {
@@ -377,7 +377,7 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
         {/* Main Content Area */}
         <main className="desktop-main" style={{ marginLeft: sidebarWidth }}>
-          <div className="main-content">
+          <div className="main-content container-desktop">
             {children}
           </div>
         </main>
