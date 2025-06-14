@@ -660,22 +660,6 @@
   50% { opacity: 1; }
 }
 
-/* ==== RESPONSIVE DESIGN ==== */
-@media (max-width: 1200px) {
-  .header-content {
-    padding: 0 1.5rem;
-    gap: 1.5rem;
-  }
-  
-  .main-content {
-    padding: 1.5rem;
-  }
-  
-  .floating-panel {
-    min-width: 280px;
-  }
-}
-
 /* ==== DARK MODE ==== */
 @media (prefers-color-scheme: dark) {
   :root {
