@@ -210,7 +210,7 @@ function App() {
               Professional Financial Analysis Platform
             </p>
             
-            <div className="bg-card p-8 rounded-lg shadow-lg border max-w-lg">
+            <div className="bg-card p-8 rounded-lg shadow-lg border max-w-4xl w-full mx-auto px-4 md:px-8 lg:px-16">
               <div className="space-y-6 text-center">
                 <div>
                   <h2 className="text-2xl font-semibold mb-2">🚀 Platform Features</h2>
