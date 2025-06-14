@@ -1,404 +1,266 @@
 /**
- * StorageMonitoringService - Sistema di Monitoraggio Storage Enterprise
- * 
- * Questo servizio monitora in tempo reale l'utilizzo dello storage su tutti e tre
- * i layer di cache (L1, L2, L3), rileva automaticamente le quote disponibili
- * e fornisce warning proattivi per prevenire overflow della memoria.
- * 
- * Features:
- * - Real-time monitoring di tutti i layer cache
- * - Auto-detection delle quote disponibili per browser
- * - Warning system intelligente con soglie personalizzabili
- * - Emergency recovery per situazioni critiche
- * - Analytics e recommendations per ottimizzazione
+ * STUDENT ANALYST - StorageMonitoringService
+ * Servizio per monitoraggio stato e quota storage
  */
 
-interface StorageUsage {
-  used: number;
-  quota: number;
-  percentage: number;
-  lastUpdated: number;
-}
-
-interface StorageQuota {
-  estimated: number;
-  exact?: number;
-  source: 'estimated' | 'measured' | 'api';
-  reliability: number; // 0-1, quanto è affidabile la stima
-}
-
-interface StorageWarning {
-  level: 'info' | 'warning' | 'critical' | 'emergency';
-  layer: 'L1' | 'L2' | 'L3';
-  usage: number;
-  quota: number;
-  percentage: number;
-  message: string;
-  recommendations: string[];
-  timestamp: number;
-}
-
-interface StorageHealth {
-  overall: 'healthy' | 'warning' | 'critical' | 'emergency';
-  l1: StorageUsage;
-  l2: StorageUsage;
-  l3: StorageUsage;
-  totalUsed: number;
-  totalQuota: number;
-  warnings: StorageWarning[];
+export interface StorageHealth {
+  localStorage: { status: string; usage: number; error?: string };
+  sessionStorage: { status: string; usage: number; error?: string };
+  indexedDB: { status: string; usage: number; error?: string };
+  overall: 'healthy' | 'warning' | 'critical' | 'error';
   lastCheck: number;
+  totalUsage: number;
+  estimatedQuota: number;
 }
 
-interface MonitoringConfig {
-  checkInterval: number; // secondi
-  warningThresholds: {
-    info: number;     // 70%
-    warning: number;  // 85%
-    critical: number; // 95%
-    emergency: number; // 98%
-  };
-  enableAutoCleanup: boolean;
-  cleanupThreshold: number; // 95%
+export interface StorageQuota {
+  localStorage: number;
+  sessionStorage: number;
+  indexedDB: number;
+  total: number;
 }
 
-class StorageMonitoringService {
+export interface MonitoringConfig {
+  checkInterval: number; // milliseconds
+  warningThreshold: number; // percentage (0-1)
+  criticalThreshold: number; // percentage (0-1)
+  enableAutoCheck: boolean;
+}
+
+export class StorageMonitoringService {
   private static instance: StorageMonitoringService;
+  private isInitialized = false;
   private isMonitoring = false;
   private monitoringInterval?: NodeJS.Timeout;
   private storageHealth: StorageHealth;
-  private quotaCache = new Map<string, StorageQuota>();
-  private eventListeners = new Set<(health: StorageHealth) => void>();
-  private warningListeners = new Set<(warning: StorageWarning) => void>();
+  private config: MonitoringConfig;
+  private lastQuotaCheck = 0;
+  private quotaCache: StorageQuota | null = null;
 
-  private config: MonitoringConfig = {
-    checkInterval: 30, // 30 secondi
-    warningThresholds: {
-      info: 0.70,     // 70%
-      warning: 0.85,  // 85%
-      critical: 0.95, // 95%
-      emergency: 0.98 // 98%
-    },
-    enableAutoCleanup: true,
-    cleanupThreshold: 0.95
-  };
+  // Dependencies (for dependency injection)
+  private localStorage: Storage;
+  private sessionStorage: Storage;
+  private indexedDB: IDBFactory;
+  private navigator: Navigator;
 
-  constructor() {
+  constructor(dependencies?: {
+    localStorage?: Storage;
+    sessionStorage?: Storage;
+    indexedDB?: IDBFactory;
+    navigator?: Navigator;
+  }) {
+    // Dependency injection support
+    this.localStorage = dependencies?.localStorage || (typeof window !== 'undefined' ? window.localStorage : {} as Storage);
+    this.sessionStorage = dependencies?.sessionStorage || (typeof window !== 'undefined' ? window.sessionStorage : {} as Storage);
+    this.indexedDB = dependencies?.indexedDB || (typeof window !== 'undefined' ? window.indexedDB : {} as IDBFactory);
+    this.navigator = dependencies?.navigator || (typeof window !== 'undefined' ? window.navigator : {} as Navigator);
+
+    this.config = {
+      checkInterval: 30000, // 30 seconds
+      warningThreshold: 0.8, // 80%
+      criticalThreshold: 0.95, // 95%
+      enableAutoCheck: true
+    };
+
     this.storageHealth = this.initializeHealthState();
-    this.setupEventListeners();
   }
 
-  public static getInstance(): StorageMonitoringService {
+  public static getInstance(dependencies?: any): StorageMonitoringService {
     if (!StorageMonitoringService.instance) {
-      StorageMonitoringService.instance = new StorageMonitoringService();
+      StorageMonitoringService.instance = new StorageMonitoringService(dependencies);
     }
     return StorageMonitoringService.instance;
   }
 
   /**
-   * Inizializza il sistema di monitoraggio
+   * Inizializza il servizio di monitoraggio
    */
-  public async initialize(): Promise<void> {
-    console.log('🔍 Inizializzando StorageMonitoringService...');
-    
+  async initialize(): Promise<boolean> {
     try {
-      // Rileva le quote iniziali
-      await this.detectAllQuotas();
+      if (this.isInitialized) {
+        return true;
+      }
+
+      // Detect initial quotas
+      await this.detectStorageQuotas();
       
-      // Effettua il primo check
+      // Perform initial health check
       await this.performHealthCheck();
       
-      // Avvia il monitoraggio continuo
-      this.startMonitoring();
-      
-      console.log('✅ StorageMonitoringService inizializzato con successo');
+      // Start monitoring if enabled
+      if (this.config.enableAutoCheck) {
+        this.startMonitoring();
+      }
+
+      this.isInitialized = true;
+      return true;
     } catch (error) {
-      console.error('❌ Errore inizializzazione StorageMonitoringService:', error);
-      throw error;
+      console.error('Failed to initialize StorageMonitoringService:', error);
+      return false;
     }
   }
 
   /**
    * Avvia il monitoraggio continuo
    */
-  public startMonitoring(): void {
+  startMonitoring(): void {
     if (this.isMonitoring) {
-      console.log('⚠️ Monitoraggio già attivo');
       return;
     }
 
     this.isMonitoring = true;
-    
     this.monitoringInterval = setInterval(async () => {
       try {
         await this.performHealthCheck();
       } catch (error) {
-        console.error('❌ Errore durante health check:', error);
+        console.error('Error during health check:', error);
       }
-    }, this.config.checkInterval * 1000);
-
-    console.log(`🚀 Monitoraggio storage avviato (check ogni ${this.config.checkInterval}s)`);
+    }, this.config.checkInterval);
   }
 
   /**
-   * Ferma il monitoraggio continuo
+   * Ferma il monitoraggio
    */
-  public stopMonitoring(): void {
+  stopMonitoring(): void {
     if (!this.isMonitoring) {
       return;
     }
 
     this.isMonitoring = false;
-    
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = undefined;
     }
-
-    console.log('🛑 Monitoraggio storage fermato');
   }
 
   /**
-   * Ottiene lo stato attuale della salute storage
+   * Ottiene lo stato di salute corrente
    */
-  public getStorageHealth(): StorageHealth {
+  getStorageHealth(): StorageHealth {
     return { ...this.storageHealth };
   }
 
   /**
-   * Forza un check immediato dello storage
+   * Forza un controllo immediato
    */
-  public async forceHealthCheck(): Promise<StorageHealth> {
+  async forceHealthCheck(): Promise<StorageHealth> {
     await this.performHealthCheck();
     return this.getStorageHealth();
   }
 
   /**
-   * Rileva automaticamente le quote per tutti i layer
+   * Ottiene le quote storage
    */
-  private async detectAllQuotas(): Promise<void> {
-    console.log('🔍 Rilevamento quote storage...');
-
-    try {
-      // L1 (Memory) - stima basata su JS heap
-      const l1Quota = await this.detectMemoryQuota();
-      this.quotaCache.set('L1', l1Quota);
-
-      // L2 (LocalStorage) - test empirico
-      const l2Quota = await this.detectLocalStorageQuota();
-      this.quotaCache.set('L2', l2Quota);
-
-      // L3 (IndexedDB) - API native + fallback
-      const l3Quota = await this.detectIndexedDBQuota();
-      this.quotaCache.set('L3', l3Quota);
-
-      console.log('📊 Quote rilevate:', {
-        L1: `${this.formatBytes(l1Quota.estimated)} (${l1Quota.source})`,
-        L2: `${this.formatBytes(l2Quota.estimated)} (${l2Quota.source})`,
-        L3: `${this.formatBytes(l3Quota.estimated)} (${l3Quota.source})`
-      });
-    } catch (error) {
-      console.error('❌ Errore rilevamento quote:', error);
-      // Usa quote di fallback
-      this.setFallbackQuotas();
+  async getStorageQuotas(): Promise<StorageQuota> {
+    if (!this.quotaCache || Date.now() - this.lastQuotaCheck > 60000) { // Cache for 1 minute
+      await this.detectStorageQuotas();
     }
+    return this.quotaCache!;
   }
 
   /**
-   * Rileva la quota di memoria (L1)
+   * Aggiorna la configurazione
    */
-  private async detectMemoryQuota(): Promise<StorageQuota> {
-    try {
-      // Usa performance.memory se disponibile (Chrome)
-      if ('memory' in performance) {
-        const memory = (performance as any).memory;
-        const heapLimit = memory.jsHeapSizeLimit || 0;
-        
-        if (heapLimit > 0) {
-          // Conservativo: usiamo max 25% dello heap per cache
-          const quota = Math.floor(heapLimit * 0.25);
-          return {
-            estimated: quota,
-            exact: quota,
-            source: 'api',
-            reliability: 0.9
-          };
-        }
+  updateConfig(newConfig: Partial<MonitoringConfig>): void {
+    const oldConfig = { ...this.config };
+    this.config = { ...this.config, ...newConfig };
+
+    // Restart monitoring if interval changed
+    if (newConfig.checkInterval && newConfig.checkInterval !== oldConfig.checkInterval && this.isMonitoring) {
+      this.stopMonitoring();
+      this.startMonitoring();
+    }
+
+    // Start/stop monitoring based on enableAutoCheck
+    if (newConfig.enableAutoCheck !== undefined) {
+      if (newConfig.enableAutoCheck && !this.isMonitoring) {
+        this.startMonitoring();
+      } else if (!newConfig.enableAutoCheck && this.isMonitoring) {
+        this.stopMonitoring();
       }
-
-      // Fallback: stima basata su user agent
-      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      const estimatedQuota = isMobile ? 50 * 1024 * 1024 : 100 * 1024 * 1024; // 50MB mobile, 100MB desktop
-
-      return {
-        estimated: estimatedQuota,
-        source: 'estimated',
-        reliability: 0.6
-      };
-    } catch (error) {
-      console.warn('⚠️ Fallback per quota memoria:', error);
-      return {
-        estimated: 50 * 1024 * 1024, // 50MB default
-        source: 'estimated',
-        reliability: 0.3
-      };
     }
   }
 
   /**
-   * Rileva la quota di LocalStorage (L2)
+   * Ottiene la configurazione corrente
    */
-  private async detectLocalStorageQuota(): Promise<StorageQuota> {
-    const testKey = '__storage_quota_test__';
-    let quota = 0;
-    
+  getConfig(): MonitoringConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Verifica se il servizio � inizializzato
+   */
+  isServiceInitialized(): boolean {
+    return this.isInitialized;
+  }
+
+  /**
+   * Verifica se il monitoraggio � attivo
+   */
+  isServiceMonitoring(): boolean {
+    return this.isMonitoring;
+  }
+
+  /**
+   * Cleanup del servizio
+   */
+  dispose(): void {
+    this.stopMonitoring();
+    this.isInitialized = false;
+    this.quotaCache = null;
+  }
+
+  /**
+   * Rileva le quote disponibili per ogni storage
+   */
+  private async detectStorageQuotas(): Promise<void> {
     try {
-      // Test progressivo per trovare il limite
-      let testSize = 1024; // 1KB iniziale
-      const maxTestSize = 50 * 1024 * 1024; // 50MB max test
-      
-      while (testSize <= maxTestSize) {
+      let totalQuota = 0;
+      let localStorageQuota = 0;
+      let sessionStorageQuota = 0;
+      let indexedDBQuota = 0;
+
+      // Try to use Storage API if available
+      if (this.navigator && 'storage' in this.navigator && 'estimate' in this.navigator.storage) {
         try {
-          const testData = 'x'.repeat(testSize);
-          localStorage.setItem(testKey, testData);
-          localStorage.removeItem(testKey);
-          quota = testSize;
-          testSize *= 2;
+          const estimate = await this.navigator.storage.estimate();
+          totalQuota = estimate.quota || 0;
+          indexedDBQuota = (estimate.usage || 0) * 0.8;
+          
+          // Estimate localStorage and sessionStorage quotas (usually 5-10MB each)
+          localStorageQuota = 5 * 1024 * 1024; // 5MB
+          sessionStorageQuota = 5 * 1024 * 1024; // 5MB
         } catch (error) {
-          // Quota raggiunti
-          break;
+          console.warn('Storage API not available, using fallback estimates');
         }
       }
 
-      // Cleanup
-      try {
-        localStorage.removeItem(testKey);
-      } catch {
-        // Ignore cleanup errors - test key may not exist
+      // Fallback estimates if API not available
+      if (totalQuota === 0) {
+        totalQuota = 1024 * 1024 * 1024; // 1GB fallback
+        localStorageQuota = 5 * 1024 * 1024; // 5MB
+        sessionStorageQuota = 5 * 1024 * 1024; // 5MB
+        indexedDBQuota = totalQuota - localStorageQuota - sessionStorageQuota;
       }
 
-      if (quota > 0) {
-        return {
-          estimated: quota,
-          exact: quota,
-          source: 'measured',
-          reliability: 0.95
-        };
-      }
-
-      // Fallback standard
-      return {
-        estimated: 5 * 1024 * 1024, // 5MB standard
-        source: 'estimated',
-        reliability: 0.6
+      this.quotaCache = {
+        localStorage: localStorageQuota,
+        sessionStorage: sessionStorageQuota,
+        indexedDB: indexedDBQuota,
+        total: totalQuota
       };
+
+      this.lastQuotaCheck = Date.now();
     } catch (error) {
-      console.warn('⚠️ Fallback per quota localStorage:', error);
-      return {
-        estimated: 5 * 1024 * 1024, // 5MB default
-        source: 'estimated',
-        reliability: 0.3
+      console.error('Failed to detect storage quotas:', error);
+      // Set minimal fallback quotas
+      this.quotaCache = {
+        localStorage: 1024 * 1024, // 1MB
+        sessionStorage: 1024 * 1024, // 1MB
+        indexedDB: 10 * 1024 * 1024, // 10MB
+        total: 12 * 1024 * 1024 // 12MB
       };
-    }
-  }
-
-  /**
-   * Rileva la quota di IndexedDB (L3)
-   */
-  private async detectIndexedDBQuota(): Promise<StorageQuota> {
-    try {
-      // Prova API moderna navigator.storage.estimate()
-      if ('storage' in navigator && 'estimate' in navigator.storage) {
-        const estimate = await navigator.storage.estimate();
-        
-        if (estimate.quota && estimate.quota > 0) {
-          return {
-            estimated: estimate.quota,
-            exact: estimate.quota,
-            source: 'api',
-            reliability: 0.95
-          };
-        }
-      }
-
-      // Fallback: stima basata su disco disponibile
-      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      const estimatedQuota = isMobile 
-        ? 1 * 1024 * 1024 * 1024    // 1GB mobile
-        : 10 * 1024 * 1024 * 1024;  // 10GB desktop
-
-      return {
-        estimated: estimatedQuota,
-        source: 'estimated',
-        reliability: 0.7
-      };
-    } catch (error) {
-      console.warn('⚠️ Fallback per quota IndexedDB:', error);
-      return {
-        estimated: 1 * 1024 * 1024 * 1024, // 1GB default
-        source: 'estimated',
-        reliability: 0.5
-      };
-    }
-  }
-
-  /**
-   * Calcola l'utilizzo attuale di memoria (L1)
-   */
-  private calculateMemoryUsage(): number {
-    try {
-      // Usa performance.memory se disponibile
-      if ('memory' in performance) {
-        const memory = (performance as any).memory;
-        return memory.usedJSHeapSize || 0;
-      }
-
-      // Fallback: stima approssimativa
-      return 0;
-    } catch (error) {
-      return 0;
-    }
-  }
-
-  /**
-   * Calcola l'utilizzo attuale di LocalStorage (L2)
-   */
-  private calculateLocalStorageUsage(): number {
-    try {
-      let totalSize = 0;
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-          const value = localStorage.getItem(key) || '';
-          totalSize += key.length + value.length;
-        }
-      }
-      
-      // Stima più accurata considerando overhead UTF-16
-      return totalSize * 2; // UTF-16 = 2 bytes per carattere
-    } catch (error) {
-      console.warn('⚠️ Errore calcolo localStorage usage:', error);
-      return 0;
-    }
-  }
-
-  /**
-   * Calcola l'utilizzo attuale di IndexedDB (L3)
-   */
-  private async calculateIndexedDBUsage(): Promise<number> {
-    try {
-      // Usa navigator.storage.estimate() se disponibile
-      if ('storage' in navigator && 'estimate' in navigator.storage) {
-        const estimate = await navigator.storage.estimate();
-        return estimate.usage || 0;
-      }
-
-      // Fallback: stima basata su dimensioni database
-      // Questo richiede accesso ai database specifici
-      return 0;
-    } catch (error) {
-      console.warn('⚠️ Errore calcolo IndexedDB usage:', error);
-      return 0;
     }
   }
 
@@ -409,381 +271,213 @@ class StorageMonitoringService {
     const startTime = Date.now();
 
     try {
-      // Calcola utilizzo corrente per tutti i layer
-      const l1Usage = this.calculateMemoryUsage();
-      const l2Usage = this.calculateLocalStorageUsage();
-      const l3Usage = await this.calculateIndexedDBUsage();
-
-      // Ottieni quote
-      const l1Quota = this.quotaCache.get('L1')?.estimated || 0;
-      const l2Quota = this.quotaCache.get('L2')?.estimated || 0;
-      const l3Quota = this.quotaCache.get('L3')?.estimated || 0;
-
-      // Aggiorna stato salute
-      this.storageHealth = {
-        overall: this.determineOverallHealth(l1Usage, l1Quota, l2Usage, l2Quota, l3Usage, l3Quota),
-        l1: {
-          used: l1Usage,
-          quota: l1Quota,
-          percentage: l1Quota > 0 ? l1Usage / l1Quota : 0,
-          lastUpdated: startTime
-        },
-        l2: {
-          used: l2Usage,
-          quota: l2Quota,
-          percentage: l2Quota > 0 ? l2Usage / l2Quota : 0,
-          lastUpdated: startTime
-        },
-        l3: {
-          used: l3Usage,
-          quota: l3Quota,
-          percentage: l3Quota > 0 ? l3Usage / l3Quota : 0,
-          lastUpdated: startTime
-        },
-        totalUsed: l1Usage + l2Usage + l3Usage,
-        totalQuota: l1Quota + l2Quota + l3Quota,
-        warnings: [],
-        lastCheck: startTime
-      };
-
-      // Genera warning se necessari
-      this.checkAndGenerateWarnings();
-
-      // Notifica listeners
-      this.notifyHealthListeners();
-
-      // Cleanup automatico se necessario
-      if (this.config.enableAutoCleanup) {
-        await this.performAutoCleanupIfNeeded();
+      // Get quotas first
+      if (!this.quotaCache) {
+        await this.detectStorageQuotas();
       }
 
-    } catch (error) {
-      console.error('❌ Errore durante health check:', error);
-    }
-  }
-
-  /**
-   * Determina lo stato generale della salute
-   */
-  private determineOverallHealth(
-    l1Usage: number, l1Quota: number,
-    l2Usage: number, l2Quota: number,
-    l3Usage: number, l3Quota: number
-  ): 'healthy' | 'warning' | 'critical' | 'emergency' {
-    const thresholds = this.config.warningThresholds;
-    
-    const l1Percentage = l1Quota > 0 ? l1Usage / l1Quota : 0;
-    const l2Percentage = l2Quota > 0 ? l2Usage / l2Quota : 0;
-    const l3Percentage = l3Quota > 0 ? l3Usage / l3Quota : 0;
-
-    const maxPercentage = Math.max(l1Percentage, l2Percentage, l3Percentage);
-
-    if (maxPercentage >= thresholds.emergency) return 'emergency';
-    if (maxPercentage >= thresholds.critical) return 'critical';
-    if (maxPercentage >= thresholds.warning) return 'warning';
-    
-    return 'healthy';
-  }
-
-  /**
-   * Controlla e genera warning per i vari layer
-   */
-  private checkAndGenerateWarnings(): void {
-    this.storageHealth.warnings = [];
-    
-    // Check L1
-    this.checkLayerWarnings('L1', this.storageHealth.l1);
-    
-    // Check L2  
-    this.checkLayerWarnings('L2', this.storageHealth.l2);
-    
-    // Check L3
-    this.checkLayerWarnings('L3', this.storageHealth.l3);
-  }
-
-  /**
-   * Controlla warning per un layer specifico
-   */
-  private checkLayerWarnings(layer: 'L1' | 'L2' | 'L3', usage: StorageUsage): void {
-    const thresholds = this.config.warningThresholds;
-    const percentage = usage.percentage;
-
-    let warning: StorageWarning | null = null;
-
-    if (percentage >= thresholds.emergency) {
-      warning = {
-        level: 'emergency',
-        layer,
-        usage: usage.used,
-        quota: usage.quota,
-        percentage,
-        message: `EMERGENZA: ${layer} al ${Math.round(percentage * 100)}% - Rischio crash imminente!`,
-        recommendations: this.getEmergencyRecommendations(layer),
-        timestamp: Date.now()
-      };
-    } else if (percentage >= thresholds.critical) {
-      warning = {
-        level: 'critical',
-        layer,
-        usage: usage.used,
-        quota: usage.quota,
-        percentage,
-        message: `CRITICO: ${layer} al ${Math.round(percentage * 100)}% - Azione immediata richiesta`,
-        recommendations: this.getCriticalRecommendations(layer),
-        timestamp: Date.now()
-      };
-    } else if (percentage >= thresholds.warning) {
-      warning = {
-        level: 'warning',
-        layer,
-        usage: usage.used,
-        quota: usage.quota,
-        percentage,
-        message: `Attenzione: ${layer} al ${Math.round(percentage * 100)}% - Considera pulizia`,
-        recommendations: this.getWarningRecommendations(layer),
-        timestamp: Date.now()
-      };
-    } else if (percentage >= thresholds.info) {
-      warning = {
-        level: 'info',
-        layer,
-        usage: usage.used,
-        quota: usage.quota,
-        percentage,
-        message: `Info: ${layer} al ${Math.round(percentage * 100)}% - Tutto normale`,
-        recommendations: this.getInfoRecommendations(layer),
-        timestamp: Date.now()
-      };
-    }
-
-    if (warning) {
-      this.storageHealth.warnings.push(warning);
-      this.notifyWarningListeners(warning);
-    }
-  }
-
-  /**
-   * Ottiene raccomandazioni per situazioni di emergenza
-   */
-  private getEmergencyRecommendations(layer: 'L1' | 'L2' | 'L3'): string[] {
-    const base = [
-      'Cleanup automatico attivato',
-      'Contatta supporto se il problema persiste'
-    ];
-
-    switch (layer) {
-      case 'L1':
-        return [
-          'Refresh immediato della pagina',
-          'Chiudi altre schede del browser',
-          ...base
-        ];
-      case 'L2':
-        return [
-          'Cancellazione dati L2 più vecchi',
-          'Compressione dati aumentata',
-          ...base
-        ];
-      case 'L3':
-        return [
-          'Cleanup database automatico',
-          'Rimozione dati storici più vecchi',
-          ...base
-        ];
-    }
-  }
-
-  /**
-   * Ottiene raccomandazioni per situazioni critiche
-   */
-  private getCriticalRecommendations(layer: 'L1' | 'L2' | 'L3'): string[] {
-    switch (layer) {
-      case 'L1':
-        return [
-          'Riduci dati in memoria',
-          'Attiva compressione aggressiva',
-          'Considera refresh pagina'
-        ];
-      case 'L2':
-        return [
-          'Elimina dati L2 non essenziali',
-          'Aumenta compressione',
-          'Sposta dati storici a L3'
-        ];
-      case 'L3':
-        return [
-          'Pulisci dati più vecchi di 7 giorni',
-          'Comprimi database',
-          'Archivia dati raramente usati'
-        ];
-    }
-  }
-
-  /**
-   * Ottiene raccomandazioni per warning normali
-   */
-  private getWarningRecommendations(layer: 'L1' | 'L2' | 'L3'): string[] {
-    switch (layer) {
-      case 'L1':
-        return [
-          'Monitora crescita memoria',
-          'Considera pulizia cache'
-        ];
-      case 'L2':
-        return [
-          'Pulisci dati scaduti',
-          'Ottimizza compressione'
-        ];
-      case 'L3':
-        return [
-          'Pianifica cleanup settimanale',
-          'Comprimi dati storici'
-        ];
-    }
-  }
-
-  /**
-   * Ottiene raccomandazioni informative
-   */
-  private getInfoRecommendations(layer: 'L1' | 'L2' | 'L3'): string[] {
-    return [
-      'Tutto sotto controllo',
-      'Continua monitoraggio normale'
-    ];
-  }
-
-  /**
-   * Esegue cleanup automatico se necessario
-   */
-  private async performAutoCleanupIfNeeded(): Promise<void> {
-    const health = this.storageHealth;
-    
-    if (health.overall === 'emergency' || health.overall === 'critical') {
-      console.log('🧹 Avvio cleanup automatico...');
+      // Check localStorage
+      const localStorageHealth = await this.checkLocalStorageHealth();
       
-      try {
-        // Priorità: pulisci prima il layer più pieno
-        const layers = [
-          { name: 'L3', percentage: health.l3.percentage },
-          { name: 'L2', percentage: health.l2.percentage },
-          { name: 'L1', percentage: health.l1.percentage }
-        ].sort((a, b) => b.percentage - a.percentage);
+      // Check sessionStorage
+      const sessionStorageHealth = await this.checkSessionStorageHealth();
+      
+      // Check indexedDB
+      const indexedDBHealth = await this.checkIndexedDBHealth();
 
-        for (const layer of layers) {
-          if (layer.percentage >= this.config.cleanupThreshold) {
-            await this.performLayerCleanup(layer.name as 'L1' | 'L2' | 'L3');
+      // Calculate totals
+      const totalUsage = localStorageHealth.usage + sessionStorageHealth.usage + indexedDBHealth.usage;
+      const estimatedQuota = this.quotaCache?.total || 0;
+
+      // Determine overall health
+      const overallHealth = this.determineOverallHealth(
+        localStorageHealth.status,
+        sessionStorageHealth.status,
+        indexedDBHealth.status,
+        totalUsage,
+        estimatedQuota
+      );
+
+      // Update health state
+      this.storageHealth = {
+        localStorage: localStorageHealth,
+        sessionStorage: sessionStorageHealth,
+        indexedDB: indexedDBHealth,
+        overall: overallHealth,
+        lastCheck: startTime,
+        totalUsage,
+        estimatedQuota
+      };
+
+    } catch (error) {
+      console.error('Health check failed:', error);
+      this.storageHealth.overall = 'error';
+      this.storageHealth.lastCheck = startTime;
+    }
+  }
+
+  /**
+   * Controlla la salute del localStorage
+   */
+  private async checkLocalStorageHealth(): Promise<{ status: string; usage: number; error?: string }> {
+    try {
+      // Test basic functionality
+      const testKey = '__storage_test__';
+      const testValue = 'test';
+      
+      this.localStorage.setItem(testKey, testValue);
+      const retrieved = this.localStorage.getItem(testKey);
+      this.localStorage.removeItem(testKey);
+
+      if (retrieved !== testValue) {
+        return { status: 'error', usage: 0, error: 'Read/write test failed' };
+      }
+
+      // Estimate usage
+      let totalSize = 0;
+      for (let i = 0; i < this.localStorage.length; i++) {
+        const key = this.localStorage.key(i);
+        if (key) {
+          const value = this.localStorage.getItem(key);
+          if (value) {
+            totalSize += new Blob([key + value]).size;
           }
         }
-
-        console.log('✅ Cleanup automatico completato');
-      } catch (error) {
-        console.error('❌ Errore durante cleanup automatico:', error);
-      }
-    }
-  }
-
-  /**
-   * Esegue cleanup per un layer specifico
-   */
-  private async performLayerCleanup(layer: 'L1' | 'L2' | 'L3'): Promise<void> {
-    console.log(`🧹 Cleanup ${layer} in corso...`);
-    
-    switch (layer) {
-      case 'L1':
-        // Forza garbage collection se disponibile
-        if ('gc' in window) {
-          (window as any).gc();
-        }
-        break;
-        
-      case 'L2':
-        // Rimuovi i dati più vecchi da localStorage
-        this.cleanupLocalStorage();
-        break;
-        
-      case 'L3':
-        // Pulisci IndexedDB
-        await this.cleanupIndexedDB();
-        break;
-    }
-  }
-
-  /**
-   * Pulisce LocalStorage rimuovendo dati vecchi
-   */
-  private cleanupLocalStorage(): void {
-    try {
-      const keys = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) keys.push(key);
       }
 
-      // Ordina per timestamp se presente
-      keys.sort((a, b) => {
-        try {
-          const aData = JSON.parse(localStorage.getItem(a) || '{}');
-          const bData = JSON.parse(localStorage.getItem(b) || '{}');
-          return (aData.timestamp || 0) - (bData.timestamp || 0);
-        } catch {
-          return 0;
-        }
-      });
-
-      // Rimuovi i più vecchi fino a raggiungere 70% di utilizzo
-      let removed = 0;
-      for (const key of keys) {
-        if (this.calculateLocalStorageUsage() < this.quotaCache.get('L2')!.estimated * 0.7) {
-          break;
-        }
-        
-        localStorage.removeItem(key);
-        removed++;
-      }
-
-      console.log(`🧹 LocalStorage: rimossi ${removed} elementi`);
+      return { status: 'healthy', usage: totalSize };
     } catch (error) {
-      console.error('❌ Errore cleanup localStorage:', error);
+      return { 
+        status: 'error', 
+        usage: 0, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   }
 
   /**
-   * Pulisce IndexedDB
+   * Controlla la salute del sessionStorage
    */
-  private async cleanupIndexedDB(): Promise<void> {
+  private async checkSessionStorageHealth(): Promise<{ status: string; usage: number; error?: string }> {
     try {
-      // Questo dovrebbe interfacciarsi con IndexedDBCacheL3
-      // Per ora log placeholder
-      console.log('🧹 IndexedDB cleanup richiesto');
+      // Test basic functionality
+      const testKey = '__session_test__';
+      const testValue = 'test';
       
-      // TODO: Implementare cleanup IndexedDB specifico
-      // Dovrebbe chiamare il servizio L3 per cleanup intelligente
+      this.sessionStorage.setItem(testKey, testValue);
+      const retrieved = this.sessionStorage.getItem(testKey);
+      this.sessionStorage.removeItem(testKey);
+
+      if (retrieved !== testValue) {
+        return { status: 'error', usage: 0, error: 'Read/write test failed' };
+      }
+
+      // Estimate usage
+      let totalSize = 0;
+      for (let i = 0; i < this.sessionStorage.length; i++) {
+        const key = this.sessionStorage.key(i);
+        if (key) {
+          const value = this.sessionStorage.getItem(key);
+          if (value) {
+            totalSize += new Blob([key + value]).size;
+          }
+        }
+      }
+
+      return { status: 'healthy', usage: totalSize };
     } catch (error) {
-      console.error('❌ Errore cleanup IndexedDB:', error);
+      return { 
+        status: 'error', 
+        usage: 0, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
     }
   }
 
   /**
-   * Imposta quote di fallback
+   * Controlla la salute di IndexedDB
    */
-  private setFallbackQuotas(): void {
-    this.quotaCache.set('L1', {
-      estimated: 50 * 1024 * 1024, // 50MB
-      source: 'estimated',
-      reliability: 0.3
-    });
+  private async checkIndexedDBHealth(): Promise<{ status: string; usage: number; error?: string }> {
+    try {
+      // Try to open a test database
+      return new Promise((resolve) => {
+        const testDbName = '__indexeddb_test__';
+        const request = this.indexedDB.open(testDbName, 1);
 
-    this.quotaCache.set('L2', {
-      estimated: 5 * 1024 * 1024, // 5MB
-      source: 'estimated',
-      reliability: 0.3
-    });
+        request.onerror = () => {
+          resolve({ 
+            status: 'error', 
+            usage: 0, 
+            error: 'Failed to open test database' 
+          });
+        };
 
-    this.quotaCache.set('L3', {
-      estimated: 1 * 1024 * 1024 * 1024, // 1GB
-      source: 'estimated',
-      reliability: 0.3
-    });
+        request.onsuccess = () => {
+          const db = request.result;
+          db.close();
+          
+          // Try to delete the test database
+          const deleteRequest = this.indexedDB.deleteDatabase(testDbName);
+          deleteRequest.onsuccess = () => {
+            // Estimate usage (simplified)
+            const estimatedUsage = 0; // Would need more complex logic to estimate real usage
+            resolve({ status: 'healthy', usage: estimatedUsage });
+          };
+          deleteRequest.onerror = () => {
+            resolve({ status: 'healthy', usage: 0 });
+          };
+        };
+
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          resolve({ 
+            status: 'warning', 
+            usage: 0, 
+            error: 'IndexedDB response timeout' 
+          });
+        }, 5000);
+      });
+    } catch (error) {
+      return { 
+        status: 'error', 
+        usage: 0, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  /**
+   * Determina lo stato generale di salute
+   */
+  private determineOverallHealth(
+    localStorageStatus: string,
+    sessionStorageStatus: string,
+    indexedDBStatus: string,
+    totalUsage: number,
+    estimatedQuota: number
+  ): 'healthy' | 'warning' | 'critical' | 'error' {
+    // Check for errors first
+    if (localStorageStatus === 'error' || sessionStorageStatus === 'error' || indexedDBStatus === 'error') {
+      return 'error';
+    }
+
+    // Check usage percentage
+    if (estimatedQuota > 0) {
+      const usagePercentage = totalUsage / estimatedQuota;
+      
+      if (usagePercentage >= this.config.criticalThreshold) {
+        return 'critical';
+      } else if (usagePercentage >= this.config.warningThreshold) {
+        return 'warning';
+      }
+    }
+
+    // Check for warnings
+    if (localStorageStatus === 'warning' || sessionStorageStatus === 'warning' || indexedDBStatus === 'warning') {
+      return 'warning';
+    }
+
+    return 'healthy';
   }
 
   /**
@@ -791,137 +485,15 @@ class StorageMonitoringService {
    */
   private initializeHealthState(): StorageHealth {
     return {
+      localStorage: { status: 'unknown', usage: 0 },
+      sessionStorage: { status: 'unknown', usage: 0 },
+      indexedDB: { status: 'unknown', usage: 0 },
       overall: 'healthy',
-      l1: { used: 0, quota: 0, percentage: 0, lastUpdated: 0 },
-      l2: { used: 0, quota: 0, percentage: 0, lastUpdated: 0 },
-      l3: { used: 0, quota: 0, percentage: 0, lastUpdated: 0 },
-      totalUsed: 0,
-      totalQuota: 0,
-      warnings: [],
-      lastCheck: 0
+      lastCheck: 0,
+      totalUsage: 0,
+      estimatedQuota: 0
     };
-  }
-
-  /**
-   * Configura listener di eventi
-   */
-  private setupEventListeners(): void {
-    // Listener per eventi storage
-    window.addEventListener('storage', () => {
-      // Trigger check immediato quando storage cambia
-      this.performHealthCheck();
-    });
-
-    // Listener per eventi memoria
-    window.addEventListener('beforeunload', () => {
-      this.stopMonitoring();
-    });
-  }
-
-  /**
-   * Notifica i listener dello stato salute
-   */
-  private notifyHealthListeners(): void {
-    this.eventListeners.forEach(listener => {
-      try {
-        listener(this.storageHealth);
-      } catch (error) {
-        console.error('❌ Errore notifica health listener:', error);
-      }
-    });
-  }
-
-  /**
-   * Notifica i listener dei warning
-   */
-  private notifyWarningListeners(warning: StorageWarning): void {
-    this.warningListeners.forEach(listener => {
-      try {
-        listener(warning);
-      } catch (error) {
-        console.error('❌ Errore notifica warning listener:', error);
-      }
-    });
-  }
-
-  /**
-   * Formatta bytes in formato leggibile
-   */
-  private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  }
-
-  // Public API per subscription agli eventi
-
-  /**
-   * Sottoscrive agli aggiornamenti dello stato salute
-   */
-  public onHealthUpdate(callback: (health: StorageHealth) => void): () => void {
-    this.eventListeners.add(callback);
-    
-    // Invia stato corrente immediatamente
-    callback(this.storageHealth);
-    
-    // Ritorna funzione per unsubscribe
-    return () => {
-      this.eventListeners.delete(callback);
-    };
-  }
-
-  /**
-   * Sottoscrive agli warning
-   */
-  public onWarning(callback: (warning: StorageWarning) => void): () => void {
-    this.warningListeners.add(callback);
-    
-    // Ritorna funzione per unsubscribe
-    return () => {
-      this.warningListeners.delete(callback);
-    };
-  }
-
-  /**
-   * Aggiorna configurazione monitoraggio
-   */
-  public updateConfig(newConfig: Partial<MonitoringConfig>): void {
-    this.config = { ...this.config, ...newConfig };
-    
-    // Riavvia monitoraggio se l'intervallo è cambiato
-    if (newConfig.checkInterval && this.isMonitoring) {
-      this.stopMonitoring();
-      this.startMonitoring();
-    }
-  }
-
-  /**
-   * Ottiene configurazione corrente
-   */
-  public getConfig(): MonitoringConfig {
-    return { ...this.config };
-  }
-
-  /**
-   * Cleanup e shutdown del servizio
-   */
-  public shutdown(): void {
-    this.stopMonitoring();
-    this.eventListeners.clear();
-    this.warningListeners.clear();
-    this.quotaCache.clear();
   }
 }
 
-// Export singleton instance
-export const storageMonitoring = StorageMonitoringService.getInstance();
-export default StorageMonitoringService;
-
-// Export types
-export type {
-    MonitoringConfig, StorageHealth, StorageQuota, StorageUsage, StorageWarning
-};
+export const storageMonitoring = new StorageMonitoringService();

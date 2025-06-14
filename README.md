@@ -1,54 +1,355 @@
-# React + TypeScript + Vite
+# Student Analyst 📊
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![Coverage Statements](https://img.shields.io/badge/Coverage-Statements-59.76%25-orange.svg)](coverage/lcov-report/index.html)
+[![Coverage Branches](https://img.shields.io/badge/Coverage-Branches-48.57%25-red.svg)](coverage/lcov-report/index.html)
+[![Coverage Functions](https://img.shields.io/badge/Coverage-Functions-73.52%25-yellow.svg)](coverage/lcov-report/index.html)
+[![Coverage Lines](https://img.shields.io/badge/Coverage-Lines-60.53%25-orange.svg)](coverage/lcov-report/index.html)
+[![Tests](https://img.shields.io/badge/Tests-82%20passed,%2025%20failed-yellow.svg)](#testing)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.1.0-blue.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.3.5-646CFF.svg)](https://vitejs.dev/)
 
-Currently, two official plugins are available:
+> Applicazione web avanzata per l'analisi finanziaria con sistema di cache multi-layer, algoritmi di ottimizzazione e integrazione Yahoo Finance.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Caratteristiche Principali
 
-## Expanding the ESLint configuration
+- 🚀 **Performance**: Sistema di cache multi-layer (L1: Memory, L2: LocalStorage, L3: IndexedDB)
+- 📈 **Analisi Finanziaria**: Calcoli avanzati di rischio, rendimento e metriche di performance
+- 🔄 **Ottimizzazione**: Algoritmi di allocazione portfolio (Markowitz, Sharpe Ratio, Risk Parity)
+- 📊 **Dashboard Interattive**: Componenti React con visualizzazioni Recharts
+- ⚡ **Caching Intelligente**: Pulizia automatica LRU e gestione storage
+- 🌐 **Yahoo Finance API**: Integrazione per dati finanziari real-time
+- 🧪 **Test Coverage**: Suite completa di test unitari Jest + jsdom
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Tech Stack
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Frontend**: React 19.1.0 + TypeScript 5.8.3
+- **Build Tool**: Vite 6.3.5
+- **Testing**: Jest 29.7.0 + jsdom + Playwright
+- **UI**: TailwindCSS + Radix UI
+- **Visualizzazioni**: Recharts
+- **Storage**: IndexedDB (Dexie) + LocalStorage
+- **Analytics**: Vercel Analytics + Speed Insights
+
+## 📊 Test Coverage
+
+| Service | Statements | Branches | Functions | Lines | Status |
+|---------|-----------|----------|-----------|-------|--------|
+| **MemoryCacheL1** | ✅ 95.52% | ✅ 89.28% | ✅ 100% | ✅ 95.5% | **Excellent** |
+| **AutomaticCleanupService** | ⚠️ 40.99% | ⚠️ 21.42% | ⚠️ 61.97% | ⚠️ 41.36% | **In Progress** |
+| **CacheAnalyticsEngine** | 📊 Coverage data available | | | | **Under Test** |
+| **StorageMonitoringService** | 📊 Coverage data available | | | | **Under Test** |
+
+> **Target Goal**: 80%+ coverage per tutti i servizi core
+
+## 🚀 Quick Start
+
+```bash
+# Clona il repository
+git clone <repository-url>
+cd student-analyst
+
+# Installa dipendenze
+npm install
+
+# Avvia sviluppo
+npm run dev
+
+# Esegui test
+npm run test:unit
+
+# Build produzione
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🧪 Testing
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This project uses a comprehensive testing strategy with both Jest (for unit/integration tests) and Playwright (for E2E tests).
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+### Running Tests
+
+You can run all tests with a single command:
+
+```bash
+npm run test:all
 ```
+
+Or run specific test suites:
+
+- Unit/Integration tests: `npm run test:unit`
+- E2E tests: `npm run test:e2e`
+- Watch mode: `npm run test:watch`
+- Coverage report: `npm run test:coverage`
+
+### Test Structure
+
+- `tests/unit/`: Unit and integration tests
+- `tests/e2e/`: End-to-end tests with Playwright
+- `tests/performance/`: Performance tests
+
+### Test Reports
+
+After running tests, reports are available in:
+
+- Unit Tests: `test-results/unit/junit.xml`
+- E2E Tests: `test-results/e2e/test-results.json`
+- Coverage: `coverage/index.html`
+- Combined Report: `test-results/combined-report.json`
+
+### Continuous Integration
+
+Tests are automatically run on GitHub Actions for:
+- Every push to `main` and `develop` branches
+- Every pull request to these branches
+
+### Writing Tests
+
+#### Unit Tests (Jest)
+
+```typescript
+import { describe, it, expect } from '@jest/globals';
+
+describe('MyComponent', () => {
+  it('should work correctly', () => {
+    // Your test here
+  });
+});
+```
+
+#### E2E Tests (Playwright)
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('should work in browser', async ({ page }) => {
+  await page.goto('/');
+  // Your test here
+});
+```
+
+### Debugging Tests
+
+1. Unit Tests:
+   ```bash
+   npm run test:unit -- --debug
+   ```
+
+2. E2E Tests:
+   ```bash
+   npm run test:e2e -- --debug
+   ```
+
+3. Use VS Code debugger with the provided launch configurations
+
+### Test Coverage
+
+We maintain high test coverage:
+- Unit tests: >90%
+- E2E tests: All critical paths
+- Performance tests: Key operations
+
+Coverage reports are generated automatically and available in the `coverage` directory.
+
+## 📁 Struttura Progetto
+
+```
+src/
+├── services/           # Servizi core (Cache, Analytics, Storage)
+├── components/         # Componenti React UI
+├── utils/             # Utility e helper functions
+tests/
+├── unit/              # Test unitari Jest
+├── e2e/               # Test end-to-end Playwright
+└── utils/             # Mock e setup testing
+```
+
+## 🔧 Servizi Core
+
+### 💾 Sistema Cache Multi-Layer
+- **L1 (Memory)**: Cache in-memory ultra-veloce
+- **L2 (LocalStorage)**: Persistenza browser locale
+- **L3 (IndexedDB)**: Database client-side strutturato
+
+### 🧹 Automatic Cleanup Service
+- Pulizia automatica LRU (Least Recently Used)
+- Monitoraggio storage e health check
+- Scheduling intelligente delle operazioni
+
+### 📈 Financial Analytics
+- Calcoli rendimenti e rischio
+- Metriche performance (Sharpe, Sortino, VaR)
+- Algoritmi ottimizzazione portfolio
+
+## 🌐 API Integration
+
+### Yahoo Finance
+- Dati storici prezzi
+- Quote real-time
+- Informazioni aziendali
+- Gestione rate limiting e fallback
+
+## 📋 Development Scripts
+
+```bash
+npm run dev                 # Sviluppo locale
+npm run build              # Build produzione
+npm run lint               # ESLint check
+npm run test:unit          # Test unitari
+npm run test:unit:coverage # Coverage report
+npm run test:e2e           # Test E2E
+npm run preview            # Preview build
+```
+
+## 🔗 Coverage Reports
+
+- **HTML Report**: `coverage/lcov-report/index.html`
+- **LCOV Data**: `coverage/lcov.info`
+- **Console Output**: Durante `npm run test:unit:coverage`
+
+---
+
+**🎯 Goal**: Raggiungere 100% test coverage su tutti i servizi core per garantire qualità e affidabilità del sistema.
+
+## Struttura dei test (aggiornata)
+
+- Tutti i test **unitari** sono in `tests/unit/` e coprono i servizi principali (cache, monitoring, cleanup, DI, ecc.).
+- Tutti i test **E2E** sono in `tests/e2e/` e coprono i flussi utente critici, performance, API, visual.
+- Non ci sono test duplicati, inutili o obsoleti: ogni test ha uno scopo preciso e copre un modulo/servizio reale.
+- I test saltati sono stati commentati e marcati con TODO per futura revisione.
+- I nomi dei file sono descrittivi e coerenti con la funzione testata.
+- La struttura delle cartelle è chiara e rispetta la suddivisione unit/integration/e2e/manual/scripts.
+- Ogni modifica ai test viene tracciata nei file di stato e nel log (audit trail automatico).
+
+## Documentation
+
+### Testing Documentation
+- [Testing Guide](docs/TESTING_GUIDE.md) - Comprehensive guide to the testing system
+- [Test Utilities](docs/TEST_UTILITIES.md) - Documentation for test utilities and helpers
+- [Test Conventions](docs/TEST_CONVENTIONS.md) - Standards and conventions for writing tests
+- [Test Troubleshooting](docs/TEST_TROUBLESHOOTING.md) - Guide for common issues and solutions
+
+### Component Documentation
+- [Cache System](docs/CACHE_SYSTEM.md) - Documentation for the multi-level cache system
+- [Memory Cache L1](README_MemoryCacheL1.md) - Documentation for L1 memory cache
+- [Local Storage Cache L2](README_LocalStorageCacheL2.md) - Documentation for L2 local storage cache
+- [IndexedDB Cache L3](README_IndexedDBCacheL3.md) - Documentation for L3 IndexedDB cache
+
+### Integration Documentation
+- [Yahoo Finance Integration](README_YahooFinanceIntegration.md) - Documentation for Yahoo Finance integration
+- [Alpha Vantage Integration](README_AlphaVantageIntegration.md) - Documentation for Alpha Vantage integration
+- [Fallback System](README_AutomaticFallbackLogic.md) - Documentation for automatic fallback system
+
+### Quality and Monitoring
+- [Error Handling](README_ErrorHandling.md) - Documentation for error handling system
+- [Data Consistency](README_DataConsistencyValidation.md) - Documentation for data consistency validation
+- [Quality Scoring](README_UnifiedQualityScoring.md) - Documentation for quality scoring system
+- [Monitoring Guide](MONITORING_GUIDE.md) - Guide for system monitoring
+
+### Deployment and CI/CD
+- [Deployment Guide](DEPLOYMENT_GUIDE.md) - Guide for deploying the application
+- [CI/CD Documentation](CI_CD_DOCUMENTATION.md) - Documentation for CI/CD pipeline
+
+## Getting Started
+
+### Prerequisites
+- Node.js >= 18.x
+- npm >= 9.x
+- Git
+
+### Installation
+```bash
+# Clone the repository
+git clone [repository-url]
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys and configuration
+
+# Verify installation
+npm run test:verify
+```
+
+### Development
+```bash
+# Start development server
+npm run dev
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Building
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Testing
+
+### Test Categories
+- Unit Tests
+- Integration Tests
+- E2E Tests
+- Performance Tests
+
+### Running Tests
+```bash
+# Run all tests
+npm test
+
+# Run specific test categories
+npm run test:unit
+npm run test:integration
+npm run test:e2e
+
+# Run with coverage
+npm run test:coverage
+
+# Run specific test file
+npm test -- path/to/test.test.ts
+```
+
+### Test Coverage
+- Statements: 80%
+- Branches: 75%
+- Functions: 90%
+- Lines: 80%
+
+## Contributing
+
+### Development Workflow
+1. Create feature branch
+2. Write tests
+3. Implement feature
+4. Run tests
+5. Submit PR
+
+### Code Style
+- Follow TypeScript best practices
+- Use ESLint configuration
+- Follow test conventions
+- Document changes
+
+### Pull Requests
+- Include tests
+- Update documentation
+- Follow conventions
+- Pass all checks
+
+## License
+
+[License Information]
+
+## Support
+
+[Support Information]

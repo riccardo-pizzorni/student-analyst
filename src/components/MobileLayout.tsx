@@ -3,7 +3,7 @@
  * Professional mobile-first layout with collapsible sidebar and touch interactions
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './MobileLayout.css';
 
 interface MobileLayoutProps {
@@ -36,7 +36,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   // State Management
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
   const [swipeState, setSwipeState] = useState<SwipeState>({
     startX: 0,
     startY: 0,
@@ -53,13 +52,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   // Constants
   const SWIPE_THRESHOLD = 50;
   const BREAKPOINT_MOBILE = 768;
-  const BREAKPOINT_TABLET = 1024;
 
   // Detect device type
   const detectDeviceType = useCallback(() => {
     const width = window.innerWidth;
     setIsMobile(width < BREAKPOINT_MOBILE);
-    setIsTablet(width >= BREAKPOINT_MOBILE && width < BREAKPOINT_TABLET);
     
     // Auto-close sidebar on mobile
     if (width < BREAKPOINT_MOBILE) {
@@ -154,7 +151,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   return (
     <div 
       ref={layoutRef}
-      className={`mobile-layout ${className} ${isMobile ? 'is-mobile' : ''} ${isTablet ? 'is-tablet' : ''}`}
+      className={`mobile-layout ${className} ${isMobile ? 'is-mobile' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

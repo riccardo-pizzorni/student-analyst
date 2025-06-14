@@ -3,7 +3,7 @@
  * Comprehensive guide for resolving common issues and optimizing performance
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './TroubleshootingGuide.css';
 
 interface TroubleshootingItem {

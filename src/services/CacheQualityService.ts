@@ -4,7 +4,6 @@
  */
 
 import { cacheService } from './CacheService';
-import { cacheAnalyticsEngine } from './CacheAnalyticsEngine';
 
 export interface QualityRule {
   id: string;
@@ -75,7 +74,7 @@ export class CacheQualityService {
   private readonly CHECKiNTERVAL = 5 * 60 * 1000; // 5 minutes
   private readonly QUARANTINE_DURATION = 60 * 60 * 1000; // 1 hour
 
-  constructor() {
+  constructor(dependencies?: any) {
     this.metrics = this.initializeMetrics();
     this.setupDefaultRules();
     this.startQualityMonitoring();

@@ -19,7 +19,7 @@ interface ScreenTest {
   device: string;
   width: number;
   height: number;
-  category: 'mobile' | 'tablet' | 'desktop';
+  category: 'mobile' | 'desktop';
   passed: boolean | null;
   issues: string[];
 }
@@ -114,8 +114,6 @@ const ManualTestingChecklist: React.FC = () => {
     { device: 'iPhone SE', width: 375, height: 667, category: 'mobile' as const },
     { device: 'iPhone 12', width: 390, height: 844, category: 'mobile' as const },
     { device: 'iPhone 12 Pro Max', width: 428, height: 926, category: 'mobile' as const },
-    { device: 'iPad Mini', width: 768, height: 1024, category: 'tablet' as const },
-    { device: 'iPad Pro', width: 1024, height: 1366, category: 'tablet' as const },
     { device: 'MacBook Air', width: 1366, height: 768, category: 'desktop' as const },
     { device: 'Desktop 1920x1080', width: 1920, height: 1080, category: 'desktop' as const },
     { device: 'Desktop 2560x1440', width: 2560, height: 1440, category: 'desktop' as const }
@@ -613,8 +611,7 @@ const ManualTestingChecklist: React.FC = () => {
                   <div key={test.device} className="device-card">
                     <div className="device-header">
                       <span className="device-icon">
-                        {test.category === 'mobile' ? '📱' : 
-                         test.category === 'tablet' ? '📟' : '💻'}
+                        {test.category === 'mobile' ? '📱' : '💻'}
                       </span>
                       <h4>{test.device}</h4>
                     </div>

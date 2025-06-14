@@ -1,587 +1,524 @@
 /**
  * STUDENT ANALYST - Memory Cache L1 Service
- * In-memory cache with LRU eviction policy, TTL management, and memory monitoring
+ * In-memory cache with LRU eviction and performance tracking
  */
 
-export interface CacheEntry<T = any> {
-  key: string;
-  data: T;
-  timestamp: number;
-  accessCount: number;
+import { ICacheConfiguration, IL1CacheStats, IMemoryCacheL1 } from './interfaces/ICache';
+
+export interface CacheEntry<T> {
+  value: T;
+  expiry: number;
   lastAccessed: number;
-  ttl: number; // Time to live in milliseconds
-  size: number; // Size in bytes
+  size: number;
+  accessCount: number;
 }
 
-export interface CacheNode<T = any> {
-  entry: CacheEntry<T>;
-  prev: CacheNode<T> | null;
-  next: CacheNode<T> | null;
+export interface CacheStats extends IL1CacheStats {
+  errorCount: number;
+  lastError: string | null;
+  recoveryCount: number;
+  operationTimeouts: number;
+  evictionCount: number;
+  totalEvictedSize: number;
+  averageAccessCount: number;
+  memoryPressureLevel: number;
 }
 
-export interface CacheStats {
-  hits: number;
-  misses: number;
-  evictions: number;
-  totalRequests: number;
-  hitRate: number;
-  currentSize: number;
-  currentEntries: number;
-  maxSize: number;
-  memoryUsage: number; // in bytes
-  maxMemoryUsage: number; // in bytes
-  oldestEntry: number; // timestamp
-  newestEntry: number; // timestamp
-  averageAccessTime: number;
-}
-
-export interface CacheConfiguration {
-  maxSize: number; // Maximum number of entries
-  maxMemoryUsage: number; // Maximum memory usage in bytes (default 50MB)
-  defaultTTL: number; // Default TTL in milliseconds (default 1 hour)
-  cleanupInterval: number; // Cleanup interval in milliseconds (default 5 minutes)
-  enableStats: boolean; // Enable detailed statistics
-  enableLogging: boolean; // Enable debug logging
-}
-
-export interface CacheEvictionEvent<T = any> {
-  type: 'eviction' | 'expiration' | 'manual';
-  entry: CacheEntry<T>;
-  reason: string;
-  timestamp: number;
-}
-
-class MemoryCacheL1<T = any> {
-  private cache = new Map<string, CacheNode<T>>();
-  private head: CacheNode<T> | null = null;
-  private tail: CacheNode<T> | null = null;
-  private config: CacheConfiguration;
+export class MemoryCacheL1 implements IMemoryCacheL1 {
+  private readonly OPERATION_TIMEOUT = 1000; // 1 second timeout
+  private readonly CLEANUP_INTERVAL = 60000; // 1 minute
+  private readonly MEMORY_PRESSURE_THRESHOLD = 0.8; // 80% memory usage threshold
+  private cache: Map<string, CacheEntry<unknown>>;
   private stats: CacheStats;
+  private config: ICacheConfiguration;
   private cleanupTimer: NodeJS.Timeout | null = null;
-  private evictionListeners: Array<(event: CacheEvictionEvent<T>) => void> = [];
+  private operationTimeout: NodeJS.Timeout | null = null;
+  private isEvicting: boolean = false;
 
-  constructor(config: Partial<CacheConfiguration> = {}) {
-    this.config = {
-      maxSize: 1000, // Default max 1000 entries
-      maxMemoryUsage: 50 * 1024 * 1024, // Default 50MB
-      defaultTTL: 60 * 60 * 1000, // Default 1 hour
-      cleanupInterval: 5 * 60 * 1000, // Default 5 minutes
-      enableStats: true,
-      enableLogging: false,
-      ...config
+  constructor() {
+    this.config = this.initializeConfig();
+    this.stats = this.initializeStats();
+    this.cache = new Map();
+    this.startCleanupTimer();
+  }
+
+  private initializeConfig(): ICacheConfiguration {
+    return {
+      maxEntries: 1000,
+      maxMemoryUsage: 50 * 1024 * 1024, // 50MB
+      defaultTTL: 5 * 60 * 1000, // 5 minutes
+      cleanupInterval: 60 * 1000, // 1 minute
+      enableCompression: false,
+      compressionThreshold: 0,
+      evictionPolicy: 'lru'
     };
+  }
 
-    this.stats = {
+  private initializeStats(): CacheStats {
+    return {
       hits: 0,
       misses: 0,
-      evictions: 0,
-      totalRequests: 0,
       hitRate: 0,
-      currentSize: 0,
-      currentEntries: 0,
-      maxSize: this.config.maxSize,
       memoryUsage: 0,
-      maxMemoryUsage: this.config.maxMemoryUsage,
-      oldestEntry: 0,
-      newestEntry: 0,
-      averageAccessTime: 0
+      currentEntries: 0,
+      maxEntries: this.config.maxEntries,
+      lastCleanup: Date.now(),
+      lastAccess: Date.now(),
+      totalSize: 0,
+      hitCount: 0,
+      missCount: 0,
+      writeCount: 0,
+      deleteCount: 0,
+      compressionRatio: 1,
+      averageQueryTime: 0,
+      averageWriteTime: 0,
+      averageDeleteTime: 0,
+      errorCount: 0,
+      lastError: null,
+      recoveryCount: 0,
+      operationTimeouts: 0,
+      evictionCount: 0,
+      totalEvictedSize: 0,
+      averageAccessCount: 0,
+      memoryPressureLevel: 0
     };
-
-    // Start cleanup timer
-    this.startCleanupTimer();
-
-    if (this.config.enableLogging) {
-      console.log('MemoryCacheL1 initialized:', this.config);
-    }
-  }
-
-  /**
-   * Get value from cache with LRU promotion
-   */
-  get(key: string): T | null {
-    const startTime = performance.now();
-    this.stats.totalRequests++;
-
-    const node = this.cache.get(key);
-    
-    if (!node) {
-      this.stats.misses++;
-      this.updateHitRate();
-      return null;
-    }
-
-    // Check if entry is expired
-    if (this.isExpired(node.entry)) {
-      this.remove(key);
-      this.stats.misses++;
-      this.updateHitRate();
-      return null;
-    }
-
-    // Update access statistics
-    node.entry.accessCount++;
-    node.entry.lastAccessed = Date.now();
-    this.stats.hits++;
-
-    // Move to head (most recently used)
-    this.moveToHead(node);
-
-    // Update performance stats
-    const accessTime = performance.now() - startTime;
-    this.updateAverageAccessTime(accessTime);
-    this.updateHitRate();
-
-    if (this.config.enableLogging) {
-      console.log(`Cache HIT: ${key} (${accessTime.toFixed(2)}ms)`);
-    }
-
-    return node.entry.data;
-  }
-
-  /**
-   * Set value in cache with TTL
-   */
-  set(key: string, data: T, ttl?: number): boolean {
-    const entryTTL = ttl || this.config.defaultTTL;
-    const size = this.calculateSize(data);
-    const timestamp = Date.now();
-
-    // Check if adding this entry would exceed memory limit
-    if (this.stats.memoryUsage + size > this.config.maxMemoryUsage) {
-      // Try to free up space
-      const freedSpace = this.evictToFreeSpace(size);
-      if (freedSpace < size) {
-        if (this.config.enableLogging) {
-          console.warn(`Cannot cache ${key}: would exceed memory limit`);
-        }
-        return false;
-      }
-    }
-
-    // Remove existing entry if present
-    if (this.cache.has(key)) {
-      this.remove(key);
-    }
-
-    // Check size limit after memory check
-    if (this.stats.currentEntries >= this.config.maxSize) {
-      this.evictLRU();
-    }
-
-    // Create new entry
-    const entry: CacheEntry<T> = {
-      key,
-      data,
-      timestamp,
-      accessCount: 1,
-      lastAccessed: timestamp,
-      ttl: entryTTL,
-      size
-    };
-
-    const node: CacheNode<T> = {
-      entry,
-      prev: null,
-      next: null
-    };
-
-    // Add to cache and linked list
-    this.cache.set(key, node);
-    this.addToHead(node);
-
-    // Update statistics
-    this.stats.currentEntries++;
-    this.stats.currentSize++;
-    this.stats.memoryUsage += size;
-    this.updateTimestampStats(timestamp);
-
-    if (this.config.enableLogging) {
-      console.log(`Cache SET: ${key} (${size} bytes, TTL: ${entryTTL}ms)`);
-    }
-
-    return true;
-  }
-
-  /**
-   * Remove entry from cache
-   */
-  remove(key: string): boolean {
-    const node = this.cache.get(key);
-    if (!node) {
-      return false;
-    }
-
-    // Remove from cache and linked list
-    this.cache.delete(key);
-    this.removeFromList(node);
-
-    // Update statistics
-    this.stats.currentEntries--;
-    this.stats.currentSize--;
-    this.stats.memoryUsage -= node.entry.size;
-
-    if (this.config.enableLogging) {
-      console.log(`Cache REMOVE: ${key}`);
-    }
-
-    return true;
-  }
-
-  /**
-   * Check if cache has key and it's not expired
-   */
-  has(key: string): boolean {
-    const node = this.cache.get(key);
-    if (!node) {
-      return false;
-    }
-
-    if (this.isExpired(node.entry)) {
-      this.remove(key);
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Clear all cache entries
-   */
-  clear(): void {
-    this.cache.clear();
-    this.head = null;
-    this.tail = null;
-    
-    // Reset statistics
-    this.stats.currentEntries = 0;
-    this.stats.currentSize = 0;
-    this.stats.memoryUsage = 0;
-    this.stats.oldestEntry = 0;
-    this.stats.newestEntry = 0;
-
-    if (this.config.enableLogging) {
-      console.log('Cache CLEARED');
-    }
-  }
-
-  /**
-   * Get all cache keys
-   */
-  keys(): string[] {
-    return Array.from(this.cache.keys());
-  }
-
-  /**
-   * Get cache size
-   */
-  size(): number {
-    return this.cache.size;
-  }
-
-  /**
-   * Get cache statistics
-   */
-  getStats(): CacheStats {
-    return { ...this.stats };
-  }
-
-  /**
-   * Get cache configuration
-   */
-  getConfig(): CacheConfiguration {
-    return { ...this.config };
-  }
-
-  /**
-   * Update cache configuration
-   */
-  updateConfig(newConfig: Partial<CacheConfiguration>): void {
-    const oldConfig = { ...this.config };
-    this.config = { ...this.config, ...newConfig };
-
-    // If memory limit decreased, evict entries to meet new limit
-    if (newConfig.maxMemoryUsage && newConfig.maxMemoryUsage < oldConfig.maxMemoryUsage) {
-      const excessMemory = this.stats.memoryUsage - this.config.maxMemoryUsage;
-      if (excessMemory > 0) {
-        this.evictToFreeSpace(excessMemory);
-      }
-    }
-
-    // If size limit decreased, evict entries
-    if (newConfig.maxSize && newConfig.maxSize < this.stats.currentEntries) {
-      const entriesToEvict = this.stats.currentEntries - newConfig.maxSize;
-      for (let i = 0; i < entriesToEvict; i++) {
-        this.evictLRU();
-      }
-    }
-
-    // Restart cleanup timer if interval changed
-    if (newConfig.cleanupInterval && newConfig.cleanupInterval !== oldConfig.cleanupInterval) {
-      this.stopCleanupTimer();
-      this.startCleanupTimer();
-    }
-
-    if (this.config.enableLogging) {
-      console.log('Cache config updated:', this.config);
-    }
-  }
-
-  /**
-   * Add eviction event listener
-   */
-  onEviction(listener: (event: CacheEvictionEvent<T>) => void): void {
-    this.evictionListeners.push(listener);
-  }
-
-  /**
-   * Remove eviction event listener
-   */
-  offEviction(listener: (event: CacheEvictionEvent<T>) => void): void {
-    const index = this.evictionListeners.indexOf(listener);
-    if (index > -1) {
-      this.evictionListeners.splice(index, 1);
-    }
-  }
-
-  /**
-   * Manually trigger cleanup of expired entries
-   */
-  cleanup(): number {
-    const startTime = performance.now();
-    let removedCount = 0;
-    const currentTime = Date.now();
-
-    // Iterate through all entries and remove expired ones
-    for (const [key, node] of this.cache.entries()) {
-      if (this.isExpired(node.entry)) {
-        this.emitEvictionEvent({
-          type: 'expiration',
-          entry: node.entry,
-          reason: 'TTL expired',
-          timestamp: currentTime
-        });
-        
-        this.remove(key);
-        removedCount++;
-      }
-    }
-
-    const cleanupTime = performance.now() - startTime;
-    
-    if (this.config.enableLogging && removedCount > 0) {
-      console.log(`Cache cleanup: removed ${removedCount} expired entries (${cleanupTime.toFixed(2)}ms)`);
-    }
-
-    return removedCount;
-  }
-
-  /**
-   * Get cache entries sorted by access pattern
-   */
-  getEntriesByAccessPattern(): CacheEntry<T>[] {
-    const entries: CacheEntry<T>[] = [];
-    let current = this.head;
-
-    while (current) {
-      entries.push({ ...current.entry });
-      current = current.next;
-    }
-
-    return entries;
-  }
-
-  /**
-   * Get memory usage breakdown
-   */
-  getMemoryBreakdown(): { [key: string]: { count: number; totalSize: number; averageSize: number } } {
-    const breakdown: { [key: string]: { count: number; totalSize: number; averageSize: number } } = {};
-
-    for (const [key, node] of this.cache.entries()) {
-      const dataType = typeof node.entry.data;
-      
-      if (!breakdown[dataType]) {
-        breakdown[dataType] = { count: 0, totalSize: 0, averageSize: 0 };
-      }
-
-      breakdown[dataType].count++;
-      breakdown[dataType].totalSize += node.entry.size;
-      breakdown[dataType].averageSize = breakdown[dataType].totalSize / breakdown[dataType].count;
-    }
-
-    return breakdown;
-  }
-
-  /**
-   * Destroy cache and cleanup resources
-   */
-  destroy(): void {
-    this.stopCleanupTimer();
-    this.clear();
-    this.evictionListeners = [];
-
-    if (this.config.enableLogging) {
-      console.log('Cache destroyed');
-    }
-  }
-
-  // Private helper methods
-
-  private isExpired(entry: CacheEntry<T>): boolean {
-    return Date.now() - entry.timestamp > entry.ttl;
-  }
-
-  private calculateSize(data: T): number {
-    try {
-      // Rough estimate: JSON stringify and calculate UTF-16 byte size
-      const jsonString = JSON.stringify(data);
-      return jsonString.length * 2; // UTF-16 uses 2 bytes per character
-    } catch (error) {
-      // Fallback for non-serializable data
-      return 1024; // Assume 1KB for complex objects
-    }
-  }
-
-  private addToHead(node: CacheNode<T>): void {
-    node.prev = null;
-    node.next = this.head;
-
-    if (this.head) {
-      this.head.prev = node;
-    }
-
-    this.head = node;
-
-    if (!this.tail) {
-      this.tail = node;
-    }
-  }
-
-  private removeFromList(node: CacheNode<T>): void {
-    if (node.prev) {
-      node.prev.next = node.next;
-    } else {
-      this.head = node.next;
-    }
-
-    if (node.next) {
-      node.next.prev = node.prev;
-    } else {
-      this.tail = node.prev;
-    }
-  }
-
-  private moveToHead(node: CacheNode<T>): void {
-    this.removeFromList(node);
-    this.addToHead(node);
-  }
-
-  private evictLRU(): boolean {
-    if (!this.tail) {
-      return false;
-    }
-
-    const key = this.tail.entry.key;
-    const entry = this.tail.entry;
-
-    this.emitEvictionEvent({
-      type: 'eviction',
-      entry,
-      reason: 'LRU eviction',
-      timestamp: Date.now()
-    });
-
-    this.remove(key);
-    this.stats.evictions++;
-
-    if (this.config.enableLogging) {
-      console.log(`Cache EVICT LRU: ${key}`);
-    }
-
-    return true;
-  }
-
-  private evictToFreeSpace(requiredSpace: number): number {
-    let freedSpace = 0;
-    
-    while (freedSpace < requiredSpace && this.tail) {
-      const entrySize = this.tail.entry.size;
-      const key = this.tail.entry.key;
-      const entry = this.tail.entry;
-
-      this.emitEvictionEvent({
-        type: 'eviction',
-        entry,
-        reason: `Memory limit exceeded, need ${requiredSpace} bytes`,
-        timestamp: Date.now()
-      });
-
-      if (this.remove(key)) {
-        freedSpace += entrySize;
-        this.stats.evictions++;
-      } else {
-        break; // Safety net
-      }
-    }
-
-    return freedSpace;
-  }
-
-  private updateHitRate(): void {
-    this.stats.hitRate = this.stats.totalRequests > 0 
-      ? (this.stats.hits / this.stats.totalRequests) * 100 
-      : 0;
-  }
-
-  private updateAverageAccessTime(accessTime: number): void {
-    const totalAccesses = this.stats.hits + this.stats.misses;
-    this.stats.averageAccessTime = (
-      (this.stats.averageAccessTime * (totalAccesses - 1)) + accessTime
-    ) / totalAccesses;
-  }
-
-  private updateTimestampStats(timestamp: number): void {
-    if (this.stats.oldestEntry === 0 || timestamp < this.stats.oldestEntry) {
-      this.stats.oldestEntry = timestamp;
-    }
-    if (timestamp > this.stats.newestEntry) {
-      this.stats.newestEntry = timestamp;
-    }
   }
 
   private startCleanupTimer(): void {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-
     this.cleanupTimer = setInterval(() => {
-      this.cleanup();
-    }, this.config.cleanupInterval);
+      this.cleanup().catch(error => {
+        this.stats.errorCount++;
+        this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      });
+    }, this.CLEANUP_INTERVAL);
   }
 
-  private stopCleanupTimer(): void {
+  public async cleanup(): Promise<void> {
+    if (this.isEvicting) {
+      return;
+    }
+
+    const now = Date.now();
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Cleanup operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    try {
+      this.isEvicting = true;
+      let cleanedEntries = 0;
+      let cleanedSize = 0;
+
+      for (const [key, entry] of this.cache.entries()) {
+        if (entry.expiry < now) {
+          this.cache.delete(key);
+          cleanedEntries++;
+          cleanedSize += entry.size;
+          this.stats.totalSize -= entry.size;
+          this.stats.currentEntries--;
+          this.stats.evictionCount++;
+          this.stats.totalEvictedSize += entry.size;
+        }
+      }
+
+      this.stats.lastCleanup = now;
+      this.updateMemoryPressure();
+      clearTimeout(timeoutId);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      throw error;
+    } finally {
+      this.isEvicting = false;
+    }
+  }
+
+  private updateStats(): void {
+    try {
+      const totalOperations = this.stats.hits + this.stats.misses;
+      this.stats.hitRate = totalOperations > 0 ? this.stats.hits / totalOperations : 0;
+      this.stats.memoryUsage = this.stats.totalSize;
+      this.updateMemoryPressure();
+    } catch (error) {
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+    }
+  }
+
+  private updateMemoryPressure(): void {
+    const memoryUsage = this.stats.totalSize / this.config.maxMemoryUsage;
+    this.stats.memoryPressureLevel = Math.min(1, Math.max(0, memoryUsage));
+  }
+
+  private calculateSize<T>(value: T): number {
+    try {
+      const str = JSON.stringify(value);
+      if (typeof Buffer !== 'undefined' && Buffer.byteLength) {
+        // Node.js
+        return Buffer.byteLength(str, 'utf8');
+      } else if (typeof Blob !== 'undefined') {
+        // Browser
+        return new Blob([str]).size;
+      } else {
+        // Fallback
+        return str.length;
+      }
+    } catch (error) {
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      return 0;
+    }
+  }
+
+  private updateQueryTime(time: number): void {
+    this.stats.averageQueryTime = (this.stats.averageQueryTime * this.stats.hitCount + time) / (this.stats.hitCount + 1);
+  }
+
+  private updateWriteTime(time: number): void {
+    this.stats.averageWriteTime = (this.stats.averageWriteTime * this.stats.writeCount + time) / (this.stats.writeCount + 1);
+  }
+
+  private updateDeleteTime(time: number): void {
+    this.stats.averageDeleteTime = (this.stats.averageDeleteTime * this.stats.deleteCount + time) / (this.stats.deleteCount + 1);
+  }
+
+  private async shouldEvict(requiredSpace: number): Promise<boolean> {
+    return this.stats.totalSize + requiredSpace > this.config.maxMemoryUsage ||
+           this.stats.currentEntries >= this.config.maxEntries ||
+           this.stats.memoryPressureLevel > this.MEMORY_PRESSURE_THRESHOLD;
+  }
+
+  private async evictLRU(requiredSpace: number): Promise<void> {
+    if (this.isEvicting) {
+      return;
+    }
+
+    try {
+      this.isEvicting = true;
+      const entries = Array.from(this.cache.entries())
+        .sort(([, a], [, b]) => {
+          // Consider both last access time and access count
+          const scoreA = a.lastAccessed * (1 + a.accessCount / 100);
+          const scoreB = b.lastAccessed * (1 + b.accessCount / 100);
+          return scoreA - scoreB;
+        });
+
+      let totalEvicted = 0;
+      let entriesEvicted = 0;
+
+      for (const [key, entry] of entries) {
+        let shouldEvict = false;
+        if (requiredSpace > 0) {
+          // Eviction per nuovo inserimento
+          const freeSpace = this.config.maxMemoryUsage - (this.stats.totalSize - entry.size);
+          const entriesAfter = this.stats.currentEntries - 1;
+          shouldEvict = freeSpace < requiredSpace || entriesAfter >= this.config.maxEntries;
+        } else {
+          // Eviction post-inserimento: rientra nei limiti
+          shouldEvict = this.stats.totalSize > this.config.maxMemoryUsage || this.stats.currentEntries > this.config.maxEntries;
+        }
+        if (!shouldEvict) {
+          break;
+        }
+        // LOG: chiave rimossa e dimensione
+        console.log(`[MemoryCacheL1][evictLRU] Rimuovo chiave: ${key}, size: ${entry.size}`);
+        this.cache.delete(key);
+        totalEvicted += entry.size;
+        entriesEvicted++;
+        this.stats.totalSize -= entry.size;
+        this.stats.currentEntries--;
+        this.stats.evictionCount++;
+        this.stats.totalEvictedSize += entry.size;
+      }
+
+      if (entriesEvicted > 0) {
+        this.updateMemoryPressure();
+      }
+      // LOG: stato finale
+      console.log(`[MemoryCacheL1][evictLRU] Stato finale: currentEntries=${this.stats.currentEntries}, totalSize=${this.stats.totalSize}`);
+    } finally {
+      this.isEvicting = false;
+    }
+  }
+
+  get<T>(key: string): T | null {
+    const startTime = performance.now();
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Get operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    try {
+      const entry = this.cache.get(key) as CacheEntry<T> | undefined;
+
+      if (!entry) {
+        this.stats.misses++;
+        this.stats.missCount++;
+        this.updateStats();
+        clearTimeout(timeoutId);
+        return null;
+      }
+
+      if (entry.expiry < Date.now()) {
+        this.cache.delete(key);
+        this.stats.misses++;
+        this.stats.missCount++;
+        this.updateStats();
+        clearTimeout(timeoutId);
+        return null;
+      }
+
+      entry.lastAccessed = Date.now();
+      entry.accessCount = (entry.accessCount || 0) + 1;
+      this.cache.set(key, entry);
+
+      this.stats.hits++;
+      this.stats.hitCount++;
+      this.stats.lastAccess = Date.now();
+      this.stats.averageAccessCount = (this.stats.averageAccessCount * (this.stats.hitCount - 1) + entry.accessCount) / this.stats.hitCount;
+
+      const queryTime = performance.now() - startTime;
+      this.updateQueryTime(queryTime);
+      this.updateStats();
+      clearTimeout(timeoutId);
+
+      if (typeof entry.value === 'undefined') {
+        return null;
+      }
+      return entry.value;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      return null;
+    }
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
+    const startTime = performance.now();
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Set operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    let hadError = false;
+    try {
+      const size = this.calculateSize(value);
+      const expiry = Date.now() + (ttl || this.config.defaultTTL);
+
+      if (await this.shouldEvict(size)) {
+        await this.evictLRU(size);
+      }
+
+      const entry: CacheEntry<T> = {
+        value,
+        expiry,
+        lastAccessed: Date.now(),
+        size,
+        accessCount: 0
+      };
+
+      this.cache.set(key, entry);
+
+      this.stats.totalSize += size;
+      this.stats.currentEntries++;
+      this.stats.writeCount++;
+      this.stats.lastAccess = Date.now();
+
+      // Dopo l'inserimento, se la cache supera i limiti, chiamo nuovamente l'eviction
+      if (this.stats.totalSize > this.config.maxMemoryUsage || this.stats.currentEntries > this.config.maxEntries) {
+        await this.evictLRU(0);
+      }
+
+      if (hadError) {
+        this.stats.recoveryCount++;
+      }
+
+      const writeTime = performance.now() - startTime;
+      this.updateWriteTime(writeTime);
+      this.updateStats();
+      clearTimeout(timeoutId);
+
+      return true;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      hadError = true;
+      return false;
+    }
+  }
+
+  remove(key: string): boolean {
+    const startTime = performance.now();
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Remove operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    try {
+      const entry = this.cache.get(key);
+
+      if (!entry) {
+        clearTimeout(timeoutId);
+        return false;
+      }
+
+      this.cache.delete(key);
+
+      this.stats.totalSize -= entry.size;
+      this.stats.currentEntries--;
+      this.stats.deleteCount++;
+      this.stats.lastAccess = Date.now();
+
+      const deleteTime = performance.now() - startTime;
+      this.updateDeleteTime(deleteTime);
+      this.updateStats();
+      clearTimeout(timeoutId);
+
+      return true;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      return false;
+    }
+  }
+
+  has(key: string): boolean {
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Has operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    try {
+      const entry = this.cache.get(key);
+
+      if (!entry) {
+        clearTimeout(timeoutId);
+        return false;
+      }
+
+      if (entry.expiry < Date.now()) {
+        this.cache.delete(key);
+        clearTimeout(timeoutId);
+        return false;
+      }
+
+      clearTimeout(timeoutId);
+      return true;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      return false;
+    }
+  }
+
+  clear(): void {
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Clear operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    try {
+      this.cache.clear();
+      this.stats = this.initializeStats();
+      this.stats.lastAccess = Date.now();
+      clearTimeout(timeoutId);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      throw error;
+    }
+  }
+
+  getStats(): CacheStats {
+    return { ...this.stats };
+  }
+
+  getConfig(): ICacheConfiguration {
+    return { ...this.config };
+  }
+
+  updateConfig(config: Partial<ICacheConfiguration>): void {
+    // Validazione valori minimi
+    if (config.maxEntries !== undefined && config.maxEntries < 1) config.maxEntries = 1;
+    if (config.maxMemoryUsage !== undefined && config.maxMemoryUsage < 1024) config.maxMemoryUsage = 1024;
+    this.config = { ...this.config, ...config };
+    this.stats.maxEntries = this.config.maxEntries;
+    this.updateMemoryPressure();
+  }
+
+  async initialize(): Promise<void> {
+    const timeoutId = setTimeout(() => {
+      this.stats.operationTimeouts++;
+      this.stats.lastError = 'Initialize operation timed out';
+    }, this.OPERATION_TIMEOUT);
+
+    try {
+      await this.cleanup();
+      this.stats.lastAccess = Date.now();
+      this.stats.recoveryCount++;
+      clearTimeout(timeoutId);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      throw error;
+    }
+  }
+
+  /**
+   * Destroys the cache, clears all entries and stats, and stops timers.
+   * Compatibilità test/legacy.
+   */
+  public destroy(): void {
+    this.cache.clear();
+    this.stats = this.initializeStats();
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
       this.cleanupTimer = null;
     }
+    if (this.operationTimeout) {
+      clearTimeout(this.operationTimeout);
+      this.operationTimeout = null;
+    }
   }
 
-  private emitEvictionEvent(event: CacheEvictionEvent<T>): void {
-    for (const listener of this.evictionListeners) {
-      try {
-        listener(event);
-      } catch (error) {
-        console.error('Error in eviction listener:', error);
-      }
-    }
+  /**
+   * Returns the number of entries in the cache.
+   * Compatibilità test/legacy.
+   */
+  public size(): number {
+    return this.cache.size;
+  }
+
+  /**
+   * Returns the list of keys in the cache.
+   * Compatibilità test/legacy.
+   */
+  public keys(): string[] {
+    return Array.from(this.cache.keys());
+  }
+
+  /**
+   * Returns the entries ordered by accessCount (descending).
+   * Compatibilità test/legacy.
+   */
+  public getEntriesByAccessPattern(): Array<{ key: string; accessCount: number }> {
+    return Array.from(this.cache.entries())
+      .map(([key, entry]) => ({ key, accessCount: entry.accessCount }))
+      .sort((a, b) => b.accessCount - a.accessCount);
   }
 }
 
-// Export singleton instance for global use
-export const memoryCacheL1 = new MemoryCacheL1({
-  maxMemoryUsage: 50 * 1024 * 1024, // 50MB
-  defaultTTL: 60 * 60 * 1000, // 1 hour
-  enableLogging: process.env.NODE_ENV === 'development'
-});
+export const memoryCacheL1 = new MemoryCacheL1();
 
 // Export class for custom instances
 export default MemoryCacheL1; 

@@ -3,11 +3,11 @@
  * User-friendly interface for cache management without external dependencies
  */
 
-import React, { useState, useEffect } from 'react';
-import { cacheService } from '../services/CacheService';
-import { cacheAnalyticsEngine } from '../services/CacheAnalyticsEngine';
-import { cacheWarmingService } from '../services/CacheWarmingService';
+import React, { useEffect, useState } from 'react';
+import { cacheAnalytics } from '../services/CacheAnalyticsEngine';
 import { cacheQualityService } from '../services/CacheQualityService';
+import { cacheService } from '../services/CacheService';
+import { cacheWarmingService } from '../services/CacheWarmingService';
 
 interface CacheControlPanelProps {
   onAction?: (action: string, details?: any) => void;
@@ -34,7 +34,7 @@ export const CacheControlPanelSimple: React.FC<CacheControlPanelProps> = ({ onAc
     try {
       const [cacheStats, analyticsReport, warmingData, qualityData] = await Promise.all([
         cacheService.getMultiLayerStats(),
-        cacheAnalyticsEngine.getAnalyticsReport(),
+        cacheAnalytics.getAnalyticsReport(),
         cacheWarmingService.getStats(),
         cacheQualityService.getMetrics()
       ]);

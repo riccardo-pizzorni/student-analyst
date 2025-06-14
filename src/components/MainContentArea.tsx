@@ -4,9 +4,9 @@
  * Area principale responsive con auto-save, loading states e error boundary per step
  */
 
-import React, { useState, useEffect, ReactNode } from 'react';
-import { ErrorBoundary } from './ErrorBoundary';
+import React, { ReactNode, useEffect, useState } from 'react';
 import AutoSaveIndicator, { AutoSaveStatus } from './AutoSaveIndicator';
+import { ErrorBoundary } from './ErrorBoundary';
 import LoadingState from './LoadingState';
 
 export interface StepData {
@@ -46,7 +46,6 @@ export interface MainContentAreaProps {
   
   // Responsive props
   mobileBreakpoint?: string;
-  tabletBreakpoint?: string;
 }
 
 export const MainContentArea: React.FC<MainContentAreaProps> = ({
@@ -78,23 +77,19 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
   
   // Responsive
   mobileBreakpoint = '768px',
-  tabletBreakpoint = '1024px'
 }) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
 
-  // Responsive detection
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
       setIsMobile(width < parseInt(mobileBreakpoint));
-      setIsTablet(width >= parseInt(mobileBreakpoint) && width < parseInt(tabletBreakpoint));
     };
 
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, [mobileBreakpoint, tabletBreakpoint]);
+  }, [mobileBreakpoint]);
 
   const getMaxWidthClass = () => {
     switch (maxWidth) {
@@ -122,8 +117,6 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
   const getResponsivePadding = () => {
     if (isMobile) {
       return 'p-4'; // Sempre padding ridotto su mobile
-    } else if (isTablet) {
-      return 'p-6'; // Padding medio su tablet
     }
     return getPaddingClass(); // Padding completo su desktop
   };
@@ -232,7 +225,6 @@ export const MainContentArea: React.FC<MainContentAreaProps> = ({
             {/* Responsive content wrapper */}
             <div className={`
               ${isMobile ? 'space-y-4' : 'space-y-6'}
-              ${isTablet ? 'grid grid-cols-1 gap-6' : ''}
             `}>
               {children}
             </div>

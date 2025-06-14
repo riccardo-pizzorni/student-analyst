@@ -3,7 +3,6 @@
  * Intelligent preloading system for optimal cache performance
  */
 
-import { cacheAnalyticsEngine, PredictiveInsights } from './CacheAnalyticsEngine';
 import { cacheService } from './CacheService';
 
 export interface WarmingTask {
@@ -52,6 +51,11 @@ export interface WarmingStats {
   averageResponseTimeImprovement: number;
   lastWarmingSession: number;
   warmingEfficiency: number;
+}
+
+// Definizione placeholder per PredictiveInsights
+export interface PredictiveInsights {
+  [key: string]: any;
 }
 
 export class CacheWarmingService {

@@ -1,666 +1,649 @@
-import Dexie, { Table } from 'dexie';
+/**
+ * STUDENT ANALYST - IndexedDB Cache L3 Service
+ * Persistent cache layer using IndexedDB with advanced eviction and statistics
+ */
 
-// Interfaces for IndexedDB data structures
-export interface StockDataRecord {
-  id?: number;
-  key: string;
-  symbol: string;
-  dataType: string;
-  date: string;
-  data: any;
-  createdAt: number;
-  lastAccessed: number;
-  ttlExpiry: number;
-  accessCount: number;
-  dataSize: number;
-  compressed: boolean;
-}
+import { ICacheConfiguration, IIndexedDBCacheL3, IL3CacheStats } from './interfaces/ICache';
 
-export interface MetadataRecord {
-  id?: number;
-  key: string;
-  symbol: string;
-  dataType: string;
-  totalSize: number;
-  recordCount: number;
-  firstCreated: number;
-  lastUpdated: number;
-  totalAccesses: number;
-  averageAccessTime: number;
-}
+export interface L3CacheStats extends IL3CacheStats {}
 
-export interface CacheStatsL3 {
-  totalEntries: number;
-  totalSize: number;
-  hitCount: number;
-  missCount: number;
-  evictionCount: number;
-  compressionRatio: number;
-  averageAccessTime: number;
-  oldestEntry: number;
-  newestEntry: number;
-  dataTypeBreakdown: Record<string, { count: number; size: number }>;
-  symbolBreakdown: Record<string, { count: number; size: number }>;
-  performanceMetrics: {
-    avgQueryTime: number;
-    avgWriteTime: number;
-    avgDeleteTime: number;
-    databaseSize: number;
-  };
-}
+export interface L3CacheConfiguration extends ICacheConfiguration {}
 
-// IndexedDB Database Schema
-class StudentAnalystDB extends Dexie {
-  stockData!: Table<StockDataRecord>;
-  metadata!: Table<MetadataRecord>;
+export class IndexedDBCacheL3 implements IIndexedDBCacheL3 {
+  private readonly OPERATION_TIMEOUT = 10000; // Increased to 10 seconds
+  private readonly CLEANUP_INTERVAL = 60000; // 1 minute
+  private readonly DB_NAME = 'student-analyst-l3-cache';
+  private readonly STORE_NAME = 'cache';
+  private readonly VERSION = 1;
+  private db: IDBDatabase | null = null;
+  private stats: L3CacheStats;
+  private config: L3CacheConfiguration;
+  private cleanupTimer: NodeJS.Timeout | null = null;
+  private operationQueue: Array<() => Promise<void>> = [];
+  private isProcessingQueue = false;
 
   constructor() {
-    super('StudentAnalystDB');
-    
-    this.version(1).stores({
-      stockData: '++id, key, symbol, dataType, date, ttlExpiry, lastAccessed, accessCount',
-      metadata: '++id, key, symbol, dataType, lastUpdated'
-    });
-
-    // Add hooks for performance tracking
-    this.stockData.hook('reading', (obj) => {
-      obj.lastAccessed = Date.now();
-      obj.accessCount = (obj.accessCount || 0) + 1;
-      return obj;
-    });
-  }
-}
-
-export class IndexedDBCacheL3 {
-  private db: StudentAnalystDB;
-  private stats: CacheStatsL3;
-  private backgroundCleanupInterval: number | null = null;
-  private compressionThreshold = 1024; // 1KB threshold for compression
-  private maxStorageSize = 100 * 1024 * 1024; // 100MB default limit
-  private defaultTTL = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-  private cleanupScheduleHour = 2; // 2 AM cleanup
-  private performanceMetrics = {
-    queryTimes: [] as number[],
-    writeTimes: [] as number[],
-    deleteTimes: [] as number[]
-  };
-
-  constructor() {
-    this.db = new StudentAnalystDB();
+    this.config = this.initializeConfig();
     this.stats = this.initializeStats();
-    this.initializeDatabase();
-    this.scheduleBackgroundCleanup();
+    this.startCleanupTimer();
   }
 
-  private initializeStats(): CacheStatsL3 {
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue || this.operationQueue.length === 0) return;
+
+    this.isProcessingQueue = true;
+    try {
+      while (this.operationQueue.length > 0) {
+        const operation = this.operationQueue.shift();
+        if (operation) {
+          await operation();
+        }
+      }
+    } finally {
+      this.isProcessingQueue = false;
+    }
+  }
+
+  private async queueOperation<T>(operation: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.operationQueue.push(async () => {
+        try {
+          const result = await operation();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.processQueue();
+    });
+  }
+
+  public initializeConfig(): ICacheConfiguration {
     return {
-      totalEntries: 0,
+      maxEntries: 10000,
+      maxMemoryUsage: 50 * 1024 * 1024, // 50MB
+      defaultTTL: 24 * 60 * 60 * 1000, // 24 hours
+      cleanupInterval: 60 * 1000, // 1 minute
+      enableCompression: true,
+      compressionThreshold: 1024, // 1KB
+      evictionPolicy: 'lru'
+    };
+  }
+
+  private initializeStats(): L3CacheStats {
+    return {
+      hits: 0,
+      misses: 0,
+      hitRate: 0,
+      memoryUsage: 0,
+      currentEntries: 0,
+      maxEntries: this.config.maxEntries,
+      lastCleanup: Date.now(),
+      lastAccess: Date.now(),
       totalSize: 0,
       hitCount: 0,
       missCount: 0,
-      evictionCount: 0,
-      compressionRatio: 0,
-      averageAccessTime: 0,
-      oldestEntry: 0,
-      newestEntry: 0,
-      dataTypeBreakdown: {},
-      symbolBreakdown: {},
-      performanceMetrics: {
-        avgQueryTime: 0,
-        avgWriteTime: 0,
-        avgDeleteTime: 0,
-        databaseSize: 0
-      }
+      writeCount: 0,
+      deleteCount: 0,
+      compressionRatio: 1,
+      averageQueryTime: 0,
+      averageWriteTime: 0,
+      averageDeleteTime: 0,
+      errorCount: 0,
+      lastError: null,
+      recoveryCount: 0
     };
   }
 
-  private async initializeDatabase(): Promise<void> {
-    try {
-      await this.db.open();
-      await this.updateStats();
-    } catch (error) {
-      console.error('[IndexedDB L3] Database initialization failed:', error);
-      throw new Error('Failed to initialize IndexedDB Cache L3');
+  private startCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
     }
-  }
-
-  // Main cache operations
-  async get(key: string): Promise<any> {
-    const startTime = performance.now();
-    
-    try {
-      const record = await this.db.stockData.where('key').equals(key).first();
-      
-      if (!record) {
-        this.stats.missCount++;
-        return null;
-      }
-
-      // Check TTL expiry
-      if (record.ttlExpiry < Date.now()) {
-        await this.delete(key);
-        this.stats.missCount++;
-        return null;
-      }
-
-      // Update access tracking
-      await this.db.stockData.update(record.id!, {
-        lastAccessed: Date.now(),
-        accessCount: record.accessCount + 1
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup().catch(error => {
+        console.error('Cleanup error:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error.message;
       });
-
-      this.stats.hitCount++;
-      
-      const queryTime = performance.now() - startTime;
-      this.updatePerformanceMetric('query', queryTime);
-
-      // Decompress if necessary
-      let data = record.data;
-      if (record.compressed && typeof data === 'string') {
-        data = this.decompress(data);
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('[IndexedDB L3] Get operation failed:', error);
-      this.stats.missCount++;
-      return null;
-    }
+    }, this.CLEANUP_INTERVAL);
   }
 
-  async set(key: string, data: any, ttl?: number): Promise<boolean> {
-    const startTime = performance.now();
-    
-    try {
-      const now = Date.now();
-      const ttlExpiry = now + (ttl || this.defaultTTL);
-      
-      // Parse key to extract metadata
-      const { symbol, dataType, date } = this.parseKey(key);
-      
-      // Serialize and optionally compress data
-      let serializedData = JSON.stringify(data);
-      let compressed = false;
-      
-      if (serializedData.length > this.compressionThreshold) {
-        const compressedData = this.compress(serializedData);
-        if (compressedData.length < serializedData.length * 0.8) {
-          serializedData = compressedData;
-          compressed = true;
-        }
-      }
+  private async openDatabase(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Database open timeout'));
+      }, this.OPERATION_TIMEOUT);
 
-      const dataSize = this.calculateSize(serializedData);
-      
-      // Check storage limits
-      if (await this.shouldEvict(dataSize)) {
-        await this.performEviction(dataSize);
-      }
+      const request = indexedDB.open(this.DB_NAME, this.VERSION);
 
-      const record: StockDataRecord = {
-        key,
-        symbol,
-        dataType,
-        date,
-        data: compressed ? serializedData : data,
-        createdAt: now,
-        lastAccessed: now,
-        ttlExpiry,
-        accessCount: 0,
-        dataSize,
-        compressed
+      request.onerror = () => {
+        clearTimeout(timeoutId);
+        const error = new Error(`Failed to open database: ${request.error?.message}`);
+        this.stats.errorCount++;
+        this.stats.lastError = error.message;
+        reject(error);
       };
 
-      await this.db.stockData.put(record);
-      await this.updateMetadata(symbol, dataType, dataSize);
-      
-      const writeTime = performance.now() - startTime;
-      this.updatePerformanceMetric('write', writeTime);
-      
-      await this.updateStats();
-      return true;
+      request.onsuccess = () => {
+        clearTimeout(timeoutId);
+        this.db = request.result;
+        this.stats.recoveryCount++;
+        resolve();
+      };
 
-    } catch (error) {
-      console.error('[IndexedDB L3] Set operation failed:', error);
-      return false;
-    }
-  }
-
-  async delete(key: string): Promise<boolean> {
-    const startTime = performance.now();
-    
-    try {
-      const record = await this.db.stockData.where('key').equals(key).first();
-      if (record) {
-        await this.db.stockData.delete(record.id!);
-        this.stats.evictionCount++;
-      }
-      
-      const deleteTime = performance.now() - startTime;
-      this.updatePerformanceMetric('delete', deleteTime);
-      
-      return true;
-    } catch (error) {
-      console.error('[IndexedDB L3] Delete operation failed:', error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    try {
-      await this.db.stockData.clear();
-      await this.db.metadata.clear();
-      this.stats = this.initializeStats();
-    } catch (error) {
-      console.error('[IndexedDB L3] Clear operation failed:', error);
-    }
-  }
-
-  async has(key: string): Promise<boolean> {
-    try {
-      const record = await this.db.stockData.where('key').equals(key).first();
-      if (!record) return false;
-      
-      // Check TTL
-      if (record.ttlExpiry < Date.now()) {
-        await this.delete(key);
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('[IndexedDB L3] Has operation failed:', error);
-      return false;
-    }
-  }
-
-  // Background cleanup and maintenance
-  private scheduleBackgroundCleanup(): void {
-    const scheduleNextCleanup = () => {
-      const now = new Date();
-      const nextCleanup = new Date();
-      nextCleanup.setHours(this.cleanupScheduleHour, 0, 0, 0);
-      
-      // If it's already past cleanup time today, schedule for tomorrow
-      if (nextCleanup <= now) {
-        nextCleanup.setDate(nextCleanup.getDate() + 1);
-      }
-      
-      const msUntilCleanup = nextCleanup.getTime() - now.getTime();
-      
-      this.backgroundCleanupInterval = window.setTimeout(async () => {
-        await this.performBackgroundCleanup();
-        scheduleNextCleanup(); // Schedule next cleanup
-      }, msUntilCleanup);
-    };
-
-    scheduleNextCleanup();
-  }
-
-  private async performBackgroundCleanup(): Promise<void> {
-    try {
-      console.log('[IndexedDB L3] Starting background cleanup...');
-      
-      const now = Date.now();
-      const expiredRecords = await this.db.stockData.where('ttlExpiry').below(now).toArray();
-      
-      if (expiredRecords.length > 0) {
-        const expiredKeys = expiredRecords.map(r => r.id!);
-        await this.db.stockData.bulkDelete(expiredKeys);
-        this.stats.evictionCount += expiredRecords.length;
-        
-        console.log(`[IndexedDB L3] Cleaned up ${expiredRecords.length} expired records`);
-      }
-
-      // Optimize database (compact)
-      await this.optimizeDatabase();
-      
-      // Update statistics
-      await this.updateStats();
-      
-      console.log('[IndexedDB L3] Background cleanup completed');
-    } catch (error) {
-      console.error('[IndexedDB L3] Background cleanup failed:', error);
-    }
-  }
-
-  private async optimizeDatabase(): Promise<void> {
-    try {
-      // Update metadata based on current stock data
-      await this.db.metadata.clear();
-      
-      const stockRecords = await this.db.stockData.toArray();
-      const metadataMap = new Map<string, MetadataRecord>();
-      
-      for (const record of stockRecords) {
-        const key = `${record.symbol}-${record.dataType}`;
-        
-        if (!metadataMap.has(key)) {
-          metadataMap.set(key, {
-            key,
-            symbol: record.symbol,
-            dataType: record.dataType,
-            totalSize: 0,
-            recordCount: 0,
-            firstCreated: record.createdAt,
-            lastUpdated: record.createdAt,
-            totalAccesses: 0,
-            averageAccessTime: 0
-          });
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+          const store = db.createObjectStore(this.STORE_NAME, { keyPath: 'key' });
+          store.createIndex('expiry', 'expiry', { unique: false });
+          store.createIndex('lastAccessed', 'lastAccessed', { unique: false });
+          store.createIndex('size', 'size', { unique: false });
         }
-        
-        const metadata = metadataMap.get(key)!;
-        metadata.totalSize += record.dataSize;
-        metadata.recordCount++;
-        metadata.lastUpdated = Math.max(metadata.lastUpdated, record.createdAt);
-        metadata.totalAccesses += record.accessCount;
-        metadata.firstCreated = Math.min(metadata.firstCreated, record.createdAt);
-      }
-      
-      if (metadataMap.size > 0) {
-        await this.db.metadata.bulkAdd(Array.from(metadataMap.values()));
-      }
-    } catch (error) {
-      console.error('[IndexedDB L3] Database optimization failed:', error);
-    }
+      };
+    });
   }
 
-  // Storage management
-  private async shouldEvict(newDataSize: number): Promise<boolean> {
-    const currentSize = await this.calculateTotalSize();
-    return (currentSize + newDataSize) > this.maxStorageSize;
-  }
+  private async evictLRU(requiredSpace: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('LRU eviction timeout'));
+      }, this.OPERATION_TIMEOUT);
 
-  private async performEviction(requiredSpace: number): Promise<void> {
-    try {
-      // Evict least recently accessed records until we have enough space
-      const records = await this.db.stockData
-        .orderBy('lastAccessed')
-        .limit(100)  // Process in batches
-        .toArray();
-      
-      let freedSpace = 0;
-      const recordsToDelete = [];
-      
-      for (const record of records) {
-        recordsToDelete.push(record.id!);
-        freedSpace += record.dataSize;
-        
-        if (freedSpace >= requiredSpace * 1.2) { // 20% buffer
-          break;
+      if (!this.db) {
+        clearTimeout(timeoutId);
+        reject(new Error('Database not initialized'));
+        return;
+      }
+
+      const transaction = this.db.transaction(this.STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const index = store.index('lastAccessed');
+      const request = index.openCursor();
+
+      let totalEvicted = 0;
+      let entriesEvicted = 0;
+
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest).result;
+        if (cursor) {
+          if (this.stats.totalSize + requiredSpace > this.config.maxMemoryUsage ||
+              this.stats.currentEntries >= this.config.maxEntries) {
+            const entry = cursor.value;
+            const deleteRequest = store.delete(cursor.primaryKey);
+            deleteRequest.onsuccess = () => {
+              totalEvicted += entry.size;
+              entriesEvicted++;
+              this.stats.totalSize -= entry.size;
+              this.stats.currentEntries--;
+              cursor.continue();
+            };
+          } else {
+            clearTimeout(timeoutId);
+            resolve();
+          }
+        } else {
+          clearTimeout(timeoutId);
+          if (entriesEvicted > 0) {
+            console.log(`Evicted ${entriesEvicted} entries, freed ${totalEvicted} bytes`);
+          }
+          resolve();
         }
-      }
-      
-      if (recordsToDelete.length > 0) {
-        await this.db.stockData.bulkDelete(recordsToDelete);
-        this.stats.evictionCount += recordsToDelete.length;
-      }
-    } catch (error) {
-      console.error('[IndexedDB L3] Eviction failed:', error);
-    }
+      };
+
+      request.onerror = () => {
+        clearTimeout(timeoutId);
+        const error = new Error('Failed to evict LRU entries');
+        this.stats.errorCount++;
+        this.stats.lastError = error.message;
+        reject(error);
+      };
+    });
   }
 
-  private async calculateTotalSize(): Promise<number> {
+  private updateStats(): void {
+    const total = this.stats.hits + this.stats.misses;
+    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0;
+  }
+
+  private updateQueryTime(time: number): void {
+    this.stats.averageQueryTime = (this.stats.averageQueryTime * this.stats.hits + time) / (this.stats.hits + 1);
+  }
+
+  private updateWriteTime(time: number): void {
+    this.stats.averageWriteTime = (this.stats.averageWriteTime * this.stats.writeCount + time) / (this.stats.writeCount + 1);
+  }
+
+  private updateDeleteTime(time: number): void {
+    this.stats.averageDeleteTime = (this.stats.averageDeleteTime * this.stats.deleteCount + time) / (this.stats.deleteCount + 1);
+  }
+
+  private calculateSize(value: any): number {
     try {
-      const records = await this.db.stockData.toArray();
-      return records.reduce((total, record) => total + record.dataSize, 0);
+      const str = JSON.stringify(value);
+      return new Blob([str]).size;
     } catch (error) {
-      console.error('[IndexedDB L3] Size calculation failed:', error);
+      console.error('Error calculating size:', error);
       return 0;
     }
   }
 
-  // Statistics and monitoring
-  async getStats(): Promise<CacheStatsL3> {
-    await this.updateStats();
+  private async shouldEvict(requiredSpace: number): Promise<boolean> {
+    return this.stats.totalSize + requiredSpace > this.config.maxMemoryUsage ||
+           this.stats.currentEntries >= this.config.maxEntries;
+  }
+
+  private async evict(requiredSpace: number): Promise<void> {
+    if (await this.shouldEvict(requiredSpace)) {
+      await this.evictLRU(requiredSpace);
+    }
+  }
+
+  async initialize(): Promise<void> {
+    try {
+      await this.openDatabase();
+      await this.cleanup();
+      this.stats.lastAccess = Date.now();
+    } catch (error) {
+      console.error('Error initializing cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      throw error;
+    }
+  }
+
+  async cleanup(): Promise<void> {
+    if (!this.db) {
+      await this.initialize();
+    }
+
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Cleanup timeout'));
+      }, this.OPERATION_TIMEOUT);
+
+      const transaction = this.db!.transaction(this.STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(this.STORE_NAME);
+      const index = store.index('expiry');
+      const request = index.openCursor(IDBKeyRange.upperBound(Date.now()));
+
+      let cleanedEntries = 0;
+      let cleanedSize = 0;
+
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest).result;
+        if (cursor) {
+          const entry = cursor.value;
+          const deleteRequest = store.delete(cursor.primaryKey);
+          deleteRequest.onsuccess = () => {
+            cleanedEntries++;
+            cleanedSize += entry.size;
+            this.stats.totalSize -= entry.size;
+            this.stats.currentEntries--;
+            cursor.continue();
+          };
+        } else {
+          clearTimeout(timeoutId);
+          if (cleanedEntries > 0) {
+            console.log(`Cleaned ${cleanedEntries} expired entries, freed ${cleanedSize} bytes`);
+          }
+          this.stats.lastCleanup = Date.now();
+          resolve();
+        }
+      };
+
+      request.onerror = () => {
+        clearTimeout(timeoutId);
+        const error = new Error('Failed to clean expired entries');
+        this.stats.errorCount++;
+        this.stats.lastError = error.message;
+        reject(error);
+      };
+    });
+  }
+
+  async get<T>(key: string): Promise<T | null> {
+    return this.queueOperation(async () => {
+      const startTime = performance.now();
+      try {
+        if (!this.db) {
+          await this.initialize();
+        }
+
+        return new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Get operation timeout'));
+          }, this.OPERATION_TIMEOUT);
+
+          const transaction = this.db!.transaction(this.STORE_NAME, 'readonly');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.get(key);
+
+          request.onsuccess = () => {
+            clearTimeout(timeoutId);
+            const entry = request.result;
+
+            if (!entry) {
+              this.stats.misses++;
+              this.stats.missCount++;
+              this.updateStats();
+              resolve(null);
+              return;
+            }
+
+            if (entry.expiry < Date.now()) {
+              this.delete(key).then(() => {
+                this.stats.misses++;
+                this.stats.missCount++;
+                this.updateStats();
+                resolve(null);
+              });
+              return;
+            }
+
+            entry.lastAccessed = Date.now();
+            store.put(entry);
+
+            this.stats.hits++;
+            this.stats.hitCount++;
+            this.stats.lastAccess = Date.now();
+
+            const queryTime = performance.now() - startTime;
+            this.updateQueryTime(queryTime);
+            this.updateStats();
+
+            resolve(entry.value as T);
+          };
+
+          request.onerror = () => {
+            clearTimeout(timeoutId);
+            const error = new Error('Failed to get value from cache');
+            this.stats.errorCount++;
+            this.stats.lastError = error.message;
+            this.updateStats();
+            reject(error);
+          };
+        });
+      } catch (error) {
+        console.error('Error getting value from cache:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+        this.updateStats();
+        throw error;
+      }
+    });
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
+    return this.queueOperation(async () => {
+      const startTime = performance.now();
+      try {
+        if (!this.db) {
+          await this.initialize();
+        }
+
+        const size = this.calculateSize(value);
+        const expiry = Date.now() + (ttl || this.config.defaultTTL);
+
+        if (await this.shouldEvict(size)) {
+          await this.evict(size);
+        }
+
+        return new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Set operation timeout'));
+          }, this.OPERATION_TIMEOUT);
+
+          const transaction = this.db!.transaction(this.STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const entry = {
+            key,
+            value,
+            expiry,
+            lastAccessed: Date.now(),
+            size
+          };
+
+          const request = store.put(entry);
+
+          request.onsuccess = () => {
+            clearTimeout(timeoutId);
+            this.stats.totalSize += size;
+            this.stats.currentEntries++;
+            this.stats.writeCount++;
+            this.stats.lastAccess = Date.now();
+
+            const writeTime = performance.now() - startTime;
+            this.updateWriteTime(writeTime);
+            this.updateStats();
+
+            resolve(true);
+          };
+
+          request.onerror = () => {
+            clearTimeout(timeoutId);
+            const error = new Error('Failed to set value in cache');
+            this.stats.errorCount++;
+            this.stats.lastError = error.message;
+            reject(error);
+          };
+        });
+      } catch (error) {
+        console.error('Error setting value in cache:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+        return false;
+      }
+    });
+  }
+
+  async delete(key: string): Promise<boolean> {
+    return this.queueOperation(async () => {
+      const startTime = performance.now();
+      try {
+        if (!this.db) {
+          await this.initialize();
+        }
+
+        return new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Delete operation timeout'));
+          }, this.OPERATION_TIMEOUT);
+
+          const transaction = this.db!.transaction(this.STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const getRequest = store.get(key);
+
+          getRequest.onsuccess = () => {
+            const entry = getRequest.result;
+            if (!entry) {
+              clearTimeout(timeoutId);
+              resolve(false);
+              return;
+            }
+
+            const deleteRequest = store.delete(key);
+            deleteRequest.onsuccess = () => {
+              clearTimeout(timeoutId);
+              this.stats.totalSize -= entry.size;
+              this.stats.currentEntries--;
+              this.stats.deleteCount++;
+              this.stats.lastAccess = Date.now();
+
+              const deleteTime = performance.now() - startTime;
+              this.updateDeleteTime(deleteTime);
+              this.updateStats();
+
+              resolve(true);
+            };
+
+            deleteRequest.onerror = () => {
+              clearTimeout(timeoutId);
+              const error = new Error('Failed to delete value from cache');
+              this.stats.errorCount++;
+              this.stats.lastError = error.message;
+              reject(error);
+            };
+          };
+
+          getRequest.onerror = () => {
+            clearTimeout(timeoutId);
+            const error = new Error('Failed to get value for deletion');
+            this.stats.errorCount++;
+            this.stats.lastError = error.message;
+            reject(error);
+          };
+        });
+      } catch (error) {
+        console.error('Error deleting value from cache:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+        return false;
+      }
+    });
+  }
+
+  async clear(): Promise<void> {
+    return this.queueOperation(async () => {
+      try {
+        if (!this.db) {
+          await this.initialize();
+        }
+
+        return new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Clear operation timeout'));
+          }, this.OPERATION_TIMEOUT);
+
+          const transaction = this.db!.transaction(this.STORE_NAME, 'readwrite');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.clear();
+
+          request.onsuccess = () => {
+            clearTimeout(timeoutId);
+            this.stats = this.initializeStats();
+            this.stats.lastAccess = Date.now();
+            resolve();
+          };
+
+          request.onerror = () => {
+            clearTimeout(timeoutId);
+            const error = new Error('Failed to clear cache');
+            this.stats.errorCount++;
+            this.stats.lastError = error.message;
+            reject(error);
+          };
+        });
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+        throw error;
+      }
+    });
+  }
+
+  async has(key: string): Promise<boolean> {
+    return this.queueOperation(async () => {
+      try {
+        if (!this.db) {
+          await this.initialize();
+        }
+
+        return new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Has operation timeout'));
+          }, this.OPERATION_TIMEOUT);
+
+          const transaction = this.db!.transaction(this.STORE_NAME, 'readonly');
+          const store = transaction.objectStore(this.STORE_NAME);
+          const request = store.get(key);
+
+          request.onsuccess = () => {
+            clearTimeout(timeoutId);
+            const entry = request.result;
+
+            if (!entry) {
+              resolve(false);
+              return;
+            }
+
+            if (entry.expiry < Date.now()) {
+              this.delete(key).then(() => resolve(false));
+              return;
+            }
+
+            resolve(true);
+          };
+
+          request.onerror = () => {
+            clearTimeout(timeoutId);
+            const error = new Error('Failed to check key in cache');
+            this.stats.errorCount++;
+            this.stats.lastError = error.message;
+            reject(error);
+          };
+        });
+      } catch (error) {
+        console.error('Error checking key in cache:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+        return false;
+      }
+    });
+  }
+
+  async getStats(): Promise<L3CacheStats> {
     return { ...this.stats };
   }
 
-  private async updateStats(): Promise<void> {
-    try {
-      const records = await this.db.stockData.toArray();
-      
-      this.stats.totalEntries = records.length;
-      this.stats.totalSize = records.reduce((sum, r) => sum + r.dataSize, 0);
-      
-      // Update breakdowns
-      this.stats.dataTypeBreakdown = {};
-      this.stats.symbolBreakdown = {};
-      
-      let totalCompressedSize = 0;
-      let totalUncompressedSize = 0;
-      let oldestTime = Date.now();
-      let newestTime = 0;
-      
-      for (const record of records) {
-        // Data type breakdown
-        if (!this.stats.dataTypeBreakdown[record.dataType]) {
-          this.stats.dataTypeBreakdown[record.dataType] = { count: 0, size: 0 };
-        }
-        this.stats.dataTypeBreakdown[record.dataType].count++;
-        this.stats.dataTypeBreakdown[record.dataType].size += record.dataSize;
-        
-        // Symbol breakdown
-        if (!this.stats.symbolBreakdown[record.symbol]) {
-          this.stats.symbolBreakdown[record.symbol] = { count: 0, size: 0 };
-        }
-        this.stats.symbolBreakdown[record.symbol].count++;
-        this.stats.symbolBreakdown[record.symbol].size += record.dataSize;
-        
-        // Compression metrics
-        if (record.compressed) {
-          totalCompressedSize += record.dataSize;
-          totalUncompressedSize += record.dataSize * 2; // Estimate
-        }
-        
-        // Time tracking
-        oldestTime = Math.min(oldestTime, record.createdAt);
-        newestTime = Math.max(newestTime, record.createdAt);
+  getConfig(): L3CacheConfiguration {
+    return { ...this.config };
+  }
+
+  updateConfig(config: Partial<L3CacheConfiguration>): void {
+    this.config = { ...this.config, ...config };
+    if (config.cleanupInterval) {
+      this.startCleanupTimer();
+    }
+  }
+
+  async getAllKeys(): Promise<string[]> {
+    return this.queueOperation(async () => {
+      if (!this.db) {
+        await this.initialize();
       }
-      
-      this.stats.compressionRatio = totalUncompressedSize > 0 ? 
-        (totalUncompressedSize - totalCompressedSize) / totalUncompressedSize : 0;
-      
-      this.stats.oldestEntry = oldestTime === Date.now() ? 0 : oldestTime;
-      this.stats.newestEntry = newestTime;
-      
-      // Performance metrics
-      this.stats.performanceMetrics = {
-        avgQueryTime: this.calculateAverage(this.performanceMetrics.queryTimes),
-        avgWriteTime: this.calculateAverage(this.performanceMetrics.writeTimes),
-        avgDeleteTime: this.calculateAverage(this.performanceMetrics.deleteTimes),
-        databaseSize: await this.calculateTotalSize()
-      };
-      
-    } catch (error) {
-      console.error('[IndexedDB L3] Stats update failed:', error);
-    }
+      return new Promise((resolve, reject) => {
+        const transaction = this.db!.transaction(this.STORE_NAME, 'readonly');
+        const store = transaction.objectStore(this.STORE_NAME);
+        const request = store.getAllKeys();
+        request.onsuccess = () => {
+          resolve(request.result as string[]);
+        };
+        request.onerror = () => {
+          reject(new Error('Failed to get all keys from cache'));
+        };
+      });
+    });
   }
 
-  // Utility methods
-  private parseKey(key: string): { symbol: string; dataType: string; date: string } {
-    const parts = key.split(':');
-    return {
-      symbol: parts[1] || 'unknown',
-      dataType: parts[0] || 'unknown',
-      date: parts[2] || new Date().toISOString().split('T')[0]
-    };
-  }
-
-  private compress(data: string): string {
-    // Simple dictionary-based compression for financial data
-    const financialDict = {
-      '"symbol"': '①',
-      '"price"': '②',
-      '"volume"': '③',
-      '"timestamp"': '④',
-      '"open"': '⑤',
-      '"high"': '⑥',
-      '"low"': '⑦',
-      '"close"': '⑧',
-      '"marketCap"': '⑨',
-      '"PE"': '⑩'
-    };
-    
-    let compressed = data;
-    for (const [key, value] of Object.entries(financialDict)) {
-      compressed = compressed.replace(new RegExp(key, 'g'), value);
-    }
-    
-    return compressed;
-  }
-
-  private decompress(data: string): any {
-    const financialDict = {
-      '①': '"symbol"',
-      '②': '"price"',
-      '③': '"volume"',
-      '④': '"timestamp"',
-      '⑤': '"open"',
-      '⑥': '"high"',
-      '⑦': '"low"',
-      '⑧': '"close"',
-      '⑨': '"marketCap"',
-      '⑩': '"PE"'
-    };
-    
-    let decompressed = data;
-    for (const [key, value] of Object.entries(financialDict)) {
-      decompressed = decompressed.replace(new RegExp(key, 'g'), value);
-    }
-    
-    try {
-      return JSON.parse(decompressed);
-    } catch (error) {
-      console.error('[IndexedDB L3] Decompression failed:', error);
-      return null;
-    }
-  }
-
-  private calculateSize(data: any): number {
-    const str = typeof data === 'string' ? data : JSON.stringify(data);
-    return new Blob([str]).size;
-  }
-
-  private async updateMetadata(symbol: string, dataType: string, dataSize: number): Promise<void> {
-    try {
-      const key = `${symbol}-${dataType}`;
-      const existing = await this.db.metadata.where('key').equals(key).first();
-      
-      if (existing) {
-        await this.db.metadata.update(existing.id!, {
-          totalSize: existing.totalSize + dataSize,
-          recordCount: existing.recordCount + 1,
-          lastUpdated: Date.now(),
-          totalAccesses: existing.totalAccesses + 1
-        });
-      } else {
-        await this.db.metadata.add({
-          key,
-          symbol,
-          dataType,
-          totalSize: dataSize,
-          recordCount: 1,
-          firstCreated: Date.now(),
-          lastUpdated: Date.now(),
-          totalAccesses: 1,
-          averageAccessTime: 0
-        });
+  async size(): Promise<number> {
+    return this.queueOperation(async () => {
+      if (!this.db) {
+        await this.initialize();
       }
-    } catch (error) {
-      console.error('[IndexedDB L3] Metadata update failed:', error);
-    }
-  }
-
-  private updatePerformanceMetric(type: 'query' | 'write' | 'delete', time: number): void {
-    const metrics = this.performanceMetrics;
-    const maxSamples = 100;
-    
-    switch (type) {
-      case 'query':
-        metrics.queryTimes.push(time);
-        if (metrics.queryTimes.length > maxSamples) {
-          metrics.queryTimes.shift();
-        }
-        break;
-      case 'write':
-        metrics.writeTimes.push(time);
-        if (metrics.writeTimes.length > maxSamples) {
-          metrics.writeTimes.shift();
-        }
-        break;
-      case 'delete':
-        metrics.deleteTimes.push(time);
-        if (metrics.deleteTimes.length > maxSamples) {
-          metrics.deleteTimes.shift();
-        }
-        break;
-    }
-  }
-
-  private calculateAverage(numbers: number[]): number {
-    if (numbers.length === 0) return 0;
-    return numbers.reduce((sum, n) => sum + n, 0) / numbers.length;
-  }
-
-  // Health check
-  async getHealthStatus(): Promise<{
-    status: 'healthy' | 'warning' | 'error';
-    issues: string[];
-    recommendations: string[];
-  }> {
-    const issues: string[] = [];
-    const recommendations: string[] = [];
-    
-    try {
-      const stats = await this.getStats();
-      
-      // Check database size
-      if (stats.totalSize > this.maxStorageSize * 0.9) {
-        issues.push('Database approaching storage limit');
-        recommendations.push('Consider increasing cleanup frequency');
-      }
-      
-      // Check performance
-      if (stats.performanceMetrics.avgQueryTime > 100) {
-        issues.push('Query performance degrading');
-        recommendations.push('Consider database optimization');
-      }
-      
-      // Check hit ratio
-      const hitRatio = stats.hitCount / (stats.hitCount + stats.missCount);
-      if (hitRatio < 0.7) {
-        issues.push('Low cache hit ratio');
-        recommendations.push('Review TTL settings and data patterns');
-      }
-      
-      const status = issues.length === 0 ? 'healthy' : 
-                    issues.length <= 2 ? 'warning' : 'error';
-      
-      return { status, issues, recommendations };
-      
-    } catch (error) {
-      return {
-        status: 'error',
-        issues: ['Database health check failed'],
-        recommendations: ['Check database connectivity and integrity']
-      };
-    }
-  }
-
-  // Cleanup
-  dispose(): void {
-    if (this.backgroundCleanupInterval) {
-      clearTimeout(this.backgroundCleanupInterval);
-      this.backgroundCleanupInterval = null;
-    }
-    
-    if (this.db) {
-      this.db.close();
-    }
+      return new Promise((resolve, reject) => {
+        const transaction = this.db!.transaction(this.STORE_NAME, 'readonly');
+        const store = transaction.objectStore(this.STORE_NAME);
+        const request = store.count();
+        request.onsuccess = () => {
+          resolve(request.result as number);
+        };
+        request.onerror = () => {
+          reject(new Error('Failed to get cache size'));
+        };
+      });
+    });
   }
 }
 
-// Export singleton instance
 export const indexedDBCacheL3 = new IndexedDBCacheL3();

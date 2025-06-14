@@ -1,60 +1,61 @@
-import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 import { Button } from "@/components/ui/button"
-import { PyScriptCalculator } from './components/PyScriptCalculator'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import { ErrorTester } from './components/ErrorTester'
-import { NotificationProvider, NotificationContainer } from './components/NotificationProvider'
+import { useEffect, useState } from 'react'
+import './App.css'
+import reactLogo from './assets/react.svg'
 import { ApiTester } from './components/ApiTester'
-import { CircuitBreakerTester } from './components/CircuitBreakerTester'
-import { PyScriptTester } from './components/PyScriptTester'
-import { ToastTester } from './components/ToastTester'
-import { EnvironmentTester } from './components/EnvironmentTester'
-import { SimpleAlphaVantageTest } from './components/SimpleAlphaVantageTest'
-import QueueManagerDemo from './components/QueueManagerDemo'
-import DataTransformationDemo from './components/DataTransformationDemo'
-import ErrorHandlingDemo from './components/ErrorHandlingDemo'
-import MultiProviderDemo from './components/MultiProviderDemo'
-import AutomaticFallbackDemo from './components/AutomaticFallbackDemo'
-import DataConsistencyDemo from './components/DataConsistencyDemo'
-import UnifiedQualityDashboard from './components/UnifiedQualityDashboard'
-import CacheMonitorDashboard from './components/CacheMonitorDashboard'
-import StorageHealthDashboardSimple from './components/StorageHealthDashboardSimple'
 import AutomaticCleanupDashboard from './components/AutomaticCleanupDashboard'
-import StorageManagementSettings from './components/StorageManagementSettings'
+import AutomaticFallbackDemo from './components/AutomaticFallbackDemo'
+import CacheMonitorDashboard from './components/CacheMonitorDashboard'
+import { CircuitBreakerTester } from './components/CircuitBreakerTester'
+import DataConsistencyDemo from './components/DataConsistencyDemo'
+import DataTransformationDemo from './components/DataTransformationDemo'
+import { EnvironmentTester } from './components/EnvironmentTester'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import ErrorHandlingDemo from './components/ErrorHandlingDemo'
+import { ErrorTester } from './components/ErrorTester'
+import MultiProviderDemo from './components/MultiProviderDemo'
+import { NotificationContainer, NotificationProvider } from './components/NotificationProvider'
+import PerformanceRatiosTester from './components/PerformanceRatiosTester'
+import { PyScriptCalculator } from './components/PyScriptCalculator'
+import { PyScriptTester } from './components/PyScriptTester'
+import QueueManagerDemo from './components/QueueManagerDemo'
 import ReturnsCalculationTester from './components/ReturnsCalculationTester'
 import RiskMetricsTester from './components/RiskMetricsTester'
-import PerformanceRatiosTester from './components/PerformanceRatiosTester'
+import { SimpleAlphaVantageTest } from './components/SimpleAlphaVantageTest'
+import StorageHealthDashboardSimple from './components/StorageHealthDashboardSimple'
+import StorageManagementSettings from './components/StorageManagementSettings'
+import { ToastTester } from './components/ToastTester'
+import UnifiedQualityDashboard from './components/UnifiedQualityDashboard'
+import viteLogo from '/vite.svg'
 // Note: These components are imported but not yet implemented
 // import RiskMeasuresAdvancedTester from './components/RiskMeasuresAdvancedTester'
 // import PortfolioOptimizationTester from './components/PortfolioOptimizationTester'
 // import AlternativeAllocationsTester from './components/AlternativeAllocationsTester'
-import OptimizationConstraintsTester from './components/OptimizationConstraintsTester'
-import { WebWorkerTester } from './components/WebWorkerTester'
-import DataChunkingTester from './components/DataChunkingTester'
 import AlgorithmOptimizationTester from './components/AlgorithmOptimizationTester'
-import ProgressIndicatorTester from './components/ProgressIndicatorTester'
+import AutoSaveDemo from './components/AutoSaveDemo'
 import BuyHoldBenchmarkTester from './components/BuyHoldBenchmarkTester'
+import { ContextualHelpDemo } from './components/ContextualHelpDemo'
+import DataChunkingTester from './components/DataChunkingTester'
 import { EqualWeightStrategyTester } from './components/EqualWeightStrategyTester'
-import RiskParityStrategyTester from './components/RiskParityStrategyTester'
-import MomentumStrategyTester from './components/MomentumStrategyTester'
-import ProxyDemo from './components/ProxyDemo'
-import MissingDataDemo from './components/MissingDataDemo'
-import OutlierDetectionDemo from './components/OutlierDetectionDemo'
-import { getEnvironmentStatus, validateEnvironmentVariables } from './utils/envValidation'
-import { automaticCleanup } from './services/AutomaticCleanupService'
 import Header from './components/Header'
 import HeaderDemo from './components/HeaderDemo'
-import SidebarStepNavigationDemo from './components/SidebarStepNavigationDemo'
+import LayoutManager from './components/LayoutManager'
 import MainContentAreaDemo from './components/MainContentAreaDemo'
-import AutoSaveDemo from './components/AutoSaveDemo'
-import { TooltipDemo } from './components/TooltipDemo'
+import MissingDataDemo from './components/MissingDataDemo'
+import MomentumStrategyTester from './components/MomentumStrategyTester'
+import OptimizationConstraintsTester from './components/OptimizationConstraintsTester'
+import OutlierDetectionDemo from './components/OutlierDetectionDemo'
 import PopupDemo from './components/PopupDemo'
-import { TheoryDemo } from './components/TheoryDemo'
-import { ContextualHelpDemo } from './components/ContextualHelpDemo'
 import { PriceChartDemo } from './components/PriceChartDemo'
+import ProgressIndicatorTester from './components/ProgressIndicatorTester'
+import ProxyDemo from './components/ProxyDemo'
+import RiskParityStrategyTester from './components/RiskParityStrategyTester'
+import SidebarStepNavigationDemo from './components/SidebarStepNavigationDemo'
+import { TheoryDemo } from './components/TheoryDemo'
+import { TooltipDemo } from './components/TooltipDemo'
+import { WebWorkerTester } from './components/WebWorkerTester'
+import { automaticCleanup } from './services/AutomaticCleanupService'
+import { getEnvironmentStatus, validateEnvironmentVariables } from './utils/envValidation'
 
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'header-demo' | 'sidebar-step-navigation-demo' | 'main-content-area-demo' | 'auto-save-demo' | 'tooltip-demo' | 'popup-demo' | 'theory-demo' | 'contextual-help-demo' | 'price-chart-demo' | 'pyscript' | 'pyscript-test' | 'toast-test' | 'error-test' | 'api-test' | 'circuit-breaker-test' | 'env-test' | 'alpha-vantage-test' | 'queue-manager' | 'data-transformation' | 'error-handling' | 'multi-provider' | 'automatic-fallback' | 'data-consistency' | 'data-consistency-demo' | 'proxy-demo' | 'missing-data-demo' | 'outlier-detection-demo' | 'unified-quality-dashboard' | 'cache-monitor-dashboard' | 'storage-health-dashboard' | 'automatic-cleanup-dashboard' | 'storage-management-settings' | 'returns-calculation-tester' | 'risk-metrics-tester' | 'performance-ratios-tester' | 'risk-measures-advanced-tester' | 'portfolio-optimization-tester' | 'alternative-allocations-tester' | 'optimization-constraints-tester' | 'web-worker-tester' | 'data-chunking-tester' | 'algorithm-optimization-tester' | 'progress-indicator-tester' | 'buy-hold-benchmark-tester' | 'equal-weight-strategy-tester' | 'risk-parity-strategy-tester' | 'momentum-strategy-tester'>('home')
@@ -601,40 +602,44 @@ function App() {
 
   if (currentView !== 'home') {
     return (
+      <LayoutManager>
+        <NotificationProvider>
+          <ErrorBoundary>
+            <div className="min-h-screen bg-gray-50">
+              <Header 
+                currentView={currentView}
+                onNavigate={(view) => setCurrentView(view as any)}
+                onSettingsClick={() => console.log('Settings clicked')}
+                user={null} // For now, no user authentication
+              />
+              <div className="container mx-auto py-8">
+                {renderCurrentView()}
+              </div>
+            </div>
+            <NotificationContainer />
+          </ErrorBoundary>
+        </NotificationProvider>
+      </LayoutManager>
+    )
+  }
+
+  return (
+    <LayoutManager>
       <NotificationProvider>
         <ErrorBoundary>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-background">
             <Header 
               currentView={currentView}
               onNavigate={(view) => setCurrentView(view as any)}
               onSettingsClick={() => console.log('Settings clicked')}
               user={null} // For now, no user authentication
             />
-            <div className="container mx-auto py-8">
-              {renderCurrentView()}
-            </div>
+            {renderCurrentView()}
           </div>
           <NotificationContainer />
         </ErrorBoundary>
       </NotificationProvider>
-    )
-  }
-
-  return (
-    <NotificationProvider>
-      <ErrorBoundary>
-        <div className="min-h-screen bg-background">
-                  <Header 
-          currentView={currentView}
-          onNavigate={(view) => setCurrentView(view as any)}
-          onSettingsClick={() => console.log('Settings clicked')}
-          user={null} // For now, no user authentication
-        />
-          {renderCurrentView()}
-        </div>
-        <NotificationContainer />
-      </ErrorBoundary>
-    </NotificationProvider>
+    </LayoutManager>
   )
 }
 

@@ -13,6 +13,8 @@
  * - Analytics e reporting dettagliato
  */
 
+import { IIndexedDBCacheL3, ILocalStorageCacheL2, IMemoryCacheL1 } from './interfaces/ICache';
+
 interface CleanupItem {
   key: string;
   layer: 'L1' | 'L2' | 'L3';
@@ -81,6 +83,12 @@ interface CleanupReport {
   errors: string[];
 }
 
+interface CleanupSchedule {
+  lastCleanup: number;
+  nextCleanup: number;
+  interval: number;
+}
+
 class AutomaticCleanupService {
   private static instance: AutomaticCleanupService;
   private isRunning = false;
@@ -90,6 +98,12 @@ class AutomaticCleanupService {
   private completionListeners = new Set<(report: CleanupReport) => void>();
   private dailyCleanupTimer?: NodeJS.Timeout;
   private lruTracker = new Map<string, number>(); // key -> last access timestamp
+  private memoryCache: IMemoryCacheL1;
+  private localStorageCache: ILocalStorageCacheL2;
+  private indexedDBCache: IIndexedDBCacheL3;
+  private schedule: CleanupSchedule;
+  private cleanupTimer: number | null = null;
+  private readonly defaultInterval = 24 * 60 * 60 * 1000; // 24 ore
 
   private config: CleanupConfig = {
     dailyCleanupTime: "02:00",
@@ -110,14 +124,30 @@ class AutomaticCleanupService {
     }
   };
 
-  constructor() {
+  constructor(
+    memoryCache: IMemoryCacheL1,
+    localStorageCache: ILocalStorageCacheL2,
+    indexedDBCache: IIndexedDBCacheL3
+  ) {
+    this.memoryCache = memoryCache;
+    this.localStorageCache = localStorageCache;
+    this.indexedDBCache = indexedDBCache;
+    this.schedule = {
+      lastCleanup: 0,
+      nextCleanup: 0,
+      interval: this.defaultInterval
+    };
     this.setupEventListeners();
     this.loadLRUTracker();
   }
 
   public static getInstance(): AutomaticCleanupService {
     if (!AutomaticCleanupService.instance) {
-      AutomaticCleanupService.instance = new AutomaticCleanupService();
+      AutomaticCleanupService.instance = new AutomaticCleanupService(
+        null as any,
+        null as any,
+        null as any
+      );
     }
     return AutomaticCleanupService.instance;
   }
@@ -137,6 +167,12 @@ class AutomaticCleanupService {
       
       // Load previous cleanup history
       this.loadCleanupHistory();
+      
+      // Carica lo schedule salvato
+      await this.loadSchedule();
+      
+      // Avvia la pulizia programmata
+      this.scheduleCleanup();
       
       console.log('✅ AutomaticCleanupService inizializzato con successo');
     } catch (error) {
@@ -415,16 +451,16 @@ class AutomaticCleanupService {
       
       switch (layer) {
         case 'L1':
-          currentUsage = health.l1.used;
-          quota = health.l1.quota;
+          currentUsage = health.localStorage.usage;
+          quota = 100000;
           break;
         case 'L2':
-          currentUsage = health.l2.used;
-          quota = health.l2.quota;
+          currentUsage = health.sessionStorage.usage;
+          quota = 50000;
           break;
         case 'L3':
-          currentUsage = health.l3.used;
-          quota = health.l3.quota;
+          currentUsage = health.indexedDB.usage;
+          quota = 1000000;
           break;
       }
 
@@ -582,7 +618,7 @@ class AutomaticCleanupService {
               
             case 'L2':
               if (localStorageCacheL2.has(item.key)) {
-                localStorageCacheL2.remove(item.key);
+                localStorageCacheL2.delete(item.key);
                 itemFreedSize = item.size;
               }
               break;
@@ -873,9 +909,11 @@ class AutomaticCleanupService {
    */
   private setupEventListeners(): void {
     // Cleanup quando finestra si chiude
-    window.addEventListener('beforeunload', () => {
-      this.shutdown();
-    });
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('beforeunload', () => {
+        this.shutdown();
+      });
+    }
   }
 
   private notifyProgressListeners(progress: CleanupProgress): void {
@@ -950,6 +988,18 @@ class AutomaticCleanupService {
     }
   }
 
+  public cancelCleanup(): void {
+    if (this.cleanupTimer) {
+      clearTimeout(this.cleanupTimer);
+      this.cleanupTimer = null;
+    }
+    if (this.dailyCleanupTimer) {
+      clearTimeout(this.dailyCleanupTimer);
+      this.dailyCleanupTimer = undefined;
+    }
+    this.isRunning = false;
+  }
+
   public shutdown(): void {
     console.log('🛑 Shutdown AutomaticCleanupService...');
     
@@ -970,6 +1020,78 @@ class AutomaticCleanupService {
     this.progressListeners.clear();
     this.completionListeners.clear();
   }
+
+  private async loadSchedule(): Promise<void> {
+    try {
+      const savedSchedule = localStorage.getItem('__cleanup_schedule__');
+      if (savedSchedule) {
+        this.schedule = JSON.parse(savedSchedule);
+      }
+    } catch (error) {
+      console.warn('Failed to load cleanup schedule:', error);
+      // Usa i valori di default
+      this.schedule = {
+        lastCleanup: 0,
+        nextCleanup: Date.now() + this.defaultInterval,
+        interval: this.defaultInterval
+      };
+    }
+  }
+
+  private async saveSchedule(): Promise<void> {
+    try {
+      localStorage.setItem('__cleanup_schedule__', JSON.stringify(this.schedule));
+    } catch (error) {
+      console.warn('Failed to save cleanup schedule:', error);
+    }
+  }
+
+  private async scheduleCleanup(): Promise<void> {
+    if (this.cleanupTimer) {
+      window.clearTimeout(this.cleanupTimer);
+    }
+
+    const now = Date.now();
+    const timeUntilNextCleanup = Math.max(0, this.schedule.nextCleanup - now);
+
+    this.cleanupTimer = window.setTimeout(() => {
+      this.performCleanup();
+    }, timeUntilNextCleanup);
+  }
+
+  private async performCleanup(): Promise<void> {
+    try {
+      console.log('Starting automatic cleanup...');
+      
+      // Pulisci la cache L1 (Memory)
+      this.memoryCache.clear();
+      
+      // Pulisci la cache L2 (LocalStorage)
+      this.localStorageCache.clear();
+      
+      // Pulisci la cache L3 (IndexedDB)
+      await this.indexedDBCache.clear();
+
+      // Aggiorna lo schedule
+      this.schedule.lastCleanup = Date.now();
+      this.schedule.nextCleanup = this.schedule.lastCleanup + this.schedule.interval;
+      
+      // Salva lo schedule
+      await this.saveSchedule();
+      
+      // Programma la prossima pulizia
+      this.scheduleCleanup();
+      
+      console.log('Automatic cleanup completed successfully');
+    } catch (error) {
+      console.error('Automatic cleanup failed:', error);
+      throw error;
+    }
+  }
+
+  private getCleanupSchedule(): CleanupSchedule {
+    return { ...this.schedule };
+  }
 }
 
 // Export singleton instance
@@ -978,9 +1100,8 @@ export default AutomaticCleanupService;
 
 // Export types
 export type {
-  CleanupItem,
-  CleanupOperation,
-  CleanupProgress,
-  CleanupConfig,
-  CleanupReport
-}; 
+    CleanupConfig, CleanupItem,
+    CleanupOperation,
+    CleanupProgress, CleanupReport
+};
+

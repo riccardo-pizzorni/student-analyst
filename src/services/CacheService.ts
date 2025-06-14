@@ -3,14 +3,14 @@
  * Transparent caching layer for API services with Memory Cache L1 + LocalStorage L2 + IndexedDB L3 integration
  */
 
-import { memoryCacheL1, CacheStats, CacheConfiguration } from './MemoryCacheL1';
-import { localStorageCacheL2, L2CacheStats } from './LocalStorageCacheL2';
-import { indexedDBCacheL3, CacheStatsL3 } from './IndexedDBCacheL3';
-import { cacheAnalyticsEngine } from './CacheAnalyticsEngine';
-import { cacheQualityService } from './CacheQualityService';
-import { storageMonitoring } from './StorageMonitoringService';
 import { automaticCleanup } from './AutomaticCleanupService';
+import { cacheAnalytics } from './CacheAnalyticsEngine';
+import { cacheQualityService } from './CacheQualityService';
+import { indexedDBCacheL3, L3CacheStats } from './IndexedDBCacheL3';
+import { L2CacheStats, localStorageCacheL2 } from './LocalStorageCacheL2';
+import { CacheConfiguration, CacheStats, memoryCacheL1 } from './MemoryCacheL1';
 import type { StorageHealth } from './StorageMonitoringService';
+import { storageMonitoring } from './StorageMonitoringService';
 
 export interface CacheOptions {
   ttl?: number; // Time to live in milliseconds
@@ -62,7 +62,7 @@ class CacheService {
         const responseTime = performance.now() - startTime;
         
         // Track analytics
-        cacheAnalyticsEngine.trackCacheAccess(cacheKey, true, 'L1', responseTime);
+        cacheAnalytics.trackCacheHit(cacheKey);
         
         // Check data quality
         cacheQualityService.checkDataQuality(cacheKey, l1Data).catch(error => {
@@ -83,6 +83,8 @@ class CacheService {
       if (l2Data !== null) {
         // Promote to L1 cache for faster future access
         memoryCacheL1.set(cacheKey, l2Data, ttl);
+        // Remove from L2
+        localStorageCacheL2.delete(cacheKey);
         return {
           data: l2Data,
           fromCache: true,
@@ -251,7 +253,7 @@ class CacheService {
   async getMultiLayerStats(): Promise<{
     l1: CacheStats;
     l2: L2CacheStats;
-    l3: CacheStatsL3;
+    l3: L3CacheStats;
     storageHealth: StorageHealth;
     combined: {
       totalHits: number;
@@ -305,9 +307,8 @@ class CacheService {
 
     for (const key of l2Keys) {
       if (regex.test(key)) {
-        if (localStorageCacheL2.remove(key)) {
-          l2Removed++;
-        }
+        localStorageCacheL2.delete(key);
+        l2Removed++;
       }
     }
 
@@ -335,13 +336,16 @@ class CacheService {
   }
 
   private getL2TTL(l1TTL: number): number {
-    if (l1TTL <= 15 * 60 * 1000) { // <= 15 minutes
-      return 6 * 60 * 60 * 1000; // 6 hours
-    } else if (l1TTL <= 60 * 60 * 1000) { // <= 1 hour
-      return 24 * 60 * 60 * 1000; // 24 hours
-    } else {
-      return 7 * 24 * 60 * 60 * 1000; // 7 days
+    // L2 TTL is 5x L1 TTL for data up to 15 minutes
+    if (l1TTL <= 15 * 60 * 1000) {
+      return 5 * l1TTL;
     }
+    // L2 TTL is 24 hours for data up to 1 hour
+    if (l1TTL <= 60 * 60 * 1000) {
+      return 24 * 60 * 60 * 1000;
+    }
+    // L2 TTL is 7 days for data over 1 hour
+    return 7 * 24 * 60 * 60 * 1000;
   }
 
      private getL3TTL(_l1TTL: number): number {
@@ -349,11 +353,11 @@ class CacheService {
    }
 
   private getDataType(cacheKey: string): string {
-    if (cacheKey.includes('stock-data')) return 'stock-data';
+    if (cacheKey.includes('stock-data')) return 'stock';
     if (cacheKey.includes('fundamentals')) return 'fundamentals';
-    if (cacheKey.includes('market')) return 'market-data';
+    if (cacheKey.includes('market')) return 'market';
     if (cacheKey.includes('analysis')) return 'analysis';
-    return 'unknown';
+    return 'general';
   }
 
   private invalidateByPattern(pattern: string): number {
@@ -383,8 +387,7 @@ class CacheService {
     let cacheKey = `${prefix}:${key}`;
 
     if (includeTimestamp) {
-      const hourTimestamp = Math.floor(Date.now() / (60 * 60 * 1000));
-      cacheKey += `:${hourTimestamp}`;
+      cacheKey += `:${Date.now()}`;
     }
 
     if (customSuffix) {
@@ -451,21 +454,34 @@ class CacheService {
 
   clear(): void {
     memoryCacheL1.clear();
+    localStorageCacheL2.clear();
+    indexedDBCacheL3.clear();
   }
 
-  has(key: string): boolean {
+  async has(key: string): Promise<boolean> {
     const cacheKey = this.generateCacheKey(key);
-    return memoryCacheL1.has(cacheKey);
+    return memoryCacheL1.has(cacheKey) || 
+           localStorageCacheL2.has(cacheKey) || 
+           await indexedDBCacheL3.has(cacheKey);
   }
 
   set<T>(key: string, data: T, ttl?: number): boolean {
     const cacheKey = this.generateCacheKey(key);
-    return memoryCacheL1.set(cacheKey, data, ttl || this.defaultTTL);
+    const success = memoryCacheL1.set(cacheKey, data, ttl);
+    if (success) {
+      const l2TTL = this.getL2TTL(ttl || this.defaultTTL);
+      localStorageCacheL2.set(cacheKey, data, l2TTL, this.getDataType(cacheKey));
+      indexedDBCacheL3.set(cacheKey, data, this.getL3TTL(ttl || this.defaultTTL));
+    }
+    return success;
   }
 
   remove(key: string): boolean {
     const cacheKey = this.generateCacheKey(key);
-    return memoryCacheL1.remove(cacheKey);
+    const l1Removed = memoryCacheL1.remove(cacheKey);
+    localStorageCacheL2.delete(cacheKey);
+    indexedDBCacheL3.delete(cacheKey);
+    return l1Removed;
   }
 
   /**

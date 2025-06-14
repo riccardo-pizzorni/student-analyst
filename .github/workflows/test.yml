@@ -1,0 +1,79 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps
+
+    - name: Run unit tests
+      run: npm run test:unit
+
+    - name: Run E2E tests
+      run: npm run test:e2e
+
+    - name: Upload unit test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit-test-results
+        path: test-results/unit
+
+    - name: Upload E2E test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-test-results
+        path: test-results/e2e
+
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage
+
+    - name: Generate combined report
+      if: always()
+      run: |
+        mkdir -p test-results
+        node -e "
+          const fs = require('fs');
+          const report = {
+            timestamp: new Date().toISOString(),
+            unit: fs.existsSync('test-results/unit/junit.xml') ? fs.readFileSync('test-results/unit/junit.xml', 'utf8') : null,
+            e2e: fs.existsSync('test-results/e2e/test-results.json') ? fs.readFileSync('test-results/e2e/test-results.json', 'utf8') : null,
+            coverage: fs.existsSync('coverage/coverage-final.json') ? fs.readFileSync('coverage/coverage-final.json', 'utf8') : null
+          };
+          fs.writeFileSync('test-results/combined-report.json', JSON.stringify(report, null, 2));
+        "
+
+    - name: Upload combined report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: combined-report
+        path: test-results/combined-report.json 

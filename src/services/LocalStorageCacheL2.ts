@@ -1,555 +1,415 @@
 /**
- * STUDENT ANALYST - LocalStorage Cache L2 Service
- * Persistent cache with compression, TTL management, and storage quota monitoring
+ * STUDENT ANALYST - Local Storage Cache L2 Service
+ * Local storage cache with LRU eviction and performance tracking
  */
 
-export interface L2CacheEntry {
-  key: string;
-  compressedData: string;
-  originalSize: number;
-  compressedSize: number;
-  timestamp: number;
-  lastAccessed: number;
-  ttl: number;
-  accessCount: number;
-  compressionRatio: number;
-  dataType: string;
+import { ICacheConfiguration, IL2CacheStats, ILocalStorageCacheL2 } from './interfaces/ICache';
+
+export interface L2CacheStats extends IL2CacheStats {
+  errorCount: number;
+  lastError: string | null;
+  recoveryCount: number;
 }
 
-export interface L2CacheStats {
-  totalEntries: number;
-  totalStorageUsed: number;
-  totalOriginalSize: number;
-  totalCompressedSize: number;
-  averageCompressionRatio: number;
-  quotaUsagePercent: number;
-  hits: number;
-  misses: number;
-  evictions: number;
-  compressionErrors: number;
-  oldestEntry: number;
-  newestEntry: number;
-}
+export interface L2CacheConfiguration extends ICacheConfiguration {}
 
-export interface L2CacheConfig {
-  maxStorageSize: number;
-  defaultTTL: number;
-  compressionThreshold: number;
-  evictionThreshold: number;
-  enableCompression: boolean;
-  enableLogging: boolean;
-}
-
-class LocalStorageCacheL2 {
-  private config: L2CacheConfig;
+export class LocalStorageCacheL2 implements ILocalStorageCacheL2 {
+  private readonly OPERATION_TIMEOUT = 5000; // Increased to 5 seconds
+  private readonly CLEANUP_INTERVAL = 60000; // 1 minute
+  private readonly PREFIX = 'l2_cache_';
   private stats: L2CacheStats;
-  private keyPrefix = 'student-analyst-l2';
+  private config: L2CacheConfiguration;
+  private cleanupTimer: NodeJS.Timeout | null = null;
+  private operationQueue: Array<() => Promise<void>> = [];
+  private isProcessingQueue = false;
 
-  constructor(config: Partial<L2CacheConfig> = {}) {
-    this.config = {
-      maxStorageSize: 5 * 1024 * 1024, // 5MB
-      defaultTTL: 24 * 60 * 60 * 1000, // 24 hours
-      compressionThreshold: 1024, // 1KB minimum
-      evictionThreshold: 0.9,
-      enableCompression: true,
-      enableLogging: false,
-      ...config
-    };
-
-    this.stats = {
-      totalEntries: 0,
-      totalStorageUsed: 0,
-      totalOriginalSize: 0,
-      totalCompressedSize: 0,
-      averageCompressionRatio: 0,
-      quotaUsagePercent: 0,
-      hits: 0,
-      misses: 0,
-      evictions: 0,
-      compressionErrors: 0,
-      oldestEntry: 0,
-      newestEntry: 0
-    };
-
-    this.loadStats();
-    this.cleanupExpiredEntries();
+  constructor() {
+    this.config = this.initializeConfig();
+    this.stats = this.initializeStats();
+    this.startCleanupTimer();
   }
 
-  get(key: string): unknown | null {
-    const storageKey = this.getStorageKey(key);
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue || this.operationQueue.length === 0) return;
 
+    this.isProcessingQueue = true;
     try {
-      const entryData = localStorage.getItem(storageKey);
-      if (!entryData) {
+      while (this.operationQueue.length > 0) {
+        const operation = this.operationQueue.shift();
+        if (operation) {
+          await operation();
+        }
+      }
+    } finally {
+      this.isProcessingQueue = false;
+    }
+  }
+
+  private async queueOperation<T>(operation: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.operationQueue.push(async () => {
+        try {
+          const result = await operation();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.processQueue();
+    });
+  }
+
+  private initializeConfig(): ICacheConfiguration {
+    return {
+      maxEntries: 1000,
+      maxMemoryUsage: 5 * 1024 * 1024, // 5MB
+      defaultTTL: 30 * 60 * 1000, // 30 minutes
+      cleanupInterval: 60 * 1000, // 1 minute
+      enableCompression: false,
+      compressionThreshold: 0,
+      evictionPolicy: 'lru'
+    };
+  }
+
+  private initializeStats(): L2CacheStats {
+    return {
+      hits: 0,
+      misses: 0,
+      hitRate: 0,
+      memoryUsage: 0,
+      currentEntries: 0,
+      maxEntries: this.config.maxEntries,
+      lastCleanup: Date.now(),
+      lastAccess: Date.now(),
+      totalSize: 0,
+      hitCount: 0,
+      missCount: 0,
+      writeCount: 0,
+      deleteCount: 0,
+      compressionRatio: 1,
+      averageQueryTime: 0,
+      averageWriteTime: 0,
+      averageDeleteTime: 0,
+      errorCount: 0,
+      lastError: null,
+      recoveryCount: 0
+    };
+  }
+
+  private startCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+    }
+    this.cleanupTimer = setInterval(() => {
+      this.cleanup().catch(error => {
+        console.error('Cleanup error:', error);
+        this.stats.errorCount++;
+        this.stats.lastError = error.message;
+      });
+    }, this.CLEANUP_INTERVAL);
+  }
+
+  private updateStats(): void {
+    const total = this.stats.hits + this.stats.misses;
+    this.stats.hitRate = total > 0 ? this.stats.hits / total : 0;
+  }
+
+  private updateQueryTime(time: number): void {
+    this.stats.averageQueryTime = (this.stats.averageQueryTime * this.stats.hits + time) / (this.stats.hits + 1);
+  }
+
+  private updateWriteTime(time: number): void {
+    this.stats.averageWriteTime = (this.stats.averageWriteTime * this.stats.writeCount + time) / (this.stats.writeCount + 1);
+  }
+
+  private updateDeleteTime(time: number): void {
+    this.stats.averageDeleteTime = (this.stats.averageDeleteTime * this.stats.deleteCount + time) / (this.stats.deleteCount + 1);
+  }
+
+  private calculateSize(value: any): number {
+    try {
+      const str = JSON.stringify(value);
+      return new Blob([str]).size;
+    } catch (error) {
+      console.error('Error calculating size:', error);
+      return 0;
+    }
+  }
+
+  private async shouldEvict(requiredSpace: number): Promise<boolean> {
+    return this.stats.totalSize + requiredSpace > this.config.maxMemoryUsage ||
+           this.stats.currentEntries >= this.config.maxEntries;
+  }
+
+  private async evict(requiredSpace: number): Promise<void> {
+    if (await this.shouldEvict(requiredSpace)) {
+      await this.evictLRU(requiredSpace);
+    }
+  }
+
+  private async evictLRU(requiredSpace: number): Promise<void> {
+    const entries = Object.entries(localStorage)
+      .filter(([key]) => key.startsWith(this.PREFIX))
+      .map(([key, value]) => {
+        try {
+          const entry = JSON.parse(value);
+          return {
+            key,
+            value: entry.value,
+            lastAccessed: entry.lastAccessed,
+            size: this.calculateSize(entry.value)
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+      .sort((a, b) => a.lastAccessed - b.lastAccessed);
+
+    let totalEvicted = 0;
+    let entriesEvicted = 0;
+
+    for (const entry of entries) {
+      if (this.stats.totalSize + requiredSpace > this.config.maxMemoryUsage ||
+          this.stats.currentEntries >= this.config.maxEntries) {
+        localStorage.removeItem(entry.key);
+        totalEvicted += entry.size;
+        entriesEvicted++;
+        this.stats.totalSize -= entry.size;
+        this.stats.currentEntries--;
+      } else {
+        break;
+      }
+    }
+
+    if (entriesEvicted > 0) {
+      console.log(`Evicted ${entriesEvicted} entries, freed ${totalEvicted} bytes`);
+    }
+  }
+
+  async initialize(): Promise<void> {
+    try {
+      await this.cleanup();
+      this.stats.lastAccess = Date.now();
+      this.stats.recoveryCount++;
+    } catch (error) {
+      console.error('Error initializing cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      throw error;
+    }
+  }
+
+  async cleanup(): Promise<void> {
+    const entries = Object.entries(localStorage)
+      .filter(([key]) => key.startsWith(this.PREFIX))
+      .map(([key, value]) => {
+        try {
+          const entry = JSON.parse(value);
+          return {
+            key,
+            value: entry.value,
+            expiry: entry.expiry,
+            size: this.calculateSize(entry.value)
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+    let cleanedEntries = 0;
+    let cleanedSize = 0;
+
+    for (const entry of entries) {
+      if (entry.expiry < Date.now()) {
+        localStorage.removeItem(entry.key);
+        cleanedEntries++;
+        cleanedSize += entry.size;
+        this.stats.totalSize -= entry.size;
+        this.stats.currentEntries--;
+      }
+    }
+
+    if (cleanedEntries > 0) {
+      console.log(`Cleaned ${cleanedEntries} expired entries, freed ${cleanedSize} bytes`);
+    }
+
+    this.stats.lastCleanup = Date.now();
+    this.updateStats();
+  }
+
+  get<T>(key: string): T | null {
+    const startTime = performance.now();
+    try {
+      const prefixedKey = this.PREFIX + key;
+      const value = localStorage.getItem(prefixedKey);
+
+      if (!value) {
         this.stats.misses++;
+        this.stats.missCount++;
+        this.updateStats();
         return null;
       }
 
-      const entry: L2CacheEntry = JSON.parse(entryData);
-
-      if (this.isExpired(entry)) {
-        this.remove(key);
+      const entry = JSON.parse(value);
+      if (entry.expiry < Date.now()) {
+        localStorage.removeItem(prefixedKey);
         this.stats.misses++;
-        return null;
-      }
-
-      const decompressedData = this.decompressData(entry.compressedData);
-      if (decompressedData === null) {
-        this.remove(key);
-        this.stats.misses++;
+        this.stats.missCount++;
+        this.updateStats();
         return null;
       }
 
       entry.lastAccessed = Date.now();
-      entry.accessCount++;
-      localStorage.setItem(storageKey, JSON.stringify(entry));
+      localStorage.setItem(prefixedKey, JSON.stringify(entry));
 
       this.stats.hits++;
-      
-      if (this.config.enableLogging) {
-        console.log(`L2 Cache HIT: ${key}`);
-      }
+      this.stats.hitCount++;
+      this.stats.lastAccess = Date.now();
 
-      return decompressedData;
-    } catch {
-      this.stats.misses++;
+      const queryTime = performance.now() - startTime;
+      this.updateQueryTime(queryTime);
+      this.updateStats();
+
+      return entry.value as T;
+    } catch (error) {
+      console.error('Error getting value from cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      this.updateStats();
       return null;
     }
   }
 
-  set(key: string, data: unknown, ttl?: number, dataType?: string): boolean {
-    const entryTTL = ttl || this.config.defaultTTL;
-    const timestamp = Date.now();
-
+  set<T>(key: string, value: T, ttl?: number, dataType?: string): boolean {
+    const startTime = performance.now();
     try {
-      if (this.shouldEvict()) {
-        this.performEviction();
+      const prefixedKey = this.PREFIX + key;
+      const size = this.calculateSize(value);
+      const expiry = Date.now() + (ttl || this.config.defaultTTL);
+
+      if (this.stats.totalSize + size > this.config.maxMemoryUsage ||
+          this.stats.currentEntries >= this.config.maxEntries) {
+        this.evict(size).catch(error => {
+          console.error('Error during eviction:', error);
+          this.stats.errorCount++;
+          this.stats.lastError = error.message;
+        });
       }
 
-      const compressionResult = this.compressData(data);
-      if (!compressionResult.success) {
-        this.stats.compressionErrors++;
-        return false;
-      }
-
-      const entry: L2CacheEntry = {
-        key,
-        compressedData: compressionResult.compressed,
-        originalSize: compressionResult.originalSize,
-        compressedSize: compressionResult.compressedSize,
-        timestamp,
-        lastAccessed: timestamp,
-        ttl: entryTTL,
-        accessCount: 1,
-        compressionRatio: compressionResult.ratio,
-        dataType: dataType || 'unknown'
+      const entry = {
+        value,
+        expiry,
+        lastAccessed: Date.now(),
+        size,
+        dataType
       };
 
-      const storageKey = this.getStorageKey(key);
-      localStorage.setItem(storageKey, JSON.stringify(entry));
+      localStorage.setItem(prefixedKey, JSON.stringify(entry));
 
-      this.updateStatsAfterSet(entry);
-      this.saveStats();
+      this.stats.totalSize += size;
+      this.stats.currentEntries++;
+      this.stats.writeCount++;
+      this.stats.lastAccess = Date.now();
 
-      if (this.config.enableLogging) {
-        console.log(`L2 Cache SET: ${key} (${compressionResult.ratio.toFixed(2)} ratio)`);
-      }
+      const writeTime = performance.now() - startTime;
+      this.updateWriteTime(writeTime);
+      this.updateStats();
 
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Error setting value in cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
       return false;
     }
   }
 
-  remove(key: string): boolean {
+  delete(key: string): boolean {
+    const startTime = performance.now();
     try {
-      const storageKey = this.getStorageKey(key);
-      const entryData = localStorage.getItem(storageKey);
-      
-      if (!entryData) {
+      const prefixedKey = this.PREFIX + key;
+      const value = localStorage.getItem(prefixedKey);
+
+      if (!value) {
         return false;
       }
 
-      const entry: L2CacheEntry = JSON.parse(entryData);
-      localStorage.removeItem(storageKey);
+      const entry = JSON.parse(value);
+      localStorage.removeItem(prefixedKey);
 
-      this.updateStatsAfterRemove(entry);
-      this.saveStats();
+      this.stats.totalSize -= this.calculateSize(entry.value);
+      this.stats.currentEntries--;
+      this.stats.deleteCount++;
+      this.stats.lastAccess = Date.now();
+
+      const deleteTime = performance.now() - startTime;
+      this.updateDeleteTime(deleteTime);
+      this.updateStats();
 
       return true;
-    } catch {
-      return false;
-    }
-  }
-
-  has(key: string): boolean {
-    try {
-      const storageKey = this.getStorageKey(key);
-      const entryData = localStorage.getItem(storageKey);
-      
-      if (!entryData) {
-        return false;
-      }
-
-      const entry: L2CacheEntry = JSON.parse(entryData);
-      if (this.isExpired(entry)) {
-        this.remove(key);
-        return false;
-      }
-
-      return true;
-    } catch {
+    } catch (error) {
+      console.error('Error deleting value from cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
       return false;
     }
   }
 
   clear(): void {
     try {
-      const keys = this.getAllCacheKeys();
-      for (const storageKey of keys) {
-        localStorage.removeItem(storageKey);
-      }
+      Object.keys(localStorage)
+        .filter(key => key.startsWith(this.PREFIX))
+        .forEach(key => localStorage.removeItem(key));
 
-      this.resetStats();
-      this.saveStats();
-    } catch {
-      // Ignore errors
+      this.stats = this.initializeStats();
+      this.stats.lastAccess = Date.now();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
     }
   }
 
-  keys(): string[] {
+  has(key: string): boolean {
     try {
-      const cacheKeys: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(this.keyPrefix + ':')) {
-          cacheKeys.push(key.substring(this.keyPrefix.length + 1));
-        }
+      const prefixedKey = this.PREFIX + key;
+      const value = localStorage.getItem(prefixedKey);
+
+      if (!value) {
+        return false;
       }
-      return cacheKeys;
-    } catch {
-      return [];
+
+      const entry = JSON.parse(value);
+      if (entry.expiry < Date.now()) {
+        localStorage.removeItem(prefixedKey);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking key in cache:', error);
+      this.stats.errorCount++;
+      this.stats.lastError = error instanceof Error ? error.message : 'Unknown error';
+      return false;
     }
   }
 
   getStats(): L2CacheStats {
-    this.updateCurrentStats();
     return { ...this.stats };
   }
 
-  getStorageBreakdown(): { [dataType: string]: { count: number; originalSize: number; compressedSize: number } } {
-    const breakdown: { [dataType: string]: { count: number; originalSize: number; compressedSize: number } } = {};
-
-    try {
-      const keys = this.getAllCacheKeys();
-      for (const storageKey of keys) {
-        const entryData = localStorage.getItem(storageKey);
-        if (entryData) {
-          const entry: L2CacheEntry = JSON.parse(entryData);
-          const dataType = entry.dataType || 'unknown';
-
-          if (!breakdown[dataType]) {
-            breakdown[dataType] = { count: 0, originalSize: 0, compressedSize: 0 };
-          }
-
-          breakdown[dataType].count++;
-          breakdown[dataType].originalSize += entry.originalSize;
-          breakdown[dataType].compressedSize += entry.compressedSize;
-        }
-      }
-
-      return breakdown;
-    } catch {
-      return {};
-    }
+  getConfig(): L2CacheConfiguration {
+    return { ...this.config };
   }
 
-  cleanupExpiredEntries(): number {
-    let removedCount = 0;
-
-    try {
-      const keys = this.getAllCacheKeys();
-      for (const storageKey of keys) {
-        const entryData = localStorage.getItem(storageKey);
-        if (entryData) {
-          const entry: L2CacheEntry = JSON.parse(entryData);
-          if (this.isExpired(entry)) {
-            localStorage.removeItem(storageKey);
-            this.updateStatsAfterRemove(entry);
-            removedCount++;
-          }
-        }
-      }
-
-      if (removedCount > 0) {
-        this.saveStats();
-      }
-
-      return removedCount;
-    } catch {
-      return 0;
-    }
-  }
-
-  // Private methods
-
-  private compressData(data: unknown): { compressed: string; originalSize: number; compressedSize: number; ratio: number; success: boolean } {
-    try {
-      const jsonString = JSON.stringify(data);
-      const originalSize = jsonString.length * 2;
-
-      if (!this.config.enableCompression || originalSize < this.config.compressionThreshold) {
-        return {
-          compressed: jsonString,
-          originalSize,
-          compressedSize: originalSize,
-          ratio: 1.0,
-          success: true
-        };
-      }
-
-      const compressed = this.simpleCompress(jsonString);
-      const compressedSize = compressed.length * 2;
-
-      return {
-        compressed,
-        originalSize,
-        compressedSize,
-        ratio: compressedSize / originalSize,
-        success: true
-      };
-    } catch {
-      return {
-        compressed: '',
-        originalSize: 0,
-        compressedSize: 0,
-        ratio: 1.0,
-        success: false
-      };
-    }
-  }
-
-  private decompressData(compressedData: string): unknown | null {
-    try {
-      let jsonString: string;
-      if (compressedData.startsWith('COMP:')) {
-        jsonString = this.simpleDecompress(compressedData.substring(5));
-      } else {
-        jsonString = compressedData;
-      }
-
-      return JSON.parse(jsonString);
-    } catch {
-      return null;
-    }
-  }
-
-  private simpleCompress(data: string): string {
-    const dict: { [key: string]: string } = {
-      '"timestamp"': '"ts"',
-      '"data"': '"d"',
-      '"symbol"': '"s"',
-      '"price"': '"p"',
-      '"volume"': '"v"',
-      '"open"': '"o"',
-      '"high"': '"h"',
-      '"low"': '"l"',
-      '"close"': '"c"'
-    };
-
-    let compressed = data;
-    for (const [original, replacement] of Object.entries(dict)) {
-      compressed = compressed.replace(new RegExp(original, 'g'), replacement);
-    }
-
-    return 'COMP:' + compressed;
-  }
-
-  private simpleDecompress(data: string): string {
-    const dict: { [key: string]: string } = {
-      '"ts"': '"timestamp"',
-      '"d"': '"data"',
-      '"s"': '"symbol"',
-      '"p"': '"price"',
-      '"v"': '"volume"',
-      '"o"': '"open"',
-      '"h"': '"high"',
-      '"l"': '"low"',
-      '"c"': '"close"'
-    };
-
-    let decompressed = data;
-    for (const [compressed, original] of Object.entries(dict)) {
-      decompressed = decompressed.replace(new RegExp(compressed, 'g'), original);
-    }
-
-    return decompressed;
-  }
-
-  private isExpired(entry: L2CacheEntry): boolean {
-    return Date.now() - entry.timestamp > entry.ttl;
-  }
-
-  private getStorageKey(key: string): string {
-    return `${this.keyPrefix}:${key}`;
-  }
-
-  private getAllCacheKeys(): string[] {
-    const keys: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(this.keyPrefix + ':')) {
-        keys.push(key);
-      }
-    }
-    return keys;
-  }
-
-  private shouldEvict(): boolean {
-    const usage = this.calculateCurrentUsage();
-    return usage > this.config.maxStorageSize * this.config.evictionThreshold;
-  }
-
-  private performEviction(): void {
-    try {
-      const entries = this.getAllEntriesForEviction();
-      const targetFree = this.config.maxStorageSize * 0.2; // Free 20%
-      let freedSpace = 0;
-
-      for (const { storageKey, entry } of entries) {
-        if (freedSpace >= targetFree) break;
-
-        const entrySize = JSON.stringify(entry).length * 2;
-        localStorage.removeItem(storageKey);
-        this.updateStatsAfterRemove(entry);
-        this.stats.evictions++;
-        freedSpace += entrySize;
-      }
-
-      this.saveStats();
-    } catch {
-      // Ignore errors
-    }
-  }
-
-  private getAllEntriesForEviction(): Array<{ storageKey: string; entry: L2CacheEntry }> {
-    const entries: Array<{ storageKey: string; entry: L2CacheEntry }> = [];
-
-    try {
-      const keys = this.getAllCacheKeys();
-      for (const storageKey of keys) {
-        const entryData = localStorage.getItem(storageKey);
-        if (entryData) {
-          const entry: L2CacheEntry = JSON.parse(entryData);
-          entries.push({ storageKey, entry });
-        }
-      }
-
-      entries.sort((a, b) => {
-        const ageA = Date.now() - a.entry.lastAccessed;
-        const ageB = Date.now() - b.entry.lastAccessed;
-        return ageB - ageA; // Oldest first
-      });
-
-      return entries;
-    } catch {
-      return [];
-    }
-  }
-
-  private calculateCurrentUsage(): number {
-    let totalSize = 0;
-    try {
-      const keys = this.getAllCacheKeys();
-      for (const storageKey of keys) {
-        const entryData = localStorage.getItem(storageKey);
-        if (entryData) {
-          totalSize += entryData.length * 2;
-        }
-      }
-    } catch {
-      // Ignore errors
-    }
-    return totalSize;
-  }
-
-  private updateStatsAfterSet(entry: L2CacheEntry): void {
-    this.stats.totalEntries++;
-    this.stats.totalOriginalSize += entry.originalSize;
-    this.stats.totalCompressedSize += entry.compressedSize;
-    this.updateCompressionRatio();
-    this.updateTimestampStats(entry.timestamp);
-  }
-
-  private updateStatsAfterRemove(entry: L2CacheEntry): void {
-    this.stats.totalEntries = Math.max(0, this.stats.totalEntries - 1);
-    this.stats.totalOriginalSize = Math.max(0, this.stats.totalOriginalSize - entry.originalSize);
-    this.stats.totalCompressedSize = Math.max(0, this.stats.totalCompressedSize - entry.compressedSize);
-    this.updateCompressionRatio();
-  }
-
-  private updateCompressionRatio(): void {
-    this.stats.averageCompressionRatio = this.stats.totalOriginalSize > 0 
-      ? this.stats.totalCompressedSize / this.stats.totalOriginalSize 
-      : 0;
-  }
-
-  private updateTimestampStats(timestamp: number): void {
-    if (this.stats.oldestEntry === 0 || timestamp < this.stats.oldestEntry) {
-      this.stats.oldestEntry = timestamp;
-    }
-    if (timestamp > this.stats.newestEntry) {
-      this.stats.newestEntry = timestamp;
-    }
-  }
-
-  private updateCurrentStats(): void {
-    this.stats.totalStorageUsed = this.calculateCurrentUsage();
-    this.stats.quotaUsagePercent = (this.stats.totalStorageUsed / this.config.maxStorageSize) * 100;
-  }
-
-  private resetStats(): void {
-    this.stats = {
-      totalEntries: 0,
-      totalStorageUsed: 0,
-      totalOriginalSize: 0,
-      totalCompressedSize: 0,
-      averageCompressionRatio: 0,
-      quotaUsagePercent: 0,
-      hits: 0,
-      misses: 0,
-      evictions: 0,
-      compressionErrors: 0,
-      oldestEntry: 0,
-      newestEntry: 0
-    };
-  }
-
-  private loadStats(): void {
-    try {
-      const metadata = localStorage.getItem(this.keyPrefix + ':meta');
-      if (metadata) {
-        this.stats = { ...this.stats, ...JSON.parse(metadata) };
-      }
-    } catch {
-      // Ignore errors, use default stats
-    }
-  }
-
-  private saveStats(): void {
-    try {
-      localStorage.setItem(this.keyPrefix + ':meta', JSON.stringify(this.stats));
-    } catch {
-      // Ignore errors
+  updateConfig(config: Partial<L2CacheConfiguration>): void {
+    this.config = { ...this.config, ...config };
+    if (config.cleanupInterval) {
+      this.startCleanupTimer();
     }
   }
 }
 
-export const localStorageCacheL2 = new LocalStorageCacheL2({
-  maxStorageSize: 5 * 1024 * 1024,
-  defaultTTL: 24 * 60 * 60 * 1000,
-  enableCompression: true,
-  enableLogging: false
-});
-
-export default LocalStorageCacheL2; 
+export const localStorageCacheL2 = new LocalStorageCacheL2(); 
