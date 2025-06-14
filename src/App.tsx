@@ -32,7 +32,7 @@ import viteLogo from '/vite.svg'
 // import PortfolioOptimizationTester from './components/PortfolioOptimizationTester'
 // import AlternativeAllocationsTester from './components/AlternativeAllocationsTester'
 import AlgorithmOptimizationTester from './components/AlgorithmOptimizationTester'
-import AutoSaveDemo from './components/AutoSaveDemo'
+import AutoSaveDemo, { AutoSaveDemo } from './components/AutoSaveDemo'
 import BuyHoldBenchmarkTester from './components/BuyHoldBenchmarkTester'
 import { ContextualHelpDemo } from './components/ContextualHelpDemo'
 import DataChunkingTester from './components/DataChunkingTester'
@@ -40,7 +40,6 @@ import { EqualWeightStrategyTester } from './components/EqualWeightStrategyTeste
 import Header from './components/Header'
 import HeaderDemo from './components/HeaderDemo'
 import LayoutManager from './components/LayoutManager'
-import MainContentAreaDemo from './components/MainContentAreaDemo'
 import MissingDataDemo from './components/MissingDataDemo'
 import MomentumStrategyTester from './components/MomentumStrategyTester'
 import OptimizationConstraintsTester from './components/OptimizationConstraintsTester'
@@ -52,13 +51,12 @@ import ProxyDemo from './components/ProxyDemo'
 import RiskParityStrategyTester from './components/RiskParityStrategyTester'
 import SidebarStepNavigationDemo from './components/SidebarStepNavigationDemo'
 import { TheoryDemo } from './components/TheoryDemo'
-import { TooltipDemo } from './components/TooltipDemo'
 import { WebWorkerTester } from './components/WebWorkerTester'
 import { automaticCleanup } from './services/AutomaticCleanupService'
 import { getEnvironmentStatus, validateEnvironmentVariables } from './utils/envValidation'
 
 function App() {
-  const [currentView, setCurrentView] = useState<'home' | 'header-demo' | 'sidebar-step-navigation-demo' | 'main-content-area-demo' | 'auto-save-demo' | 'tooltip-demo' | 'popup-demo' | 'theory-demo' | 'contextual-help-demo' | 'price-chart-demo' | 'pyscript' | 'pyscript-test' | 'toast-test' | 'error-test' | 'api-test' | 'circuit-breaker-test' | 'env-test' | 'alpha-vantage-test' | 'queue-manager' | 'data-transformation' | 'error-handling' | 'multi-provider' | 'automatic-fallback' | 'data-consistency' | 'data-consistency-demo' | 'proxy-demo' | 'missing-data-demo' | 'outlier-detection-demo' | 'unified-quality-dashboard' | 'cache-monitor-dashboard' | 'storage-health-dashboard' | 'automatic-cleanup-dashboard' | 'storage-management-settings' | 'returns-calculation-tester' | 'risk-metrics-tester' | 'performance-ratios-tester' | 'risk-measures-advanced-tester' | 'portfolio-optimization-tester' | 'alternative-allocations-tester' | 'optimization-constraints-tester' | 'web-worker-tester' | 'data-chunking-tester' | 'algorithm-optimization-tester' | 'progress-indicator-tester' | 'buy-hold-benchmark-tester' | 'equal-weight-strategy-tester' | 'risk-parity-strategy-tester' | 'momentum-strategy-tester'>('home')
+  const [currentView, setCurrentView] = useState<'home' | 'header-demo' | 'sidebar-step-navigation-demo' | 'auto-save-demo' | 'popup-demo' | 'theory-demo' | 'contextual-help-demo' | 'price-chart-demo' | 'pyscript' | 'pyscript-test' | 'toast-test' | 'error-test' | 'api-test' | 'circuit-breaker-test' | 'env-test' | 'alpha-vantage-test' | 'queue-manager' | 'data-transformation' | 'error-handling' | 'multi-provider' | 'automatic-fallback' | 'data-consistency' | 'data-consistency-demo' | 'proxy-demo' | 'missing-data-demo' | 'outlier-detection-demo' | 'unified-quality-dashboard' | 'cache-monitor-dashboard' | 'storage-health-dashboard' | 'automatic-cleanup-dashboard' | 'storage-management-settings' | 'returns-calculation-tester' | 'risk-metrics-tester' | 'performance-ratios-tester' | 'risk-measures-advanced-tester' | 'portfolio-optimization-tester' | 'alternative-allocations-tester' | 'optimization-constraints-tester' | 'web-worker-tester' | 'data-chunking-tester' | 'algorithm-optimization-tester' | 'progress-indicator-tester' | 'buy-hold-benchmark-tester' | 'equal-weight-strategy-tester' | 'risk-parity-strategy-tester' | 'momentum-strategy-tester'>('home')
   const [envStatus, setEnvStatus] = useState<{configured: boolean, missingKeys: string[]}>({configured: true, missingKeys: []})
 
   useEffect(() => {
@@ -179,20 +177,16 @@ function App() {
         return <HeaderDemo />
       case 'sidebar-step-navigation-demo':
         return <SidebarStepNavigationDemo />
-      case 'main-content-area-demo':
-        return <MainContentAreaDemo />
       case 'auto-save-demo':
         return <AutoSaveDemo />
-      case 'tooltip-demo':
-        return <TooltipDemo />
       case 'popup-demo':
         return <PopupDemo />
       case 'theory-demo':
         return <TheoryDemo />
-              case 'contextual-help-demo':
-          return <ContextualHelpDemo />
-        case 'price-chart-demo':
-          return <PriceChartDemo />
+      case 'contextual-help-demo':
+        return <ContextualHelpDemo />
+      case 'price-chart-demo':
+        return <PriceChartDemo />
       default:
         return (
           <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
@@ -235,24 +229,10 @@ function App() {
                   </Button>
                   
                   <Button 
-                    onClick={() => setCurrentView('main-content-area-demo')}
-                    className="w-full text-lg py-3 bg-purple-600 hover:bg-purple-700"
-                  >
-                    📱 Main Content Area Demo
-                  </Button>
-                  
-                  <Button 
                     onClick={() => setCurrentView('auto-save-demo')}
                     className="w-full text-lg py-3 bg-orange-600 hover:bg-orange-700"
                   >
                     💾 Auto-save System Demo
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => setCurrentView('tooltip-demo')}
-                    className="w-full text-lg py-3 bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    💬 Tooltip System Demo
                   </Button>
                   
                   <Button 
@@ -537,14 +517,6 @@ function App() {
                     className="w-full"
                   >
                     ⚖️ Risk Parity Strategy Tester
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => setCurrentView('momentum-strategy-tester')}
-                    variant="outline" 
-                    className="w-full"
-                  >
-                    🚀 Momentum Strategy Tester
                   </Button>
                   
                   <Button 
