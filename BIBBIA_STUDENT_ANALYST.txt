@@ -246,78 +246,93 @@ ________________________________________
   - CAGR (Compound Annual Growth Rate)
     * Formula: CAGR = (End Value / Start Value)^(1/n) - 1
     * Interpretazione: tasso di crescita annuale composto
-    * Utilizzo: confronto performance storiche, proiezioni future
-    * Limiti: non considera volatilità, sensibile a outlier
+    * Modalità studente: spiegazione differenza tra media aritmetica e geometrica
+    * Visualizzazione: grafico storico con CAGR evidenziato
   
+  - Volatilità Annualizzata
+    * Formula: σ * sqrt(252) per dati giornalieri
+    * Interpretazione: deviazione standard annualizzata
+    * Tooltip: spiegazione del concetto di volatilità
+    * Confronto: volatilità storica vs implicita
+
   - Sharpe Ratio
     * Formula: (Rp - Rf) / σp
-    * Dove: Rp = rendimento portafoglio, Rf = risk-free rate, σp = deviazione standard
     * Interpretazione: rendimento aggiustato per il rischio
+    * Risk-free rate: aggiornabile dall'utente
     * Benchmark: >1 buono, >2 ottimo, >3 eccellente
   
   - Sortino Ratio
     * Formula: (Rp - Rf) / σd
-    * Dove: σd = deviazione standard dei rendimenti negativi
     * Interpretazione: rendimento aggiustato per il rischio al ribasso
     * Vantaggio: considera solo la volatilità negativa
   
-  - Information Ratio
-    * Formula: (Rp - Rb) / Tracking Error
-    * Dove: Rb = rendimento benchmark
-    * Interpretazione: efficienza della gestione attiva
-    * Utilizzo: valutazione performance vs benchmark
+  - Calmar Ratio
+    * Formula: CAGR / Max Drawdown
+    * Interpretazione: efficienza nella gestione dei drawdown
+    * Utilizzo: confronto tra strategie con drawdown bassi
 
 9.2 Metriche di Rischio Avanzate
 • Analisi del Rischio:
   - Value at Risk (VaR)
     * Tipi: Parametrico, Storico, Monte Carlo
     * Formula Parametrica: VaR = μ - z * σ
-    * Interpretazione: massima perdita attesa in un intervallo di confidenza
-    * Limiti: non considera eventi estremi
+    * Interpretazione: perdita massima attesa in X% dei casi
+    * Visualizzazione: grafico distribuzione con VaR evidenziato
   
   - Conditional VaR (CVaR)
     * Formula: media delle perdite oltre il VaR
-    * Interpretazione: perdita attesa in caso di superamento del VaR
+    * Interpretazione: perdita media nei peggiori X% casi
     * Vantaggio: considera la coda della distribuzione
   
-  - Expected Shortfall
-    * Formula: E[L|L > VaR]
-    * Interpretazione: perdita media nelle peggiori circostanze
-    * Utilizzo: gestione del rischio estremo
+  - Maximum Drawdown
+    * Calcolo: massima perdita da picco a minimo
+    * Visualizzazione: evidenziato nel grafico storico
+    * Tooltip: "la perdita massima che avresti subito"
+    * Analisi: durata e recovery del drawdown
+
+  - Gain-to-Pain Ratio
+    * Formula: somma rendimenti positivi / somma rendimenti negativi
+    * Interpretazione: efficienza nel generare rendimenti vs perdite
   
-  - Stress Testing
-    * Scenari: crisi di mercato, eventi estremi, shock sistemici
-    * Metodologia: simulazione storica, scenari ipotetici
-    * Output: impatto su portafoglio, misure di mitigazione
+  - Omega Ratio
+    * Formula: integrale rendimenti positivi / integrale rendimenti negativi
+    * Interpretazione: probabilità-weighted return ratio
 
-9.3 Analisi Fondamentale Dettagliata
-• Metriche di Valutazione:
-  - Multipli Principali
-    * P/E (Price/Earnings)
-      - Formula: Prezzo / EPS
-      - Interpretazione: anni per ripagare l'investimento
-      - Confronto: settore, storico, peer group
-    
-    * EV/EBITDA
-      - Formula: Enterprise Value / EBITDA
-      - Interpretazione: valutazione aziendale indipendente dalla struttura
-      - Utilizzo: confronto tra aziende con diversa leva finanziaria
-    
-    * P/B (Price/Book)
-      - Formula: Prezzo / Book Value per azione
-      - Interpretazione: premium sul valore contabile
-      - Analisi: settori ad alta vs bassa intensità di capitale
-
-• Indicatori di Crescita
-  - Revenue Growth
-    * Formula: (Revenue t - Revenue t-1) / Revenue t-1
-    * Analisi: trend, stagionalità, confronto settoriale
+9.3 Analisi di Regressione e Fattori
+• CAPM e Fattori:
+  - Alpha e Beta
+    * Da regressione CAPM contro benchmark selezionabile
+    * Visualizzazione: retta regressione, valori e interpretazione
+    * Analisi: significatività statistica
   
-  - EPS Growth
-    * Formula: (EPS t - EPS t-1) / EPS t-1
-    * Interpretazione: crescita della redditività per azione
+  - R² e Errori Standard
+    * Interpretazione: bontà del fit e precisione delle stime
+    * Visualizzazione: grafico scatter con retta regressione
+  
+  - Fama-French Fattori
+    * Supporto per modelli 3/4/5 fattori
+    * Importazione dati da Ken French library
+    * Regressione multifattoriale con visualizzazione a barre
+    * Spiegazione: interpretazione dei carichi fattoriali
 
-• Metriche di Efficienza
+9.4 Analisi Fondamentale Dettagliata
+• Multipli di Valutazione:
+  - P/E (Price/Earnings)
+    * Formula: Prezzo / EPS
+    * Interpretazione: anni per ripagare l'investimento
+    * Confronto: settore, storico, peer group
+  
+  - EV/EBITDA
+    * Formula: Enterprise Value / EBITDA
+    * Interpretazione: valutazione aziendale indipendente dalla struttura
+    * Utilizzo: confronto tra aziende con diversa leva finanziaria
+  
+  - P/B (Price/Book)
+    * Formula: Prezzo / Book Value per azione
+    * Interpretazione: premium sul valore contabile
+    * Analisi: settori ad alta vs bassa intensità di capitale
+
+• Indicatori di Crescita e Redditività:
   - ROE (Return on Equity)
     * Formula: Net Income / Shareholders' Equity
     * Analisi: efficienza del capitale proprio
@@ -325,58 +340,73 @@ ________________________________________
   - ROIC (Return on Invested Capital)
     * Formula: NOPAT / Invested Capital
     * Interpretazione: efficienza del capitale investito
-
-9.4 Strumenti di Analisi Avanzata
-• Ottimizzazione Portafoglio:
-  - Mean-Variance Optimization
-    * Obiettivo: massimizzare rendimento atteso per dato livello di rischio
-    * Input: rendimenti attesi, covarianze, vincoli
-    * Output: pesi ottimali, frontiera efficiente
   
-  - Black-Litterman Model
-    * Caratteristiche: incorpora views dell'investitore
-    * Vantaggi: più stabile della MVO classica
-    * Utilizzo: gestione portafoglio attiva
+  - EPS Growth
+    * Formula: (EPS t - EPS t-1) / EPS t-1
+    * Analisi: trend 1-3-5 anni
+    * Confronto: vs settore e benchmark
 
-• Analisi Tecnica Quantitativa:
-  - Indicatori Momentum
-    * RSI (Relative Strength Index)
-    * MACD (Moving Average Convergence Divergence)
-    * Stochastic Oscillator
+9.5 Ottimizzazione Portafoglio
+• Mean-Variance Optimization:
+  - Frontiera Efficiente
+    * Simulazioni Monte Carlo (5000+ portafogli)
+    * Visualizzazione interattiva
+    * Vincoli personalizzabili (pesi min/max)
   
-  - Pattern Recognition
-    * Support/Resistance
-    * Trend Lines
-    * Chart Patterns
+  - Portafogli Ottimali
+    * Max Sharpe
+    * Min CVaR
+    * Min Vol
+    * Visualizzazione pesi e caratteristiche
 
-• Analisi Statistica Avanzata:
-  - Regressione Lineare
-    * Analisi di correlazione
-    * Previsione di trend
-    * Identificazione di relazioni
+• Risk Attribution:
+  - Decomposizione del Rischio
+    * Per asset class
+    * Per fattori
+    * Visualizzazione a torta/barre
   
-  - Analisi di Correlazione
-    * Matrici di correlazione
-    * Analisi di cointegrazione
+  - Style Analysis
+    * Regressione contro fattori di stile
+    * Visualizzazione carichi fattoriali
+
+9.6 Backtesting e Strategie
+• Strategie Tecniche:
+  - Moving Averages
+    * SMA 20/50
+    * Crossover strategies
+    * Visualizzazione segnali
+  
+  - Momentum
+    * Calcolo e ranking
+    * Strategie di rotazione
+    * Performance tracking
+  
+  - Mean Reversion
+    * Indicatori di deviazione
+    * Strategie di contrarian
     * Test di significatività
 
-9.5 Backtesting e Simulazione
-• Metodologie di Test:
-  - Walk-Forward Analysis
-    * Caratteristiche: out-of-sample testing
-    * Vantaggi: robustezza dei risultati
+• Strategie di Gestione del Rischio:
+  - CPPI (Constant Proportion Portfolio Insurance)
+    * Calcolo floor e multiplier
+    * Simulazione dinamica
+    * Analisi performance
   
-  - Monte Carlo Simulation
-    * Input: distribuzioni di rendimento
-    * Output: scenari probabilistici
-    * Utilizzo: stress testing, risk management
+  - Risk Parity
+    * Calcolo pesi per rischio uguale
+    * Visualizzazione allocazione
+    * Confronto con strategie tradizionali
 
-• Metriche di Performance Backtest:
-  - Win Rate
-  - Profit Factor
-  - Maximum Drawdown
-  - Recovery Factor
-  - Calmar Ratio
+• Dashboard Risultati:
+  - Metriche di Performance
+    * CAGR, Sharpe, Sortino
+    * Max Drawdown
+    * Win Rate
+  
+  - Analisi di Robustezza
+    * Test out-of-sample
+    * Analisi di sensibilità
+    * Stress testing
 
 [Segue con la sezione 10: DIDATTICA INTEGRATA]
 
