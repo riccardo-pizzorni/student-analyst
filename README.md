@@ -395,3 +395,5 @@ npm test -- path/to/test.test.ts
 ## Support
 
 [Support Information]
+
+<!-- Modifica di test automatica: il bot monitora TUTTO il progetto! -->
