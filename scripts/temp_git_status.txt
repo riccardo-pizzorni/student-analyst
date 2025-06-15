@@ -1,2 +1,1 @@
- M BIBBIA_STUDENT_ANALYST.txt
  M scripts/temp_git_status.txt
