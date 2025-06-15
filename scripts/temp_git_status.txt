@@ -3,6 +3,7 @@
  M index.html
  M package-lock.json
  M package.json
+ M scripts/temp_git_status.txt
  M src/components/ui/slider.tsx
  M src/services/AutomaticCleanupService.ts
  M src/shared/components/slider.tsx
@@ -10,8 +11,3 @@
  D start-cursor-and-auto-commit.bat
  D temp_git_status.txt
 ?? public/manifest.json
-?? scripts/README.md
-?? scripts/auto-commit-push.bat
-?? scripts/backup-cursor-chat.bat
-?? scripts/start-cursor-and-auto-commit.bat
-?? scripts/temp_git_status.txt
