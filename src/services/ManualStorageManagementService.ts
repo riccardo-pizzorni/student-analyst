@@ -12,6 +12,9 @@
  * - Analytics avanzate per decision making
  */
 
+import { localStorageCacheL2 } from '../features/cache/services/LocalStorageCacheL2';
+import { memoryCacheL1 } from '../features/cache/services/MemoryCacheL1';
+
 interface DataCategory {
   type: string;
   name: string;
@@ -201,12 +204,11 @@ class ManualStorageManagementService {
 
       switch (layer) {
         case 'L1':
-          const { memoryCacheL1 } = await import('./MemoryCacheL1');
           const l1Stats = memoryCacheL1.getStats();
-          const l1Keys = memoryCacheL1.keys();
+          const l1Keys = Object.keys(localStorage).filter(key => key.startsWith('l1_cache_'));
           
-          quota = l1Stats.maxSize;
-          usedSize = l1Stats.memoryUsage;
+          quota = l1Stats.maxSize || 0;
+          usedSize = l1Stats.memoryUsage || 0;
           itemCount = l1Keys.length;
           
           for (const key of l1Keys) {
@@ -222,12 +224,11 @@ class ManualStorageManagementService {
           break;
 
         case 'L2':
-          const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
           const l2Stats = localStorageCacheL2.getStats();
-          const l2Keys = localStorageCacheL2.keys();
+          const l2Keys = Object.keys(localStorage).filter(key => key.startsWith('l2_cache_'));
           
           quota = 5 * 1024 * 1024; // 5MB default quota for L2 LocalStorage
-          usedSize = l2Stats.totalStorageUsed;
+          usedSize = l2Stats.totalSize || 0;
           itemCount = l2Keys.length;
           
           for (const key of l2Keys) {
@@ -362,10 +363,7 @@ class ManualStorageManagementService {
     try {
       switch (layer) {
         case 'L1':
-          const { memoryCacheL1 } = await import('./MemoryCacheL1');
-          const { automaticCleanup } = await import('./AutomaticCleanupService');
-          const l1Keys = memoryCacheL1.keys();
-          
+          const l1Keys = Object.keys(localStorage).filter(key => key.startsWith('l1_cache_'));
           for (const key of l1Keys) {
             const data = memoryCacheL1.get(key);
             if (data) {
@@ -375,7 +373,7 @@ class ManualStorageManagementService {
                 size: this.estimateDataSize(data),
                 type: this.categorizeDataByKey(key),
                 symbol: this.extractSymbolFromKey(key),
-                lastAccessed: this.getLastAccessTime(key),
+                lastAccessed: this.getLastAccessed(key),
                 description: this.generateItemDescription(key, layer),
                 priority: this.assessDataPriority(key, data)
               });
@@ -384,9 +382,7 @@ class ManualStorageManagementService {
           break;
 
         case 'L2':
-          const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
-          const l2Keys = localStorageCacheL2.keys();
-          
+          const l2Keys = Object.keys(localStorage).filter(key => key.startsWith('l2_cache_'));
           for (const key of l2Keys) {
             const data = localStorageCacheL2.get(key);
             if (data) {
@@ -396,7 +392,7 @@ class ManualStorageManagementService {
                 size: this.estimateDataSize(data),
                 type: this.categorizeDataByKey(key),
                 symbol: this.extractSymbolFromKey(key),
-                lastAccessed: this.getLastAccessTime(key),
+                lastAccessed: this.getLastAccessed(key),
                 description: this.generateItemDescription(key, layer),
                 priority: this.assessDataPriority(key, data)
               });
@@ -513,24 +509,21 @@ class ManualStorageManagementService {
       }
 
       // Execute cleanup
-      const { memoryCacheL1 } = await import('./MemoryCacheL1');
-      const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
-
       for (const item of preview.itemsToDelete) {
         try {
           let itemFreedSize = 0;
 
           switch (item.layer) {
             case 'L1':
-              if (memoryCacheL1.has(item.key)) {
-                memoryCacheL1.remove(item.key);
+              if (await memoryCacheL1.has(item.key)) {
+                await memoryCacheL1.delete(item.key);
                 itemFreedSize = item.size;
               }
               break;
 
             case 'L2':
-              if (localStorageCacheL2.has(item.key)) {
-                localStorageCacheL2.remove(item.key);
+              if (await localStorageCacheL2.has(item.key)) {
+                await localStorageCacheL2.delete(item.key);
                 itemFreedSize = item.size;
               }
               break;
@@ -625,12 +618,12 @@ class ManualStorageManagementService {
 
           switch (layer) {
             case 'L1':
-              const { memoryCacheL1 } = await import('./MemoryCacheL1');
               const l1Items = await this.getLayerItems('L1');
               
               for (const item of l1Items) {
                 if (this.shouldClearItem(item, options)) {
-                  if (memoryCacheL1.remove(item.key)) {
+                  if (await memoryCacheL1.has(item.key)) {
+                    await memoryCacheL1.delete(item.key);
                     layerSpaceFreed += item.size;
                     layerItemsProcessed++;
                   }
@@ -639,12 +632,12 @@ class ManualStorageManagementService {
               break;
 
             case 'L2':
-              const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
               const l2Items = await this.getLayerItems('L2');
               
               for (const item of l2Items) {
                 if (this.shouldClearItem(item, options)) {
-                  if (localStorageCacheL2.remove(item.key)) {
+                  if (await localStorageCacheL2.has(item.key)) {
+                    await localStorageCacheL2.delete(item.key);
                     layerSpaceFreed += item.size;
                     layerItemsProcessed++;
                   }
@@ -696,9 +689,6 @@ class ManualStorageManagementService {
     const backupData: Record<string, any> = {};
 
     try {
-      const { memoryCacheL1 } = await import('./MemoryCacheL1');
-      const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
-
       for (const item of items) {
         try {
           let data: any = null;
@@ -778,9 +768,6 @@ class ManualStorageManagementService {
         this.backups.delete(backupId);
         throw new Error(`Backup ${backupId} has expired`);
       }
-
-      const { memoryCacheL1 } = await import('./MemoryCacheL1');
-      const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
 
       for (const [fullKey, backupItem] of Object.entries(backup.data)) {
         try {
@@ -940,7 +927,7 @@ class ManualStorageManagementService {
     return undefined;
   }
 
-  private getLastAccessTime(key: string): number {
+  private getLastAccessed(key: string): number {
     // Get from LRU tracker if available
     try {
       const saved = localStorage.getItem('cleanup_lru_tracker');
@@ -1099,13 +1086,6 @@ export default ManualStorageManagementService;
 
 // Export types
 export type {
-  DataCategory,
-  StorageBreakdown,
-  LayerBreakdown,
-  SymbolBreakdown,
-  SelectiveCleanupOptions,
-  CleanupPreview,
-  CleanupItem,
-  ClearCacheOptions,
-  ManualOperationResult
-}; 
+    CleanupItem, CleanupPreview, ClearCacheOptions, DataCategory, LayerBreakdown, ManualOperationResult, SelectiveCleanupOptions, StorageBreakdown, SymbolBreakdown
+};
+

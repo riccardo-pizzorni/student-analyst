@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
-    type AssetData,
+    PortfolioOptimizationEngine, type AssetData,
     type PortfolioConstraints,
     type PortfolioResult
 } from '../services/PortfolioOptimizationEngine';
@@ -63,12 +63,12 @@ const PortfolioOptimizationTester: React.FC = () => {
     try {
       console.log('🚀 Starting Portfolio Optimization Test...');
 
-      const minVarianceResult = portfolioOptimizationEngine.calculateMinimumVariancePortfolio(
+      const minVarianceResult = PortfolioOptimizationEngine.calculateMinimumVariancePortfolio(
         testAssets,
         constraints
       );
 
-      const maxSharpeResult = portfolioOptimizationEngine.calculateMaximumSharpePortfolio(
+      const maxSharpeResult = PortfolioOptimizationEngine.calculateMaximumSharpePortfolio(
         testAssets,
         constraints
       );

@@ -103,7 +103,7 @@ Object.defineProperty(global, 'performance', {
 });
 
 // Import del servizio
-import CacheService, { cacheService } from '../../src/services/CacheService';
+import CacheService, { cacheService } from '../../src/features/cache/services/CacheService';
 
 describe('CacheService', () => {
   let service: CacheService;

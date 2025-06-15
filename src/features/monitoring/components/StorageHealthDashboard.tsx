@@ -7,8 +7,8 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { StorageMonitoringService } from '../features/monitoring/services/StorageMonitoringService';
 import type { StorageHealth, StorageWarning } from '../services/StorageMonitoringService';
+import { StorageMonitoringService } from '../services/StorageMonitoringService';
 import './StorageHealthDashboard.css';
 
 interface ProgressBarProps {

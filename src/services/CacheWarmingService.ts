@@ -3,7 +3,7 @@
  * Intelligent preloading system for optimal cache performance
  */
 
-import { cacheService } from './CacheService';
+import { cacheService } from '../features/cache/services/CacheService';
 
 export interface WarmingTask {
   id: string;

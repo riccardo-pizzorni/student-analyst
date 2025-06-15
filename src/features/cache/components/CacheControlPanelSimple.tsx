@@ -4,9 +4,9 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { cacheService } from '../features/cache/services/CacheService';
 import { cacheAnalytics } from '../services/CacheAnalyticsEngine';
 import { cacheQualityService } from '../services/CacheQualityService';
+import { cacheService } from '../services/CacheService';
 import { cacheWarmingService } from '../services/CacheWarmingService';
 
 interface CacheControlPanelProps {

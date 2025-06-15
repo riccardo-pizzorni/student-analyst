@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --config config/vite.config.ts",
     "build-with-types": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -29,7 +29,8 @@
     "ci:deploy": "npm run build && echo 'Ready for deployment'",
     "test:all": "powershell ./scripts/run-all-tests.ps1",
     "test:coverage": "jest --coverage --config jest.config.cjs",
-    "test:watch": "jest --watch --config jest.config.cjs"
+    "test:watch": "jest --watch --config jest.config.cjs",
+    "auto-deploy": "node scripts/automation/auto-deploy.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

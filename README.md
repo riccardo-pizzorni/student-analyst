@@ -155,13 +155,55 @@ Coverage reports are generated automatically and available in the `coverage` dir
 
 ```
 src/
-├── services/           # Servizi core (Cache, Analytics, Storage)
-├── components/         # Componenti React UI
-├── utils/             # Utility e helper functions
-tests/
-├── unit/              # Test unitari Jest
-├── e2e/               # Test end-to-end Playwright
-└── utils/             # Mock e setup testing
+  app/                # Bootstrapping, entrypoint, provider globali, router
+    App.tsx
+    main.tsx
+    index.css
+    App.css
+    vite-env.d.ts
+  features/
+    cache/
+      components/
+        CacheMonitorDashboard.tsx
+        CacheControlPanelSimple.tsx
+        ...
+      services/
+        CacheService.ts
+        MemoryCacheL1.ts
+        LocalStorageCacheL2.ts
+        IndexedDBCacheL3.ts
+        ...
+      utils/
+      types/
+      __tests__/
+    portfolio/
+      components/
+        PortfolioOptimizationTester.tsx
+        ...
+      services/
+        PortfolioOptimizationEngine.ts
+        ...
+      utils/
+      types/
+      __tests__/
+    monitoring/
+      components/
+        StorageHealthDashboard.tsx
+        ...
+      services/
+        StorageMonitoringService.ts
+        ...
+      utils/
+      types/
+      __tests__/
+  shared/
+    components/       # UI generica, bottoni, card, layout, header, sidebar, ecc.
+    hooks/
+    providers/
+    utils/
+    types/
+    styles/
+    assets/
 ```
 
 ## 🔧 Servizi Core

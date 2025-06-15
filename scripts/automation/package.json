@@ -1,0 +1,12 @@
+{
+  "name": "auto-deploy",
+  "version": "1.0.0",
+  "description": "Script di automazione per push, commit e redeploy",
+  "main": "auto-deploy.js",
+  "scripts": {
+    "start": "node auto-deploy.js"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2"
+  }
+} 

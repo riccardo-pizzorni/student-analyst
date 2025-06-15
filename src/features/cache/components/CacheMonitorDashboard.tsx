@@ -4,8 +4,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { cacheService } from '../features/cache/services/CacheService';
-import { indexedDBCacheL3 } from '../features/cache/services/IndexedDBCacheL3';
+import { cacheService } from '../services/CacheService';
+import { indexedDBCacheL3 } from '../services/IndexedDBCacheL3';
 import './CacheMonitorDashboard.css';
 
 interface CacheMonitorProps {

@@ -1,0 +1,5 @@
+[2025-06-14T18:09:07.936Z] Avvio auto-deploy
+[2025-06-14T18:29:05.143Z] Avvio auto-deploy
+[2025-06-15T00:38:35.171Z] Avvio auto-deploy
+[2025-06-15T00:43:19.502Z] Avvio auto-deploy
+[2025-06-15T00:46:00.707Z] Avvio auto-deploy

@@ -3,7 +3,7 @@
  * Data quality monitoring and automatic cache invalidation system
  */
 
-import { cacheService } from './CacheService';
+import { cacheService } from '../features/cache/services/CacheService';
 
 export interface QualityRule {
   id: string;

@@ -1,0 +1,11 @@
+{
+  "onStartup": {
+    "commands": [
+      {
+        "command": "npm",
+        "args": ["run", "auto-deploy"],
+        "cwd": "${workspaceFolder}"
+      }
+    ]
+  }
+} 

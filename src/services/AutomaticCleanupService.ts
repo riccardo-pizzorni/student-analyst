@@ -372,9 +372,9 @@ class AutomaticCleanupService {
 
     try {
       // Import dei servizi cache
-      const { memoryCacheL1 } = await import('./MemoryCacheL1');
-      const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
-      const { indexedDBCacheL3 } = await import('./IndexedDBCacheL3');
+      const { memoryCacheL1 } = await import('../features/cache/services/MemoryCacheL1');
+      const { localStorageCacheL2 } = await import('../features/cache/services/LocalStorageCacheL2');
+      const { indexedDBCacheL3 } = await import('../features/cache/services/IndexedDBCacheL3');
 
       // L1 - Rimuovi dati scaduti oltre la max age
       const l1Keys = memoryCacheL1.keys();
@@ -508,14 +508,13 @@ class AutomaticCleanupService {
     const items: CleanupItem[] = [];
 
     try {
-      let keys: string[] = [];
+      const keys: string[] = [];
       
       switch (layer) {
         case 'L1':
-          const { memoryCacheL1 } = await import('./MemoryCacheL1');
-          keys = memoryCacheL1.keys();
-          
-          for (const key of keys) {
+          const { memoryCacheL1 } = await import('../features/cache/services/MemoryCacheL1');
+          const l1Keys = Object.keys(localStorage).filter(key => key.startsWith('l1_cache_'));
+          for (const key of l1Keys) {
             const data = memoryCacheL1.get(key);
             if (data) {
               items.push({
@@ -532,10 +531,9 @@ class AutomaticCleanupService {
           break;
           
         case 'L2':
-          const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
-          keys = localStorageCacheL2.keys();
-          
-          for (const key of keys) {
+          const { localStorageCacheL2 } = await import('../features/cache/services/LocalStorageCacheL2');
+          const l2Keys = Object.keys(localStorage).filter(key => key.startsWith('l2_cache_'));
+          for (const key of l2Keys) {
             const data = localStorageCacheL2.get(key);
             if (data) {
               items.push({
@@ -552,7 +550,22 @@ class AutomaticCleanupService {
           break;
           
         case 'L3':
-          // TODO: Implementare quando avremo accesso ai dati L3
+          const { indexedDBCacheL3 } = await import('../features/cache/services/IndexedDBCacheL3');
+          const l3Keys = Object.keys(localStorage).filter(key => key.startsWith('l3_cache_'));
+          for (const key of l3Keys) {
+            const data = indexedDBCacheL3.get(key);
+            if (data) {
+              items.push({
+                key,
+                layer: 'L3',
+                size: this.estimateDataSize(data),
+                lastAccessed: this.lruTracker.get(key) || 0,
+                type: this.identifyDataType(key),
+                priority: this.assessDataPriority(key, data),
+                description: `L3 item: ${key}`
+              });
+            }
+          }
           break;
       }
 
@@ -577,8 +590,9 @@ class AutomaticCleanupService {
     operation.startTime = Date.now();
 
     try {
-      const { memoryCacheL1 } = await import('./MemoryCacheL1');
-      const { localStorageCacheL2 } = await import('./LocalStorageCacheL2');
+      const { memoryCacheL1 } = await import('../features/cache/services/MemoryCacheL1');
+      const { localStorageCacheL2 } = await import('../features/cache/services/LocalStorageCacheL2');
+      const { indexedDBCacheL3 } = await import('../features/cache/services/IndexedDBCacheL3');
       
       let processedItems = 0;
       let freedSize = 0;
@@ -624,7 +638,10 @@ class AutomaticCleanupService {
               break;
               
             case 'L3':
-              // TODO: Implementare cleanup L3
+              if (await indexedDBCacheL3.has(item.key)) {
+                await indexedDBCacheL3.delete(item.key);
+                itemFreedSize = item.size;
+              }
               break;
           }
 

@@ -1,0 +1,297 @@
+/* Theory Button Styles */
+.theory-button {
+  /* Subtle animation for discreteness */
+  transform: scale(1);
+  transition: transform 0.15s ease-in-out;
+}
+
+.theory-button:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.theory-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Theory Modal Styles */
+.theory-modal {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.theory-latex-content {
+  line-height: 1.6;
+}
+
+/* Print Styles */
+@media print {
+  /* Hide non-essential elements when printing */
+  .theory-button,
+  body > *:not(.theory-modal),
+  [role="dialog"] .sticky button,
+  .bg-black {
+    display: none !important;
+  }
+
+  /* Show only the modal content */
+  .theory-modal {
+    position: static !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: white !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  /* Optimize modal header for print */
+  .theory-modal .sticky {
+    position: static !important;
+    border-bottom: 2px solid #000 !important;
+    padding-bottom: 20px !important;
+    margin-bottom: 20px !important;
+    background: white !important;
+  }
+
+  /* Show print button in print mode */
+  .theory-modal .sticky button[title="Stampa teoria"] {
+    display: none !important;
+  }
+
+  /* Hide close button in print */
+  .theory-modal .sticky button[aria-label="Chiudi teoria"] {
+    display: none !important;
+  }
+
+  /* Typography optimizations for print */
+  .theory-modal h2 {
+    font-size: 24px !important;
+    color: #000 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .theory-modal h3 {
+    font-size: 18px !important;
+    color: #000 !important;
+    margin-top: 24px !important;
+    margin-bottom: 12px !important;
+    border-bottom: 1px solid #ccc !important;
+    padding-bottom: 4px !important;
+  }
+
+  .theory-modal h4 {
+    font-size: 14px !important;
+    color: #000 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .theory-modal p,
+  .theory-modal li {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    color: #000 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* LaTeX formulas - ensure they print clearly */
+  .katex {
+    font-size: 12px !important;
+    color: #000 !important;
+  }
+
+  .katex-display {
+    margin: 16px 0 !important;
+    text-align: center !important;
+  }
+
+  /* Section spacing */
+  .theory-modal section {
+    margin-bottom: 24px !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Lists */
+  .theory-modal ul {
+    margin: 12px 0 !important;
+    padding-left: 20px !important;
+  }
+
+  .theory-modal li {
+    margin-bottom: 6px !important;
+  }
+
+  /* Colored backgrounds to grayscale for print */
+  .bg-blue-50,
+  .bg-gray-50,
+  .bg-blue-100,
+  .bg-green-100,
+  .bg-purple-100,
+  .bg-gray-100 {
+    background-color: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Reference links */
+  .theory-modal a {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+
+  .theory-modal a::after {
+    content: " (" attr(href) ")" !important;
+    font-size: 10px !important;
+    color: #666 !important;
+  }
+
+  /* Remove color coding for print */
+  .text-blue-600,
+  .text-blue-700,
+  .text-green-700,
+  .text-purple-700,
+  .text-gray-700,
+  .text-gray-600,
+  .text-gray-500,
+  .text-gray-900 {
+    color: #000 !important;
+  }
+
+  /* Tags and labels */
+  .theory-modal span[class*="bg-"] {
+    background-color: transparent !important;
+    border: 1px solid #000 !important;
+    color: #000 !important;
+    padding: 2px 6px !important;
+    font-size: 10px !important;
+  }
+
+  /* Page breaks */
+  .theory-modal > div > div:nth-child(n+3) {
+    page-break-before: auto !important;
+  }
+
+  /* Ensure content fits on page */
+  .theory-modal {
+    font-size: 12px !important;
+  }
+
+  /* Examples and code blocks */
+  .theory-modal .bg-blue-50 {
+    border: 1px solid #000 !important;
+    background: transparent !important;
+    padding: 12px !important;
+    margin: 12px 0 !important;
+  }
+
+  /* Remove animations and transitions for print */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure proper page margins */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+
+  /* Header for each page */
+  @page :first {
+    @top-center {
+      content: "Student Analyst - Teoria Finanziaria";
+      font-size: 10px;
+      color: #666;
+    }
+  }
+}
+
+/* Dark mode considerations (if applicable) */
+@media (prefers-color-scheme: dark) {
+  .theory-modal {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .theory-modal h2,
+  .theory-modal h3,
+  .theory-modal h4 {
+    color: #f9fafb;
+  }
+
+  .theory-modal .border-gray-200 {
+    border-color: #374151;
+  }
+
+  .theory-modal .bg-gray-50 {
+    background-color: #374151;
+  }
+
+  .theory-modal .text-gray-700 {
+    color: #d1d5db;
+  }
+
+  .theory-modal .text-gray-600 {
+    color: #9ca3af;
+  }
+
+  .theory-modal .text-gray-500 {
+    color: #6b7280;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .theory-modal {
+    max-width: 95vw !important;
+    margin: 0 auto !important;
+  }
+
+  .theory-modal h2 {
+    font-size: 1.5rem !important;
+  }
+
+  .theory-modal h3 {
+    font-size: 1.25rem !important;
+  }
+
+  .theory-modal .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .theory-modal .py-6 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .theory-button {
+    border: 2px solid currentColor;
+  }
+
+  .theory-modal {
+    border: 3px solid #000;
+  }
+
+  .theory-modal h2,
+  .theory-modal h3 {
+    border-bottom: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .theory-button,
+  .theory-modal {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .theory-button:hover {
+    transform: none !important;
+  }
+} 
