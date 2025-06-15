@@ -396,4 +396,7 @@ npm test -- path/to/test.test.ts
 
 [Support Information]
 
+## Test Bot
+Questo è un test del bot di auto-deploy - $(date)
+
 <!-- Modifica di test automatica: il bot monitora TUTTO il progetto! -->
