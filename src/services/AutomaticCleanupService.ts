@@ -1079,26 +1079,29 @@ class AutomaticCleanupService {
   private async performCleanup(): Promise<void> {
     try {
       console.log('Starting automatic cleanup...');
-      
-      // Pulisci la cache L1 (Memory)
-      this.memoryCache.clear();
-      
-      // Pulisci la cache L2 (LocalStorage)
-      this.localStorageCache.clear();
-      
-      // Pulisci la cache L3 (IndexedDB)
-      await this.indexedDBCache.clear();
-
+      // Controlli di sicurezza: esegui .clear solo se l'oggetto esiste e ha il metodo
+      if (this.memoryCache && typeof this.memoryCache.clear === 'function') {
+        this.memoryCache.clear();
+      } else {
+        console.warn('[AutomaticCleanupService] memoryCache non inizializzato o senza metodo clear');
+      }
+      if (this.localStorageCache && typeof this.localStorageCache.clear === 'function') {
+        this.localStorageCache.clear();
+      } else {
+        console.warn('[AutomaticCleanupService] localStorageCache non inizializzato o senza metodo clear');
+      }
+      if (this.indexedDBCache && typeof this.indexedDBCache.clear === 'function') {
+        await this.indexedDBCache.clear();
+      } else {
+        console.warn('[AutomaticCleanupService] indexedDBCache non inizializzato o senza metodo clear');
+      }
       // Aggiorna lo schedule
       this.schedule.lastCleanup = Date.now();
       this.schedule.nextCleanup = this.schedule.lastCleanup + this.schedule.interval;
-      
       // Salva lo schedule
       await this.saveSchedule();
-      
       // Programma la prossima pulizia
       this.scheduleCleanup();
-      
       console.log('Automatic cleanup completed successfully');
     } catch (error) {
       console.error('Automatic cleanup failed:', error);
@@ -1117,8 +1120,8 @@ export default AutomaticCleanupService;
 
 // Export types
 export type {
-    CleanupConfig, CleanupItem,
-    CleanupOperation,
-    CleanupProgress, CleanupReport
+  CleanupConfig, CleanupItem,
+  CleanupOperation,
+  CleanupProgress, CleanupReport
 };
 

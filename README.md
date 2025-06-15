@@ -1,3 +1,5 @@
+🚀 TEST DEPLOY AUTOMATICO: Se vedi questa riga, il deploy funziona!
+
 # Student Analyst 📊
 
 [![Coverage Statements](https://img.shields.io/badge/Coverage-Statements-59.76%25-orange.svg)](coverage/lcov-report/index.html)
@@ -29,8 +31,72 @@
 - **Testing**: Jest 29.7.0 + jsdom + Playwright
 - **UI**: TailwindCSS + Radix UI
 - **Visualizzazioni**: Recharts
-- **Storage**: IndexedDB (Dexie) + LocalStorage
-- **Analytics**: Vercel Analytics + Speed Insights
+- **Animazioni**: tailwindcss-animate
+- **Icone**: lucide-react
+- **Gestione classi**: clsx, tailwind-merge, class-variance-authority
+- **Math rendering**: KaTeX
+- **Monitoring**: web-vitals, @vercel/analytics, @vercel/speed-insights
+
+## 📦 Dipendenze principali effettivamente usate
+
+- `@radix-ui/react-slot` — Slot per componenti UI
+- `@vercel/analytics` — Analytics Vercel
+- `@vercel/speed-insights` — Performance insights Vercel
+- `chalk` — Colorazione output CLI (solo script/test)
+- `class-variance-authority` — Varianti di classi CSS
+- `clsx` — Utility per classi condizionali
+- `katex` — Rendering formule matematiche
+- `lucide-react` — Icone SVG
+- `recharts` — Grafici React
+- `tailwind-merge` — Merge classi Tailwind
+- `tailwindcss-animate` — Animazioni Tailwind
+- `web-vitals` — Metriche performance web
+
+## 🗃️ Automazioni e script
+
+Tutti gli script batch sono nella cartella `/scripts`:
+- **Auto commit/push**: commit e push automatici ogni 2 minuti
+- **Avvio Cursor + automazioni**: batch unico per avviare tutto
+- **Backup chat Cursor**: backup automatico ogni 5 minuti
+- **Auto-deploy**: monitoraggio repo e deploy automatico
+
+Vedi `scripts/README.md` per dettagli e uso.
+
+## 🔑 Variabili d'ambiente
+
+Vedi `.env.example` per tutte le variabili richieste e opzionali. Le principali:
+- `VITE_APIkey_ALPHA_VANTAGE` — API key Alpha Vantage
+- `VITE_BACKEND_URL` — URL backend (es. Render)
+- `VITE_DEBUG` — Abilita modalità debug (opzionale)
+
+## 🚀 Deploy
+
+- Deploy automatico su Vercel collegato a GitHub branch `master`
+- Variabili d'ambiente configurate su Vercel
+- Forzare redeploy in caso di problemi tramite dashboard Vercel
+
+## ♿ Accessibilità e best practice
+
+- Tutti i form hanno label, id, aria-label
+- Modalità debug sicura e documentata
+- Manifest PWA incluso
+- Codebase pulita: nessun codice temporaneo, debug, `any`, `var`, `@ts-ignore` inutili
+
+## 🧹 Pulizia e manutenzione
+
+- Nessuna dipendenza non usata (Dexie rimossa)
+- Codebase periodicamente scansionata per errori comuni
+- Documentazione aggiornata e dettagliata
+
+## 📄 Altra documentazione
+
+- `PROJECT_SETUP.md`: guida completa setup, deploy, variabili, automazioni
+- `scripts/README.md`: dettagli su tutti gli script batch
+- `.env.example`: esempio completo variabili d'ambiente
+
+---
+
+Per domande o problemi, consulta la documentazione o apri una issue.
 
 ## 📊 Test Coverage
 
@@ -400,3 +466,12 @@ npm test -- path/to/test.test.ts
 Questo è un test del bot di auto-deploy - $(date)
 
 <!-- Modifica di test automatica: il bot monitora TUTTO il progetto! -->
+
+## Supporto PWA e Mobile
+
+- Il progetto include un file `public/manifest.json` minimale e valido per supporto Progressive Web App (PWA) e installazione su dispositivi mobili.
+- Il manifest è referenziato in `index.html` tramite `<link rel="manifest" href="/manifest.json" />`.
+- L'icona usata è `vite.svg` (puoi sostituirla con una tua icona personalizzata se vuoi un branding diverso).
+- Per un supporto ancora migliore su mobile, è stato aggiunto anche `<link rel="apple-touch-icon" href="/vite.svg" />`.
+
+**Se vuoi personalizzare l'icona o le proprietà della PWA, modifica `public/manifest.json` e aggiorna le icone nella cartella `public/`.**

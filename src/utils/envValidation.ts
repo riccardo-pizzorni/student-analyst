@@ -83,6 +83,17 @@ function parseNumber(value: string | undefined, defaultValue: number): number {
 }
 
 /**
+ * Determina se la modalità debug deve essere attiva
+ * - In sviluppo: sempre attiva se VITE_DEBUG_MODE=true
+ * - In produzione: attiva solo se VITE_DEBUG_MODE=true e l'utente lo vuole davvero
+ */
+function isDebugMode(): boolean {
+  const isDev = import.meta.env.MODE === 'development';
+  const debugEnv = parseBoolean(import.meta.env.VITE_DEBUG_MODE, OPTIONAL_ENV_VARS.VITE_DEBUG_MODE);
+  return isDev ? debugEnv : (debugEnv === true && import.meta.env.VITE_DEBUG_MODE === 'true');
+}
+
+/**
  * Valida tutte le variabili d'ambiente
  */
 export function validateEnvironmentVariables(): ValidationResult {
@@ -119,7 +130,7 @@ export function validateEnvironmentVariables(): ValidationResult {
   }
 
   // Carica variabili opzionali
-  config.VITE_DEBUG_MODE = parseBoolean(import.meta.env.VITE_DEBUG_MODE, OPTIONAL_ENV_VARS.VITE_DEBUG_MODE);
+  config.VITE_DEBUG_MODE = isDebugMode();
   config.VITE_OFFLINE_MODE = parseBoolean(import.meta.env.VITE_OFFLINE_MODE, OPTIONAL_ENV_VARS.VITE_OFFLINE_MODE);
   config.VITE_API_TIMEOUT = parseNumber(import.meta.env.VITE_API_TIMEOUT, OPTIONAL_ENV_VARS.VITE_API_TIMEOUT);
   config.VITE_YAHOO_FINANCE_ENABLED = parseBoolean(import.meta.env.VITE_YAHOO_FINANCE_ENABLED, OPTIONAL_ENV_VARS.VITE_YAHOO_FINANCE_ENABLED);

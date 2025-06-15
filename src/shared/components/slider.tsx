@@ -18,12 +18,14 @@ export const Slider: React.FC<SliderProps> = ({
   className = '' 
 }) => (
   <input
+    id="slider-input"
     type="range"
     value={value[0] || 0}
     onChange={(e) => onValueChange([Number(e.target.value)])}
     max={max}
     min={min}
     step={step}
+    aria-label="Slider value selector"
     className={`w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer ${className}`}
   />
 ); 

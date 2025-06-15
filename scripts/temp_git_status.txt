@@ -3,6 +3,7 @@
  M index.html
  M package-lock.json
  M package.json
+ M scripts/auto-commit-push.bat
  M scripts/temp_git_status.txt
  M src/components/ui/slider.tsx
  M src/services/AutomaticCleanupService.ts
