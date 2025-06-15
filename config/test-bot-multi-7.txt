@@ -1,0 +1,1 @@
+Test multi 7: file creato in config/. 
