@@ -1,0 +1,104 @@
+🏆 STUDENT ANALYST — BIBBIA DEL SOFTWARE
+Versione aggiornata: 2025-06-15
+
+________________________________________
+1. EXECUTIVE SUMMARY
+Student Analyst è la piattaforma definitiva per l'analisi azionaria formativa e professionale. L'obiettivo è guidare l'utente (in primis il creatore) a diventare un analista finanziario esperto, partendo da zero e arrivando a livello avanzato tramite la pratica e la teoria integrata.
+
+- Educare e guidare l'utente, passo dopo passo, attraverso tutte le fasi dell'analisi azionaria moderna, con rigore didattico e attenzione al dettaglio.
+- Unire la qualità didattica di Harvard, l'usabilità dei migliori software, la robustezza quantitativa delle piattaforme professionali e il design istituzionale più cool e accessibile.
+- Struttura modulare, estendibile, robusta, tecnicamente ineccepibile.
+- Ogni nuova versione, IA o sviluppatore, deve attenersi a questa visione senza mai deragliare.
+
+________________________________________
+2. MISSIONE E VALORI
+- Missione: Far diventare l'utente un analista finanziario esperto tramite la pratica e la teoria, con un percorso didattico perfetto e strumenti professionali.
+- Target: Creatore, studenti principianti, giovani analisti, autodidatti, professori, analisti esperti.
+- Valori: Semplicità, funzionalità, intrattenimento, affidabilità, innovazione, eleganza, freschezza, professionalità, coolness.
+- Personalità: Elegante, moderna, istituzionale, accessibile, non pesante, non invasiva.
+- Branding: Logo definitivo (cappello laurea blu, vedi immagine allegata), nome "Student Analyst" sempre visibile.
+- Proprietà: Software gratuito, non open source, accesso solo su invito, account personali revocabili, marchiato con il nome del creatore.
+
+________________________________________
+3. STRUTTURA DIDATTICA E FUNZIONALE
+- Percorso a livelli (sidebar verticale): ogni livello è sia funzione tecnica che lezione didattica.
+- Modalità unica: studio e analisi sono integrate, nessuna modalità separata.
+- Tutte le funzioni sono visibili a tutti, il percorso didattico guida l'utente inesperto.
+- Ogni livello ha spiegazioni, info-box, glossari, popup, ma la UI resta pulita e focalizzata sull'analisi.
+- Sidebar e livelli sono immutabili senza approvazione.
+
+Tabella livelli (sidebar definitiva):
+Step | Titolo | Finalità principale | Output principale
+0 | Input | Inserimento ticker, periodo, frequenza, bilanci | Dataset, parametri
+1 | Analisi Storica | Studio prezzi e andamenti storici | Grafici, tabella prezzi
+2 | Qualità del Rendimento | Misura performance aggiustate per rischio | Statistiche, Sharpe/Sortino
+3 | Volatilità e Rischio | Analisi rischio avanzato (VaR, CVaR, Drawdown) | Tabella e grafici rischio
+4 | Analisi Inter-Asset | Studio correlazioni, diversificazione | Heatmap, matrice correlaz.
+5 | Analisi Fondamentale | Lettura bilanci, multipli, valore intrinseco | Tabella multipli, ranking
+6 | Portafoglio Ottimale | Frontiera efficiente, Sharpe max, CVaR | Grafico frontiera, pesi
+7 | Strategie & Backtest | Test su strategie attive e passive | Grafici, metriche strat.
+8 | Output | Generazione e preview report finale, export | PDF, CSV, grafici
+
+________________________________________
+4. DESIGN & UI/UX
+- Palette: base dark blue elegante, sfondo soft, livelli sidebar con sfumature fluo ordinate (vedi immagini di riferimento).
+- Icone: stile uniforme, professionale, smooth, ogni icona con colore coerente al livello.
+- Logo: cappello laurea blu (vedi "LOGO definitivo"), testo "Student Analyst" in font moderno.
+- Layout: sidebar verticale compatta, livelli numerati, icona+testo, tab orizzontali per approfondimenti.
+- Grafici: devono essere i migliori in assoluto, funzionali, fruibili, usabili, interattivi.
+- Info-box, popup, glossario sempre accessibili ma non invasivi.
+- Accessibilità: font leggibile, contrasto elevato, UI chiara anche per inesperti.
+
+________________________________________
+5. USER JOURNEY
+1. Avvio: sidebar a livelli, logo e design istituzionale.
+2. Input dati: inserimento ticker (max 50), periodo, frequenza, caricamento bilanci/CSV.
+3. Validazione dati: check automatico, alert su errori, suggerimenti.
+4. Percorso step-by-step: l'utente segue i livelli, può navigare liberamente ma l'input è obbligatorio.
+5. Salvataggio e confronti: sessioni salvabili, confronto analisi, note personali.
+6. Esportazione: report PDF, tabelle CSV, grafici PNG, glossario TXT.
+7. Output finale: anteprima report, scelta livelli/grafici, versione didattica o solo dati.
+8. Sessione futura: ripresa analisi salvate, aggiornamento dati, confronto scenari.
+
+________________________________________
+6. REGOLE D'ORO (IMPERDIBILI)
+- Mai cambiare la sequenza dei livelli né il loro contenuto senza valida motivazione didattica/analitica.
+- Sidebar, palette, icone, font: immutabili senza approvazione.
+- Ogni spiegazione didattica deve essere breve, precisa, chiara (in pagine primarie); esaustiva in popup e pagine secondarie.
+- Nessuna funzione superflua: ogni feature deve portare valore didattico o analitico.
+- Gestione errori sempre trasparente e proattiva.
+- Ogni nuova funzione, bugfix, suggerimento va validato con questa bibbia.
+- In ogni nuova chat o iterazione con IA, queste regole vanno copiate o riassunte come base.
+
+________________________________________
+7. MODULARITÀ E ESPANDIBILITÀ
+- Ogni livello/modulo è autonomo, attivabile/disattivabile senza riscrivere tutto.
+- Codice pulito, commentato, organizzato didatticamente.
+- Pronto per future integrazioni (AI, NLP, news sentiment, quiz, dashboard custom).
+- Sidebar/step: ordine e significato immutabili.
+
+________________________________________
+8. FUNZIONALITÀ AVANZATE E METRICHE
+- Tutte le metriche quantitative e fondamentali dettagliate (CAGR, Sharpe, Sortino, VaR, CVaR, Alpha, Beta, multipli, ranking, regressioni, backtest, ecc.)
+- Ogni metrica ha formula, spiegazione, tooltip, glossario.
+- Simulazioni Monte Carlo, ottimizzazione portafoglio, risk attribution, regressioni multifattoriali, backtest strategie, overlay valutario, dashboard riepilogativa.
+
+________________________________________
+9. DIDATTICA INTEGRATA
+- Box "i" su ogni concetto nuovo.
+- Popup glossario sempre accessibile, esportabile.
+- Ogni formula, dato, grafico ha spiegazione chiara e testuale.
+
+________________________________________
+10. LOGO
+- Il logo ufficiale è il cappello da laurea blu allegato ("LOGO definitivo").
+- Non deve mai essere cambiato.
+
+________________________________________
+11. NOTE FINALI
+- Questo file è la costituzione del software: ogni modifica, decisione, nuova feature deve essere validata e documentata qui.
+- Aggiornare sempre con cura e attenzione maniacale.
+- Ogni nuova iterazione parte da questa bibbia.
+
+________________________________________
+(Allega immagini di riferimento e logo definitivo) 
