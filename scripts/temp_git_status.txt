@@ -1,1 +1,2 @@
+ M scripts/backup-cursor-chat.bat
  M scripts/temp_git_status.txt
