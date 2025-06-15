@@ -26,29 +26,38 @@ Il software è gratuito, non open source, non copiabile, accessibile solo su inv
 
 Student Analyst è, e sarà sempre, la prova materiale del valore, del metodo, della motivazione e della visione del suo creatore. Nessuna funzione, nessuna icona, nessuna spiegazione, nessun modulo dovrà mai essere "abbassato di livello" rispetto alla visione originale. L'obiettivo non è la mediocrità, ma la commozione accademica, la perfezione tecnica, la massima utilità didattica e professionale.
 
-[Segue con la sezione 2: OBIETTIVI FORMATIVI E FUNZIONALI]
-
 ________________________________________
 2. OBIETTIVI FORMATIVI E FUNZIONALI
+
 2.1 Mission
-• Educare l'utente a leggere e interpretare dati azionari reali, comprendere le metriche di rischio e rendimento, valutare le opportunità di investimento, e acquisire una mentalità quantitativa e oggettiva.
+La missione di Student Analyst è educare l'utente a leggere, interpretare e analizzare dati azionari reali, comprendere a fondo le metriche di rischio e rendimento, valutare in modo critico e quantitativo le opportunità di investimento, e acquisire una mentalità oggettiva, razionale e quantitativa. Il software non si limita a fornire strumenti di calcolo, ma accompagna l'utente in un percorso di crescita personale e professionale, in cui ogni analisi è occasione di apprendimento e ogni risultato è spunto per approfondire la teoria, la logica e le tecniche dell'analisi finanziaria moderna.
+
 2.2 Livelli Didattici Progressivi
-• Ogni livello del software rappresenta un gradino della formazione: si parte dall'input dei dati e si arriva alla generazione di un report professionale, attraversando tutte le tappe di un'analisi finanziaria moderna.
-2.3 Doppia Modalità Utente
- o Ogni passaggio, ogni metrica, ogni grafico è accompagnato da spiegazioni, info-box, glossari integrati e consigli pratici.
- o Adatta anche a chi parte da zero, ma sempre con rigore e chiarezza.
- o Le spiegazioni e i popup sono nascosti o comunque a schermo occupano poco spazio, lasciando massimo spazio all'analisi pura e all'interpretazione rapida dei dati.
+Student Analyst è strutturato in livelli didattici progressivi, ciascuno dei quali rappresenta un gradino fondamentale della formazione dell'analista. Si parte dall'input dei dati (selezione dei titoli, periodo, frequenza, caricamento bilanci) e si arriva, attraverso una sequenza logica e tecnica perfetta, alla generazione di un report professionale completo, passando per tutte le tappe di un'analisi finanziaria moderna: analisi storica, qualità del rendimento, rischio e volatilità, correlazione e diversificazione, analisi fondamentale, ottimizzazione del portafoglio, strategie e backtest, output e presentazione dei risultati.
+
+2.3 Doppia Modalità Utente e Didattica Integrata
+Ogni passaggio, ogni metrica, ogni grafico è accompagnato da spiegazioni dettagliate, info-box, glossari integrati, consigli pratici, esempi reali, e suggerimenti operativi. Il software è adatto anche a chi parte da zero, ma mantiene sempre un rigore e una chiarezza didattica elevatissima. Le spiegazioni e i popup sono progettati per essere sempre disponibili ma mai invasivi: occupano poco spazio a schermo, possono essere attivati/disattivati a piacere, e lasciano massimo spazio all'analisi pura e all'interpretazione rapida dei dati. L'utente può scegliere se seguire il percorso guidato o esplorare liberamente i vari livelli e moduli.
+
 2.4 Percorso Didattico
-• Il percorso è verticale (sidebar a livelli numerati) e orizzontale (tab e sotto-tab) per approfondimenti specifici.
+Il percorso didattico di Student Analyst è sia verticale che orizzontale. Verticale perché la sidebar guida l'utente attraverso livelli numerati, ognuno dei quali rappresenta una tappa logica, tecnica e didattica dell'analisi. Orizzontale perché ogni livello può essere approfondito tramite tab e sotto-tab che permettono di esplorare aspetti specifici, confrontare risultati, visualizzare dati alternativi, accedere a spiegazioni teoriche, glossari, FAQ, esempi, casi reali e best practice.
+
 2.5 Target Utente
-• Studenti universitari anche super inesperti, giovani analisti, autodidatti di alto livello, aspiranti professionisti, professori e appassionati di finanza quantitativa, analisti finanziari esperti.
+Il target di Student Analyst è estremamente ampio e include:
+• Studenti universitari anche completamente inesperti di economia e finanza.
+• Giovani analisti e autodidatti di alto livello.
+• Aspiranti professionisti e professori universitari.
+• Appassionati di finanza quantitativa e analisti finanziari esperti.
+Il software è progettato per essere accessibile, fruibile e utile a tutti questi utenti, grazie a un percorso didattico perfetto, una UI chiara e piacevole, e una struttura modulare che permette di adattare l'esperienza alle esigenze di ciascuno.
+
 2.6 Risultati Attesi
-• L'utente sarà in grado di:
- o Capire le metriche di performance e rischio.
- o Usare tool quantitativi e fondamentali con dimestichezza.
- o Sviluppare capacità critica nell'analisi dei titoli.
- o Gestire portafogli simulati in modo razionale.
- o Redigere report professionali e difendibili in ambito accademico e lavorativo.
+Al termine del percorso, l'utente sarà in grado di:
+• Capire e interpretare tutte le principali metriche di performance e rischio (CAGR, Sharpe, Sortino, VaR, CVaR, Drawdown, Alpha, Beta, multipli fondamentali, ecc.).
+• Usare con dimestichezza tool quantitativi e fondamentali, sia per l'analisi di singoli titoli che di portafogli complessi.
+• Sviluppare una capacità critica nell'analisi dei titoli, riconoscere pattern, anomalie, rischi e opportunità.
+• Gestire portafogli simulati in modo razionale, ottimizzare la diversificazione, valutare strategie attive e passive, confrontare risultati e prendere decisioni informate.
+• Redigere report professionali, completi, difendibili sia in ambito accademico che lavorativo, esportando dati, grafici, tabelle e glossari in vari formati (PDF, CSV, TXT, PNG).
+
+[Segue con la sezione 3: STRUTTURA A MODULI]
 
 ________________________________________
 3.2 Struttura a Moduli
