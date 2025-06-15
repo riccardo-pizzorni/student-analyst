@@ -21,8 +21,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           recharts: ['recharts'],
           ui: ['@radix-ui/react-slot', 'clsx', 'tailwind-merge'],
-          math: ['katex'],
-          db: ['dexie']
+          math: ['katex']
         },
         // Ottimizzazione nomi file
         entryFileNames: 'assets/[name]-[hash].js',
