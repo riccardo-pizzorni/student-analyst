@@ -171,49 +171,339 @@ ________________________________________
 
 7.1 Roadmap Attuale
 Il roadmap attuale di Student Analyst include:
-• Completamento dei macro-moduli principali.
-• Integrazione di nuove funzionalità e strumenti.
-• Miglioramento delle performance e dell'usabilità.
-• Espansione verso l'intelligenza artificiale e l'analisi di sentiment.
-• Implementazione di quiz didattici e dashboard personalizzate.
+• Completamento dei macro-moduli principali con focus su:
+  - Ottimizzazione delle performance di calcolo e visualizzazione
+  - Miglioramento dell'usabilità e dell'accessibilità
+  - Espansione delle funzionalità di analisi fondamentale
+  - Implementazione di nuove metriche di rischio e rendimento
+  - Integrazione di strumenti di backtesting avanzati
 
-7.2 Sviluppi Futuri
-I principali sviluppi futuri di Student Analyst includono:
-• Estensione dei macro-moduli a livelli più avanzati di analisi.
-• Integrazione di nuove tecnologie e strumenti di analisi.
-• Miglioramento delle funzionalità di analisi di sentiment e sentiment analysis.
-• Implementazione di quiz didattici avanzati e dashboard interattive.
-• Espansione verso l'analisi di mercati emergenti e l'integrazione di nuove valute.
+7.2 Sviluppi Tecnici
+• Miglioramento dell'architettura software:
+  - Ottimizzazione del codice per performance e manutenibilità
+  - Implementazione di test automatizzati
+  - Miglioramento della gestione degli errori e logging
+  - Ottimizzazione del caching e della gestione della memoria
+  - Implementazione di strategie di lazy loading per i dati
 
-________________________________________
+7.3 Espansioni Funzionali
+• Nuove funzionalità in sviluppo:
+  - Integrazione con API di news finanziarie per sentiment analysis
+  - Implementazione di algoritmi di machine learning per pattern recognition
+  - Sviluppo di dashboard personalizzabili
+  - Creazione di quiz didattici interattivi
+  - Implementazione di strategie di trading automatizzate
+
+7.4 Integrazioni Future
+• Pianificazione di nuove integrazioni:
+  - Connessione con broker per trading reale
+  - Integrazione con piattaforme di social trading
+  - Supporto per criptovalute e mercati emergenti
+  - Implementazione di API per integrazione con altri software
+  - Sviluppo di plugin per browser e mobile
+
 8. MODULARITÀ E ESPANDIBILITÀ
-- Ogni livello/modulo è autonomo, attivabile/disattivabile senza riscrivere tutto.
-- Codice pulito, commentato, organizzato didatticamente.
-- Pronto per future integrazioni (AI, NLP, news sentiment, quiz, dashboard custom).
-- Sidebar/step: ordine e significato immutabili.
+
+8.1 Architettura Modulare
+• Ogni modulo è progettato come unità indipendente:
+  - Interfaccia standardizzata per comunicazione tra moduli
+  - Gestione autonoma dei dati e delle dipendenze
+  - Possibilità di attivazione/disattivazione senza impatto sul sistema
+  - Documentazione interna completa e standardizzata
+  - Test unitari e di integrazione
+
+8.2 Sistema di Plugin
+• Architettura estensibile tramite plugin:
+  - API standardizzata per sviluppo di plugin
+  - Sistema di registrazione e gestione dei plugin
+  - Controllo delle versioni e compatibilità
+  - Gestione delle dipendenze tra plugin
+  - Documentazione per sviluppatori di plugin
+
+8.3 Gestione delle Dipendenze
+• Sistema di gestione dipendenze robusto:
+  - Controllo delle versioni delle librerie
+  - Gestione delle compatibilità
+  - Ottimizzazione del bundle size
+  - Lazy loading delle dipendenze
+  - Cache intelligente per performance
+
+8.4 Scalabilità e Performance
+• Strategie per la scalabilità:
+  - Architettura distribuita per calcoli pesanti
+  - Sistema di caching multilevel
+  - Ottimizzazione delle query e delle operazioni I/O
+  - Gestione efficiente della memoria
+  - Monitoraggio delle performance in tempo reale
+
+[Segue con la sezione 9: FUNZIONALITÀ AVANZATE E METRICHE]
 
 ________________________________________
 9. FUNZIONALITÀ AVANZATE E METRICHE
-- Tutte le metriche quantitative e fondamentali dettagliate (CAGR, Sharpe, Sortino, VaR, CVaR, Alpha, Beta, multipli, ranking, regressioni, backtest, ecc.)
-- Ogni metrica ha formula, spiegazione, tooltip, glossario.
-- Simulazioni Monte Carlo, ottimizzazione portafoglio, risk attribution, regressioni multifattoriali, backtest strategie, overlay valutario, dashboard riepilogativa.
 
-________________________________________
+9.1 Metriche Quantitative di Performance
+• Rendimento e Crescita:
+  - CAGR (Compound Annual Growth Rate)
+    * Formula: CAGR = (End Value / Start Value)^(1/n) - 1
+    * Interpretazione: tasso di crescita annuale composto
+    * Utilizzo: confronto performance storiche, proiezioni future
+    * Limiti: non considera volatilità, sensibile a outlier
+  
+  - Sharpe Ratio
+    * Formula: (Rp - Rf) / σp
+    * Dove: Rp = rendimento portafoglio, Rf = risk-free rate, σp = deviazione standard
+    * Interpretazione: rendimento aggiustato per il rischio
+    * Benchmark: >1 buono, >2 ottimo, >3 eccellente
+  
+  - Sortino Ratio
+    * Formula: (Rp - Rf) / σd
+    * Dove: σd = deviazione standard dei rendimenti negativi
+    * Interpretazione: rendimento aggiustato per il rischio al ribasso
+    * Vantaggio: considera solo la volatilità negativa
+  
+  - Information Ratio
+    * Formula: (Rp - Rb) / Tracking Error
+    * Dove: Rb = rendimento benchmark
+    * Interpretazione: efficienza della gestione attiva
+    * Utilizzo: valutazione performance vs benchmark
+
+9.2 Metriche di Rischio Avanzate
+• Analisi del Rischio:
+  - Value at Risk (VaR)
+    * Tipi: Parametrico, Storico, Monte Carlo
+    * Formula Parametrica: VaR = μ - z * σ
+    * Interpretazione: massima perdita attesa in un intervallo di confidenza
+    * Limiti: non considera eventi estremi
+  
+  - Conditional VaR (CVaR)
+    * Formula: media delle perdite oltre il VaR
+    * Interpretazione: perdita attesa in caso di superamento del VaR
+    * Vantaggio: considera la coda della distribuzione
+  
+  - Expected Shortfall
+    * Formula: E[L|L > VaR]
+    * Interpretazione: perdita media nelle peggiori circostanze
+    * Utilizzo: gestione del rischio estremo
+  
+  - Stress Testing
+    * Scenari: crisi di mercato, eventi estremi, shock sistemici
+    * Metodologia: simulazione storica, scenari ipotetici
+    * Output: impatto su portafoglio, misure di mitigazione
+
+9.3 Analisi Fondamentale Dettagliata
+• Metriche di Valutazione:
+  - Multipli Principali
+    * P/E (Price/Earnings)
+      - Formula: Prezzo / EPS
+      - Interpretazione: anni per ripagare l'investimento
+      - Confronto: settore, storico, peer group
+    
+    * EV/EBITDA
+      - Formula: Enterprise Value / EBITDA
+      - Interpretazione: valutazione aziendale indipendente dalla struttura
+      - Utilizzo: confronto tra aziende con diversa leva finanziaria
+    
+    * P/B (Price/Book)
+      - Formula: Prezzo / Book Value per azione
+      - Interpretazione: premium sul valore contabile
+      - Analisi: settori ad alta vs bassa intensità di capitale
+
+• Indicatori di Crescita
+  - Revenue Growth
+    * Formula: (Revenue t - Revenue t-1) / Revenue t-1
+    * Analisi: trend, stagionalità, confronto settoriale
+  
+  - EPS Growth
+    * Formula: (EPS t - EPS t-1) / EPS t-1
+    * Interpretazione: crescita della redditività per azione
+
+• Metriche di Efficienza
+  - ROE (Return on Equity)
+    * Formula: Net Income / Shareholders' Equity
+    * Analisi: efficienza del capitale proprio
+  
+  - ROIC (Return on Invested Capital)
+    * Formula: NOPAT / Invested Capital
+    * Interpretazione: efficienza del capitale investito
+
+9.4 Strumenti di Analisi Avanzata
+• Ottimizzazione Portafoglio:
+  - Mean-Variance Optimization
+    * Obiettivo: massimizzare rendimento atteso per dato livello di rischio
+    * Input: rendimenti attesi, covarianze, vincoli
+    * Output: pesi ottimali, frontiera efficiente
+  
+  - Black-Litterman Model
+    * Caratteristiche: incorpora views dell'investitore
+    * Vantaggi: più stabile della MVO classica
+    * Utilizzo: gestione portafoglio attiva
+
+• Analisi Tecnica Quantitativa:
+  - Indicatori Momentum
+    * RSI (Relative Strength Index)
+    * MACD (Moving Average Convergence Divergence)
+    * Stochastic Oscillator
+  
+  - Pattern Recognition
+    * Support/Resistance
+    * Trend Lines
+    * Chart Patterns
+
+• Machine Learning e AI:
+  - Algoritmi di Clustering
+    * K-means per segmentazione settoriale
+    * Hierarchical Clustering per correlazioni
+  
+  - Predictive Models
+    * Regressione lineare/multipla
+    * Random Forest
+    * Neural Networks
+
+9.5 Backtesting e Simulazione
+• Metodologie di Test:
+  - Walk-Forward Analysis
+    * Caratteristiche: out-of-sample testing
+    * Vantaggi: robustezza dei risultati
+  
+  - Monte Carlo Simulation
+    * Input: distribuzioni di rendimento
+    * Output: scenari probabilistici
+    * Utilizzo: stress testing, risk management
+
+• Metriche di Performance Backtest:
+  - Win Rate
+  - Profit Factor
+  - Maximum Drawdown
+  - Recovery Factor
+  - Calmar Ratio
+
+[Segue con la sezione 10: DIDATTICA INTEGRATA]
+
 10. DIDATTICA INTEGRATA
-- Box "i" su ogni concetto nuovo.
-- Popup glossario sempre accessibile, esportabile.
-- Ogni formula, dato, grafico ha spiegazione chiara e testuale.
+
+10.1 Sistema di Apprendimento
+• Struttura Didattica:
+  - Percorso guidato step-by-step
+  - Esempi pratici e casi reali
+  - Esercizi interattivi
+  - Quiz di verifica
+  - Feedback immediato
+  - Progress tracking
+  - Certificazioni di competenza
+
+10.2 Risorse Didattiche
+• Materiali di Supporto:
+  - Glossario completo e interattivo
+  - Video tutorial
+  - Guide pratiche
+  - Best practices
+  - Case studies
+  - Template di analisi
+  - Cheat sheet
+  - FAQ dettagliate
+
+10.3 Supporto all'Apprendimento
+• Strumenti di Aiuto:
+  - Tooltip contestuali
+  - Info-box dettagliate
+  - Popup esplicativi
+  - Guide contestuali
+  - Suggerimenti intelligenti
+  - Esempi pratici
+  - Tutorial interattivi
+  - Help desk integrato
+
+10.4 Valutazione e Feedback
+• Sistema di Valutazione:
+  - Quiz di verifica
+  - Esercizi pratici
+  - Progetti di analisi
+  - Certificazioni
+  - Feedback automatico
+  - Progress tracking
+  - Report di performance
+  - Suggerimenti personalizzati
+
+[Segue con la sezione 11: LOGO E IDENTITÀ VISIVA]
 
 ________________________________________
-11. LOGO
-- Il logo ufficiale è il cappello da laurea blu allegato ("LOGO definitivo").
-- Non deve mai essere cambiato.
+11. LOGO E IDENTITÀ VISIVA
 
-________________________________________
+11.1 Logo Ufficiale
+• Il logo ufficiale di Student Analyst è il cappello da laurea blu ("LOGO definitivo").
+• Caratteristiche del logo:
+  - Design minimalista e professionale
+  - Colori istituzionali (blu principale)
+  - Versione monocromatica per documenti
+  - Versione a colori per interfaccia
+  - Dimensioni e proporzioni standardizzate
+  - Area di rispetto definita
+  - Versione responsive per mobile
+
+11.2 Palette Colori
+• Schema colori principale:
+  - Blu istituzionale (#1E3A8A)
+  - Grigio scuro (#1F2937)
+  - Bianco (#FFFFFF)
+  - Accenti e highlights
+  - Colori per grafici e visualizzazioni
+  - Colori per stati e feedback
+  - Colori per temi dark/light
+
+11.3 Typography
+• Font system:
+  - Font principale: Inter
+  - Font secondario: Roboto Mono
+  - Gerarchia tipografica definita
+  - Dimensioni standardizzate
+  - Pesi e stili
+  - Line-height e spacing
+  - Responsive typography
+
+11.4 Elementi UI
+• Componenti standardizzati:
+  - Bottoni e controlli
+  - Input fields
+  - Cards e containers
+  - Tabelle e griglie
+  - Grafici e visualizzazioni
+  - Icone e simboli
+  - Loading states
+  - Error states
+
 12. NOTE FINALI
-- Questo file è la costituzione del software: ogni modifica, decisione, nuova feature deve essere validata e documentata qui.
-- Aggiornare sempre con cura e attenzione maniacale.
-- Ogni nuova iterazione parte da questa bibbia.
 
-________________________________________
-(Allega immagini di riferimento e logo definitivo) 
+12.1 Importanza del Documento
+• Questo documento rappresenta la "costituzione" di Student Analyst:
+  - Fonte di verità per ogni decisione
+  - Riferimento per lo sviluppo
+  - Guida per la manutenzione
+  - Base per la documentazione
+  - Standard per la qualità
+  - Tracciamento delle decisioni
+  - Storia del progetto
+
+12.2 Manutenzione e Aggiornamento
+• Regole per la manutenzione:
+  - Aggiornamento continuo e tempestivo
+  - Versionamento delle modifiche
+  - Approvazione delle modifiche
+  - Documentazione delle decisioni
+  - Tracciamento delle evoluzioni
+  - Backup e controllo versioni
+  - Review periodiche
+
+12.3 Validazione e Qualità
+• Processo di validazione:
+  - Check contro la Bibbia
+  - Test di coerenza
+  - Verifica della completezza
+  - Controllo della qualità
+  - Validazione tecnica
+  - Review peer-to-peer
+  - Approvazione finale
+
+12.4 Conclusione
+Student Analyst è più di un software: è un progetto educativo, professionale e tecnologico che mira a elevare il livello di competenza e consapevolezza nell'analisi finanziaria. Questo documento, la "Bibbia" del progetto, garantisce che ogni aspetto dello sviluppo, dalla progettazione all'implementazione, dalla documentazione alla manutenzione, segua i più alti standard di qualità, coerenza e valore didattico.
+
+[FINE DOCUMENTO] 
