@@ -349,15 +349,16 @@ ________________________________________
     * Trend Lines
     * Chart Patterns
 
-• Machine Learning e AI:
-  - Algoritmi di Clustering
-    * K-means per segmentazione settoriale
-    * Hierarchical Clustering per correlazioni
+• Analisi Statistica Avanzata:
+  - Regressione Lineare
+    * Analisi di correlazione
+    * Previsione di trend
+    * Identificazione di relazioni
   
-  - Predictive Models
-    * Regressione lineare/multipla
-    * Random Forest
-    * Neural Networks
+  - Analisi di Correlazione
+    * Matrici di correlazione
+    * Analisi di cointegrazione
+    * Test di significatività
 
 9.5 Backtesting e Simulazione
 • Metodologie di Test:
