@@ -2,58 +2,70 @@
 Versione aggiornata: 2025-06-15
 
 ________________________________________
-1. EXECUTIVE SUMMARY E MISSIONE
-Student Analyst nasce per trasformare l'utente (in primis il creatore) in un analista finanziario esperto, partendo da zero e arrivando a livello avanzato tramite la pratica e la teoria integrata. Il software è uno strumento professionale, ma anche didattico, che permette di imparare facendo analisi reali e, contemporaneamente, di approfondire ogni concetto tramite spiegazioni contestuali e pagine dedicate.
-
-- L'obiettivo è imparare la teoria delle tecniche, la logica e i concetti finanziari **basandosi sui risultati dell'analisi in corso** (apprendimento pratico), ma anche poter accedere in ogni momento a spiegazioni teoriche generali.
-- Il percorso è **intuitivo, guidato, accessibile anche a chi non sa nulla di economia/finanza**, ma sempre ancorato alla professionalità e all'affidabilità di uno strumento avanzato.
-- Ogni passaggio è chiaro e semplice da capire **per la qualità della spiegazione e del percorso didattico**, non perché i concetti siano banali.
-- Il software tratta **tutti gli argomenti**: dai più semplici ai più avanzati, per una comprensione completa.
-- Vuole trasmettere: **semplicità, funzionalità, intrattenimento, affidabilità, innovazione, eleganza, freschezza, coolness**.
-- Il design è ispirato alle immagini di riferimento (sidebar, palette, logo, icone, vibe).
-- Il risultato di successo è: **automatizzazione, engagement, utilità, efficienza**. Non interessa la massa, ma la qualità dell'esperienza per pochi utenti selezionati.
-- Il software è **gratuito, non copiabile, non open source, accessibile solo su invito**. Ogni utente ha un account personale revocabile. Il progetto è marchiato con il nome del creatore e tutelato da copie e accessi non autorizzati.
+1. EXECUTIVE SUMMARY
+Student Analyst è una piattaforma software pensata per essere il punto di riferimento mondiale nell'analisi azionaria formativa. L'obiettivo è combinare la potenza dei migliori tool quantitativi con la chiarezza di una piattaforma educativa, adatta sia a studenti che a giovani analisti e universitari di alto livello.
+I punti cardine della visione sono:
+• Educare e guidare l'utente, passo dopo passo, attraverso tutte le fasi dell'analisi azionaria moderna, con rigore didattico e attenzione al dettaglio.
+• Unire in un solo prodotto la qualità didattica di Harvard, l'usabilità dei migliori software, la robustezza quantitativa delle piattaforme professionali e il design "istituzionale" più cool e accessibile.
+• Fornire una struttura modulare, estendibile, robusta, e tecnicamente ineccepibile.
+• Stabilire un modello di riferimento per tutti i futuri sviluppi, così che nessuna nuova versione, né IA né sviluppatore, possa mai perdere la direzione e la coerenza di ciò che rende unico Student Analyst.
 
 ________________________________________
-2. STRUTTURA DIDATTICA E FUNZIONALE
-- Percorso a livelli (sidebar verticale): ogni livello è sia funzione tecnica che lezione didattica.
-- Modalità unica: studio e analisi sono integrate, nessuna modalità separata.
-- Tutte le funzioni sono visibili a tutti, il percorso didattico guida l'utente inesperto.
-- Ogni livello ha spiegazioni, info-box, glossari, popup, ma la UI resta pulita e focalizzata sull'analisi.
-- Sidebar e livelli sono immutabili senza approvazione.
-
-Tabella livelli (sidebar definitiva):
-Step | Titolo | Finalità principale | Output principale
-0 | Input | Inserimento ticker, periodo, frequenza, bilanci | Dataset, parametri
-1 | Analisi Storica | Studio prezzi e andamenti storici | Grafici, tabella prezzi
-2 | Qualità del Rendimento | Misura performance aggiustate per rischio | Statistiche, Sharpe/Sortino
-3 | Volatilità e Rischio | Analisi rischio avanzato (VaR, CVaR, Drawdown) | Tabella e grafici rischio
-4 | Analisi Inter-Asset | Studio correlazioni, diversificazione | Heatmap, matrice correlaz.
-5 | Analisi Fondamentale | Lettura bilanci, multipli, valore intrinseco | Tabella multipli, ranking
-6 | Portafoglio Ottimale | Frontiera efficiente, Sharpe max, CVaR | Grafico frontiera, pesi
-7 | Strategie & Backtest | Test su strategie attive e passive | Grafici, metriche strat.
-8 | Output | Generazione e preview report finale, export | PDF, CSV, grafici
-
-________________________________________
-3. DESIGN & UI/UX
-- Palette: base dark blue elegante, sfondo soft, livelli sidebar con sfumature fluo ordinate (vedi immagini di riferimento).
-- Icone: stile uniforme, professionale, smooth, ogni icona con colore coerente al livello.
-- Logo: cappello laurea blu (vedi "LOGO definitivo"), testo "Student Analyst" in font moderno.
-- Layout: sidebar verticale compatta, livelli numerati, icona+testo, tab orizzontali per approfondimenti.
-- Grafici: devono essere i migliori in assoluto, funzionali, fruibili, usabili, interattivi.
-- Info-box, popup, glossario sempre accessibili ma non invasivi.
-- Accessibilità: font leggibile, contrasto elevato, UI chiara anche per inesperti.
+2. OBIETTIVI FORMATIVI E FUNZIONALI
+2.1 Mission
+• Educare l'utente a leggere e interpretare dati azionari reali, comprendere le metriche di rischio e rendimento, valutare le opportunità di investimento, e acquisire una mentalità quantitativa e oggettiva.
+2.2 Livelli Didattici Progressivi
+• Ogni livello del software rappresenta un gradino della formazione: si parte dall'input dei dati e si arriva alla generazione di un report professionale, attraversando tutte le tappe di un'analisi finanziaria moderna.
+2.3 Doppia Modalità Utente
+ o Ogni passaggio, ogni metrica, ogni grafico è accompagnato da spiegazioni, info-box, glossari integrati e consigli pratici.
+ o Adatta anche a chi parte da zero, ma sempre con rigore e chiarezza.
+ o Le spiegazioni e i popup sono nascosti o comunque a schermo occupano poco spazio, lasciando massimo spazio all'analisi pura e all'interpretazione rapida dei dati.
+2.4 Percorso Didattico
+• Il percorso è verticale (sidebar a livelli numerati) e orizzontale (tab e sotto-tab) per approfondimenti specifici.
+2.5 Target Utente
+• Studenti universitari anche super inesperti, giovani analisti, autodidatti di alto livello, aspiranti professionisti, professori e appassionati di finanza quantitativa, analisti finanziari esperti.
+2.6 Risultati Attesi
+• L'utente sarà in grado di:
+ o Capire le metriche di performance e rischio.
+ o Usare tool quantitativi e fondamentali con dimestichezza.
+ o Sviluppare capacità critica nell'analisi dei titoli.
+ o Gestire portafogli simulati in modo razionale.
+ o Redigere report professionali e difendibili in ambito accademico e lavorativo.
 
 ________________________________________
-4. USER JOURNEY
-1. Avvio: sidebar a livelli, logo e design istituzionale.
-2. Input dati: inserimento ticker (max 50), periodo, frequenza, caricamento bilanci/CSV.
-3. Validazione dati: check automatico, alert su errori, suggerimenti.
-4. Percorso step-by-step: l'utente segue i livelli, può navigare liberamente ma l'input è obbligatorio.
-5. Salvataggio e confronti: sessioni salvabili, confronto analisi, note personali.
-6. Esportazione: report PDF, tabelle CSV, grafici PNG, glossario TXT.
-7. Output finale: anteprima report, scelta livelli/grafici, versione didattica o solo dati.
-8. Sessione futura: ripresa analisi salvate, aggiornamento dati, confronto scenari.
+3.2 Struttura a Moduli
+• Ogni livello dell'analisi è un modulo separato, chiamato dalla sidebar e gestito come funzione autonoma.
+• Ogni modulo è pensato per poter essere attivato, disattivato o personalizzato senza dover riscrivere l'intero software.
+• Il codice è pulito, commentato, e organizzato in modo didattico.
+3.3 Gestione Dati
+• Download da Yahoo Finance tramite yfinance: dati "Adj Close" preferiti, fallback automatico su "Close".
+• Gestione automatica di errori (ticker non trovati, dati insufficienti, frequenza errata).
+• Possibilità di caricare dati fondamentali aggiuntivi (bilanci, CSV, Excel).
+• Salvataggio e caricamento di "analisi preferite": nome, note personali, risultati chiave, confronto tra analisi.
+• Supporto per l'analisi di un massimo di 50 titoli per sessione (limite per garantire reattività e chiarezza dei risultati).
+3.4 Modularità e Espandibilità
+• Il progetto nasce "open", con struttura pronta per future integrazioni (AI, NLP, news sentiment, quiz didattici, dashboard custom).
+• Ogni modulo può essere potenziato o sostituito senza impattare sugli altri.
+• La logica della sidebar/step è "immutabile": l'ordine e il significato dei livelli non devono mai essere alterati.
+
+________________________________________
+4. DESIGN & UI/UX
+4.1 Palette Cromatica e Stile Grafico
+• Base dark blue, elegante, con sfondo soft per evitare affaticamento visivo.
+• Ogni livello ha una sfumatura fluo diversa e ordinata: la transizione colore da input a output deve essere armonica (nessun colore pesante, nessun mix casuale!).
+• La palette di riferimento è quella delle immagini "sidebar quasi perfetta e stile icone perfetto" fornite dal creatore.
+4.2 Icone
+• Stile uniforme, professionale, "morbido" (linea smooth e coerente per tutte le icone).
+• Logo ufficiale: cappello da laurea + testo "Student Analyst" in font moderno, didattico e istituzionale.
+• Ogni icona ha il proprio colore di sfondo in accordo cromatico con il percorso sidebar.
+4.3 Layout Sidebar & Navigazione
+• Sidebar verticale con livelli ordinati, icona + testo breve per ogni step.
+• Ogni selezione di livello apre una schermata dedicata con tab orizzontali (grafici, dati, spiegazione, esempi).
+• Sidebar compatta ma super leggibile, pensata per monitor grandi e piccoli.
+• Cliccando le icone/step la UI non deve mai "saltare" o risultare confusa.
+4.4 Elementi Didattici e Accessibilità
+• Info-box popup ("i"): spiegazione rapida, attivabile/disattivabile.
+• Expander con teoria, glossario e FAQ in ogni livello.
 
 ________________________________________
 5. REGOLE D'ORO (IMPERDIBILI)
