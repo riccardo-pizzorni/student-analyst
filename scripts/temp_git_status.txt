@@ -1,14 +1,1 @@
- M README.md
- D auto-commit-push.bat
- M index.html
- M package-lock.json
- M package.json
- M scripts/auto-commit-push.bat
  M scripts/temp_git_status.txt
- M src/components/ui/slider.tsx
- M src/services/AutomaticCleanupService.ts
- M src/shared/components/slider.tsx
- M src/utils/envValidation.ts
- D start-cursor-and-auto-commit.bat
- D temp_git_status.txt
-?? public/manifest.json
