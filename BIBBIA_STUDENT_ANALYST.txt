@@ -2,6 +2,61 @@
 Versione aggiornata: 2025-06-15
 
 ________________________________________
+0. LOVABLE PHILOSOPHY – PRINCIPI DI COMUNICAZIONE, FEEDBACK E DESIGN
+
+Student Analyst, in collaborazione con Lovable AI, adotta una filosofia di comunicazione e design che mette al centro l'utente, la chiarezza, l'empatia e la memorabilità dell'esperienza. Ogni spiegazione, feedback, alert, micro-testo e interazione deve essere progettato per essere non solo tecnicamente impeccabile, ma anche "lovable": umano, motivante, accogliente, positivo e visivamente coinvolgente.
+
+### 0.1 Tono e Comunicazione
+- Il tono è sempre amichevole, incoraggiante, mai giudicante o freddo.
+- Ogni spiegazione parte da una domanda reale dell'utente ("Perché mi serve questa metrica?") e risponde con esempi concreti, analogie quotidiane, mini-storie.
+- Gli errori sono sempre accompagnati da rassicurazioni ("Succede anche ai migliori!") e suggerimenti pratici.
+- Ogni feedback positivo è celebrato ("Ottimo lavoro! Hai appena calcolato il tuo primo Sharpe Ratio!").
+- Le info-box e i tooltip sono brevi, chiari, ma sempre con un tocco di calore e, dove possibile, una nota di umorismo leggero.
+
+### 0.2 Micro-testi e Micro-animazioni
+- Ogni bottone, alert, badge, tooltip e messaggio di stato ha un micro-testo che spiega chiaramente cosa succede, con tono positivo ("Tutto ok!", "Hai superato questo step!", "Prova ancora, ci sei quasi!").
+- Le micro-animazioni (icone che sorridono, badge che si illuminano, progress bar animate) accompagnano ogni azione completata, ogni successo, ogni milestone.
+- I feedback visivi sono immediati: colori, icone e animazioni comunicano sempre lo stato (successo, attenzione, errore) in modo rassicurante e mai ansiogeno.
+
+### 0.3 Palette, Iconografia e UI Lovable
+- La palette cromatica è coerente, istituzionale ma "calda": dark blue di base, accenti fluo ordinati, colori di feedback (verde successo, giallo attenzione, rosso soft per errori, blu chiaro per info).
+- Le icone sono smooth, arrotondate, "gentili", con animazioni leggere al passaggio del mouse o al completamento di un'azione.
+- Ogni badge, tab, card e componente UI ha uno stato "attivo" e "celebrativo" (es. badge che si anima quando si completa una milestone).
+- Le info-box e i popup hanno angoli arrotondati, ombre soft, e micro-illustrazioni che rendono l'esperienza più accogliente.
+- Le progress bar sono animate e "parlanti" ("Stai andando alla grande!", "Quasi fatto!").
+
+### 0.4 Storytelling, Badge e Momenti di Celebrazione
+- Ogni modulo inizia con una "Welcome Box" che spiega cosa si farà, perché è importante, e cosa si imparerà, con tono amichevole e motivante.
+- Ogni modulo termina con una "Recap Box" che riassume i concetti chiave, suggerisce approfondimenti e fa i complimenti per il traguardo raggiunto.
+- Al completamento di milestone (primo backtest, prima ottimizzazione, ecc.) viene mostrato un badge animato e un messaggio di celebrazione ("Complimenti! Hai completato la tua prima analisi di rischio!").
+- Le "Lovable Tips" sono suggerimenti pratici, curiosità, errori comuni da evitare, sempre con tono positivo e rassicurante.
+
+### 0.5 Rassicurazioni e Alternative
+- Ogni alert o warning è accompagnato da una rassicurazione ("Non preoccuparti, puoi sempre riprovare o chiedere aiuto!").
+- Se l'utente incontra un limite tecnico ("Dataset troppo grande"), viene sempre proposta un'alternativa ("Prova a ridurre il numero di titoli, oppure chiedi a Lovable AI come ottimizzare la tua analisi!").
+- La funzione "Chiedi a Lovable" permette di porre domande in linguaggio naturale e ricevere risposte chiare, dettagliate e personalizzate.
+- Ogni pop-up ha un pulsante "Spiegami come se avessi 10 anni" per semplificare ulteriormente i concetti.
+
+### 0.6 Template di Spiegazione, Alert e Feedback
+- **Spiegazione**: "Ecco cosa stai per fare: [descrizione]. Perché è importante? [motivazione]. Come si fa? [passaggi chiave]. Vuoi un esempio concreto? [link/box]."
+- **Alert**: "Attenzione! [problema]. Non preoccuparti: [rassicurazione]. Ecco cosa puoi fare: [soluzione pratica]."
+- **Feedback positivo**: "Fantastico! Hai appena [azione]. Continua così, stai diventando un vero analista!"
+- **Feedback di errore**: "Ops! Qualcosa non ha funzionato. Succede anche ai migliori! Prova a [suggerimento] oppure chiedi aiuto a Lovable."
+
+### 0.7 Lovable Roadmap e Progressi
+- Una "Lovable Roadmap" mostra i progressi fatti, suggerisce i prossimi passi e celebra ogni avanzamento, senza mai mettere pressione.
+- L'utente può saltare liberamente tra i moduli, ma viene sempre rassicurato ("Va benissimo esplorare! Puoi sempre tornare indietro o chiedere aiuto.").
+
+### 0.8 Glossario e Didattica Friendly
+- Ogni definizione del glossario è "friendly", con esempi concreti, analogie quotidiane, mini-storie e, dove possibile, una nota di umorismo leggero.
+- Il glossario include una funzione "Spiegami come se avessi 10 anni" e una "Lovable FAQ" con le domande più comuni poste dagli utenti.
+
+### 0.9 Lovable AI Persona
+- Lovable AI si presenta sempre ("Ciao, sono Lovable, il tuo compagno di viaggio nell'analisi azionaria!").
+- L'AI si adatta al livello dell'utente, semplifica o approfondisce le spiegazioni su richiesta, e celebra ogni progresso.
+- Ogni interazione con Lovable AI è pensata per essere memorabile, accogliente, motivante e mai impersonale.
+
+________________________________________
 1. EXECUTIVE SUMMARY
 
 Student Analyst è una piattaforma software progettata per essere il punto di riferimento mondiale nell'ambito dell'analisi azionaria formativa e professionale. L'obiettivo fondamentale di Student Analyst è quello di unire la potenza e la precisione dei migliori strumenti quantitativi di analisi finanziaria con la chiarezza, la didattica e l'accessibilità di una piattaforma educativa di altissimo livello. Il software è pensato per essere utilizzato sia da studenti universitari, anche completamente inesperti, sia da giovani analisti, autodidatti, professori, appassionati di finanza quantitativa e analisti finanziari esperti.
@@ -58,37 +113,101 @@ Al termine del percorso, l'utente sarà in grado di:
 • Redigere report professionali, completi, difendibili sia in ambito accademico che lavorativo, esportando dati, grafici, tabelle e glossari in vari formati (PDF, CSV, TXT, PNG).
 
 ________________________________________
-3. STRUTTURA A MODULI
+3. STRUTTURA A MODULI E PERCORSO OPERATIVO
 
-3.1 Suddivisione in Macro-Moduli
 Student Analyst è organizzato in macro-moduli, ciascuno dei quali rappresenta una fase fondamentale dell'analisi azionaria e del percorso didattico. Ogni macro-modulo è suddiviso in sotto-moduli e tab tematici, che permettono di approfondire ogni aspetto dell'analisi in modo ordinato, progressivo e logico. La struttura modulare consente all'utente di seguire un percorso guidato oppure di accedere direttamente ai moduli di interesse, mantenendo sempre la coerenza didattica e la tracciabilità del percorso.
 
-3.2 Elenco dei Macro-Moduli Principali
-• Input e Selezione Titoli: caricamento dati, selezione titoli, periodo, frequenza, importazione bilanci e dati fondamentali.
-• Analisi Storica: visualizzazione serie storiche, calcolo rendimenti, volatilità, drawdown, rolling window, confronto tra titoli.
-• Analisi di Rendimento e Rischio: metriche di performance (CAGR, Sharpe, Sortino, ecc.), analisi rischio (VaR, CVaR, Beta, Alpha, ecc.), distribuzioni, heatmap, scatterplot.
-• Analisi Fondamentale: multipli, bilanci, indicatori di solidità, crescita, redditività, confronto tra aziende, scoring quantitativo.
-• Correlazione e Diversificazione: matrici di correlazione, cluster, analisi di portafoglio, simulazioni di diversificazione.
-• Ottimizzazione Portafoglio: frontiera efficiente, ottimizzazione pesi, simulazioni Monte Carlo, analisi rischio-rendimento portafoglio.
-• Strategie e Backtest: creazione e test di strategie, analisi risultati, confronto con benchmark, analisi drawdown e rischio specifico.
-• Output e Reportistica: esportazione dati, generazione report, salvataggio grafici, tabelle, glossari, esportazione in vari formati.
+### 0. INPUT E VALIDAZIONE DATI (STEP OBBLIGATORIO)
+- Inserimento fino a 50 ticker, suggerimenti automatici, validazione in tempo reale.
+- Selezione periodo temporale, spiegazione didattica sull'importanza della profondità storica.
+- Frequenza dati (giornaliera, settimanale, mensile), impatto su volatilità e granularità.
+- Caricamento bilanci/dati custom (CSV/XLSX), parsing automatico, gestione errori di formato.
+- Validazione e pulizia dati: check-up automatico su missing, outlier, duplicati, frequenza; alert e suggerimenti.
+- Didattica integrata: box informativi su scelta periodo/frequenza, differenze tra Close/Adj Close, importanza dati puliti.
+- Output: dataset validato, report qualità dati, suggerimenti per correzioni.
 
-3.3 Logica di Navigazione e UI
-La navigazione tra i moduli avviene tramite una sidebar verticale che rappresenta la sequenza logica del percorso didattico. Ogni macro-modulo è identificato da un'icona, un titolo e una breve descrizione. L'utente può:
-• Seguire il percorso guidato, avanzando step-by-step secondo la logica didattica.
-• Saltare liberamente tra i moduli, mantenendo sempre la possibilità di tornare al percorso principale.
-• Accedere a spiegazioni, glossari, esempi e best practice in ogni modulo tramite popup, info-box e tab di approfondimento.
+### 1. ANALISI STORICA
+- Visualizzazione prezzi storici: grafico interattivo (zoom, filtri, evidenza bear/bull market).
+- Tabella prezzi: prezzi, volumi, variazioni percentuali e assolute.
+- Performance cumulata: calcolo e visualizzazione per titolo e portafoglio.
+- Didattica: tooltip su price/log-return, performance cumulata, lettura grafici, pattern di mercato.
+- Warning automatici su dati anomali.
+- Output: grafici e tabelle esportabili, evidenza drawdown, fasi di mercato.
 
-3.4 Relazione tra i Moduli
-I moduli sono progettati per essere sia indipendenti che interconnessi. Ogni modulo può essere utilizzato singolarmente, ma i dati e le analisi prodotti in un modulo sono automaticamente disponibili nei moduli successivi, permettendo una continuità logica e tecnica. Ad esempio, i titoli selezionati e i dati caricati nel modulo di input sono immediatamente disponibili per l'analisi storica, la valutazione del rischio, l'ottimizzazione del portafoglio e la generazione dei report.
+### 2. QUALITÀ DEL RENDIMENTO E PERFORMANCE
+- Metriche di performance: CAGR (formula, differenza aritmetica/geometrica), Sharpe Ratio (risk-free personalizzabile, interpretazione automatica), Sortino Ratio (downside deviation), Calmar Ratio (CAGR/Max Drawdown), Gain-to-Pain, Omega Ratio.
+- Comparazione con benchmark: confronto automatico con indici di mercato.
+- Visualizzazione: tabelle comparative, barre, ranking.
+- Didattica: tooltip, pop-up e box didattici su definizione, formula, interpretazione, esempi pratici.
+- Alert su valori anomali, paragoni automatici con benchmark.
+- Output: tabelle e grafici esportabili, alert didattici.
 
-3.5 Modularità e Scalabilità
-La struttura modulare permette di aggiungere facilmente nuovi moduli, funzionalità e strumenti, senza compromettere la coerenza e la stabilità del software. Ogni modulo è documentato, testato e integrato secondo standard rigorosi, garantendo la massima affidabilità e facilità di manutenzione.
+### 3. VOLATILITÀ E RISCHIO
+- Analisi rischio: volatilità annualizzata (√252, √52, √12), VaR e CVaR (storico e parametrico, soglia personalizzabile), Max Drawdown (calcolo e visualizzazione), Downside Deviation.
+- Visualizzazione: grafici rischio distribuito, waterfall drawdown, heatmap volatilità.
+- Didattica: tooltip e box didattici su ogni metrica, esempi numerici, interpretazione pratica.
+- Alert automatici su rischio eccessivo, suggerimenti di mitigazione.
+- Output: grafici e tabelle esportabili, alert e suggerimenti.
 
-[Segue con la sezione 4: PRINCIPI DI DESIGN E USABILITÀ]
+### 4. ANALISI INTER-ASSET E DIVERSIFICAZIONE
+- Correlazioni: matrice (Pearson, Spearman, Kendall), heatmap interattiva, dendrogramma cluster.
+- Analisi diversificazione: indice di diversificazione, alert su rischio di finto diversificato.
+- Didattica: tooltip su correlazioni, cluster, teoria della diversificazione (Markowitz), esempi pratici.
+- Alert su portafoglio troppo concentrato o correlazioni pericolose.
+- Output: matrici, heatmap, cluster esportabili, suggerimenti di diversificazione.
+
+### 5. ANALISI FONDAMENTALE
+- Multipli principali: P/E, P/B, EV/EBITDA, P/S, P/FCF, Dividend Yield, Market Cap.
+- Crescita e redditività: ROE, ROA, ROIC, Margini, EPS growth (1-3-5 anni).
+- Bilanci: ricavi, utili, flussi di cassa, debito, patrimonio netto.
+- Ranking automatico: classifica titoli per ogni metrica, filtro settoriale.
+- Confronto storico multipli: evoluzione multipli anno per anno.
+- Box "Quando un multiplo è preoccupante": esempi reali e casi studio.
+- Didattica: tooltip e box didattici su multipli, settori, casi reali, confronto storico.
+- Alert su multipli fuori norma o rischiosi.
+- Output: tabelle, grafici, ranking esportabili, alert didattici.
+
+### 6. OTTIMIZZAZIONE PORTAFOGLIO
+- Frontiera efficiente: simulazioni Monte Carlo (5000+ portafogli), grafico interattivo, pesi ottimali, selezione portafogli parziali, forzatura pesi min/max, esclusione titoli.
+- Selezione portafoglio ottimale: Max Sharpe, Min CVaR, Min Vol, evidenza automatica, tabella pesi.
+- Simulazione "Resampled" (Ledoit-Wolf): stabilizzazione pesi, spiegazione metodologia.
+- Risk Attribution/Style Analysis: decomposizione rischio per asset/fattore, visualizzazione a torta/barre.
+- Gestione multi-asset: supporto fino a 50 titoli, validazione automatica su concentrazione/diversificazione.
+- Didattica: box didattici su frontiera efficiente, Markowitz, ottimizzazione moderna, alert su pesi eccessivi.
+- Simulatore interattivo per modificare pesi e vedere impatto su rischio/rendimento.
+- Output: grafici, tabelle, simulazioni esportabili, suggerimenti di ottimizzazione.
+
+#### Performance e UX su Grandi Dataset
+- Ottimizzazione: lazy loading di dati e risultati (caricamento progressivo solo quando necessario), parallelizzazione delle simulazioni e calcoli (dove supportato dal backend/cloud), caching dei risultati intermedi per evitare ricalcoli inutili.
+- Limiti tecnici e warning: se il carico supera le risorse disponibili (es. piani gratuiti), suggerire di ridurre il numero di titoli o la profondità delle simulazioni.
+- Didattica: box informativi su limiti tecnici, best practice per analisi su grandi dataset, suggerimenti per ottimizzare l'esperienza.
+
+### 7. STRATEGIE E BACKTEST
+- Simulazione strategie: momentum, value, mean-reversion, CPPI, Risk Parity, Equal Risk Contribution, SMA20/50, parametri personalizzabili.
+- Confronto performance: dashboard risultati, classifica per CAGR, Sharpe, Max Drawdown, confronto con buy & hold.
+- Alert automatici: segnalazione strategie troppo rischiose o drawdown eccessivi.
+- Didattica: tooltip, pop-up e box didattici su logica operativa, metriche di confronto (alpha, beta, tracking error, capture ratio), rischi associati.
+- Rischio overfitting: box didattici che spiegano cos'è l'overfitting, come riconoscerlo e perché è pericoloso; suggerimenti pratici: sempre evidenziare i limiti del backtest, invitare a test out-of-sample, includere analisi di robustezza (walk-forward, rolling window, stress test); alert automatici se la strategia mostra segnali di overfitting (es. performance troppo elevate solo in sample).
+- Best practice: suggerimenti per evitare la sovraottimizzazione, esempi di errori comuni, invito a validare sempre le strategie su dati non visti.
+- Output: grafici confronto, tabelle, classifiche esportabili, alert e suggerimenti.
+
+### 8. ANALISI REGRESSIVA E MULTIFATTORIALE (ULTIMO STEP)
+- CAPM: calcolo Alpha, Beta, R², errore standard, regressione contro benchmark selezionabile, visualizzazione grafica.
+- Fama-French 3/4/5 fattori: importazione dati Ken French (.csv), regressione multifattoriale, output con barra per ogni fattore, spiegazione significato carichi.
+- Market Timing: modelli Treynor-Mazuy, Henriksson-Merton, box didattici e visualizzazione risultati.
+- Tabella confronto modelli: tabelle e grafici, highlight automatico su alpha/beta anomali, confronto tra modelli.
+- Didattica: tooltip, pop-up e box didattici su teoria multifattoriale, significato parametri, implicazioni pratiche, limiti dei modelli; casi reali, esempi di regressione, interpretazione risultati.
+- Output: grafici, tabelle, confronti esportabili, alert e suggerimenti.
+
+### GLOSSARIO INTEGRATO (RISORSA SEMPRE DISPONIBILE)
+- Accesso contestuale tramite click su tecnicismi, parole, frasi, grafici, formule, metriche, box informativi.
+- Definizioni chiare, formule, esempi, casi reali, link a risorse esterne, esportazione PDF/TXT.
+- Nessun termine ambiguo o non spiegato.
+- Didattica: approfondimento on demand, best practice, errori comuni, suggerimenti operativi.
 
 ________________________________________
-4. DESIGN & UI/UX
+4. DESIGN, USABILITÀ, AUTOMAZIONE, SCALABILITÀ
+
 4.1 Palette Cromatica e Stile Grafico
 • Base dark blue, elegante, con sfondo soft per evitare affaticamento visivo.
 • Ogni livello ha una sfumatura fluo diversa e ordinata: la transizione colore da input a output deve essere armonica (nessun colore pesante, nessun mix casuale!).
