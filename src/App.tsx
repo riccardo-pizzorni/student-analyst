@@ -55,6 +55,7 @@ import { WebWorkerTester } from './components/WebWorkerTester'
 import { automaticCleanup } from './services/AutomaticCleanupService'
 import { getEnvironmentStatus, validateEnvironmentVariables } from './utils/envValidation'
 
+// Forza deploy Vercel - test 2
 // Forza deploy Vercel - test
 
 function App() {
