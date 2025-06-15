@@ -57,23 +57,35 @@ Al termine del percorso, l'utente sarà in grado di:
 • Gestire portafogli simulati in modo razionale, ottimizzare la diversificazione, valutare strategie attive e passive, confrontare risultati e prendere decisioni informate.
 • Redigere report professionali, completi, difendibili sia in ambito accademico che lavorativo, esportando dati, grafici, tabelle e glossari in vari formati (PDF, CSV, TXT, PNG).
 
-[Segue con la sezione 3: STRUTTURA A MODULI]
-
 ________________________________________
-3.2 Struttura a Moduli
-• Ogni livello dell'analisi è un modulo separato, chiamato dalla sidebar e gestito come funzione autonoma.
-• Ogni modulo è pensato per poter essere attivato, disattivato o personalizzato senza dover riscrivere l'intero software.
-• Il codice è pulito, commentato, e organizzato in modo didattico.
-3.3 Gestione Dati
-• Download da Yahoo Finance tramite yfinance: dati "Adj Close" preferiti, fallback automatico su "Close".
-• Gestione automatica di errori (ticker non trovati, dati insufficienti, frequenza errata).
-• Possibilità di caricare dati fondamentali aggiuntivi (bilanci, CSV, Excel).
-• Salvataggio e caricamento di "analisi preferite": nome, note personali, risultati chiave, confronto tra analisi.
-• Supporto per l'analisi di un massimo di 50 titoli per sessione (limite per garantire reattività e chiarezza dei risultati).
-3.4 Modularità e Espandibilità
-• Il progetto nasce "open", con struttura pronta per future integrazioni (AI, NLP, news sentiment, quiz didattici, dashboard custom).
-• Ogni modulo può essere potenziato o sostituito senza impattare sugli altri.
-• La logica della sidebar/step è "immutabile": l'ordine e il significato dei livelli non devono mai essere alterati.
+3. STRUTTURA A MODULI
+
+3.1 Suddivisione in Macro-Moduli
+Student Analyst è organizzato in macro-moduli, ciascuno dei quali rappresenta una fase fondamentale dell'analisi azionaria e del percorso didattico. Ogni macro-modulo è suddiviso in sotto-moduli e tab tematici, che permettono di approfondire ogni aspetto dell'analisi in modo ordinato, progressivo e logico. La struttura modulare consente all'utente di seguire un percorso guidato oppure di accedere direttamente ai moduli di interesse, mantenendo sempre la coerenza didattica e la tracciabilità del percorso.
+
+3.2 Elenco dei Macro-Moduli Principali
+• Input e Selezione Titoli: caricamento dati, selezione titoli, periodo, frequenza, importazione bilanci e dati fondamentali.
+• Analisi Storica: visualizzazione serie storiche, calcolo rendimenti, volatilità, drawdown, rolling window, confronto tra titoli.
+• Analisi di Rendimento e Rischio: metriche di performance (CAGR, Sharpe, Sortino, ecc.), analisi rischio (VaR, CVaR, Beta, Alpha, ecc.), distribuzioni, heatmap, scatterplot.
+• Analisi Fondamentale: multipli, bilanci, indicatori di solidità, crescita, redditività, confronto tra aziende, scoring quantitativo.
+• Correlazione e Diversificazione: matrici di correlazione, cluster, analisi di portafoglio, simulazioni di diversificazione.
+• Ottimizzazione Portafoglio: frontiera efficiente, ottimizzazione pesi, simulazioni Monte Carlo, analisi rischio-rendimento portafoglio.
+• Strategie e Backtest: creazione e test di strategie, analisi risultati, confronto con benchmark, analisi drawdown e rischio specifico.
+• Output e Reportistica: esportazione dati, generazione report, salvataggio grafici, tabelle, glossari, esportazione in vari formati.
+
+3.3 Logica di Navigazione e UI
+La navigazione tra i moduli avviene tramite una sidebar verticale che rappresenta la sequenza logica del percorso didattico. Ogni macro-modulo è identificato da un'icona, un titolo e una breve descrizione. L'utente può:
+• Seguire il percorso guidato, avanzando step-by-step secondo la logica didattica.
+• Saltare liberamente tra i moduli, mantenendo sempre la possibilità di tornare al percorso principale.
+• Accedere a spiegazioni, glossari, esempi e best practice in ogni modulo tramite popup, info-box e tab di approfondimento.
+
+3.4 Relazione tra i Moduli
+I moduli sono progettati per essere sia indipendenti che interconnessi. Ogni modulo può essere utilizzato singolarmente, ma i dati e le analisi prodotti in un modulo sono automaticamente disponibili nei moduli successivi, permettendo una continuità logica e tecnica. Ad esempio, i titoli selezionati e i dati caricati nel modulo di input sono immediatamente disponibili per l'analisi storica, la valutazione del rischio, l'ottimizzazione del portafoglio e la generazione dei report.
+
+3.5 Modularità e Scalabilità
+La struttura modulare permette di aggiungere facilmente nuovi moduli, funzionalità e strumenti, senza compromettere la coerenza e la stabilità del software. Ogni modulo è documentato, testato e integrato secondo standard rigorosi, garantendo la massima affidabilità e facilità di manutenzione.
+
+[Segue con la sezione 4: PRINCIPI DI DESIGN E USABILITÀ]
 
 ________________________________________
 4. DESIGN & UI/UX
@@ -94,42 +106,111 @@ ________________________________________
 • Info-box popup ("i"): spiegazione rapida, attivabile/disattivabile.
 • Expander con teoria, glossario e FAQ in ogni livello.
 
-________________________________________
-5. REGOLE D'ORO (IMPERDIBILI)
-- Mai cambiare la sequenza dei livelli né il loro contenuto senza valida motivazione didattica/analitica.
-- Sidebar, palette, icone, font: immutabili senza approvazione.
-- Ogni spiegazione didattica deve essere breve, precisa, chiara (in pagine primarie); esaustiva in popup e pagine secondarie.
-- Nessuna funzione superflua: ogni feature deve portare valore didattico o analitico.
-- Gestione errori sempre trasparente e proattiva.
-- Ogni nuova funzione, bugfix, suggerimento va validato con questa bibbia.
-- In ogni nuova chat o iterazione con IA, queste regole vanno copiate o riassunte come base.
+4. PRINCIPI DI DESIGN E USABILITÀ
+
+4.1 Chiarezza e Minimalismo
+L'interfaccia di Student Analyst è progettata secondo principi di chiarezza, minimalismo e pulizia visiva. Ogni elemento grafico ha una funzione precisa e non esistono orpelli decorativi inutili. I colori sono scelti per massimizzare la leggibilità e la distinzione tra dati, grafici e spiegazioni. Le icone sono intuitive, i font sono leggibili e la disposizione degli elementi segue una logica gerarchica che guida l'occhio dell'utente.
+
+4.2 Accessibilità e Inclusività
+Il software è accessibile a utenti con diversi livelli di esperienza e abilità. Sono previsti temi ad alto contrasto, font scalabili, e una navigazione completamente da tastiera. Ogni funzione è documentata e spiegata, e sono disponibili scorciatoie e suggerimenti per facilitare l'uso anche a chi ha difficoltà visive o motorie.
+
+4.3 Coerenza e Continuità Esperienziale
+Tutti i moduli condividono lo stesso stile grafico, la stessa logica di navigazione e la stessa filosofia di interazione. I popup, le info-box, i glossari e le spiegazioni sono sempre accessibili nello stesso modo, garantendo una continuità esperienziale che riduce il carico cognitivo e accelera l'apprendimento.
+
+4.4 Responsività e Adattabilità
+Student Analyst è progettato per essere perfettamente fruibile su qualsiasi dispositivo: desktop, laptop, tablet e smartphone. La UI si adatta dinamicamente alle dimensioni dello schermo, mantenendo sempre la massima leggibilità e usabilità. I grafici e le tabelle sono interattivi e si adattano automaticamente allo spazio disponibile.
+
+4.5 Filosofia di User Experience
+L'esperienza utente è al centro di ogni scelta progettuale. Ogni funzione, ogni spiegazione, ogni feedback visivo è pensato per accompagnare l'utente, anticipare i suoi bisogni, prevenire errori e facilitare la comprensione. L'obiettivo è rendere l'analisi azionaria non solo efficace e professionale, ma anche piacevole, motivante e gratificante.
+
+[Segue con la sezione 5: AUTOMAZIONE, INTEGRAZIONI E SCALABILITÀ]
+
+5. AUTOMAZIONE, INTEGRAZIONI E SCALABILITÀ
+
+5.1 Automazione dei Processi
+Student Analyst implementa una serie di automazioni per garantire efficienza, sicurezza e tracciabilità. Tra queste:
+• Script batch per auto-commit e push automatico delle modifiche, eseguiti dalla root del progetto per assicurare che ogni cambiamento sia tracciato e sincronizzato con il repository remoto.
+• Backup automatico delle chat di sviluppo e della documentazione, per garantire la conservazione di ogni decisione progettuale e facilitare la collaborazione.
+• Deploy automatico tramite webhook e deploy hook su Vercel, che consente il rilascio immediato di ogni nuova versione dopo il push, senza intervento manuale.
+
+5.2 Integrazioni con Servizi Esterni
+Il software è integrato con servizi esterni per l'importazione dati (es. Yahoo Finance tramite yfinance), la gestione dei deploy (Vercel), e la sincronizzazione della documentazione. Ogni integrazione è documentata e può essere sostituita o aggiornata senza impattare la struttura principale del software.
+
+5.3 Gestione del Deploy e Ottimizzazione Risorse
+La pipeline di deploy è ottimizzata per funzionare anche su piani gratuiti, con strategie di riduzione del traffico e delle risorse. Sono previsti sistemi di caching, compressione dei dati e ottimizzazione delle query per garantire performance elevate anche in condizioni di carico elevato.
+
+5.4 Scalabilità e Futuri Sviluppi
+La struttura modulare e la documentazione rigorosa permettono di scalare facilmente il software, aggiungendo nuovi moduli, funzionalità e integrazioni. Sono previste future espansioni verso l'intelligenza artificiale, l'analisi di sentiment, l'integrazione di quiz didattici e dashboard personalizzate. Ogni nuovo sviluppo seguirà gli stessi standard di qualità, automazione e tracciabilità.
+
+[Segue con la sezione 6: GESTIONE DELLA DOCUMENTAZIONE E DELLA "BIBBIA"]
+
+6. GESTIONE DELLA DOCUMENTAZIONE E DELLA "BIBBIA"
+
+6.1 Centralità della Documentazione
+La "Bibbia" di Student Analyst è il documento centrale che raccoglie tutte le regole, le decisioni progettuali, le linee guida tecniche e didattiche, e le best practice. Ogni modifica significativa al software, ogni nuova funzione, ogni bugfix o suggerimento deve essere validato e documentato in questa sede, per garantire coerenza, tracciabilità e qualità.
+
+6.2 Aggiornamento e Versionamento
+La documentazione viene aggiornata in parallelo allo sviluppo del software. Ogni nuova release, ogni refactor, ogni cambiamento strutturale comporta una revisione della Bibbia, con versionamento e tracciamento delle modifiche. Sono previsti changelog dettagliati e la possibilità di consultare versioni precedenti per garantire la massima trasparenza.
+
+6.3 Regole d'Oro per la Manutenzione
+• Mai cambiare la sequenza dei livelli né il loro contenuto senza valida motivazione didattica o analitica.
+• Sidebar, palette, icone, font: immutabili senza approvazione e validazione documentata.
+• Ogni spiegazione didattica deve essere breve, precisa e chiara nelle pagine primarie; esaustiva in popup e pagine secondarie.
+• Nessuna funzione superflua: ogni feature deve portare valore didattico o analitico.
+• Gestione errori sempre trasparente e proattiva.
+• Ogni nuova funzione, bugfix, suggerimento va validato con questa Bibbia.
+• In ogni nuova chat o iterazione con IA, queste regole vanno copiate o riassunte come base.
+
+6.4 Utilizzo della Bibbia nello Sviluppo
+La Bibbia è utilizzata come riferimento costante in ogni fase dello sviluppo: progettazione, coding, testing, documentazione, review e deploy. Ogni membro del team, ogni collaboratore, ogni IA coinvolta deve attenersi alle regole e alle linee guida qui definite, per garantire la massima coerenza e qualità del prodotto finale.
+
+[Segue con la sezione 7: ROADMAP E SVILUPPI FUTURI]
 
 ________________________________________
-6. MODULARITÀ E ESPANDIBILITÀ
+7. ROADMAP E SVILUPPI FUTURI
+
+7.1 Roadmap Attuale
+Il roadmap attuale di Student Analyst include:
+• Completamento dei macro-moduli principali.
+• Integrazione di nuove funzionalità e strumenti.
+• Miglioramento delle performance e dell'usabilità.
+• Espansione verso l'intelligenza artificiale e l'analisi di sentiment.
+• Implementazione di quiz didattici e dashboard personalizzate.
+
+7.2 Sviluppi Futuri
+I principali sviluppi futuri di Student Analyst includono:
+• Estensione dei macro-moduli a livelli più avanzati di analisi.
+• Integrazione di nuove tecnologie e strumenti di analisi.
+• Miglioramento delle funzionalità di analisi di sentiment e sentiment analysis.
+• Implementazione di quiz didattici avanzati e dashboard interattive.
+• Espansione verso l'analisi di mercati emergenti e l'integrazione di nuove valute.
+
+________________________________________
+8. MODULARITÀ E ESPANDIBILITÀ
 - Ogni livello/modulo è autonomo, attivabile/disattivabile senza riscrivere tutto.
 - Codice pulito, commentato, organizzato didatticamente.
 - Pronto per future integrazioni (AI, NLP, news sentiment, quiz, dashboard custom).
 - Sidebar/step: ordine e significato immutabili.
 
 ________________________________________
-7. FUNZIONALITÀ AVANZATE E METRICHE
+9. FUNZIONALITÀ AVANZATE E METRICHE
 - Tutte le metriche quantitative e fondamentali dettagliate (CAGR, Sharpe, Sortino, VaR, CVaR, Alpha, Beta, multipli, ranking, regressioni, backtest, ecc.)
 - Ogni metrica ha formula, spiegazione, tooltip, glossario.
 - Simulazioni Monte Carlo, ottimizzazione portafoglio, risk attribution, regressioni multifattoriali, backtest strategie, overlay valutario, dashboard riepilogativa.
 
 ________________________________________
-8. DIDATTICA INTEGRATA
+10. DIDATTICA INTEGRATA
 - Box "i" su ogni concetto nuovo.
 - Popup glossario sempre accessibile, esportabile.
 - Ogni formula, dato, grafico ha spiegazione chiara e testuale.
 
 ________________________________________
-9. LOGO
+11. LOGO
 - Il logo ufficiale è il cappello da laurea blu allegato ("LOGO definitivo").
 - Non deve mai essere cambiato.
 
 ________________________________________
-10. NOTE FINALI
+12. NOTE FINALI
 - Questo file è la costituzione del software: ogni modifica, decisione, nuova feature deve essere validata e documentata qui.
 - Aggiornare sempre con cura e attenzione maniacale.
 - Ogni nuova iterazione parte da questa bibbia.
