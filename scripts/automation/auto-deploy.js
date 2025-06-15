@@ -8,8 +8,8 @@ fs.appendFileSync('../../auto-deploy-log.txt', `[${new Date().toISOString()}] Av
 
 // Configurazione
 const CONFIG = {
-  watchDir: path.join(__dirname, '../../src'),  // Directory da monitorare
-  excludeDirs: ['node_modules', 'dist', '.git'],  // Directory da escludere
+  watchDir: path.join(__dirname, '../..'),  // Monitora tutto il progetto
+  excludeDirs: ['node_modules', 'dist', '.git', '.vscode', 'coverage', 'playwright-report', 'test-results', 'artifacts', 'logs', 'evidence', 'public', 'templates'],  // Escludi solo cartelle tecniche
   commitMessage: 'Auto-commit: Aggiornamento automatico',  // Messaggio di commit predefinito
   branch: 'main',  // Branch su cui fare push
   buildCommand: 'npm run build',  // Comando per build
