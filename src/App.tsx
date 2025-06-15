@@ -55,6 +55,8 @@ import { WebWorkerTester } from './components/WebWorkerTester'
 import { automaticCleanup } from './services/AutomaticCleanupService'
 import { getEnvironmentStatus, validateEnvironmentVariables } from './utils/envValidation'
 
+// Forza deploy Vercel - test
+
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'header-demo' | 'sidebar-step-navigation-demo' | 'auto-save-demo' | 'popup-demo' | 'theory-demo' | 'contextual-help-demo' | 'price-chart-demo' | 'pyscript' | 'pyscript-test' | 'toast-test' | 'error-test' | 'api-test' | 'circuit-breaker-test' | 'env-test' | 'alpha-vantage-test' | 'queue-manager' | 'data-transformation' | 'error-handling' | 'multi-provider' | 'automatic-fallback' | 'data-consistency' | 'data-consistency-demo' | 'proxy-demo' | 'missing-data-demo' | 'outlier-detection-demo' | 'unified-quality-dashboard' | 'cache-monitor-dashboard' | 'storage-health-dashboard' | 'automatic-cleanup-dashboard' | 'storage-management-settings' | 'returns-calculation-tester' | 'risk-metrics-tester' | 'performance-ratios-tester' | 'risk-measures-advanced-tester' | 'portfolio-optimization-tester' | 'alternative-allocations-tester' | 'optimization-constraints-tester' | 'web-worker-tester' | 'data-chunking-tester' | 'algorithm-optimization-tester' | 'progress-indicator-tester' | 'buy-hold-benchmark-tester' | 'equal-weight-strategy-tester' | 'risk-parity-strategy-tester' | 'momentum-strategy-tester'>('home')
   const [envStatus, setEnvStatus] = useState<{configured: boolean, missingKeys: string[]}>({configured: true, missingKeys: []})
