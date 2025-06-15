@@ -1,26 +1,21 @@
-🏆 STUDENT ANALYST — BIBBIA DEL SOFTWARE
+🏆 BIBBIA_STUDENT_ANALYST — COSTITUZIONE DEL SOFTWARE
 Versione aggiornata: 2025-06-15
 
 ________________________________________
-1. EXECUTIVE SUMMARY
-Student Analyst è la piattaforma definitiva per l'analisi azionaria formativa e professionale. L'obiettivo è guidare l'utente (in primis il creatore) a diventare un analista finanziario esperto, partendo da zero e arrivando a livello avanzato tramite la pratica e la teoria integrata.
+1. EXECUTIVE SUMMARY E MISSIONE
+Student Analyst nasce per trasformare l'utente (in primis il creatore) in un analista finanziario esperto, partendo da zero e arrivando a livello avanzato tramite la pratica e la teoria integrata. Il software è uno strumento professionale, ma anche didattico, che permette di imparare facendo analisi reali e, contemporaneamente, di approfondire ogni concetto tramite spiegazioni contestuali e pagine dedicate.
 
-- Educare e guidare l'utente, passo dopo passo, attraverso tutte le fasi dell'analisi azionaria moderna, con rigore didattico e attenzione al dettaglio.
-- Unire la qualità didattica di Harvard, l'usabilità dei migliori software, la robustezza quantitativa delle piattaforme professionali e il design istituzionale più cool e accessibile.
-- Struttura modulare, estendibile, robusta, tecnicamente ineccepibile.
-- Ogni nuova versione, IA o sviluppatore, deve attenersi a questa visione senza mai deragliare.
-
-________________________________________
-2. MISSIONE E VALORI
-- Missione: Far diventare l'utente un analista finanziario esperto tramite la pratica e la teoria, con un percorso didattico perfetto e strumenti professionali.
-- Target: Creatore, studenti principianti, giovani analisti, autodidatti, professori, analisti esperti.
-- Valori: Semplicità, funzionalità, intrattenimento, affidabilità, innovazione, eleganza, freschezza, professionalità, coolness.
-- Personalità: Elegante, moderna, istituzionale, accessibile, non pesante, non invasiva.
-- Branding: Logo definitivo (cappello laurea blu, vedi immagine allegata), nome "Student Analyst" sempre visibile.
-- Proprietà: Software gratuito, non open source, accesso solo su invito, account personali revocabili, marchiato con il nome del creatore.
+- L'obiettivo è imparare la teoria delle tecniche, la logica e i concetti finanziari **basandosi sui risultati dell'analisi in corso** (apprendimento pratico), ma anche poter accedere in ogni momento a spiegazioni teoriche generali.
+- Il percorso è **intuitivo, guidato, accessibile anche a chi non sa nulla di economia/finanza**, ma sempre ancorato alla professionalità e all'affidabilità di uno strumento avanzato.
+- Ogni passaggio è chiaro e semplice da capire **per la qualità della spiegazione e del percorso didattico**, non perché i concetti siano banali.
+- Il software tratta **tutti gli argomenti**: dai più semplici ai più avanzati, per una comprensione completa.
+- Vuole trasmettere: **semplicità, funzionalità, intrattenimento, affidabilità, innovazione, eleganza, freschezza, coolness**.
+- Il design è ispirato alle immagini di riferimento (sidebar, palette, logo, icone, vibe).
+- Il risultato di successo è: **automatizzazione, engagement, utilità, efficienza**. Non interessa la massa, ma la qualità dell'esperienza per pochi utenti selezionati.
+- Il software è **gratuito, non copiabile, non open source, accessibile solo su invito**. Ogni utente ha un account personale revocabile. Il progetto è marchiato con il nome del creatore e tutelato da copie e accessi non autorizzati.
 
 ________________________________________
-3. STRUTTURA DIDATTICA E FUNZIONALE
+2. STRUTTURA DIDATTICA E FUNZIONALE
 - Percorso a livelli (sidebar verticale): ogni livello è sia funzione tecnica che lezione didattica.
 - Modalità unica: studio e analisi sono integrate, nessuna modalità separata.
 - Tutte le funzioni sono visibili a tutti, il percorso didattico guida l'utente inesperto.
@@ -40,7 +35,7 @@ Step | Titolo | Finalità principale | Output principale
 8 | Output | Generazione e preview report finale, export | PDF, CSV, grafici
 
 ________________________________________
-4. DESIGN & UI/UX
+3. DESIGN & UI/UX
 - Palette: base dark blue elegante, sfondo soft, livelli sidebar con sfumature fluo ordinate (vedi immagini di riferimento).
 - Icone: stile uniforme, professionale, smooth, ogni icona con colore coerente al livello.
 - Logo: cappello laurea blu (vedi "LOGO definitivo"), testo "Student Analyst" in font moderno.
@@ -50,7 +45,7 @@ ________________________________________
 - Accessibilità: font leggibile, contrasto elevato, UI chiara anche per inesperti.
 
 ________________________________________
-5. USER JOURNEY
+4. USER JOURNEY
 1. Avvio: sidebar a livelli, logo e design istituzionale.
 2. Input dati: inserimento ticker (max 50), periodo, frequenza, caricamento bilanci/CSV.
 3. Validazione dati: check automatico, alert su errori, suggerimenti.
@@ -61,7 +56,7 @@ ________________________________________
 8. Sessione futura: ripresa analisi salvate, aggiornamento dati, confronto scenari.
 
 ________________________________________
-6. REGOLE D'ORO (IMPERDIBILI)
+5. REGOLE D'ORO (IMPERDIBILI)
 - Mai cambiare la sequenza dei livelli né il loro contenuto senza valida motivazione didattica/analitica.
 - Sidebar, palette, icone, font: immutabili senza approvazione.
 - Ogni spiegazione didattica deve essere breve, precisa, chiara (in pagine primarie); esaustiva in popup e pagine secondarie.
@@ -71,31 +66,31 @@ ________________________________________
 - In ogni nuova chat o iterazione con IA, queste regole vanno copiate o riassunte come base.
 
 ________________________________________
-7. MODULARITÀ E ESPANDIBILITÀ
+6. MODULARITÀ E ESPANDIBILITÀ
 - Ogni livello/modulo è autonomo, attivabile/disattivabile senza riscrivere tutto.
 - Codice pulito, commentato, organizzato didatticamente.
 - Pronto per future integrazioni (AI, NLP, news sentiment, quiz, dashboard custom).
 - Sidebar/step: ordine e significato immutabili.
 
 ________________________________________
-8. FUNZIONALITÀ AVANZATE E METRICHE
+7. FUNZIONALITÀ AVANZATE E METRICHE
 - Tutte le metriche quantitative e fondamentali dettagliate (CAGR, Sharpe, Sortino, VaR, CVaR, Alpha, Beta, multipli, ranking, regressioni, backtest, ecc.)
 - Ogni metrica ha formula, spiegazione, tooltip, glossario.
 - Simulazioni Monte Carlo, ottimizzazione portafoglio, risk attribution, regressioni multifattoriali, backtest strategie, overlay valutario, dashboard riepilogativa.
 
 ________________________________________
-9. DIDATTICA INTEGRATA
+8. DIDATTICA INTEGRATA
 - Box "i" su ogni concetto nuovo.
 - Popup glossario sempre accessibile, esportabile.
 - Ogni formula, dato, grafico ha spiegazione chiara e testuale.
 
 ________________________________________
-10. LOGO
+9. LOGO
 - Il logo ufficiale è il cappello da laurea blu allegato ("LOGO definitivo").
 - Non deve mai essere cambiato.
 
 ________________________________________
-11. NOTE FINALI
+10. NOTE FINALI
 - Questo file è la costituzione del software: ogni modifica, decisione, nuova feature deve essere validata e documentata qui.
 - Aggiornare sempre con cura e attenzione maniacale.
 - Ogni nuova iterazione parte da questa bibbia.
