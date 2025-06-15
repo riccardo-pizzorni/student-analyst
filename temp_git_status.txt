@@ -1,5 +1,1 @@
- D start-auto-deploy.bat
-?? PROJECT_SETUP.md
-?? auto-commit-push.bat
-?? start-cursor-and-auto-commit.bat
-?? temp_git_status.txt
+ M temp_git_status.txt
