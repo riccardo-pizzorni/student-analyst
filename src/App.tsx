@@ -32,7 +32,7 @@ import viteLogo from '/vite.svg'
 // import PortfolioOptimizationTester from './components/PortfolioOptimizationTester'
 // import AlternativeAllocationsTester from './components/AlternativeAllocationsTester'
 import AlgorithmOptimizationTester from './components/AlgorithmOptimizationTester'
-import AutoSaveDemo, { AutoSaveDemo } from './components/AutoSaveDemo'
+import AutoSaveDemo from './components/AutoSaveDemo'
 import BuyHoldBenchmarkTester from './components/BuyHoldBenchmarkTester'
 import { ContextualHelpDemo } from './components/ContextualHelpDemo'
 import DataChunkingTester from './components/DataChunkingTester'
@@ -200,6 +200,10 @@ function App() {
             </div>
             
             <h1 className="text-4xl font-bold text-primary mb-4">Student Analyst</h1>
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+              <p className="font-bold">Test Deploy Vercel</p>
+              <p>Questo è un test di deploy - {new Date().toLocaleString()}</p>
+            </div>
             <p className="text-xl text-muted-foreground mb-8 text-center max-w-2xl">
               Professional Financial Analysis Platform
             </p>
