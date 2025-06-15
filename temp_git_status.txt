@@ -1,1 +1,2 @@
+ M start-cursor-and-auto-commit.bat
  M temp_git_status.txt
