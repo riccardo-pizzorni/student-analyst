@@ -3,12 +3,30 @@ Versione aggiornata: 2025-06-15
 
 ________________________________________
 1. EXECUTIVE SUMMARY
-Student Analyst è una piattaforma software pensata per essere il punto di riferimento mondiale nell'analisi azionaria formativa. L'obiettivo è combinare la potenza dei migliori tool quantitativi con la chiarezza di una piattaforma educativa, adatta sia a studenti che a giovani analisti e universitari di alto livello.
-I punti cardine della visione sono:
-• Educare e guidare l'utente, passo dopo passo, attraverso tutte le fasi dell'analisi azionaria moderna, con rigore didattico e attenzione al dettaglio.
-• Unire in un solo prodotto la qualità didattica di Harvard, l'usabilità dei migliori software, la robustezza quantitativa delle piattaforme professionali e il design "istituzionale" più cool e accessibile.
-• Fornire una struttura modulare, estendibile, robusta, e tecnicamente ineccepibile.
-• Stabilire un modello di riferimento per tutti i futuri sviluppi, così che nessuna nuova versione, né IA né sviluppatore, possa mai perdere la direzione e la coerenza di ciò che rende unico Student Analyst.
+
+Student Analyst è una piattaforma software progettata per essere il punto di riferimento mondiale nell'ambito dell'analisi azionaria formativa e professionale. L'obiettivo fondamentale di Student Analyst è quello di unire la potenza e la precisione dei migliori strumenti quantitativi di analisi finanziaria con la chiarezza, la didattica e l'accessibilità di una piattaforma educativa di altissimo livello. Il software è pensato per essere utilizzato sia da studenti universitari, anche completamente inesperti, sia da giovani analisti, autodidatti, professori, appassionati di finanza quantitativa e analisti finanziari esperti.
+
+I punti cardine della visione di Student Analyst sono i seguenti:
+
+• Educare e guidare l'utente, passo dopo passo, attraverso tutte le fasi dell'analisi azionaria moderna, con un rigore didattico assoluto e una costante attenzione al dettaglio, affinché ogni concetto, ogni passaggio logico, ogni tecnica sia compresa a fondo e possa essere applicata in modo consapevole e critico.
+
+• Unire in un solo prodotto la qualità didattica delle migliori università del mondo (come Harvard), l'usabilità e la piacevolezza dei software più moderni, la robustezza quantitativa delle piattaforme professionali utilizzate dagli esperti del settore, e un design "istituzionale" che sia allo stesso tempo elegante, fresco, moderno, accessibile e "cool".
+
+• Fornire una struttura modulare, estendibile, robusta, tecnicamente ineccepibile, in cui ogni livello dell'analisi sia un modulo autonomo, attivabile, disattivabile o personalizzabile senza dover riscrivere l'intero software, e in cui il codice sia sempre pulito, commentato, organizzato in modo didattico e pronto per future integrazioni.
+
+• Stabilire un modello di riferimento per tutti i futuri sviluppi, così che nessuna nuova versione, nessuna intelligenza artificiale, nessun nuovo sviluppatore, nessun utente possa mai perdere la direzione, la coerenza, la qualità e la visione che rendono unico Student Analyst. Ogni nuova funzione, ogni modifica, ogni suggerimento dovrà essere sempre validato rispetto a questa "costituzione" del software.
+
+Student Analyst non è solo uno strumento di analisi, ma è un vero e proprio percorso formativo, una guida, un compagno di viaggio che accompagna l'utente dalla totale inesperienza fino alla piena padronanza delle tecniche più avanzate di analisi azionaria, con l'obiettivo di formare una nuova generazione di analisti finanziari consapevoli, critici, preparati e capaci di affrontare con successo le sfide dei mercati moderni.
+
+La piattaforma è pensata per essere accessibile a tutti, anche a chi non ha alcuna base di economia, finanza o statistica, ma allo stesso tempo è sufficientemente avanzata e professionale da essere uno strumento di lavoro per analisti esperti. Ogni passaggio, ogni metrica, ogni grafico è accompagnato da spiegazioni dettagliate, info-box, glossari integrati, consigli pratici, esempi reali, e ogni elemento della UI è progettato per massimizzare la fruibilità, la chiarezza, la piacevolezza d'uso e l'efficacia didattica.
+
+Il design di Student Analyst si ispira alle migliori interfacce istituzionali, con una palette cromatica basata su toni dark blue eleganti e sfumature fluo ordinate, icone professionali e coerenti, una sidebar verticale compatta e leggibile, e una struttura a livelli numerati che guida l'utente in un percorso logico, tecnico e didattico "perfetto" dall'input dei dati fino alla generazione di un report professionale.
+
+Il software è gratuito, non open source, non copiabile, accessibile solo su invito, con account personali revocabili in ogni momento, e marchiato con il nome del creatore. La protezione dell'idea, del brand, della struttura e della visione è una priorità assoluta: ogni aspetto del progetto è pensato per essere unico, riconoscibile, non replicabile e sempre sotto il controllo del creatore.
+
+Student Analyst è, e sarà sempre, la prova materiale del valore, del metodo, della motivazione e della visione del suo creatore. Nessuna funzione, nessuna icona, nessuna spiegazione, nessun modulo dovrà mai essere "abbassato di livello" rispetto alla visione originale. L'obiettivo non è la mediocrità, ma la commozione accademica, la perfezione tecnica, la massima utilità didattica e professionale.
+
+[Segue con la sezione 2: OBIETTIVI FORMATIVI E FUNZIONALI]
 
 ________________________________________
 2. OBIETTIVI FORMATIVI E FUNZIONALI
