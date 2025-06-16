@@ -1,1 +1,6 @@
  M scripts/temp_git_status.txt
+ D src/components/DesktopLayout.css
+ D src/components/DesktopLayout.tsx
+ D src/components/DesktopLayoutDemo.css
+ D src/components/DesktopLayoutDemo.tsx
+ D src/components/LayoutManager.tsx
