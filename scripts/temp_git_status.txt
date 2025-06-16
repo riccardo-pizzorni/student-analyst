@@ -1,1 +1,5 @@
+ D public/404.html
+ D public/manifest.json
+ D public/vite.svg
+ D public/workers/matrixWorker.js
  M scripts/temp_git_status.txt
