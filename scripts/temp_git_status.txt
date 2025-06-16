@@ -1,2 +1,9 @@
  M scripts/temp_git_status.txt
-?? src/pages/
+?? src/components/FullSidebar.tsx
+?? src/components/MainTabs.tsx
+?? src/components/WelcomeBox.tsx
+?? src/components/ui/sidebar.tsx
+?? src/components/ui/sonner.tsx
+?? src/components/ui/toaster.tsx
+?? src/hooks/use-mobile.tsx
+?? src/hooks/use-toast.ts
