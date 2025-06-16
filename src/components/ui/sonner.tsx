@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Toaster as Sonner, toast } from "sonner"
 
@@ -24,4 +25,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
-export { toast, Toaster }
+export { Toaster, toast }

@@ -1,5 +1,6 @@
-import { TrendingUp } from "lucide-react";
+
 import React from "react";
+import { TrendingUp } from "lucide-react";
 
 export default function WelcomeBox({ activeStep }: { activeStep: string }) {
   const getStepInfo = (step: string) => {
@@ -80,4 +81,4 @@ export default function WelcomeBox({ activeStep }: { activeStep: string }) {
       </div>
     </div>
   );
-} 
+}

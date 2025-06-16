@@ -1,16 +1,17 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    BarChart3,
-    Calculator,
-    Info,
-    PieChart,
-    Table,
-    TrendingUp
-} from "lucide-react";
+
 import React from "react";
-import CorrelationMatrix from "./charts/CorrelationMatrix";
-import PerformanceMetrics from "./charts/PerformanceMetrics";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  BarChart3, 
+  Table, 
+  Calculator,
+  TrendingUp,
+  PieChart,
+  Info
+} from "lucide-react";
 import VolatilityChart from "./charts/VolatilityChart";
+import PerformanceMetrics from "./charts/PerformanceMetrics";
+import CorrelationMatrix from "./charts/CorrelationMatrix";
 import UnifiedInputSection from "./input/UnifiedInputSection";
 
 export default function MainTabs({ 
@@ -249,7 +250,30 @@ export default function MainTabs({
                     </button>
                   </div>
                   <div className="overflow-hidden rounded-lg border border-slate-700">
-                    {/* Qui puoi inserire la tabella o altri contenuti */}
+                    <table className="w-full">
+                      <thead className="bg-slate-800/50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Symbol</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Price</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Change</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Volume</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {["AAPL", "MSFT", "GOOGL", "AMZN"].map((ticker, i) => (
+                          <tr key={ticker} className="border-t border-slate-700 hover:bg-slate-800/30">
+                            <td className="px-4 py-3 font-medium text-blue-300">{ticker}</td>
+                            <td className="px-4 py-3 text-slate-300">${(150 + i * 25).toFixed(2)}</td>
+                            <td className="px-4 py-3">
+                              <span className={`text-sm ${i % 2 === 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {i % 2 === 0 ? '+' : '-'}{(Math.random() * 5).toFixed(2)}%
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-400">{(Math.random() * 1000000).toFixed(0)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </TabsContent>
@@ -259,4 +283,4 @@ export default function MainTabs({
       </Tabs>
     </div>
   );
-} 
+}

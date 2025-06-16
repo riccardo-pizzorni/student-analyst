@@ -1,1 +1,72 @@
  M scripts/temp_git_status.txt
+ M src/components/FullSidebar.tsx
+ M src/components/Logo.tsx
+ M src/components/MainTabs.tsx
+ M src/components/WelcomeBox.tsx
+ M src/components/charts/CorrelationMatrix.tsx
+ M src/components/charts/PerformanceMetrics.tsx
+ M src/components/charts/VolatilityChart.tsx
+ M src/components/icons/CustomIcons.tsx
+ M src/components/input/UnifiedInputSection.tsx
+ M src/components/ui/alert.tsx
+ M src/components/ui/badge.tsx
+ M src/components/ui/button.tsx
+ M src/components/ui/card.tsx
+ M src/components/ui/input.tsx
+ M src/components/ui/separator.tsx
+ M src/components/ui/sheet.tsx
+ M src/components/ui/sidebar.tsx
+ M src/components/ui/skeleton.tsx
+ M src/components/ui/slider.tsx
+ M src/components/ui/sonner.tsx
+ M src/components/ui/tabs.tsx
+ M src/components/ui/toast.tsx
+ M src/components/ui/toaster.tsx
+ M src/components/ui/tooltip.tsx
+ M src/components/ui/use-toast.ts
+ M src/hooks/use-mobile.tsx
+ M src/hooks/use-toast.ts
+ M src/index.css
+ M src/lib/utils.ts
+?? src/components/AppSidebar.tsx
+?? src/components/Badge.tsx
+?? src/components/InfoBox.tsx
+?? src/components/LovableAlert.tsx
+?? src/components/LovableTip.tsx
+?? src/components/ProgressBar.tsx
+?? src/components/RecapBox.tsx
+?? src/components/input/DataUploadSection.tsx
+?? src/components/input/TickerInputSection.tsx
+?? src/components/ui/accordion.tsx
+?? src/components/ui/alert-dialog.tsx
+?? src/components/ui/aspect-ratio.tsx
+?? src/components/ui/avatar.tsx
+?? src/components/ui/breadcrumb.tsx
+?? src/components/ui/calendar.tsx
+?? src/components/ui/carousel.tsx
+?? src/components/ui/chart.tsx
+?? src/components/ui/checkbox.tsx
+?? src/components/ui/collapsible.tsx
+?? src/components/ui/command.tsx
+?? src/components/ui/context-menu.tsx
+?? src/components/ui/dialog.tsx
+?? src/components/ui/drawer.tsx
+?? src/components/ui/dropdown-menu.tsx
+?? src/components/ui/form.tsx
+?? src/components/ui/hover-card.tsx
+?? src/components/ui/input-otp.tsx
+?? src/components/ui/label.tsx
+?? src/components/ui/menubar.tsx
+?? src/components/ui/navigation-menu.tsx
+?? src/components/ui/pagination.tsx
+?? src/components/ui/popover.tsx
+?? src/components/ui/progress.tsx
+?? src/components/ui/radio-group.tsx
+?? src/components/ui/resizable.tsx
+?? src/components/ui/scroll-area.tsx
+?? src/components/ui/select.tsx
+?? src/components/ui/switch.tsx
+?? src/components/ui/table.tsx
+?? src/components/ui/textarea.tsx
+?? src/components/ui/toggle-group.tsx
+?? src/components/ui/toggle.tsx

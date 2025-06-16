@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -53,28 +54,6 @@
     --dark-bg: 220 40% 4%;
     --darker-bg: 220 40% 2%;
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
-  }
 }
 
 @layer base {
@@ -86,68 +65,6 @@
     @apply bg-background text-foreground;
     background: linear-gradient(135deg, hsl(220, 40%, 2%) 0%, hsl(220, 40%, 4%) 50%, hsl(220, 40%, 3%) 100%);
     min-height: 100vh;
-  }
-}
-
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }
 
@@ -331,5 +248,1097 @@ button:focus-visible {
 
   .particle-3 {
     bottom: 30%;
+    left: 20%;
+    animation-delay: 1.6s;
+    animation-duration: 3.8s;
   }
-} 
+
+  .particle-4 {
+    top: 40%;
+    right: 25%;
+    animation-delay: 2.4s;
+    animation-duration: 4.5s;
+  }
+
+  .particle-5 {
+    bottom: 20%;
+    right: 10%;
+    animation-delay: 3.2s;
+    animation-duration: 3.2s;
+  }
+
+  /* Text effects level 10 - EFFETTO DENTI CHE LUCCICANO CON GLOW ARMONIZZATO - BRILLANTEZZA BIANCO AUMENTATA DEL 5% */
+  .logo-text-level-10-supreme {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 8%,
+      rgba(255, 255, 255, 1) 16%,
+      rgba(250, 255, 255, 1) 24%,
+      rgba(255, 255, 255, 1) 32%,
+      rgba(248, 255, 255, 1) 40%,
+      rgba(255, 255, 255, 1) 48%,
+      rgba(250, 255, 252, 1) 56%,
+      rgba(255, 255, 255, 1) 64%,
+      rgba(255, 255, 255, 1) 72%,
+      rgba(255, 255, 255, 1) 80%,
+      rgba(250, 255, 255, 1) 88%,
+      rgba(255, 255, 255, 1) 100%
+    );
+    background-size: 300% 300%;
+    animation: logo-text-teeth-sparkle 8s ease-in-out infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 
+      0 0 30px rgba(0, 191, 255, 0.45),
+      0 0 55px rgba(30, 144, 255, 0.4),
+      0 0 80px rgba(0, 206, 209, 0.35),
+      0 0 105px rgba(30, 144, 255, 0.3),
+      0 3px 10px rgba(0, 0, 0, 0.45);
+    filter: 
+      brightness(140%) 
+      drop-shadow(0 0 25px rgba(0, 191, 255, 0.35)) 
+      drop-shadow(0 0 40px rgba(30, 144, 255, 0.3))
+      drop-shadow(0 0 55px rgba(0, 206, 209, 0.25));
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    position: relative;
+  }
+
+  .logo-text-level-10-supreme::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 15%,
+      rgba(245, 252, 255, 0.2) 25%,
+      rgba(235, 248, 255, 0.3) 35%,
+      rgba(255, 255, 255, 0.4) 45%,
+      rgba(245, 255, 252, 0.35) 55%,
+      rgba(234, 245, 255, 0.25) 65%,
+      rgba(240, 255, 255, 0.2) 75%,
+      transparent 85%,
+      transparent 100%
+    );
+    background-size: 400% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: wave-foam-sweep 0.8s ease-out;
+    animation-delay: var(--wave-delay, 5s);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+    opacity: 0;
+  }
+
+  .logo-text-level-10-supreme::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 20%,
+      rgba(0, 191, 255, 0.08) 30%,
+      rgba(30, 144, 255, 0.12) 40%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(0, 206, 209, 0.1) 60%,
+      rgba(30, 144, 255, 0.08) 70%,
+      transparent 80%,
+      transparent 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: wave-foam-sweep-secondary 1.2s ease-out;
+    animation-delay: var(--wave-delay-secondary, 7s);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+    opacity: 0;
+  }
+
+  .logo-level-10-supreme:hover .logo-text-level-10-supreme::before {
+    animation: wave-foam-intermittent 0.8s ease-out infinite;
+    animation-delay: 0s;
+  }
+
+  .logo-level-10-supreme:hover .logo-text-level-10-supreme::after {
+    animation: wave-foam-intermittent-secondary 1.2s ease-out infinite;
+    animation-delay: 2s;
+  }
+
+  /* Wave animation that triggers randomly */
+  .logo-text-level-10-supreme {
+    animation: 
+      logo-text-teeth-sparkle 8s ease-in-out infinite,
+      wave-trigger 1s linear infinite;
+  }
+
+  /* ===== 3 PESCI NEON CHE GIOCANO - LIVELLO 3 - MOVIMENTI FLUIDI E CONFINATI ===== */
+
+  .neon-fish-group {
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+
+  .logo-level-10-supreme:hover .neon-fish-group {
+    opacity: 0.95;
+  }
+
+  /* PESCE GRANDE - Leader del gruppo - Livello 3 */
+  .neon-fish-large-body {
+    position: absolute;
+    width: 28px;
+    height: 12px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 191, 255, 0.9) 0%,
+      rgba(30, 144, 255, 0.75) 30%,
+      rgba(0, 206, 209, 0.6) 60%,
+      rgba(30, 144, 255, 0.35) 80%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(1px);
+    animation: neon-fish-large-swim-level3 12s ease-in-out infinite;
+    box-shadow: 
+      0 0 18px rgba(0, 191, 255, 0.85),
+      0 0 35px rgba(30, 144, 255, 0.65),
+      0 0 50px rgba(0, 206, 209, 0.45);
+  }
+
+  .neon-fish-large-trail {
+    position: absolute;
+    width: 45px;
+    height: 8px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 191, 255, 0.25) 20%,
+      rgba(30, 144, 255, 0.65) 40%,
+      rgba(0, 206, 209, 0.85) 60%,
+      rgba(30, 144, 255, 0.55) 80%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(2px);
+    animation: neon-fish-large-trail-swim-level3 12s ease-in-out infinite;
+    opacity: 0.8;
+  }
+
+  /* PESCE MEDIO - Segue il leader - Livello 3 */
+  .neon-fish-medium-body {
+    position: absolute;
+    width: 22px;
+    height: 9px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(30, 144, 255, 0.85) 0%,
+      rgba(0, 206, 209, 0.7) 30%,
+      rgba(0, 191, 255, 0.55) 60%,
+      rgba(30, 144, 255, 0.3) 80%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(1px);
+    animation: neon-fish-medium-swim-level3 16s ease-in-out infinite;
+    box-shadow: 
+      0 0 15px rgba(30, 144, 255, 0.75),
+      0 0 30px rgba(0, 206, 209, 0.55),
+      0 0 45px rgba(0, 191, 255, 0.35);
+  }
+
+  .neon-fish-medium-trail {
+    position: absolute;
+    width: 35px;
+    height: 6px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(30, 144, 255, 0.35) 25%,
+      rgba(0, 206, 209, 0.75) 50%,
+      rgba(0, 191, 255, 0.55) 75%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(1px);
+    animation: neon-fish-medium-trail-swim-level3 16s ease-in-out infinite;
+    opacity: 0.7;
+  }
+
+  /* PESCE PICCOLO - Giocoso e agile - Livello 3 */
+  .neon-fish-small-body {
+    position: absolute;
+    width: 16px;
+    height: 7px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 206, 209, 0.8) 0%,
+      rgba(0, 191, 255, 0.65) 30%,
+      rgba(30, 144, 255, 0.5) 60%,
+      rgba(0, 206, 209, 0.25) 80%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(0.5px);
+    animation: neon-fish-small-swim-level3 10s ease-in-out infinite;
+    box-shadow: 
+      0 0 12px rgba(0, 206, 255, 0.65),
+      0 0 25px rgba(0, 191, 255, 0.45),
+      0 0 40px rgba(30, 144, 255, 0.25);
+  }
+
+  .neon-fish-small-trail {
+    position: absolute;
+    width: 25px;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 206, 209, 0.45) 30%,
+      rgba(0, 191, 255, 0.65) 60%,
+      rgba(30, 144, 255, 0.35) 80%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(1px);
+    animation: neon-fish-small-trail-swim-level3 10s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  /* ANIMAZIONI LIVELLO 3 - PESCE GRANDE - Movimenti fluidi e confinati */
+  @keyframes neon-fish-large-swim-level3 {
+    0% {
+      left: 15%;
+      top: 25%;
+      transform: translateY(-50%) rotate(0deg) scale(1);
+      opacity: 0.8;
+    }
+    12% {
+      left: 40%;
+      top: 20%;
+      transform: translateY(-50%) rotate(8deg) scale(1.05);
+      opacity: 1;
+    }
+    25% {
+      left: 65%;
+      top: 30%;
+      transform: translateY(-50%) rotate(-5deg) scale(0.95);
+      opacity: 1;
+    }
+    37% {
+      left: 70%;
+      top: 50%;
+      transform: translateY(-50%) rotate(12deg) scale(1.1);
+      opacity: 0.9;
+    }
+    50% {
+      left: 55%;
+      top: 70%;
+      transform: translateY(-50%) rotate(-8deg) scale(1);
+      opacity: 1;
+    }
+    62% {
+      left: 30%;
+      top: 75%;
+      transform: translateY(-50%) rotate(6deg) scale(0.9);
+      opacity: 0.95;
+    }
+    75% {
+      left: 10%;
+      top: 60%;
+      transform: translateY(-50%) rotate(-10deg) scale(1.05);
+      opacity: 1;
+    }
+    87% {
+      left: 20%;
+      top: 40%;
+      transform: translateY(-50%) rotate(4deg) scale(0.95);
+      opacity: 0.9;
+    }
+    100% {
+      left: 15%;
+      top: 25%;
+      transform: translateY(-50%) rotate(0deg) scale(1);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes neon-fish-large-trail-swim-level3 {
+    0% {
+      left: 5%;
+      top: 25%;
+      transform: translateY(-50%) scaleX(0.8) rotateZ(0deg);
+      opacity: 0.6;
+    }
+    12% {
+      left: 30%;
+      top: 20%;
+      transform: translateY(-50%) scaleX(1.2) rotateZ(8deg);
+      opacity: 0.85;
+    }
+    25% {
+      left: 55%;
+      top: 30%;
+      transform: translateY(-50%) scaleX(0.9) rotateZ(-5deg);
+      opacity: 0.85;
+    }
+    37% {
+      left: 60%;
+      top: 50%;
+      transform: translateY(-50%) scaleX(1.3) rotateZ(12deg);
+      opacity: 0.7;
+    }
+    50% {
+      left: 45%;
+      top: 70%;
+      transform: translateY(-50%) scaleX(1) rotateZ(-8deg);
+      opacity: 0.85;
+    }
+    62% {
+      left: 20%;
+      top: 75%;
+      transform: translateY(-50%) scaleX(0.9) rotateZ(6deg);
+      opacity: 0.8;
+    }
+    75% {
+      left: 0%;
+      top: 60%;
+      transform: translateY(-50%) scaleX(1.1) rotateZ(-10deg);
+      opacity: 0.85;
+    }
+    87% {
+      left: 10%;
+      top: 40%;
+      transform: translateY(-50%) scaleX(0.8) rotateZ(4deg);
+      opacity: 0.7;
+    }
+    100% {
+      left: 5%;
+      top: 25%;
+      transform: translateY(-50%) scaleX(0.8) rotateZ(0deg);
+      opacity: 0.6;
+    }
+  }
+
+  /* ANIMAZIONI LIVELLO 3 - PESCE MEDIO - Segue con eleganza */
+  @keyframes neon-fish-medium-swim-level3 {
+    0% {
+      left: 25%;
+      top: 35%;
+      transform: translateY(-50%) rotate(-15deg) scale(0.9);
+      opacity: 0.7;
+    }
+    10% {
+      left: 20%;
+      top: 25%;
+      transform: translateY(-50%) rotate(10deg) scale(1);
+      opacity: 0.95;
+    }
+    22% {
+      left: 45%;
+      top: 15%;
+      transform: translateY(-50%) rotate(-8deg) scale(1.05);
+      opacity: 1;
+    }
+    35% {
+      left: 70%;
+      top: 35%;
+      transform: translateY(-50%) rotate(15deg) scale(0.95);
+      opacity: 0.9;
+    }
+    48% {
+      left: 75%;
+      top: 60%;
+      transform: translateY(-50%) rotate(-12deg) scale(1.1);
+      opacity: 1;
+    }
+    60% {
+      left: 50%;
+      top: 80%;
+      transform: translateY(-50%) rotate(8deg) scale(0.9);
+      opacity: 0.95;
+    }
+    72% {
+      left: 20%;
+      top: 75%;
+      transform: translateY(-50%) rotate(-6deg) scale(1);
+      opacity: 1;
+    }
+    85% {
+      left: 10%;
+      top: 55%;
+      transform: translateY(-50%) rotate(12deg) scale(0.95);
+      opacity: 0.85;
+    }
+    100% {
+      left: 25%;
+      top: 35%;
+      transform: translateY(-50%) rotate(-15deg) scale(0.9);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes neon-fish-medium-trail-swim-level3 {
+    0% {
+      left: 18%;
+      top: 35%;
+      transform: translateY(-50%) scaleX(0.7) rotateZ(-15deg);
+      opacity: 0.5;
+    }
+    10% {
+      left: 13%;
+      top: 25%;
+      transform: translateY(-50%) scaleX(1) rotateZ(10deg);
+      opacity: 0.75;
+    }
+    22% {
+      left: 38%;
+      top: 15%;
+      transform: translateY(-50%) scaleX(1.1) rotateZ(-8deg);
+      opacity: 0.75;
+    }
+    35% {
+      left: 63%;
+      top: 35%;
+      transform: translateY(-50%) scaleX(0.9) rotateZ(15deg);
+      opacity: 0.65;
+    }
+    48% {
+      left: 68%;
+      top: 60%;
+      transform: translateY(-50%) scaleX(1.2) rotateZ(-12deg);
+      opacity: 0.75;
+    }
+    60% {
+      left: 43%;
+      top: 80%;
+      transform: translateY(-50%) scaleX(0.8) rotateZ(8deg);
+      opacity: 0.7;
+    }
+    72% {
+      left: 13%;
+      top: 75%;
+      transform: translateY(-50%) scaleX(1) rotateZ(-6deg);
+      opacity: 0.75;
+    }
+    85% {
+      left: 3%;
+      top: 55%;
+      transform: translateY(-50%) scaleX(0.9) rotateZ(12deg);
+      opacity: 0.6;
+    }
+    100% {
+      left: 18%;
+      top: 35%;
+      transform: translateY(-50%) scaleX(0.7) rotateZ(-15deg);
+      opacity: 0.5;
+    }
+  }
+
+  /* ANIMAZIONI LIVELLO 3 - PESCE PICCOLO - Movimenti giocosi e agili */
+  @keyframes neon-fish-small-swim-level3 {
+    0% {
+      left: 35%;
+      top: 45%;
+      transform: translateY(-50%) rotate(25deg) scale(0.8);
+      opacity: 0.6;
+    }
+    8% {
+      left: 50%;
+      top: 25%;
+      transform: translateY(-50%) rotate(-20deg) scale(1.1);
+      opacity: 1;
+    }
+    18% {
+      left: 25%;
+      top: 20%;
+      transform: translateY(-50%) rotate(18deg) scale(0.9);
+      opacity: 0.95;
+    }
+    28% {
+      left: 60%;
+      top: 40%;
+      transform: translateY(-50%) rotate(-25deg) scale(1.05);
+      opacity: 1;
+    }
+    38% {
+      left: 75%;
+      top: 70%;
+      transform: translateY(-50%) rotate(15deg) scale(0.85);
+      opacity: 0.9;
+    }
+    48% {
+      left: 40%;
+      top: 80%;
+      transform: translateY(-50%) rotate(-18deg) scale(1.1);
+      opacity: 1;
+    }
+    58% {
+      left: 15%;
+      top: 65%;
+      transform: translateY(-50%) rotate(22deg) scale(0.9);
+      opacity: 0.95;
+    }
+    68% {
+      left: 65%;
+      top: 55%;
+      transform: translateY(-50%) rotate(-12deg) scale(1);
+      opacity: 1;
+    }
+    78% {
+      left: 75%;
+      top: 30%;
+      transform: translateY(-50%) rotate(20deg) scale(0.95);
+      opacity: 0.85;
+    }
+    88% {
+      left: 45%;
+      top: 15%;
+      transform: translateY(-50%) rotate(-16deg) scale(1.05);
+      opacity: 1;
+    }
+    100% {
+      left: 35%;
+      top: 45%;
+      transform: translateY(-50%) rotate(25deg) scale(0.8);
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes neon-fish-small-trail-swim-level3 {
+    0% {
+      left: 30%;
+      top: 45%;
+      transform: translateY(-50%) scaleX(0.6) rotateZ(25deg);
+      opacity: 0.4;
+    }
+    8% {
+      left: 45%;
+      top: 25%;
+      transform: translateY(-50%) scaleX(1.1) rotateZ(-20deg);
+      opacity: 0.65;
+    }
+    18% {
+      left: 20%;
+      top: 20%;
+      transform: translateY(-50%) scaleX(0.8) rotateZ(18deg);
+      opacity: 0.65;
+    }
+    28% {
+      left: 55%;
+      top: 40%;
+      transform: translateY(-50%) scaleX(1.2) rotateZ(-25deg);
+      opacity: 0.65;
+    }
+    38% {
+      left: 70%;
+      top: 70%;
+      transform: translateY(-50%) scaleX(0.7) rotateZ(15deg);
+      opacity: 0.6;
+    }
+    48% {
+      left: 35%;
+      top: 80%;
+      transform: translateY(-50%) scaleX(1.1) rotateZ(-18deg);
+      opacity: 0.65;
+    }
+    58% {
+      left: 10%;
+      top: 65%;
+      transform: translateY(-50%) scaleX(0.8) rotateZ(22deg);
+      opacity: 0.6;
+    }
+    68% {
+      left: 60%;
+      top: 55%;
+      transform: translateY(-50%) scaleX(1) rotateZ(-12deg);
+      opacity: 0.65;
+    }
+    78% {
+      left: 75%;
+      top: 30%;
+      transform: translateY(-50%) scaleX(0.9) rotateZ(20deg);
+      opacity: 0.55;
+    }
+    88% {
+      left: 40%;
+      top: 15%;
+      transform: translateY(-50%) scaleX(1.1) rotateZ(-16deg);
+      opacity: 0.65;
+    }
+    100% {
+      left: 30%;
+      top: 45%;
+      transform: translateY(-50%) scaleX(0.6) rotateZ(25deg);
+      opacity: 0.4;
+    }
+  }
+
+  /* Keyframe animations */
+  @keyframes logo-supreme-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes logo-supreme-pulse {
+    0%, 100% { 
+      transform: scale(1);
+      filter: blur(18px);
+      opacity: 0.6;
+    }
+    33% { 
+      transform: scale(1.05);
+      filter: blur(12px);
+      opacity: 0.8;
+    }
+    66% { 
+      transform: scale(1.1);
+      filter: blur(8px);
+      opacity: 1;
+    }
+  }
+
+  @keyframes logo-hat-float {
+    0%, 100% { 
+      transform: scale(1.15) rotateY(5deg) translateY(0px);
+    }
+    50% { 
+      transform: scale(1.18) rotateY(-2deg) translateY(-2px);
+    }
+  }
+
+  @keyframes particle-float {
+    0% { 
+      opacity: 0;
+      transform: translateY(0px) scale(0.5);
+    }
+    20% { 
+      opacity: 1;
+      transform: translateY(-10px) scale(1);
+    }
+    80% { 
+      opacity: 1;
+      transform: translateY(-30px) scale(1.2);
+    }
+    100% { 
+      opacity: 0;
+      transform: translateY(-50px) scale(0.8);
+    }
+  }
+
+  @keyframes logo-text-supreme-shimmer {
+    0%, 100% { 
+      background-position: 0% 50%; 
+    }
+    50% { 
+      background-position: 100% 50%; 
+    }
+  }
+
+  @keyframes text-shine {
+    0% { 
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    50% { 
+      opacity: 1;
+    }
+    100% { 
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  /* Animazioni per gli effetti di brillantezza */
+  @keyframes logo-text-teeth-sparkle {
+    0%, 100% { 
+      background-position: 0% 50%; 
+      filter: brightness(100%) saturate(100%);
+    }
+    25% { 
+      background-position: 50% 25%; 
+      filter: brightness(105%) saturate(105%);
+    }
+    50% { 
+      background-position: 100% 50%; 
+      filter: brightness(110%) saturate(110%);
+    }
+    75% { 
+      background-position: 50% 75%; 
+      filter: brightness(105%) saturate(105%);
+    }
+  }
+
+  @keyframes teeth-shine-sweep {
+    0% { 
+      transform: translateX(-150%);
+      opacity: 0;
+    }
+    20% { 
+      opacity: 0.6;
+    }
+    50% { 
+      opacity: 0.8;
+    }
+    80% { 
+      opacity: 0.6;
+    }
+    100% { 
+      transform: translateX(150%);
+      opacity: 0;
+    }
+  }
+
+  /* Level 3 Cool Sidebar Toggle Button */
+  .sidebar-toggle-level-3 {
+    @apply w-7 h-7 rounded-xl transition-all duration-300 ease-out;
+    background: linear-gradient(135deg, 
+      rgba(51, 65, 85, 0.95) 0%, 
+      rgba(71, 85, 105, 0.9) 50%, 
+      rgba(51, 65, 85, 0.95) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: rgba(203, 213, 225, 0.9);
+    box-shadow: 
+      0 4px 15px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar-toggle-level-3::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, 
+      transparent 30%, 
+      rgba(0, 191, 255, 0.1) 50%, 
+      transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-toggle-level-3:hover {
+    color: white;
+    border-color: rgba(0, 191, 255, 0.4);
+    box-shadow: 
+      0 6px 25px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(0, 191, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px) scale(1.05);
+    background: linear-gradient(135deg, 
+      rgba(71, 85, 105, 0.95) 0%, 
+      rgba(100, 116, 139, 0.9) 50%, 
+      rgba(71, 85, 105, 0.95) 100%);
+  }
+
+  .sidebar-toggle-level-3:hover::before {
+    opacity: 1;
+    animation: toggle-sweep 0.6s ease-out;
+  }
+
+  .sidebar-toggle-level-3:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 
+      0 2px 10px rgba(0, 0, 0, 0.3),
+      0 0 15px rgba(0, 191, 255, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  @keyframes toggle-sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Level 3 Premium Volumetric Glow Effects - Ridotta luminosità */
+  .glow-active {
+    background: radial-gradient(ellipse at center, 
+      rgba(0, 191, 255, 0.04) 0%,
+      rgba(30, 144, 255, 0.06) 15%,
+      rgba(0, 206, 209, 0.08) 30%,
+      rgba(30, 144, 255, 0.09) 45%,
+      rgba(0, 191, 255, 0.06) 60%,
+      rgba(30, 144, 255, 0.04) 75%,
+      transparent 90%);
+    box-shadow: 
+      0 0 25px rgba(0, 191, 255, 0.1),
+      0 0 50px rgba(30, 144, 255, 0.08),
+      inset 0 0 30px rgba(0, 191, 255, 0.05),
+      0 0 70px rgba(0, 191, 255, 0.06),
+      0 0 120px rgba(30, 144, 255, 0.04);
+    position: relative;
+    overflow: hidden;
+    border: none !important;
+  }
+
+  .glow-active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg,
+      rgba(0, 191, 255, 0.05) 0%,
+      transparent 20%,
+      rgba(30, 144, 255, 0.04) 40%,
+      transparent 60%,
+      rgba(0, 191, 255, 0.05) 80%,
+      transparent 100%
+    );
+    animation: premium-sweep 4s ease-in-out infinite;
+    border-radius: inherit;
+    opacity: 0.4;
+    z-index: -1;
+  }
+
+  .glow-active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(0, 191, 255, 0.03) 90deg,
+      rgba(30, 144, 255, 0.04) 180deg,
+      rgba(0, 206, 209, 0.03) 270deg,
+      transparent 360deg
+    );
+    animation: premium-rotate 10s linear infinite;
+    border-radius: inherit;
+    filter: blur(6px);
+    opacity: 0.3;
+    z-index: -1;
+  }
+
+  @keyframes premium-sweep {
+    0%, 100% { 
+      background-position: -100% 0;
+      opacity: 0.2;
+    }
+    50% { 
+      background-position: 200% 0;
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes premium-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .glow-icon {
+    box-shadow: 
+      0 0 20px rgba(0, 191, 255, 0.6),
+      0 0 40px rgba(30, 144, 255, 0.4);
+    color: hsl(var(--electric-blue));
+    text-shadow: 0 0 10px hsl(var(--electric-blue) / 0.8);
+  }
+
+  .glow-indicator {
+    background: linear-gradient(to bottom, 
+      rgba(0, 191, 255, 1) 0%, 
+      rgba(30, 144, 255, 0.9) 50%, 
+      rgba(0, 191, 255, 1) 100%);
+    box-shadow: 
+      0 0 15px rgba(0, 191, 255, 0.8),
+      0 0 30px rgba(30, 144, 255, 0.6),
+      0 0 45px rgba(0, 191, 255, 0.4);
+  }
+
+  .glow-status {
+    box-shadow: 
+      0 0 15px rgba(52, 211, 153, 0.6),
+      0 0 30px rgba(16, 185, 129, 0.4);
+  }
+
+  /* Enhanced Premium Hover Effects */
+  .premium-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 15px 35px rgba(0, 0, 0, 0.3),
+      0 0 30px rgba(0, 191, 255, 0.2);
+  }
+
+  .premium-status {
+    background: linear-gradient(135deg, 
+      rgba(6, 78, 59, 0.5) 0%, 
+      rgba(5, 150, 105, 0.4) 50%, 
+      rgba(6, 78, 59, 0.5) 100%);
+  }
+
+  /* Enhanced Menu Item Animations */
+  .sidebar-menu-item {
+    animation: premium-slide-in 0.5s ease-out forwards;
+  }
+
+  @keyframes premium-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-30px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  /* Enhanced Fade and Scale Animations */
+  .animate-fade-in {
+    animation: premium-fade-in 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: premium-scale-in 0.5s ease-out forwards;
+  }
+
+  @keyframes premium-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes premium-scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.8) rotate(-3deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  /* Wave foam animations - intermittent waves with foam-like effects */
+  @keyframes wave-foam-sweep {
+    0% { 
+      background-position: -150% 0;
+      opacity: 0;
+      transform: scaleY(0.8);
+    }
+    20% { 
+      opacity: 0.6;
+      transform: scaleY(1);
+    }
+    40% { 
+      background-position: 0% 0;
+      opacity: 0.8;
+      transform: scaleY(1.1);
+    }
+    60% { 
+      background-position: 50% 0;
+      opacity: 0.9;
+      transform: scaleY(1);
+    }
+    80% { 
+      opacity: 0.6;
+      transform: scaleY(0.9);
+    }
+    100% { 
+      background-position: 200% 0;
+      opacity: 0;
+      transform: scaleY(0.8);
+    }
+  }
+
+  @keyframes wave-foam-sweep-secondary {
+    0% { 
+      background-position: -200% 0;
+      opacity: 0;
+      transform: scaleY(0.7) skewX(-2deg);
+    }
+    15% { 
+      opacity: 0.4;
+      transform: scaleY(0.9) skewX(-1deg);
+    }
+    35% { 
+      background-position: -50% 0;
+      opacity: 0.7;
+      transform: scaleY(1.05) skewX(0deg);
+    }
+    55% { 
+      background-position: 50% 0;
+      opacity: 0.8;
+      transform: scaleY(1.1) skewX(1deg);
+    }
+    75% { 
+      opacity: 0.5;
+      transform: scaleY(0.95) skewX(0deg);
+    }
+    100% { 
+      background-position: 250% 0;
+      opacity: 0;
+      transform: scaleY(0.7) skewX(-1deg);
+    }
+  }
+
+  @keyframes wave-foam-intermittent {
+    0% { 
+      background-position: -150% 0;
+      opacity: 0;
+      transform: scaleY(0.8);
+    }
+    25% { 
+      opacity: 0.7;
+      transform: scaleY(1.05);
+    }
+    50% { 
+      background-position: 50% 0;
+      opacity: 0.9;
+      transform: scaleY(1.1);
+    }
+    75% { 
+      opacity: 0.6;
+      transform: scaleY(0.95);
+    }
+    100% { 
+      background-position: 200% 0;
+      opacity: 0;
+      transform: scaleY(0.8);
+    }
+  }
+
+  @keyframes wave-foam-intermittent-secondary {
+    0% { 
+      background-position: -200% 0;
+      opacity: 0;
+      transform: scaleY(0.7) skewX(-3deg);
+    }
+    30% { 
+      opacity: 0.6;
+      transform: scaleY(1) skewX(-1deg);
+    }
+    60% { 
+      background-position: 100% 0;
+      opacity: 0.8;
+      transform: scaleY(1.15) skewX(1deg);
+    }
+    85% { 
+      opacity: 0.4;
+      transform: scaleY(0.9) skewX(0deg);
+    }
+    100% { 
+      background-position: 250% 0;
+      opacity: 0;
+      transform: scaleY(0.7) skewX(-2deg);
+    }
+  }
+
+  /* Random trigger animation for waves */
+  @keyframes wave-trigger {
+    0% { --wave-delay: 5s; --wave-delay-secondary: 8s; }
+    14.28% { --wave-delay: 7s; --wave-delay-secondary: 6s; }
+    28.56% { --wave-delay: 6s; --wave-delay-secondary: 9s; }
+    42.84% { --wave-delay: 8s; --wave-delay-secondary: 5s; }
+    57.12% { --wave-delay: 5s; --wave-delay-secondary: 7s; }
+    71.4% { --wave-delay: 9s; --wave-delay-secondary: 6s; }
+    85.68% { --wave-delay: 6s; --wave-delay-secondary: 8s; }
+    100% { --wave-delay: 7s; --wave-delay-secondary: 5s; }
+  }
+}

@@ -1,26 +1,27 @@
+
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarTrigger,
-    useSidebar,
+  Sidebar,
+  SidebarContent,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import Logo from "./Logo";
+import { 
+  InputIcon,
+  AnalisiStoricaIcon,
+  PerformanceIcon,
+  VolatilitaIcon,
+  InterAssetIcon,
+  FondamentaleIcon,
+  OttimizzazioneIcon,
+  StrategyIcon
+} from "./icons/CustomIcons";
 import { FileText } from "lucide-react";
 import React from "react";
-import Logo from "./Logo";
-import {
-    AnalisiStoricaIcon,
-    FondamentaleIcon,
-    InputIcon,
-    InterAssetIcon,
-    OttimizzazioneIcon,
-    PerformanceIcon,
-    StrategyIcon,
-    VolatilitaIcon
-} from "./icons/CustomIcons";
 
 const SIDEBAR_STEPS = [
   { key: "input", label: "Input & Validazione", icon: InputIcon },
@@ -136,4 +137,4 @@ export default function FullSidebar({ activeStep, onStepChange }: {
       </div>
     </div>
   );
-} 
+}
