@@ -1,3 +1,1 @@
  M scripts/temp_git_status.txt
- D src/components/ui/TheoryButton.css
- D src/styles/PrintStyles.css
