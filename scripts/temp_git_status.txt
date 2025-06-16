@@ -1,2 +1,2 @@
- M config/vite.config.ts
+ M config/tsconfig.app.json
  M scripts/temp_git_status.txt
