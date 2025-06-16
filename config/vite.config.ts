@@ -16,10 +16,10 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@/components": path.resolve(__dirname, "./src/components"),
-      "@/lib": path.resolve(__dirname, "./src/lib"),
-      "@/hooks": path.resolve(__dirname, "./src/hooks"),
+      "@": path.resolve(process.cwd(), "src"),
+      "@/components": path.resolve(process.cwd(), "src/components"),
+      "@/lib": path.resolve(process.cwd(), "src/lib"),
+      "@/hooks": path.resolve(process.cwd(), "src/hooks"),
     },
   },
 }));
