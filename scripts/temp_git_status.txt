@@ -1,2 +1,3 @@
  M scripts/temp_git_status.txt
-?? "Lovable project/"
+?? "Lovable project/lovable-analyst-compass-main.zip"
+?? "Lovable project/lovable-analyst-compass-main/"
