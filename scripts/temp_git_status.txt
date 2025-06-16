@@ -1,2 +1,2 @@
  M scripts/temp_git_status.txt
- M src/pages/NotFound.tsx
+ M src/pages/Index.tsx

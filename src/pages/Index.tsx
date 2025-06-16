@@ -1,7 +1,8 @@
+
 import FullSidebar from "@/components/FullSidebar";
-import MainTabs from "@/components/MainTabs";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import WelcomeBox from "@/components/WelcomeBox";
+import MainTabs from "@/components/MainTabs";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import React from "react";
 
 export default function Index() {
@@ -85,4 +86,4 @@ export default function Index() {
       </div>
     </SidebarProvider>
   );
-} 
+}
