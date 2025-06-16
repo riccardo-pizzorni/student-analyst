@@ -1,5 +1,1 @@
  M scripts/temp_git_status.txt
- M src/components/MainTabs.tsx
- M src/components/ui/tabs.tsx
-?? src/components/charts/
-?? src/components/input/
