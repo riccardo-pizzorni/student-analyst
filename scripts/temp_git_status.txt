@@ -1,2 +1,4 @@
  M scripts/temp_git_status.txt
+ M src/App.tsx
+ M src/index.css
  M src/main.tsx
