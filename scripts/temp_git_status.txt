@@ -1,6 +1,10 @@
  M scripts/temp_git_status.txt
- D src/components/DesktopLayout.css
- D src/components/DesktopLayout.tsx
- D src/components/DesktopLayoutDemo.css
- D src/components/DesktopLayoutDemo.tsx
- D src/components/LayoutManager.tsx
+ D src/components/FullSidebar.tsx
+ D src/components/Logo.tsx
+ D src/components/MainTabs.tsx
+ D src/components/SidebarStepNavigation.tsx
+ D src/components/SidebarStepNavigationDemo.tsx
+ D src/components/WelcomeBox.tsx
+ D src/components/ui/button.tsx
+ D src/components/ui/input.tsx
+ D src/components/ui/sidebar.tsx
