@@ -1,2 +1,4 @@
+ M config/vite.config.ts
  M package-lock.json
+ M package.json
  M scripts/temp_git_status.txt
