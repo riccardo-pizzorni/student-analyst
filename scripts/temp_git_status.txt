@@ -1,2 +1,2 @@
- M package.json
+ M package-lock.json
  M scripts/temp_git_status.txt
