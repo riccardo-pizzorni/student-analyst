@@ -1,1 +1,5 @@
  M scripts/temp_git_status.txt
+?? public/favicon.ico
+?? public/lovable-uploads/
+?? public/placeholder.svg
+?? public/robots.txt
