@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(process.cwd(), "src"),
+      "@/components": path.resolve(process.cwd(), "src/components"),
+      "@/lib": path.resolve(process.cwd(), "src/lib"),
+      "@/hooks": path.resolve(process.cwd(), "src/hooks")
     },
   },
   build: {
