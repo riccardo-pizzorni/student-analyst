@@ -1,10 +1,4 @@
  M scripts/temp_git_status.txt
- D src/components/ui/separator.tsx
- D src/components/ui/sheet.tsx
- D src/components/ui/skeleton.tsx
- D src/components/ui/sonner.tsx
- D src/components/ui/tabs.tsx
- D src/components/ui/toast.tsx
- D src/components/ui/toaster.tsx
- D src/components/ui/tooltip.tsx
- D src/components/ui/use-toast.ts
+ D src/components/ui/alert.tsx
+ D src/components/ui/card.tsx
+ D src/components/ui/icons.tsx
