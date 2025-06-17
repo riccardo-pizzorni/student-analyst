@@ -1,4 +1,4 @@
-import { TextDecoder, TextEncoder } from 'util';
+import { TextEncoder } from 'util';
 
 // Enhanced IndexedDB mock for async operations and callbacks
 class MockIDBRequest {
@@ -92,11 +92,15 @@ const sessionStorage = {
 };
 
 // Mock TextEncoder/TextDecoder
+class MockTextDecoder {
+  decode(input?: ArrayBuffer | ArrayBufferView | null, options?: { stream?: boolean }): string {
+    // Implementazione minima per i test
+    return '';
+  }
+}
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as {
-  new (label?: string, options?: TextDecoderOptions): TextDecoder;
-  prototype: TextDecoder;
-};
+// L'assegnazione usa 'as any' per evitare conflitti di tipo tra Node e browser, circoscritto solo a questa riga per sicurezza.
+global.TextDecoder = MockTextDecoder as any;
 
 // Mock console.error to prevent noise in test output
 const originalConsoleError = console.error;
