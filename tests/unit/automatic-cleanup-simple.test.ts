@@ -4,6 +4,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import type { Mock } from 'jest-mock';
 
 // Mock browser APIs
 const mockLocalStorage = {
@@ -29,8 +30,19 @@ Object.defineProperty(global, 'clearTimeout', {
 });
 
 // Setup window.confirm mock safely
-(global as unknown).window = (global as unknown).window || {};
-(global as unknown).window.confirm = jest.fn(() => true);
+interface CustomWindow extends Window {
+  confirm: Mock<() => boolean>;
+}
+
+declare global {
+  interface Window {
+    confirm: Mock<() => boolean>;
+  }
+}
+
+const customWindow = global as unknown as CustomWindow;
+customWindow.window = customWindow.window || {} as CustomWindow;
+customWindow.window.confirm = jest.fn(() => true);
 
 Object.defineProperty(global, 'navigator', {
   value: {
@@ -68,15 +80,15 @@ type CacheStats = {
 };
 
 interface CacheInterface {
-  clear: () => void;
-  getStats: () => CacheStats | Promise<CacheStats>;
-  keys?: () => string[];
-  getAllKeys?: () => Promise<string[]>;
-  get: (key: string) => unknown;
-  remove?: (key: string) => void;
-  delete?: (key: string) => void;
-  has: (key: string) => boolean;
-  size?: () => number;
+  clear: Mock;
+  getStats: Mock;
+  keys?: Mock;
+  getAllKeys?: Mock;
+  get: Mock;
+  remove?: Mock;
+  delete?: Mock;
+  has: Mock;
+  size?: Mock;
 }
 
 describe('AutomaticCleanupService - Comprehensive Tests', () => {
