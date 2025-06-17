@@ -1,3 +1,4 @@
+# Placeholder edit to ensure favicon can be referenced in public
 User-agent: Googlebot
 Allow: /
 
