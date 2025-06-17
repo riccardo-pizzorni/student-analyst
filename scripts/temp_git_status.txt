@@ -1,2 +1,3 @@
- M backend/src/services/dataTransformer.ts
+ M "Lovable project/tailwind.config.ts"
+ M backend/src/services/alphaVantageService.ts
  M scripts/temp_git_status.txt

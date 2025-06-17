@@ -308,7 +308,7 @@ export class AlphaVantageService {
   ): Promise<AlphaVantageResponse> {
     try {
       // Determina la funzione API da utilizzare
-      const apiFunction = this.getApiFunction(timeframe, options?.adjusted);
+      const apiFunction = this.getApiFunction(timeframe, typeof options?.adjusted === 'boolean' ? options.adjusted : undefined);
       
       // Costruisce i parametri della richiesta
       const params = this.buildRequestParams(apiFunction, symbol, timeframe, options);
@@ -353,31 +353,38 @@ export class AlphaVantageService {
    * Determina la funzione API Alpha Vantage da utilizzare
    */
   private getApiFunction(timeframe: AlphaVantageTimeframe, useAdjusted?: boolean): AlphaVantageFunction {
-    const adjusted = typeof useAdjusted === 'boolean' ? useAdjusted : this.config.useAdjusted;
-    
+    // Sposto dichiarazioni fuori dai case
+    let apiFunction: AlphaVantageFunction;
     switch (timeframe) {
       case AlphaVantageTimeframe.INTRADAY_1MIN:
       case AlphaVantageTimeframe.INTRADAY_5MIN:
       case AlphaVantageTimeframe.INTRADAY_15MIN:
       case AlphaVantageTimeframe.INTRADAY_30MIN:
       case AlphaVantageTimeframe.INTRADAY_60MIN:
-        return AlphaVantageFunction.TIME_SERIES_INTRADAY;
-      
+        apiFunction = AlphaVantageFunction.TIME_SERIES_INTRADAY;
+        break;
       case AlphaVantageTimeframe.DAILY:
-        return adjusted ? AlphaVantageFunction.TIME_SERIES_DAILY_ADJUSTED : AlphaVantageFunction.TIME_SERIES_DAILY;
-      
+        apiFunction = useAdjusted
+          ? AlphaVantageFunction.TIME_SERIES_DAILY_ADJUSTED
+          : AlphaVantageFunction.TIME_SERIES_DAILY;
+        break;
       case AlphaVantageTimeframe.WEEKLY:
-        return adjusted ? AlphaVantageFunction.TIME_SERIES_WEEKLY_ADJUSTED : AlphaVantageFunction.TIME_SERIES_WEEKLY;
-      
+        apiFunction = useAdjusted
+          ? AlphaVantageFunction.TIME_SERIES_WEEKLY_ADJUSTED
+          : AlphaVantageFunction.TIME_SERIES_WEEKLY;
+        break;
       case AlphaVantageTimeframe.MONTHLY:
-        return adjusted ? AlphaVantageFunction.TIME_SERIES_MONTHLY_ADJUSTED : AlphaVantageFunction.TIME_SERIES_MONTHLY;
-      
+        apiFunction = useAdjusted
+          ? AlphaVantageFunction.TIME_SERIES_MONTHLY_ADJUSTED
+          : AlphaVantageFunction.TIME_SERIES_MONTHLY;
+        break;
       default:
         throw new AlphaVantageError(
-          AlphaVantageErrorType.INVALID_FUNCTION,
-          `Impossibile determinare la funzione API per il timeframe: ${timeframe}`
+          AlphaVantageErrorType.INVALID_TIMEFRAME,
+          `Timeframe non supportato: ${timeframe}`
         );
     }
+    return apiFunction;
   }
 
   /**
@@ -425,7 +432,7 @@ export class AlphaVantageService {
       // Identifica le chiavi di dati e metadati
       const { dataKey, metadataKey } = this.identifyResponseKeys(responseData, timeframe);
       
-      if (!responseData[dataKey] || !responseData[metadataKey]) {
+      if (!dataKey || !metadataKey || !responseData[dataKey] || !responseData[metadataKey]) {
         throw new AlphaVantageError(
           AlphaVantageErrorType.MALFORMED_RESPONSE,
           `Risposta API malformata: chiavi mancanti ${String(dataKey)} o ${String(metadataKey)}`,
@@ -435,10 +442,10 @@ export class AlphaVantageService {
       }
 
       // Parsing dei metadati
-      const metadata = this.parseMetadata(responseData[metadataKey]);
+      const metadata = this.parseMetadata((responseData[metadataKey] ?? {}) as Record<string, unknown>);
       
       // Parsing dei dati OHLCV
-      const ohlcvData = this.parseOHLCVData(responseData[dataKey], timeframe);
+      const ohlcvData = this.parseOHLCVData((responseData[dataKey] ?? {}) as Record<string, unknown>, timeframe);
       
       // Validazione dati se abilitata
       if (this.config.validateData) {
@@ -565,7 +572,7 @@ export class AlphaVantageService {
       lastRefreshed: typeof meta['3. Last Refreshed'] === 'string' ? meta['3. Last Refreshed'] : '',
       interval: typeof meta['4. Interval'] === 'string' ? meta['4. Interval'] : undefined,
       outputSize: typeof meta['5. Output Size'] === 'string' ? meta['5. Output Size'] : undefined,
-      timeZone: typeof meta['6. Time Zone'] === 'string' ? meta['6. Time Zone'] : typeof meta['5. Time Zone'] === 'string' ? meta['5. Time Zone'] : 'US/Eastern'
+      timeZone: typeof meta['6. Time Zone'] === 'string' ? meta['6. Time Zone'] : (typeof meta['5. Time Zone'] === 'string' ? meta['5. Time Zone'] : 'US/Eastern')
     };
   }
 
@@ -592,8 +599,8 @@ export class AlphaVantageService {
           ohlcv.timestamp = timestamp;
         }
         data.push(ohlcv);
-      } catch (error) {
-        console.warn(`Errore parsing dato per timestamp ${timestamp}:`, error);
+      } catch {
+        // skip row
       }
     }
 
