@@ -1,11 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
 
 /**
  * TIER 1 - SMOKE TESTING (100% PASS REQUIRED)
  * Fixed with absolute URLs and correct title
  */
 
-async function smartClick(page: any, selector: string, options = {}) {
+async function smartClick(page: Page, selector: string, options: Record<string, unknown> = {}) {
   await page.waitForSelector(selector, { state: 'visible', timeout: 10000 });
   await page.waitForLoadState('networkidle', { timeout: 5000 });
   await page.click(selector, { timeout: 8000, ...options });

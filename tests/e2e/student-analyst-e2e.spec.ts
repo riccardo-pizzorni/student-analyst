@@ -122,7 +122,8 @@ test.describe('🎯 Student Analyst - Core Functionality', () => {
     
     // Test memoria JavaScript
     const memoryUsage = await page.evaluate(() => {
-      return (performance as any).memory?.usedJSHeapSize || 0;
+      const mem = (performance as { memory?: { usedJSHeapSize?: number } }).memory;
+      return mem?.usedJSHeapSize || 0;
     });
     
     // Limite memoria realistico per app finanziaria

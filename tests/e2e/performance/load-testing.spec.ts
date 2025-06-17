@@ -56,11 +56,11 @@ test.describe('⚡ Performance & Load Testing', () => {
     
     await page.evaluate(() => {
       // Simula 1000 punti dati
-      const largeDataset: Array<{ date: string; price: number; volume: number }> = Array.from({ length: 1000 }, (_unused: unknown, i: number) => ({
+      const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
         date: new Date(2023, 0, i + 1).toISOString(),
         price: Math.random() * 100 + 50,
         volume: Math.floor(Math.random() * 1000000)
-      }));
+      }) as { date: string; price: number; volume: number });
       
       // Trigger processing nel frontend
       window.dispatchEvent(new CustomEvent('processLargeDataset', {
@@ -121,10 +121,9 @@ test.describe('⚡ Performance & Load Testing', () => {
     await page.evaluate(() => {
       // Calcoli matrix intensive
       for (let i = 0; i < 1000; i++) {
-        const matrix: number[][] = Array.from({ length: 100 }, (_unused: unknown) => 
-          Array.from({ length: 100 }, (_unused2: unknown) => Math.random())
+        const matrix = Array.from({ length: 100 }, () => 
+          Array.from({ length: 100 }, () => Math.random() as number)
         );
-        
         // Operazioni su matrix
         matrix.forEach(row => row.reduce((a, b) => a + b, 0));
       }

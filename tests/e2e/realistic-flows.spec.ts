@@ -119,7 +119,8 @@ test.describe('🎯 Realistic User Journeys', () => {
     
     // Test che la pagina non consumi memoria eccessiva
     const memoryUsage = await page.evaluate(() => {
-      return (performance as any).memory?.usedJSHeapSize || 0;
+      const mem = (performance as { memory?: { usedJSHeapSize?: number } }).memory;
+      return mem?.usedJSHeapSize || 0;
     });
     
     // Meno di 150MB di memoria JS (realistico per financial SPA con PyScript)
