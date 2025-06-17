@@ -1,2 +1,3 @@
- M backend/src/routes/errorHandlingRoutes.ts
+ M "Lovable project/src/components/ui/command.tsx"
+ M "Lovable project/src/components/ui/textarea.tsx"
  M scripts/temp_git_status.txt
