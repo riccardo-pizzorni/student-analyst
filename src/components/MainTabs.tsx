@@ -1,17 +1,17 @@
-
-import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  BarChart3, 
-  Table, 
-  Calculator,
-  TrendingUp,
-  PieChart,
-  Info
+import {
+    BarChart3,
+    Calculator,
+    Info,
+    PieChart,
+    Table,
+    TrendingUp
 } from "lucide-react";
-import VolatilityChart from "./charts/VolatilityChart";
-import PerformanceMetrics from "./charts/PerformanceMetrics";
+import React from "react";
 import CorrelationMatrix from "./charts/CorrelationMatrix";
+import HistoricalChart from "./charts/HistoricalChart";
+import PerformanceMetrics from "./charts/PerformanceMetrics";
+import VolatilityChart from "./charts/VolatilityChart";
 import UnifiedInputSection from "./input/UnifiedInputSection";
 
 export default function MainTabs({ 
@@ -201,6 +201,39 @@ export default function MainTabs({
                     <div>
                       <p className="text-xl font-bold text-blue-300">Dendrogramma Clustering</p>
                       <p className="text-slate-400">Raggruppamento per similarità</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </>
+        )}
+
+        {/* Historical Step */}
+        {activeStep === "storica" && (
+          <>
+            <TabsContent value="grafici" className="mt-6">
+              <HistoricalChart />
+            </TabsContent>
+
+            <TabsContent value="tabella" className="mt-6">
+              <div className="dark-card rounded-xl p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
+                    <Table size={24} />
+                    Dati Storici
+                  </h3>
+                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                    <Info size={14} />
+                    Info
+                  </button>
+                </div>
+                <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <Table size={64} className="mx-auto text-blue-400 animate-pulse" />
+                    <div>
+                      <p className="text-xl font-bold text-blue-300">Tabella Dati</p>
+                      <p className="text-slate-400">Visualizzazione tabulare dei prezzi storici</p>
                     </div>
                   </div>
                 </div>
