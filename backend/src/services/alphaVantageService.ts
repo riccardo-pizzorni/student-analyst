@@ -353,7 +353,7 @@ export class AlphaVantageService {
    * Determina la funzione API Alpha Vantage da utilizzare
    */
   private getApiFunction(timeframe: AlphaVantageTimeframe, useAdjusted?: boolean): AlphaVantageFunction {
-    const adjusted = useAdjusted ?? this.config.useAdjusted;
+    const adjusted = typeof useAdjusted === 'boolean' ? useAdjusted : this.config.useAdjusted;
     
     switch (timeframe) {
       case AlphaVantageTimeframe.INTRADAY_1MIN:
@@ -428,7 +428,7 @@ export class AlphaVantageService {
       if (!responseData[dataKey] || !responseData[metadataKey]) {
         throw new AlphaVantageError(
           AlphaVantageErrorType.MALFORMED_RESPONSE,
-          `Risposta API malformata: chiavi mancanti ${dataKey} o ${metadataKey}`,
+          `Risposta API malformata: chiavi mancanti ${String(dataKey)} o ${String(metadataKey)}`,
           undefined,
           responseData
         );
@@ -572,31 +572,25 @@ export class AlphaVantageService {
   /**
    * Parsing dei dati OHLCV
    */
-  private parseOHLCVData(rawData: Record<string, any>, timeframe: AlphaVantageTimeframe): OHLCVData[] {
+  private parseOHLCVData(rawData: Record<string, unknown>, timeframe: AlphaVantageTimeframe): OHLCVData[] {
     const data: OHLCVData[] = [];
     
     for (const [timestamp, values] of Object.entries(rawData)) {
       try {
-        const v = values as Record<string, string>;
-        const ohlcv: OHLCVData = {
-          date: timestamp,
-          open: parseFloat(v['1. open']),
-          high: parseFloat(v['2. high']),
-          low: parseFloat(v['3. low']),
-          close: parseFloat(v['4. close']),
-          volume: parseInt(v['5. volume'], 10)
-        };
-
-        // Aggiungi adjusted close se disponibile
-        if (v['5. adjusted close']) {
-          ohlcv.adjustedClose = parseFloat(v['5. adjusted close']);
+        if (typeof values !== 'object' || values === null) continue;
+        const v = values as Record<string, unknown>;
+        const open = typeof v['1. open'] === 'string' ? parseFloat(v['1. open'] as string) : NaN;
+        const high = typeof v['2. high'] === 'string' ? parseFloat(v['2. high'] as string) : NaN;
+        const low = typeof v['3. low'] === 'string' ? parseFloat(v['3. low'] as string) : NaN;
+        const close = typeof v['4. close'] === 'string' ? parseFloat(v['4. close'] as string) : NaN;
+        const volume = typeof v['5. volume'] === 'string' ? parseInt(v['5. volume'] as string, 10) : NaN;
+        const ohlcv: OHLCVData = { date: timestamp, open, high, low, close, volume };
+        if (typeof v['5. adjusted close'] === 'string') {
+          ohlcv.adjustedClose = parseFloat(v['5. adjusted close'] as string);
         }
-
-        // Aggiungi timestamp per dati intraday
         if (timeframe.includes('min')) {
           ohlcv.timestamp = timestamp;
         }
-
         data.push(ohlcv);
       } catch (error) {
         console.warn(`Errore parsing dato per timestamp ${timestamp}:`, error);
