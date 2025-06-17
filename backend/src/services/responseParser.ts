@@ -223,7 +223,7 @@ export class ResponseParser {
       let dataArray: Record<string, unknown>[] = [];
 
       // Formato 1: { chart: { result: [{ indicators: { quote: [{}] }, timestamp: [] }] } }
-      if (rawData.chart?.result?.[0]) {
+      if (rawData.chart && typeof rawData.chart === 'object' && rawData.chart.result && Array.isArray(rawData.chart.result) && rawData.chart.result[0]) {
         const chartData = rawData.chart.result[0];
         const timestamps = chartData.timestamp || [];
         const quote = chartData.indicators?.quote?.[0] || {};
@@ -264,7 +264,7 @@ export class ResponseParser {
         dataArray = rawData.data as Record<string, unknown>[];
       }
       // Formato 4: Response wrapper
-      else if (rawData.response?.data) {
+      else if (rawData.response && typeof rawData.response === 'object' && rawData.response.data) {
         dataArray = Array.isArray(rawData.response.data) ? rawData.response.data : [rawData.response.data] as Record<string, unknown>[];
       }
 
@@ -390,7 +390,7 @@ export class ResponseParser {
     const errors: ParsingError[] = [];
 
     try {
-      const results = rawData.results || rawData.values || [];
+      const results = (rawData.results && Array.isArray(rawData.results)) ? rawData.results : (rawData.values && Array.isArray(rawData.values)) ? rawData.values : [];
       
       for (let i = 0; i < results.length; i++) {
         const item = results[i];
