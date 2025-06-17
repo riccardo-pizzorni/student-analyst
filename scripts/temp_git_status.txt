@@ -1,4 +1,2 @@
  M index.html
- M public/robots.txt
  M scripts/temp_git_status.txt
-?? "public/LOGO definitivo_preview_rev_1.png"
