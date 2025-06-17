@@ -17,7 +17,7 @@ export interface ParsedFinancialData {
   close: number;
   adjustedClose?: number;
   volume: number;
-  rawData: any; // Dati originali per debug/audit
+  rawData: unknown; // Dati originali per debug/audit
 }
 
 export interface ParsedMetadata {
@@ -49,7 +49,7 @@ export interface ParsingError {
   message: string;
   field?: string;
   record?: number;
-  originalValue?: any;
+  originalValue: unknown;
 }
 
 // ========== CLASSE PRINCIPALE ==========
@@ -70,19 +70,19 @@ export class ResponseParser {
           break;
           
         case SupportedDataSource.YAHOO_FINANCE:
-          result = this.parseYahooFinance(rawData as any);
+          result = this.parseYahooFinance(rawData as Record<string, unknown>);
           break;
           
         case SupportedDataSource.IEX_CLOUD:
-          result = this.parseIEXCloud(rawData as any);
+          result = this.parseIEXCloud(rawData as Record<string, unknown>);
           break;
           
         case SupportedDataSource.POLYGON:
-          result = this.parsePolygon(rawData as any);
+          result = this.parsePolygon(rawData as Record<string, unknown>);
           break;
           
         case SupportedDataSource.QUANDL:
-          result = this.parseQuandl(rawData as any);
+          result = this.parseQuandl(rawData as Record<string, unknown>);
           break;
           
         default:
@@ -148,7 +148,7 @@ export class ResponseParser {
             continue;
           }
 
-          const valuesObj = values as any;
+          const valuesObj = values as Record<string, unknown>;
           
           // Mapping campi Alpha Vantage (supporta sia adjusted che non-adjusted)
           const open = this.parseNumber(valuesObj['1. open'], 'open', recordIndex, errors);
@@ -159,7 +159,7 @@ export class ResponseParser {
           
           // Adjusted close se disponibile
           const adjustedClose = valuesObj['5. adjusted close'] 
-            ? this.parseNumber(valuesObj['5. adjusted close'], 'adjustedClose', recordIndex, errors)
+            ? this.parseNumber(valuesObj['5. adjusted close'], 'adjustedClose', recordIndex, errors) ?? undefined
             : undefined;
 
           // Validazione OHLC logic
@@ -213,14 +213,14 @@ export class ResponseParser {
   /**
    * Parser per Yahoo Finance API responses
    */
-  private parseYahooFinance(rawData: any): ParsingResult {
+  private parseYahooFinance(rawData: Record<string, unknown>): ParsingResult {
     const errors: ParsingError[] = [];
     const warnings: string[] = [];
     const result: ParsedFinancialData[] = [];
 
     try {
       // Yahoo Finance può avere diverse strutture
-      let dataArray: any[] = [];
+      let dataArray: Record<string, unknown>[] = [];
 
       // Formato 1: { chart: { result: [{ indicators: { quote: [{}] }, timestamp: [] }] } }
       if (rawData.chart?.result?.[0]) {
@@ -257,15 +257,15 @@ export class ResponseParser {
       }
       // Formato 2: Array diretto con oggetti OHLCV
       else if (Array.isArray(rawData)) {
-        dataArray = rawData;
+        dataArray = rawData as Record<string, unknown>[];
       }
       // Formato 3: Oggetto con array di dati
       else if (rawData.data && Array.isArray(rawData.data)) {
-        dataArray = rawData.data;
+        dataArray = rawData.data as Record<string, unknown>[];
       }
       // Formato 4: Response wrapper
       else if (rawData.response?.data) {
-        dataArray = Array.isArray(rawData.response.data) ? rawData.response.data : [rawData.response.data];
+        dataArray = Array.isArray(rawData.response.data) ? rawData.response.data : [rawData.response.data] as Record<string, unknown>[];
       }
 
       // Processa array diretto se disponibile
@@ -309,7 +309,7 @@ export class ResponseParser {
   /**
    * Parser per singolo record Yahoo Finance
    */
-  private parseYahooFinanceRecord(item: any, index: number): ParsedFinancialData | null {
+  private parseYahooFinanceRecord(item: Record<string, unknown>, index: number): ParsedFinancialData | null {
     if (!item || typeof item !== 'object') return null;
 
     // Possibili mapping dei campi
@@ -341,7 +341,7 @@ export class ResponseParser {
   /**
    * Parser per IEX Cloud (implementazione base)
    */
-  private parseIEXCloud(rawData: any): ParsingResult {
+  private parseIEXCloud(rawData: Record<string, unknown>): ParsingResult {
     const result: ParsedFinancialData[] = [];
     const errors: ParsingError[] = [];
 
@@ -385,7 +385,7 @@ export class ResponseParser {
   /**
    * Parser per Polygon (implementazione base)
    */
-  private parsePolygon(rawData: any): ParsingResult {
+  private parsePolygon(rawData: Record<string, unknown>): ParsingResult {
     const result: ParsedFinancialData[] = [];
     const errors: ParsingError[] = [];
 
@@ -431,7 +431,7 @@ export class ResponseParser {
   /**
    * Parser per Quandl (implementazione base)
    */
-  private parseQuandl(rawData: any): ParsingResult {
+  private parseQuandl(rawData: Record<string, unknown>): ParsingResult {
     const result: ParsedFinancialData[] = [];
     const errors: ParsingError[] = [];
 
