@@ -28,7 +28,7 @@ export interface ParsedMetadata {
   timezone: string;
   outputSize?: string;
   interval?: string;
-  rawMetadata: any;
+  rawMetadata: unknown;
 }
 
 export interface ParsingResult {
@@ -58,7 +58,7 @@ export class ResponseParser {
   /**
    * Parsing principale che delega al parser specifico per fonte
    */
-  public parse(rawData: any, source: SupportedDataSource): ParsedFinancialData[] {
+  public parse(rawData: unknown, source: SupportedDataSource): ParsedFinancialData[] {
     const startTime = Date.now();
     
     try {
@@ -66,23 +66,23 @@ export class ResponseParser {
       
       switch (source) {
         case SupportedDataSource.ALPHA_VANTAGE:
-          result = this.parseAlphaVantage(rawData);
+          result = this.parseAlphaVantage(rawData as Record<string, unknown>);
           break;
           
         case SupportedDataSource.YAHOO_FINANCE:
-          result = this.parseYahooFinance(rawData);
+          result = this.parseYahooFinance(rawData as any);
           break;
           
         case SupportedDataSource.IEX_CLOUD:
-          result = this.parseIEXCloud(rawData);
+          result = this.parseIEXCloud(rawData as any);
           break;
           
         case SupportedDataSource.POLYGON:
-          result = this.parsePolygon(rawData);
+          result = this.parsePolygon(rawData as any);
           break;
           
         case SupportedDataSource.QUANDL:
-          result = this.parseQuandl(rawData);
+          result = this.parseQuandl(rawData as any);
           break;
           
         default:
@@ -105,7 +105,7 @@ export class ResponseParser {
   /**
    * Parser per Alpha Vantage API responses
    */
-  private parseAlphaVantage(rawData: any): ParsingResult {
+  private parseAlphaVantage(rawData: Record<string, unknown>): ParsingResult {
     const errors: ParsingError[] = [];
     const warnings: string[] = [];
     const result: ParsedFinancialData[] = [];
@@ -475,7 +475,7 @@ export class ResponseParser {
   /**
    * Parsing sicuro di valori numerici
    */
-  private parseNumber(value: any, field: string, record: number, errors: ParsingError[]): number | null {
+  private parseNumber(value: unknown, field: string, record: number, errors: ParsingError[]): number | null {
     if (value === null || value === undefined || value === '') {
       return null;
     }
@@ -539,10 +539,10 @@ export class ResponseParser {
   /**
    * Test parsing per debugging
    */
-  public testParsing(rawData: any, source: SupportedDataSource): {
+  public testParsing(rawData: unknown, source: SupportedDataSource): {
     canParse: boolean;
     preview: ParsedFinancialData[];
-    structure: any;
+    structure: unknown;
     errors: string[];
   } {
     try {
@@ -567,7 +567,7 @@ export class ResponseParser {
   /**
    * Analizza struttura dati per debugging
    */
-  private analyzeStructure(data: any): any {
+  private analyzeStructure(data: unknown): unknown {
     if (data === null || data === undefined) return { type: 'null' };
     if (Array.isArray(data)) return { type: 'array', length: data.length, sample: data[0] };
     if (typeof data === 'object') return { type: 'object', keys: Object.keys(data).slice(0, 10) };
