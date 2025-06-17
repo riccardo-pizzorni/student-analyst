@@ -6,7 +6,7 @@
  * strategie di recovery e monitoraggio dello stato del sistema.
  */
 
-import { Request, Response, Router } from 'express';
+import express, { Request, Response, Router } from 'express';
 import { sanitizationMiddleware } from '../middleware/sanitizationMiddleware';
 import { ClassifiedError, ErrorCodeHandler, ErrorContext, SystemErrorType } from '../services/errorCodeHandler';
 import {
@@ -27,7 +27,7 @@ router.use(sanitizationMiddleware({
   blockOnDangerousPatterns: false, // Più permissivo per route di debug
   maxRequestSize: 1024 * 1024, // 1MB per report errori
   trustedIPs: ['127.0.0.1', '::1', 'localhost']
-}));
+}) as express.RequestHandler);
 
 // Inizializza servizi
 const errorHandler = ErrorCodeHandler.getInstance();
