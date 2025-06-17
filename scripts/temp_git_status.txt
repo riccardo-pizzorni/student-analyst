@@ -1,3 +1,2 @@
  M scripts/temp_git_status.txt
  M src/components/ui/command.tsx
- M tailwind.config.ts
