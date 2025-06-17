@@ -34,11 +34,11 @@ export interface MockNavigator {
 }
 
 export interface MockIDBRequest {
-  result: any;
-  error: any;
+  result: unknown;
+  error: Error | null;
   readyState: string;
-  onsuccess: ((event: any) => void) | null;
-  onerror: ((event: any) => void) | null;
+  onsuccess: ((event: Event) => void) | null;
+  onerror: ((event: Event) => void) | null;
   addEventListener: jest.Mock;
   removeEventListener: jest.Mock;
 }
@@ -131,7 +131,7 @@ export function createMockSessionStorage(quota: number = 5 * 1024 * 1024): MockS
  * Crea mock per IndexedDB
  */
 export function createMockIndexedDB(estimatedUsage: number = 0): MockIndexedDB {
-  const mockRequest = (result: any = null, error: any = null): MockIDBRequest => ({
+  const mockRequest = (result: unknown = null, error: Error | null = null): MockIDBRequest => ({
     result,
     error,
     readyState: error ? 'done' : 'done',
