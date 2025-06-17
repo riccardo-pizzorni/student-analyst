@@ -430,7 +430,7 @@ export class AlphaVantageService {
           AlphaVantageErrorType.MALFORMED_RESPONSE,
           `Risposta API malformata: chiavi mancanti ${String(dataKey)} o ${String(metadataKey)}`,
           undefined,
-          responseData
+          responseData as Record<string, unknown>
         );
       }
 
@@ -463,7 +463,7 @@ export class AlphaVantageService {
         AlphaVantageErrorType.PARSING_ERROR,
         `Errore nel parsing della risposta: ${(error as Error).message}`,
         error as Error,
-        responseData
+        responseData as Record<string, unknown>
       );
     }
   }
@@ -480,7 +480,7 @@ export class AlphaVantageService {
           AlphaVantageErrorType.API_LIMIT_EXCEEDED,
           'Limite giornaliero di 25 richieste Alpha Vantage raggiunto. Riprovare domani o considerare un piano premium.',
           undefined,
-          responseData,
+          responseData as Record<string, unknown>,
           false // Non retryable
         );
       }
@@ -490,7 +490,7 @@ export class AlphaVantageService {
           AlphaVantageErrorType.RATE_LIMIT,
           'Rate limit Alpha Vantage raggiunto. Riprovare tra qualche minuto.',
           undefined,
-          responseData,
+          responseData as Record<string, unknown>,
           true // Retryable
         );
       }
@@ -503,7 +503,7 @@ export class AlphaVantageService {
         AlphaVantageErrorType.INVALID_SYMBOL,
         `Errore API Alpha Vantage: ${info}`,
         undefined,
-        responseData,
+        responseData as Record<string, unknown>,
         false
       );
     }
@@ -514,7 +514,7 @@ export class AlphaVantageService {
         AlphaVantageErrorType.INVALID_FUNCTION,
         `Errore funzione API: ${responseData['Error Message']}`,
         undefined,
-        responseData,
+        responseData as Record<string, unknown>,
         false
       );
     }
@@ -547,7 +547,7 @@ export class AlphaVantageService {
         AlphaVantageErrorType.MALFORMED_RESPONSE,
         `Impossibile identificare le chiavi di dati nella risposta. Chiavi disponibili: ${keys.join(', ')}`,
         undefined,
-        responseData
+        responseData as Record<string, unknown>
       );
     }
 
