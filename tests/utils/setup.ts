@@ -101,7 +101,7 @@ class MockTextDecoder {
 global.TextEncoder = TextEncoder;
 // @ts-expect-error: Assegniamo un mock che non rispetta la firma esatta di TextDecoder solo per i test.
 // L'assegnazione usa 'as any' per evitare conflitti di tipo tra Node e browser, circoscritto solo a questa riga per sicurezza.
-global.TextDecoder = MockTextDecoder as any;
+global.TextDecoder = MockTextDecoder as unknown;
 
 // Mock console.error to prevent noise in test output
 const originalConsoleError = console.error;
