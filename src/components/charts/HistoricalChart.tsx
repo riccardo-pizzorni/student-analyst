@@ -1,5 +1,9 @@
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useHistoricalData } from "@/hooks/useHistoricalData";
+import { useTechnicalIndicators } from "@/hooks/useTechnicalIndicators";
 import {
+    BarElement,
     CategoryScale,
     Chart as ChartJS,
     Filler,
@@ -10,6 +14,7 @@ import {
     Title,
     Tooltip
 } from "chart.js";
+import { useState } from "react";
 import { Line } from "react-chartjs-2";
 
 // Registra i componenti necessari di Chart.js
@@ -18,6 +23,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -27,6 +33,10 @@ ChartJS.register(
 const options = {
   responsive: true,
   maintainAspectRatio: false,
+  interaction: {
+    mode: 'index' as const,
+    intersect: false,
+  },
   plugins: {
     legend: {
       position: 'top' as const,
@@ -42,6 +52,21 @@ const options = {
       bodyColor: 'rgb(203, 213, 225)',
       borderColor: 'rgb(59, 130, 246)',
       borderWidth: 1
+    },
+    zoom: {
+      zoom: {
+        wheel: {
+          enabled: true,
+        },
+        pinch: {
+          enabled: true
+        },
+        mode: 'xy',
+      },
+      pan: {
+        enabled: true,
+        mode: 'xy',
+      }
     }
   },
   scales: {
@@ -60,12 +85,30 @@ const options = {
       ticks: {
         color: 'rgb(203, 213, 225)'
       }
+    },
+    y1: {
+      type: 'linear' as const,
+      display: true,
+      position: 'right' as const,
+      grid: {
+        drawOnChartArea: false,
+      },
+      ticks: {
+        color: 'rgb(203, 213, 225)'
+      }
     }
   }
 };
 
 export default function HistoricalChart() {
   const { data, loading, error, refresh } = useHistoricalData();
+  const indicators = useTechnicalIndicators(data);
+  
+  const [showSMA20, setShowSMA20] = useState(true);
+  const [showSMA50, setShowSMA50] = useState(true);
+  const [showSMA200, setShowSMA200] = useState(true);
+  const [showRSI, setShowRSI] = useState(false);
+  const [showVolume, setShowVolume] = useState(false);
 
   const chartData = {
     labels: data.map(point => point.date),
@@ -77,8 +120,54 @@ export default function HistoricalChart() {
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         fill: true,
         tension: 0.4,
+        yAxisID: 'y',
+      },
+      showSMA20 && {
+        label: 'SMA 20',
+        data: indicators.sma20,
+        borderColor: 'rgb(234, 179, 8)',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      showSMA50 && {
+        label: 'SMA 50',
+        data: indicators.sma50,
+        borderColor: 'rgb(249, 115, 22)',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      showSMA200 && {
+        label: 'SMA 200',
+        data: indicators.sma200,
+        borderColor: 'rgb(239, 68, 68)',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      showRSI && {
+        label: 'RSI',
+        data: indicators.rsi,
+        borderColor: 'rgb(168, 85, 247)',
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.4,
+        yAxisID: 'y1',
+      },
+      showVolume && {
+        label: 'Volume',
+        data: indicators.volumes,
+        type: 'bar' as const,
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 0.5)',
+        borderWidth: 1,
+        yAxisID: 'y1',
       }
-    ]
+    ].filter(Boolean)
   };
 
   return (
@@ -114,6 +203,50 @@ export default function HistoricalChart() {
           </button>
         </div>
       </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="sma20"
+            checked={showSMA20}
+            onCheckedChange={setShowSMA20}
+          />
+          <Label htmlFor="sma20" className="text-sm text-slate-300">SMA 20</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="sma50"
+            checked={showSMA50}
+            onCheckedChange={setShowSMA50}
+          />
+          <Label htmlFor="sma50" className="text-sm text-slate-300">SMA 50</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="sma200"
+            checked={showSMA200}
+            onCheckedChange={setShowSMA200}
+          />
+          <Label htmlFor="sma200" className="text-sm text-slate-300">SMA 200</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="rsi"
+            checked={showRSI}
+            onCheckedChange={setShowRSI}
+          />
+          <Label htmlFor="rsi" className="text-sm text-slate-300">RSI</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="volume"
+            checked={showVolume}
+            onCheckedChange={setShowVolume}
+          />
+          <Label htmlFor="volume" className="text-sm text-slate-300">Volume</Label>
+        </div>
+      </div>
+
       <div className="w-full h-96">
         {loading ? (
           <div className="w-full h-full flex items-center justify-center">
