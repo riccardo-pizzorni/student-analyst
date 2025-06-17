@@ -5,7 +5,7 @@ import { useTechnicalIndicators } from "@/hooks/useTechnicalIndicators";
 import {
     BarElement,
     CategoryScale,
-    ChartData,
+    ChartDataset,
     Chart as ChartJS,
     ChartOptions,
     Filler,
@@ -104,6 +104,10 @@ const options: ChartOptions<'line'> = {
   }
 };
 
+type LineDataset = ChartDataset<'line', number[]>;
+type BarDataset = ChartDataset<'bar', number[]>;
+type MixedDataset = LineDataset | BarDataset;
+
 export default function HistoricalChart() {
   const { data, loading, error, refresh } = useHistoricalData();
   const indicators = useTechnicalIndicators(data);
@@ -114,64 +118,71 @@ export default function HistoricalChart() {
   const [showRSI, setShowRSI] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
 
-  const chartData: ChartData<'line'> = {
+  const datasets: MixedDataset[] = [
+    {
+      type: 'line' as const,
+      label: 'Prezzo',
+      data: data.map(point => point.price),
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: true,
+      tension: 0.4,
+      yAxisID: 'y',
+    },
+    ...(showSMA20 ? [{
+      type: 'line' as const,
+      label: 'SMA 20',
+      data: indicators.sma20,
+      borderColor: 'rgb(234, 179, 8)',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.4,
+      yAxisID: 'y',
+    }] : []),
+    ...(showSMA50 ? [{
+      type: 'line' as const,
+      label: 'SMA 50',
+      data: indicators.sma50,
+      borderColor: 'rgb(249, 115, 22)',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.4,
+      yAxisID: 'y',
+    }] : []),
+    ...(showSMA200 ? [{
+      type: 'line' as const,
+      label: 'SMA 200',
+      data: indicators.sma200,
+      borderColor: 'rgb(239, 68, 68)',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.4,
+      yAxisID: 'y',
+    }] : []),
+    ...(showRSI ? [{
+      type: 'line' as const,
+      label: 'RSI',
+      data: indicators.rsi,
+      borderColor: 'rgb(168, 85, 247)',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.4,
+      yAxisID: 'y1',
+    }] : []),
+    ...(showVolume ? [{
+      type: 'bar' as const,
+      label: 'Volume',
+      data: indicators.volumes,
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: 'rgba(59, 130, 246, 0.5)',
+      borderWidth: 1,
+      yAxisID: 'y1',
+    }] : [])
+  ];
+
+  const chartData = {
     labels: data.map(point => point.date),
-    datasets: [
-      {
-        label: 'Prezzo',
-        data: data.map(point => point.price),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-        tension: 0.4,
-        yAxisID: 'y',
-      },
-      ...(showSMA20 ? [{
-        label: 'SMA 20',
-        data: indicators.sma20,
-        borderColor: 'rgb(234, 179, 8)',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.4,
-        yAxisID: 'y',
-      }] : []),
-      ...(showSMA50 ? [{
-        label: 'SMA 50',
-        data: indicators.sma50,
-        borderColor: 'rgb(249, 115, 22)',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.4,
-        yAxisID: 'y',
-      }] : []),
-      ...(showSMA200 ? [{
-        label: 'SMA 200',
-        data: indicators.sma200,
-        borderColor: 'rgb(239, 68, 68)',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.4,
-        yAxisID: 'y',
-      }] : []),
-      ...(showRSI ? [{
-        label: 'RSI',
-        data: indicators.rsi,
-        borderColor: 'rgb(168, 85, 247)',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.4,
-        yAxisID: 'y1',
-      }] : []),
-      ...(showVolume ? [{
-        label: 'Volume',
-        data: indicators.volumes,
-        type: 'bar' as const,
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        borderColor: 'rgba(59, 130, 246, 0.5)',
-        borderWidth: 1,
-        yAxisID: 'y1',
-      }] : [])
-    ]
+    datasets
   };
 
   return (
