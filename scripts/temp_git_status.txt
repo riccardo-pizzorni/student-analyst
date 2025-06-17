@@ -1,7 +1,2 @@
- M package-lock.json
- M package.json
  M scripts/temp_git_status.txt
  M src/components/charts/HistoricalChart.tsx
- M src/components/ui/label.tsx
- M src/components/ui/switch.tsx
-?? src/hooks/useTechnicalIndicators.ts

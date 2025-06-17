@@ -5,7 +5,9 @@ import { useTechnicalIndicators } from "@/hooks/useTechnicalIndicators";
 import {
     BarElement,
     CategoryScale,
+    ChartData,
     Chart as ChartJS,
+    ChartOptions,
     Filler,
     Legend,
     LinearScale,
@@ -14,6 +16,7 @@ import {
     Title,
     Tooltip
 } from "chart.js";
+import zoomPlugin from 'chartjs-plugin-zoom';
 import { useState } from "react";
 import { Line } from "react-chartjs-2";
 
@@ -27,10 +30,11 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  zoomPlugin
 );
 
-const options = {
+const options: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -110,7 +114,7 @@ export default function HistoricalChart() {
   const [showRSI, setShowRSI] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
 
-  const chartData = {
+  const chartData: ChartData<'line'> = {
     labels: data.map(point => point.date),
     datasets: [
       {
@@ -122,7 +126,7 @@ export default function HistoricalChart() {
         tension: 0.4,
         yAxisID: 'y',
       },
-      showSMA20 && {
+      ...(showSMA20 ? [{
         label: 'SMA 20',
         data: indicators.sma20,
         borderColor: 'rgb(234, 179, 8)',
@@ -130,8 +134,8 @@ export default function HistoricalChart() {
         pointRadius: 0,
         tension: 0.4,
         yAxisID: 'y',
-      },
-      showSMA50 && {
+      }] : []),
+      ...(showSMA50 ? [{
         label: 'SMA 50',
         data: indicators.sma50,
         borderColor: 'rgb(249, 115, 22)',
@@ -139,8 +143,8 @@ export default function HistoricalChart() {
         pointRadius: 0,
         tension: 0.4,
         yAxisID: 'y',
-      },
-      showSMA200 && {
+      }] : []),
+      ...(showSMA200 ? [{
         label: 'SMA 200',
         data: indicators.sma200,
         borderColor: 'rgb(239, 68, 68)',
@@ -148,8 +152,8 @@ export default function HistoricalChart() {
         pointRadius: 0,
         tension: 0.4,
         yAxisID: 'y',
-      },
-      showRSI && {
+      }] : []),
+      ...(showRSI ? [{
         label: 'RSI',
         data: indicators.rsi,
         borderColor: 'rgb(168, 85, 247)',
@@ -157,8 +161,8 @@ export default function HistoricalChart() {
         pointRadius: 0,
         tension: 0.4,
         yAxisID: 'y1',
-      },
-      showVolume && {
+      }] : []),
+      ...(showVolume ? [{
         label: 'Volume',
         data: indicators.volumes,
         type: 'bar' as const,
@@ -166,8 +170,8 @@ export default function HistoricalChart() {
         borderColor: 'rgba(59, 130, 246, 0.5)',
         borderWidth: 1,
         yAxisID: 'y1',
-      }
-    ].filter(Boolean)
+      }] : [])
+    ]
   };
 
   return (
