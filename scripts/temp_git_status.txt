@@ -1,1 +1,2 @@
+ M index.html
  M scripts/temp_git_status.txt
