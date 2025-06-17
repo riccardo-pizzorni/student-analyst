@@ -1,1 +1,3 @@
+ M backend/src/routes/errorHandlingRoutes.ts
+ M backend/src/services/batchProcessor.ts
  M scripts/temp_git_status.txt

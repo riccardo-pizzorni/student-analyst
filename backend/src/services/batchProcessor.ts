@@ -165,7 +165,7 @@ export class BatchProcessor extends EventEmitter {
       // Elabora simboli rimanenti via API
       const apiResults = symbolsToProcess.length > 0 
         ? await this.processViaRateLimiter(symbolsToProcess, request.timeframe, request.options, batchId)
-        : new Map<string, any>();
+        : new Map<string, unknown>();
 
       // Combina risultati
       const allResults = new Map([...cacheResults, ...apiResults]);
@@ -273,9 +273,9 @@ export class BatchProcessor extends EventEmitter {
   private async checkCacheFirst(
     symbols: string[], 
     timeframe: AlphaVantageTimeframe, 
-    options?: any
-  ): Promise<{ cached: Map<string, any>; uncached: string[] }> {
-    const cached = new Map<string, any>();
+    options?: Record<string, unknown>
+  ): Promise<{ cached: Map<string, unknown>; uncached: string[] }> {
+    const cached = new Map<string, unknown>();
     const uncached: string[] = [];
 
     for (const symbol of symbols) {
@@ -306,10 +306,10 @@ export class BatchProcessor extends EventEmitter {
   private async processViaRateLimiter(
     symbols: string[], 
     timeframe: AlphaVantageTimeframe, 
-    options: any = {}, 
+    options: Record<string, unknown> = {}, 
     batchId: string
-  ): Promise<Map<string, any>> {
-    const results = new Map<string, any>();
+  ): Promise<Map<string, unknown>> {
+    const results = new Map<string, unknown>();
 
     // Configura callback per progress tracking
     this.rateLimiter.on('progress', (event: ProgressEvent) => {
@@ -328,8 +328,8 @@ export class BatchProcessor extends EventEmitter {
 
       // Converte risultati del rate limiter integrando con AlphaVantageService
       for (const [symbol, result] of rateLimiterResults) {
-        if (result.error) {
-          this.log(`Error for ${symbol}: ${result.error}`);
+        if (typeof result === 'object' && result !== null && 'error' in result && (result as { error?: unknown }).error) {
+          this.log(`Error for ${symbol}: ${(result as { error: unknown }).error}`);
           continue;
         }
 

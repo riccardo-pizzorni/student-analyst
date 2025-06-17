@@ -551,6 +551,8 @@ function generateNextSteps(error: ClassifiedError): string[] {
  * Simula errori per testing
  */
 function simulateError(errorType: string, symbol?: string, timeframe?: string): Error {
+  let timeoutError: Error;
+  let networkError: Error;
   switch (errorType) {
     case SystemErrorType.RATE_LIMIT_EXCEEDED:
       return new Error('Thank you for using Alpha Vantage! You have made 5 API calls within the last minute.');
@@ -565,12 +567,12 @@ function simulateError(errorType: string, symbol?: string, timeframe?: string): 
       return new Error(`Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY. Symbol=${symbol || 'INVALID123'} not found.`);
 
     case SystemErrorType.CONNECTION_TIMEOUT:
-      const timeoutError = new Error('Operation timeout after 30000ms');
+      timeoutError = new Error('Operation timeout after 30000ms');
       timeoutError.name = 'TimeoutError';
       return timeoutError;
 
     case SystemErrorType.NETWORK_UNAVAILABLE:
-      const networkError = new Error('ENOTFOUND api.alphavantage.co');
+      networkError = new Error('ENOTFOUND api.alphavantage.co');
       networkError.name = 'NetworkError';
       return networkError;
 
