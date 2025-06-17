@@ -95,7 +95,7 @@ export interface TransformationError {
   type: 'PARSING_ERROR' | 'VALIDATION_ERROR' | 'FORMAT_ERROR' | 'DATA_QUALITY_ERROR';
   message: string;
   field?: string;
-  originalValue?: any;
+  originalValue?: unknown;
   timestamp: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 }
@@ -159,7 +159,7 @@ export class DataTransformer {
    * Trasforma dati da qualsiasi fonte nel formato standard
    */
   public async transform(
-    rawData: any,
+    rawData: unknown,
     source: SupportedDataSource,
     symbol: string,
     timeframe: string
@@ -260,33 +260,36 @@ export class DataTransformer {
    * Converte array di dati normalizzati nel formato standard
    */
   private convertToStandardFormat(
-    data: any[],
+    data: unknown[],
     source: SupportedDataSource,
     symbol: string,
     timeframe: string
   ): StandardOHLCVData[] {
-    return data.map(item => ({
-      date: item.date,
-      timestamp: item.timestamp,
-      open: item.open,
-      high: item.high,
-      low: item.low,
-      close: item.close,
-      adjustedClose: item.adjustedClose || item.close,
-      volume: item.volume,
-      volumeNormalized: item.volumeNormalized || item.volume,
-      source,
-      symbol,
-      timeframe,
-      dataQuality: item.dataQuality || {
-        hasGaps: false,
-        suspiciousVolume: false,
-        priceAnomalies: false,
-        adjustedForSplits: this.config.enableSplitAdjustment,
-        validated: this.config.enableDataValidation,
-        confidence: 1.0
-      }
-    }));
+    return data.map(item => {
+      const obj = item as Record<string, unknown>;
+      return {
+        date: obj.date as string,
+        timestamp: obj.timestamp as string,
+        open: obj.open as number,
+        high: obj.high as number,
+        low: obj.low as number,
+        close: obj.close as number,
+        adjustedClose: (obj.adjustedClose as number) || (obj.close as number),
+        volume: obj.volume as number,
+        volumeNormalized: (obj.volumeNormalized as number) || (obj.volume as number),
+        source,
+        symbol,
+        timeframe,
+        dataQuality: (obj.dataQuality as DataQualityFlags) || {
+          hasGaps: false,
+          suspiciousVolume: false,
+          priceAnomalies: false,
+          adjustedForSplits: this.config.enableSplitAdjustment,
+          validated: this.config.enableDataValidation,
+          confidence: 1.0
+        }
+      };
+    });
   }
 
   /**
@@ -363,15 +366,20 @@ class DataValidator {
   validate(data: unknown[]): unknown[] {
     // Validazione base per ora
     return data.filter(item => {
-      // Verifica che abbia i campi essenziali
-      return item && 
-             typeof item.open === 'number' && 
-             typeof item.high === 'number' && 
-             typeof item.low === 'number' && 
-             typeof item.close === 'number' &&
-             item.open > 0 && item.high > 0 && item.low > 0 && item.close > 0 &&
-             item.high >= Math.max(item.open, item.close) &&
-             item.low <= Math.min(item.open, item.close);
+      if (!item || typeof item !== 'object') return false;
+      const obj = item as Record<string, unknown>;
+      return (
+        typeof obj.open === 'number' &&
+        typeof obj.high === 'number' &&
+        typeof obj.low === 'number' &&
+        typeof obj.close === 'number' &&
+        (obj.open as number) > 0 &&
+        (obj.high as number) > 0 &&
+        (obj.low as number) > 0 &&
+        (obj.close as number) > 0 &&
+        (obj.high as number) >= Math.max(obj.open as number, obj.close as number) &&
+        (obj.low as number) <= Math.min(obj.open as number, obj.close as number)
+      );
     });
   }
 } 
