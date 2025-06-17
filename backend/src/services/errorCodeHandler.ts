@@ -129,7 +129,7 @@ export interface ErrorContext {
   requestId?: string;
   userId?: string;
   sessionId?: string;
-  additionalData?: Record<string, any>;
+  additionalData?: Record<string, unknown>;
 }
 
 /**

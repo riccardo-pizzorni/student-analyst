@@ -77,7 +77,7 @@ export class PriceAdjuster {
   /**
    * Aggiusta prezzi per stock splits
    */
-  public async adjustForSplits(data: any[], symbol: string): Promise<any[]> {
+  public async adjustForSplits(data: unknown[], symbol: string): Promise<unknown[]> {
     const startTime = Date.now();
     
     if (!this.config.enableSplitAdjustment || data.length === 0) {
@@ -114,20 +114,20 @@ export class PriceAdjuster {
   /**
    * Rileva stock splits automaticamente dai dati di prezzo
    */
-  private detectSplitsFromData(data: any[], symbol: string): SplitEvent[] {
+  private detectSplitsFromData(data: unknown[], symbol: string): SplitEvent[] {
     const splits: SplitEvent[] = [];
     
     if (data.length < 2) return splits;
 
     // Ordina dati per data (più vecchi prima)
-    const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sortedData = [...data].sort((a, b) => new Date((a as Record<string, unknown>).date as string).getTime() - new Date((b as Record<string, unknown>).date as string).getTime());
 
          for (let i = 1; i < sortedData.length; i++) {
-      const prevDay = sortedData[i - 1];
-      const currentDay = sortedData[i];
+      const prevDay = sortedData[i - 1] as Record<string, unknown>;
+      const currentDay = sortedData[i] as Record<string, unknown>;
       
       // Calcola ratio di prezzo tra giorni consecutivi
-      const priceRatio = prevDay.close / currentDay.open;
+      const priceRatio = Number(prevDay.close) / Number(currentDay.open);
       
       // Rileva possibili splits
       if (priceRatio >= this.config.splitThreshold) {
@@ -199,13 +199,13 @@ export class PriceAdjuster {
   /**
    * Calcola confidence di un possibile split
    */
-  private calculateSplitConfidence(prevDay: any, currentDay: any, splitRatio: number): number {
+  private calculateSplitConfidence(prevDay: Record<string, unknown>, currentDay: Record<string, unknown>, splitRatio: number): number {
     let confidence = 0.5; // Base confidence
     
     // Fattori che aumentano confidence:
     
     // 1. Volume alto nel giorno dello split
-    if (currentDay.volume > prevDay.volume * 1.5) {
+    if (Number(currentDay.volume) > Number(prevDay.volume) * 1.5) {
       confidence += 0.2;
     }
     
@@ -218,14 +218,14 @@ export class PriceAdjuster {
     
     // 3. Prezzo adjusted close coerente
     if (prevDay.adjustedClose && currentDay.adjustedClose) {
-      const adjustedRatio = prevDay.adjustedClose / currentDay.adjustedClose;
+      const adjustedRatio = Number(prevDay.adjustedClose) / Number(currentDay.adjustedClose);
       if (Math.abs(adjustedRatio - 1) < 0.05) { // Adjusted close dovrebbe essere continuo
         confidence += 0.3;
       }
     }
     
     // 4. Gap significativo nel prezzo
-    const gapSize = Math.abs(prevDay.close - currentDay.open) / prevDay.close;
+    const gapSize = Math.abs(Number(prevDay.close) - Number(currentDay.open)) / Number(prevDay.close);
     if (gapSize > 0.3) { // Gap > 30%
       confidence += 0.1;
     }
@@ -236,7 +236,7 @@ export class PriceAdjuster {
   /**
    * Applica aggiustamenti per splits ai dati
    */
-  private applySplitAdjustments(data: any[], splits: SplitEvent[]): any[] {
+  private applySplitAdjustments(data: unknown[], splits: SplitEvent[]): unknown[] {
     if (splits.length === 0) return data;
 
     // Ordina splits per data (più recenti prima)
@@ -247,7 +247,7 @@ export class PriceAdjuster {
       
       // Calcola fattore di aggiustamento cumulativo
       for (const split of sortedSplits) {
-        if (new Date(item.date) < new Date(split.date)) {
+        if (new Date((item as Record<string, unknown>).date as string) < new Date(split.date)) {
           adjustmentFactor *= split.splitRatio;
         }
       }
@@ -255,21 +255,21 @@ export class PriceAdjuster {
       // Applica aggiustamento se necessario
       if (Math.abs(adjustmentFactor - 1.0) > 0.001) {
         return {
-          ...item,
-          open: this.roundToDecimal(item.open / adjustmentFactor, this.config.adjustmentPrecision),
-          high: this.roundToDecimal(item.high / adjustmentFactor, this.config.adjustmentPrecision),
-          low: this.roundToDecimal(item.low / adjustmentFactor, this.config.adjustmentPrecision),
-          close: this.roundToDecimal(item.close / adjustmentFactor, this.config.adjustmentPrecision),
-          adjustedClose: item.adjustedClose || this.roundToDecimal(item.close / adjustmentFactor, this.config.adjustmentPrecision),
-          volume: Math.round(item.volume * adjustmentFactor), // Volume aumenta con split
+          ...(item as Record<string, unknown>),
+          open: this.roundToDecimal(Number((item as Record<string, unknown>).open) / adjustmentFactor, this.config.adjustmentPrecision),
+          high: this.roundToDecimal(Number((item as Record<string, unknown>).high) / adjustmentFactor, this.config.adjustmentPrecision),
+          low: this.roundToDecimal(Number((item as Record<string, unknown>).low) / adjustmentFactor, this.config.adjustmentPrecision),
+          close: this.roundToDecimal(Number((item as Record<string, unknown>).close) / adjustmentFactor, this.config.adjustmentPrecision),
+          adjustedClose: (item as Record<string, unknown>).adjustedClose || this.roundToDecimal(Number((item as Record<string, unknown>).close) / adjustmentFactor, this.config.adjustmentPrecision),
+          volume: Math.round(Number((item as Record<string, unknown>).volume) * adjustmentFactor), // Volume aumenta con split
           splitAdjustmentFactor: adjustmentFactor,
           splitAdjusted: true
         };
       }
       
       return {
-        ...item,
-        adjustedClose: item.adjustedClose || item.close,
+        ...(item as Record<string, unknown>),
+        adjustedClose: (item as Record<string, unknown>).adjustedClose || (item as Record<string, unknown>).close,
         splitAdjustmentFactor: 1.0,
         splitAdjusted: false
       };
@@ -319,7 +319,7 @@ export class PriceAdjuster {
   /**
    * Aggiusta per dividendi (implementazione base)
    */
-  public async adjustForDividends(data: any[], symbol: string): Promise<any[]> {
+  public async adjustForDividends(data: unknown[], symbol: string): Promise<unknown[]> {
     if (!this.config.enableDividendAdjustment) {
       return data;
     }
@@ -332,7 +332,7 @@ export class PriceAdjuster {
   /**
    * Valida aggiustamenti applicati
    */
-  public validateAdjustments(originalData: any[], adjustedData: any[]): {
+  public validateAdjustments(originalData: unknown[], adjustedData: unknown[]): {
     isValid: boolean;
     issues: string[];
     continuityScore: number;
@@ -347,16 +347,16 @@ export class PriceAdjuster {
     let continuityScore = 1.0;
     
     if (adjustedData.length > 1) {
-      const sortedData = [...adjustedData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const sortedData = [...adjustedData].sort((a, b) => new Date((a as Record<string, unknown>).date as string).getTime() - new Date((b as Record<string, unknown>).date as string).getTime());
       
       let totalGaps = 0;
       let significantGaps = 0;
       
       for (let i = 1; i < sortedData.length; i++) {
-        const prevClose = sortedData[i - 1].adjustedClose || sortedData[i - 1].close;
-        const currentOpen = sortedData[i].open;
+        const prevClose = (sortedData[i - 1] as Record<string, unknown>).adjustedClose || (sortedData[i - 1] as Record<string, unknown>).close;
+        const currentOpen = (sortedData[i] as Record<string, unknown>).open;
         
-        const gap = Math.abs(prevClose - currentOpen) / prevClose;
+        const gap = Math.abs(Number(prevClose) - Number(currentOpen)) / Number(prevClose);
         totalGaps += gap;
         
         if (gap > 0.1) { // Gap > 10%
@@ -407,7 +407,7 @@ export class PriceAdjuster {
   /**
    * Test di rilevamento split su dati campione
    */
-  public testSplitDetection(data: any[], symbol: string): {
+  public testSplitDetection(data: unknown[], symbol: string): {
     detectedSplits: SplitEvent[];
     confidence: number;
     recommendations: string[];
