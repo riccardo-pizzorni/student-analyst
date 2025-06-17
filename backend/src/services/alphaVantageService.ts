@@ -417,7 +417,7 @@ export class AlphaVantageService {
   /**
    * Parsing e validazione della risposta Alpha Vantage
    */
-  private parseApiResponse(responseData: any, timeframe: AlphaVantageTimeframe): AlphaVantageResponse {
+  private parseApiResponse(responseData: Record<string, unknown>, timeframe: AlphaVantageTimeframe): AlphaVantageResponse {
     try {
       // Verifica presenza di errori nell'API response
       this.checkForApiErrors(responseData);
@@ -471,7 +471,7 @@ export class AlphaVantageService {
   /**
    * Verifica presenza di errori nella risposta API
    */
-  private checkForApiErrors(responseData: any): void {
+  private checkForApiErrors(responseData: Record<string, unknown>): void {
     // Controllo errore di rate limit
     if (responseData['Note'] && typeof responseData['Note'] === 'string') {
       const note = responseData['Note'];
@@ -523,7 +523,7 @@ export class AlphaVantageService {
   /**
    * Identifica le chiavi di dati e metadati nella risposta
    */
-  private identifyResponseKeys(responseData: any, timeframe: AlphaVantageTimeframe): { dataKey: string; metadataKey: string } {
+  private identifyResponseKeys(responseData: Record<string, unknown>, timeframe: AlphaVantageTimeframe): { dataKey: string; metadataKey: string } {
     const keys = Object.keys(responseData);
     
     // Cerca la chiave dei metadati
@@ -557,7 +557,7 @@ export class AlphaVantageService {
   /**
    * Parsing dei metadati
    */
-  private parseMetadata(metadataRaw: any): AlphaVantageMetadata {
+  private parseMetadata(metadataRaw: Record<string, unknown>): AlphaVantageMetadata {
     return {
       information: metadataRaw['1. Information'] || '',
       symbol: metadataRaw['2. Symbol'] || '',
@@ -571,7 +571,7 @@ export class AlphaVantageService {
   /**
    * Parsing dei dati OHLCV
    */
-  private parseOHLCVData(rawData: any, timeframe: AlphaVantageTimeframe): OHLCVData[] {
+  private parseOHLCVData(rawData: Record<string, any>, timeframe: AlphaVantageTimeframe): OHLCVData[] {
     const data: OHLCVData[] = [];
     
     for (const [timestamp, values] of Object.entries(rawData)) {
