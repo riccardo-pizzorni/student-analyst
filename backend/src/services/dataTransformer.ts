@@ -352,15 +352,15 @@ export class DataTransformer {
 
 import { DateNormalizer } from './dateNormalizer';
 import { PriceAdjuster } from './priceAdjuster';
-import { VolumeHandler } from './volumeHandler';
 import { ResponseParser } from './responseParser';
+import { VolumeHandler } from './volumeHandler';
 
 // ========== CLASSE DI SUPPORTO SEMPLIFICATA ==========
 
 class DataValidator {
   constructor(private qualityThreshold: number) {}
   
-  validate(data: any[]): any[] {
+  validate(data: unknown[]): unknown[] {
     // Validazione base per ora
     return data.filter(item => {
       // Verifica che abbia i campi essenziali
