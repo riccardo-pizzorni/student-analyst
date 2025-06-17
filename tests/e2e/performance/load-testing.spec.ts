@@ -56,7 +56,7 @@ test.describe('⚡ Performance & Load Testing', () => {
     
     await page.evaluate(() => {
       // Simula 1000 punti dati
-      const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
+      const largeDataset: Array<{ date: string; price: number; volume: number }> = Array.from({ length: 1000 }, (_, i) => ({
         date: new Date(2023, 0, i + 1).toISOString(),
         price: Math.random() * 100 + 50,
         volume: Math.floor(Math.random() * 1000000)
@@ -113,14 +113,15 @@ test.describe('⚡ Performance & Load Testing', () => {
     
     // Monitor memoria iniziale
     const initialMemory = await page.evaluate(() => {
-      return (performance as any).memory?.usedJSHeapSize || 0;
+      const mem = (performance as unknown as { memory?: { usedJSHeapSize?: number } }).memory;
+      return mem?.usedJSHeapSize || 0;
     });
     
     // Simula operazioni intensive
     await page.evaluate(() => {
       // Calcoli matrix intensive
       for (let i = 0; i < 1000; i++) {
-        const matrix = Array.from({ length: 100 }, () => 
+        const matrix: number[][] = Array.from({ length: 100 }, () => 
           Array.from({ length: 100 }, () => Math.random())
         );
         
@@ -133,7 +134,8 @@ test.describe('⚡ Performance & Load Testing', () => {
     
     // Memoria finale
     const finalMemory = await page.evaluate(() => {
-      return (performance as any).memory?.usedJSHeapSize || 0;
+      const mem = (performance as unknown as { memory?: { usedJSHeapSize?: number } }).memory;
+      return mem?.usedJSHeapSize || 0;
     });
     
     const memoryIncrease = finalMemory - initialMemory;
