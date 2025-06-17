@@ -52,8 +52,8 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 // Setup setTimeout/clearTimeout mocks  
-const mockSetTimeout = jest.fn<any>();
-const mockClearTimeout = jest.fn<any>();
+const mockSetTimeout = jest.fn<unknown>();
+const mockClearTimeout = jest.fn<unknown>();
 Object.defineProperty(global, 'setTimeout', {
   value: mockSetTimeout,
   writable: true
@@ -66,7 +66,7 @@ Object.defineProperty(global, 'clearTimeout', {
 // Mock window.confirm
 Object.defineProperty(global, 'window', {
   value: {
-    confirm: jest.fn<any>()
+    confirm: jest.fn<unknown>()
   },
   writable: true
 });
@@ -75,7 +75,7 @@ Object.defineProperty(global, 'window', {
 Object.defineProperty(global, 'navigator', {
   value: {
     storage: {
-      estimate: jest.fn<any>()
+      estimate: jest.fn<unknown>()
     }
   },
   writable: true

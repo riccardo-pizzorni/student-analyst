@@ -82,7 +82,7 @@ describe('Dependency Injection Test', () => {
   });
 
   it('should work with optional dependencies', () => {
-    function createServiceWithOptionalDI(dependencies: any = {}) {
+    function createServiceWithOptionalDI(dependencies: unknown = {}) {
       return {
         localStorage: dependencies.localStorage || null,
         sessionStorage: dependencies.sessionStorage || null,

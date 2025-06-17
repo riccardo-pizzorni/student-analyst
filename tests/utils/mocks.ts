@@ -38,13 +38,13 @@ interface IMockIDBDatabase {
 interface IMockIDBOpenDBRequest extends IDBRequest<IDBDatabase> {
   result: IMockIDBDatabase | null;
   error: DOMException | null;
-  source: any;
+  source: unknown;
   transaction: IMockIDBTransaction | null;
   readyState: string;
-  onsuccess: ((this: IDBRequest<IDBDatabase>, ev: Event) => any) | null;
-  onerror: ((this: IDBRequest<IDBDatabase>, ev: Event) => any) | null;
-  onupgradeneeded: ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => any) | null;
-  onblocked: ((this: IDBOpenDBRequest, ev: Event) => any) | null;
+  onsuccess: ((this: IDBRequest<IDBDatabase>, ev: Event) => unknown) | null;
+  onerror: ((this: IDBRequest<IDBDatabase>, ev: Event) => unknown) | null;
+  onupgradeneeded: ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => unknown) | null;
+  onblocked: ((this: IDBOpenDBRequest, ev: Event) => unknown) | null;
   addEventListener: (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => void;
   removeEventListener: (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) => void;
   dispatchEvent: (event: Event) => boolean;
@@ -283,37 +283,37 @@ const mockCrypto = {
     digest: jest.fn().mockImplementation(async (algorithm: string, data: ArrayBuffer) => {
       return new ArrayBuffer(32);
     }),
-    encrypt: jest.fn().mockImplementation(async (algorithm: any, key: CryptoKey, data: ArrayBuffer) => {
+    encrypt: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
       return new ArrayBuffer(data.byteLength);
     }),
-    decrypt: jest.fn().mockImplementation(async (algorithm: any, key: CryptoKey, data: ArrayBuffer) => {
+    decrypt: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
       return new ArrayBuffer(data.byteLength);
     }),
-    sign: jest.fn().mockImplementation(async (algorithm: any, key: CryptoKey, data: ArrayBuffer) => {
+    sign: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
       return new ArrayBuffer(64);
     }),
-    verify: jest.fn().mockImplementation(async (algorithm: any, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer) => {
+    verify: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer) => {
       return true;
     }),
-    generateKey: jest.fn().mockImplementation(async (algorithm: any, extractable: boolean, keyUsages: string[]) => {
+    generateKey: jest.fn().mockImplementation(async (algorithm: unknown, extractable: boolean, keyUsages: string[]) => {
       return { type: 'secret', extractable, algorithm, usages: keyUsages };
     }),
-    deriveKey: jest.fn().mockImplementation(async (algorithm: any, baseKey: CryptoKey, derivedKeyAlgorithm: any, extractable: boolean, keyUsages: string[]) => {
+    deriveKey: jest.fn().mockImplementation(async (algorithm: unknown, baseKey: CryptoKey, derivedKeyAlgorithm: unknown, extractable: boolean, keyUsages: string[]) => {
       return { type: 'secret', extractable, algorithm: derivedKeyAlgorithm, usages: keyUsages };
     }),
-    deriveBits: jest.fn().mockImplementation(async (algorithm: any, baseKey: CryptoKey, length: number) => {
+    deriveBits: jest.fn().mockImplementation(async (algorithm: unknown, baseKey: CryptoKey, length: number) => {
       return new ArrayBuffer(length / 8);
     }),
-    importKey: jest.fn().mockImplementation(async (format: string, keyData: any, algorithm: any, extractable: boolean, keyUsages: string[]) => {
+    importKey: jest.fn().mockImplementation(async (format: string, keyData: unknown, algorithm: unknown, extractable: boolean, keyUsages: string[]) => {
       return { type: 'secret', extractable, algorithm, usages: keyUsages };
     }),
     exportKey: jest.fn().mockImplementation(async (format: string, key: CryptoKey) => {
       return new ArrayBuffer(32);
     }),
-    wrapKey: jest.fn().mockImplementation(async (format: string, key: CryptoKey, wrappingKey: CryptoKey, wrapAlgorithm: any) => {
+    wrapKey: jest.fn().mockImplementation(async (format: string, key: CryptoKey, wrappingKey: CryptoKey, wrapAlgorithm: unknown) => {
       return new ArrayBuffer(32);
     }),
-    unwrapKey: jest.fn().mockImplementation(async (format: string, wrappedKey: ArrayBuffer, unwrappingKey: CryptoKey, unwrapAlgorithm: any, unwrappedKeyAlgorithm: any, extractable: boolean, keyUsages: string[]) => {
+    unwrapKey: jest.fn().mockImplementation(async (format: string, wrappedKey: ArrayBuffer, unwrappingKey: CryptoKey, unwrapAlgorithm: unknown, unwrappedKeyAlgorithm: unknown, extractable: boolean, keyUsages: string[]) => {
       return { type: 'secret', extractable, algorithm: unwrappedKeyAlgorithm, usages: keyUsages };
     }),
   },
@@ -326,14 +326,14 @@ Object.assign(mockWindow, {
   crypto: mockCrypto,
   btoa: jest.fn().mockImplementation((str: string) => Buffer.from(str).toString('base64')),
   atob: jest.fn().mockImplementation((str: string) => Buffer.from(str, 'base64').toString()),
-  Blob: jest.fn().mockImplementation((parts: any[], options?: any) => ({
+  Blob: jest.fn().mockImplementation((parts: unknown[], options?: unknown) => ({
     size: parts.reduce((acc, part) => acc + (part.length || 0), 0),
     type: options?.type || '',
     arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
     text: jest.fn().mockResolvedValue(''),
     slice: jest.fn().mockReturnThis(),
   })),
-  File: jest.fn().mockImplementation((parts: any[], name: string, options?: any) => ({
+  File: jest.fn().mockImplementation((parts: unknown[], name: string, options?: unknown) => ({
     name,
     size: parts.reduce((acc, part) => acc + (part.length || 0), 0),
     type: options?.type || '',

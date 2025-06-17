@@ -19,7 +19,7 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 Object.defineProperty(global, 'setTimeout', {
-  value: jest.fn((fn: any, delay: number) => 123),
+  value: jest.fn((fn: unknown, delay: number) => 123),
   writable: true
 });
 
@@ -29,8 +29,8 @@ Object.defineProperty(global, 'clearTimeout', {
 });
 
 // Setup window.confirm mock safely
-(global as any).window = (global as any).window || {};
-(global as any).window.confirm = jest.fn(() => true);
+(global as unknown).window = (global as unknown).window || {};
+(global as unknown).window.confirm = jest.fn(() => true);
 
 Object.defineProperty(global, 'navigator', {
   value: {

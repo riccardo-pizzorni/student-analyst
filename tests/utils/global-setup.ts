@@ -3,11 +3,11 @@ import { TextDecoder, TextEncoder } from 'util';
 async function globalSetup() {
   // Mock TextEncoder/TextDecoder
   global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder as any;
+  global.TextDecoder = TextDecoder as unknown;
 
   // Setup global window object if not exists
   if (typeof global.window === 'undefined') {
-    global.window = {} as any;
+    global.window = {} as unknown;
   }
 
   // Mock localStorage
@@ -37,11 +37,11 @@ async function globalSetup() {
 
   // Enhanced IndexedDB mock for async operations and callbacks
   class MockIDBRequest {
-    onsuccess: ((event: any) => void) | null = null;
-    onerror: ((event: any) => void) | null = null;
-    onupgradeneeded: ((event: any) => void) | null = null;
-    result: any = undefined;
-    constructor(result: any) {
+    onsuccess: ((event: unknown) => void) | null = null;
+    onerror: ((event: unknown) => void) | null = null;
+    onupgradeneeded: ((event: unknown) => void) | null = null;
+    result: unknown = undefined;
+    constructor(result: unknown) {
       setTimeout(() => {
         this.result = result;
         if (typeof this.onsuccess === 'function') this.onsuccess({ target: this });
@@ -50,8 +50,8 @@ async function globalSetup() {
   }
 
   class MockObjectStore {
-    store: Record<string, any>;
-    constructor(store) { this.store = store; }
+    store: Record<string, unknown>;
+    constructor(store: Record<string, unknown>) { this.store = store; }
     get(key) { return new MockIDBRequest(this.store[key] ?? undefined); }
     put(entry) { this.store[entry.key] = entry; return new MockIDBRequest(undefined); }
     delete(key) { delete this.store[key]; return new MockIDBRequest(undefined); }
@@ -63,20 +63,20 @@ async function globalSetup() {
   }
 
   class MockTransaction {
-    store: Record<string, any>;
-    constructor(store) { this.store = store; }
+    store: Record<string, unknown>;
+    constructor(store: Record<string, unknown>) { this.store = store; }
     objectStore() { return new MockObjectStore(this.store); }
   }
 
   class MockIDBDatabase {
-    store: Record<string, any>;
-    constructor(store) { this.store = store; }
+    store: Record<string, unknown>;
+    constructor(store: Record<string, unknown>) { this.store = store; }
     transaction() { return new MockTransaction(this.store); }
     createObjectStore() { return new MockObjectStore(this.store); }
     close() {}
   }
 
-  const _mockIDBStore: Record<string, any> = {};
+  const _mockIDBStore: Record<string, unknown> = {};
   const mockIndexedDB = {
     open: () => {
       const req = new MockIDBRequest(new MockIDBDatabase(_mockIDBStore));
@@ -91,7 +91,7 @@ async function globalSetup() {
 
   // Mock IDBKeyRange
   class MockIDBKeyRange {
-    static upperBound(value: any) {
+    static upperBound(value: unknown) {
       return { upper: value };
     }
   }
