@@ -51,17 +51,45 @@ const consoleSpy = {
 // Import the service
 import AutomaticCleanupService from '../../src/services/AutomaticCleanupService';
 
+// Add type definitions at the top
+type CacheLayer = 'L1' | 'L2' | 'L3';
+type CacheStats = {
+  hits?: number;
+  misses?: number;
+  evictions?: number;
+  currentEntries?: number;
+  memoryUsage?: number;
+  size?: number;
+  totalStorageUsed?: number;
+  hitCount?: number;
+  missCount?: number;
+  totalSize?: number;
+  entryCount?: number;
+};
+
+interface CacheInterface {
+  clear: () => void;
+  getStats: () => CacheStats | Promise<CacheStats>;
+  keys?: () => string[];
+  getAllKeys?: () => Promise<string[]>;
+  get: (key: string) => unknown;
+  remove?: (key: string) => void;
+  delete?: (key: string) => void;
+  has: (key: string) => boolean;
+  size?: () => number;
+}
+
 describe('AutomaticCleanupService - Comprehensive Tests', () => {
   let service: AutomaticCleanupService;
-  let mockMemoryCache: any;
-  let mockLocalStorageCache: any;
-  let mockIndexedDBCache: any;
+  let mockMemoryCache: CacheInterface;
+  let mockLocalStorageCache: CacheInterface;
+  let mockIndexedDBCache: CacheInterface;
 
   beforeEach(() => {
     jest.clearAllMocks();
     
     // Reset singleton
-    (AutomaticCleanupService as any).instance = undefined;
+    (AutomaticCleanupService as { instance: AutomaticCleanupService | undefined }).instance = undefined;
     
     mockLocalStorage.getItem.mockReturnValue(null);
     
@@ -251,6 +279,12 @@ describe('AutomaticCleanupService - Comprehensive Tests', () => {
       
       expect(typeof result).toBe('boolean');
     });
+
+    it('should handle invalid cache layers', async () => {
+      const result = await service.performLRUCleanup('INVALID' as CacheLayer, 0.5);
+      
+      expect(typeof result).toBe('boolean');
+    });
   });
 
   describe('Manual Cleanup Operations', () => {
@@ -430,12 +464,6 @@ describe('AutomaticCleanupService - Comprehensive Tests', () => {
       
       expect(typeof result).toBe('boolean');
       expect(consoleSpy.error).toHaveBeenCalled();
-    });
-
-    it('should handle invalid cache layers', async () => {
-      const result = await service.performLRUCleanup('INVALID' as any, 0.5);
-      
-      expect(typeof result).toBe('boolean');
     });
   });
 
