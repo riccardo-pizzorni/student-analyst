@@ -1,5 +1,2 @@
  M scripts/temp_git_status.txt
- M tests/e2e/performance/load-testing.spec.ts
- M tests/e2e/realistic-flows.spec.ts
- M tests/e2e/student-analyst-e2e.spec.ts
- M tests/e2e/tier-1-smoke.spec.ts
+ M tests/utils/testReporter.ts

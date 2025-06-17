@@ -16,7 +16,7 @@ const symbols = {
 };
 
 class CustomTestReporter {
-  onRunComplete(_contexts: Set<any>, results: AggregatedResult) {
+  onRunComplete(_contexts: Set<unknown>, results: AggregatedResult) {
     console.log('\n' + chalk.bold.blue('📊 Test Results Summary'));
     console.log('='.repeat(50));
 
