@@ -1,2 +1,2 @@
  M scripts/temp_git_status.txt
- M src/components/ui/command.tsx
+ M src/components/ui/textarea.tsx
