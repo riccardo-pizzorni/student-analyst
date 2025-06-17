@@ -558,13 +558,14 @@ export class AlphaVantageService {
    * Parsing dei metadati
    */
   private parseMetadata(metadataRaw: Record<string, unknown>): AlphaVantageMetadata {
+    const meta = metadataRaw as Record<string, string>;
     return {
-      information: metadataRaw['1. Information'] || '',
-      symbol: metadataRaw['2. Symbol'] || '',
-      lastRefreshed: metadataRaw['3. Last Refreshed'] || '',
-      interval: metadataRaw['4. Interval'] || undefined,
-      outputSize: metadataRaw['5. Output Size'] || undefined,
-      timeZone: metadataRaw['6. Time Zone'] || metadataRaw['5. Time Zone'] || 'US/Eastern'
+      information: typeof meta['1. Information'] === 'string' ? meta['1. Information'] : '',
+      symbol: typeof meta['2. Symbol'] === 'string' ? meta['2. Symbol'] : '',
+      lastRefreshed: typeof meta['3. Last Refreshed'] === 'string' ? meta['3. Last Refreshed'] : '',
+      interval: typeof meta['4. Interval'] === 'string' ? meta['4. Interval'] : undefined,
+      outputSize: typeof meta['5. Output Size'] === 'string' ? meta['5. Output Size'] : undefined,
+      timeZone: typeof meta['6. Time Zone'] === 'string' ? meta['6. Time Zone'] : typeof meta['5. Time Zone'] === 'string' ? meta['5. Time Zone'] : 'US/Eastern'
     };
   }
 
@@ -576,18 +577,19 @@ export class AlphaVantageService {
     
     for (const [timestamp, values] of Object.entries(rawData)) {
       try {
+        const v = values as Record<string, string>;
         const ohlcv: OHLCVData = {
           date: timestamp,
-          open: parseFloat(values['1. open'] as string),
-          high: parseFloat(values['2. high'] as string),
-          low: parseFloat(values['3. low'] as string),
-          close: parseFloat(values['4. close'] as string),
-          volume: parseInt(values['5. volume'] as string, 10)
+          open: parseFloat(v['1. open']),
+          high: parseFloat(v['2. high']),
+          low: parseFloat(v['3. low']),
+          close: parseFloat(v['4. close']),
+          volume: parseInt(v['5. volume'], 10)
         };
 
         // Aggiungi adjusted close se disponibile
-        if (values['5. adjusted close']) {
-          ohlcv.adjustedClose = parseFloat(values['5. adjusted close'] as string);
+        if (v['5. adjusted close']) {
+          ohlcv.adjustedClose = parseFloat(v['5. adjusted close']);
         }
 
         // Aggiungi timestamp per dati intraday
