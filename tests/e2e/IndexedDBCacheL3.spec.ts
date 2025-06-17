@@ -24,7 +24,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
     await page.addInitScript(() => {
       // Mock window se non esiste
       if (typeof window === 'undefined') {
-        (global as any).window = {
+        (global as unknown as { window: Window }).window = {
           addEventListener: () => {},
           removeEventListener: () => {},
           localStorage: {
@@ -33,7 +33,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
             removeItem: () => {},
             clear: () => {}
           }
-        };
+        } as unknown as Window;
       }
 
       window.testData = {
@@ -184,7 +184,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
         const missing = await cache.get('non-existent');
         
         // Try to set invalid data
-        await cache.set('invalid', undefined as any);
+        await cache.set('invalid', undefined as unknown);
         
         // Try to delete non-existent key
         await cache.delete('non-existent');
