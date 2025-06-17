@@ -84,8 +84,8 @@ export class DateNormalizer {
   /**
    * Normalizza un array di dati con date
    */
-  public normalize(data: any[]): any[] {
-    const results: any[] = [];
+  public normalize(data: unknown[]): unknown[] {
+    const results: unknown[] = [];
     const errors: string[] = [];
 
     for (let i = 0; i < data.length; i++) {
@@ -93,14 +93,18 @@ export class DateNormalizer {
       
       try {
         // Trova il campo data nell'oggetto
-        const dateField = this.findDateField(item);
+        if (typeof item !== 'object' || item === null) {
+          errors.push(`Record ${i}: Tipo non oggetto`);
+          continue;
+        }
+        const dateField = this.findDateField(item as Record<string, unknown>);
         if (!dateField) {
           errors.push(`Record ${i}: Nessun campo data trovato`);
           continue;
         }
 
         // Parsing della data
-        const parseResult = this.parseDate(item[dateField]);
+        const parseResult = this.parseDate((item as Record<string, unknown>)[dateField]);
         if (!parseResult.success) {
           errors.push(`Record ${i}: ${parseResult.errors.join(', ')}`);
           continue;
@@ -117,10 +121,10 @@ export class DateNormalizer {
 
         // Crea nuovo oggetto con date standardizzate
         const normalizedItem = {
-          ...item,
+          ...(typeof item === 'object' && item !== null ? item : {}),
           date: parseResult.date,
           timestamp: parseResult.timestamp,
-          originalDate: item[dateField],
+          originalDate: (item as Record<string, unknown>)[dateField],
           dateFormat: parseResult.detectedFormat,
           dateConfidence: parseResult.confidence
         };
@@ -142,7 +146,7 @@ export class DateNormalizer {
   /**
    * Parsing di una singola data
    */
-  public parseDate(dateValue: any): DateParsingResult {
+  public parseDate(dateValue: unknown): DateParsingResult {
     const originalValue = String(dateValue);
     
     if (!dateValue || dateValue === '') {
@@ -212,6 +216,9 @@ export class DateNormalizer {
   private parseWithFormat(match: RegExpMatchArray, format: string, originalValue: string): DateParsingResult {
     let date: Date;
     let confidence = 1.0;
+    let month: string, day: string, year: string;
+    let dayDMY: string, monthDMY: string, yearDMY: string;
+    let fullYear: string, fullMonth: string, fullDay: string;
 
     switch (format) {
       case 'ISO_FULL':
@@ -237,7 +244,7 @@ export class DateNormalizer {
       case 'YAHOO_US':
       case 'YAHOO_US_FLEXIBLE':
         // MM/DD/YYYY
-        const [, month, day, year] = match;
+        [, month = '', day = '', year = ''] = match;
         date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         confidence = 0.9; // Potrebbe essere ambiguo con DD/MM/YYYY
         break;
@@ -252,14 +259,14 @@ export class DateNormalizer {
 
       case 'GENERIC_DMY':
         // Assumiamo DD-MM-YYYY (formato europeo)
-        const [, dayDMY, monthDMY, yearDMY] = match;
+        [, dayDMY = '', monthDMY = '', yearDMY = ''] = match;
         date = new Date(parseInt(yearDMY), parseInt(monthDMY) - 1, parseInt(dayDMY));
         confidence = 0.7; // Formato ambiguo
         break;
 
       case 'COMPACT_YMD':
         // YYYYMMDD
-        const [, fullYear, fullMonth, fullDay] = [
+        [, fullYear = '', fullMonth = '', fullDay = ''] = [
           match[0].slice(0, 4),
           match[0].slice(4, 6),
           match[0].slice(6, 8)
@@ -356,7 +363,7 @@ export class DateNormalizer {
   /**
    * Trova il campo data nell'oggetto
    */
-  private findDateField(item: any): string | null {
+  private findDateField(item: Record<string, unknown>): string | null {
     const dateFields = [
       'date', 'timestamp', 'time', 'datetime',
       'Date', 'Timestamp', 'Time', 'DateTime',
