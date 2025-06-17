@@ -28,9 +28,20 @@ export interface DividendEvent {
   source: string;
 }
 
+export interface PriceDataRecord {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  adjustedClose?: number;
+  volume: number;
+  [key: string]: unknown;
+}
+
 export interface AdjustmentResult {
   success: boolean;
-  adjustedData: any[];
+  adjustedData: PriceDataRecord[];
   appliedSplits: SplitEvent[];
   appliedDividends: DividendEvent[];
   adjustmentFactor: number;
@@ -77,7 +88,7 @@ export class PriceAdjuster {
   /**
    * Aggiusta prezzi per stock splits
    */
-  public async adjustForSplits(data: unknown[], symbol: string): Promise<unknown[]> {
+  public async adjustForSplits(data: PriceDataRecord[], symbol: string): Promise<PriceDataRecord[]> {
     const startTime = Date.now();
     
     if (!this.config.enableSplitAdjustment || data.length === 0) {
@@ -114,61 +125,76 @@ export class PriceAdjuster {
   /**
    * Rileva stock splits automaticamente dai dati di prezzo
    */
-  private detectSplitsFromData(data: unknown[], symbol: string): SplitEvent[] {
+  private detectSplitsFromData(data: PriceDataRecord[], symbol: string): SplitEvent[] {
     const splits: SplitEvent[] = [];
     
     if (data.length < 2) return splits;
 
     // Ordina dati per data (più vecchi prima)
-    const sortedData = [...data].sort((a, b) => new Date((a as Record<string, unknown>).date as string).getTime() - new Date((b as Record<string, unknown>).date as string).getTime());
+    const sortedData = [...data].sort((a, b) => {
+      if (a && b && typeof a === 'object' && typeof b === 'object' && 'date' in a && 'date' in b) {
+        return new Date((a as PriceDataRecord).date).getTime() - new Date((b as PriceDataRecord).date).getTime();
+      }
+      return 0;
+    });
 
          for (let i = 1; i < sortedData.length; i++) {
-      const prevDay = sortedData[i - 1] as Record<string, unknown>;
-      const currentDay = sortedData[i] as Record<string, unknown>;
+      const prevDay = sortedData[i - 1];
+      const currentDay = sortedData[i];
       
-      // Calcola ratio di prezzo tra giorni consecutivi
-      const priceRatio = Number(prevDay.close) / Number(currentDay.open);
-      
-      // Rileva possibili splits
-      if (priceRatio >= this.config.splitThreshold) {
-        const splitRatio = this.calculateSplitRatio(priceRatio);
+      if (
+        prevDay && currentDay &&
+        typeof prevDay === 'object' && typeof currentDay === 'object' &&
+        'date' in prevDay && 'open' in prevDay && 'close' in prevDay && 'volume' in prevDay &&
+        'date' in currentDay && 'open' in currentDay && 'close' in currentDay && 'volume' in currentDay
+      ) {
+        // Calcola ratio di prezzo tra giorni consecutivi
+        const priceRatio = (prevDay as PriceDataRecord).close / (currentDay as PriceDataRecord).open;
         
-        if (splitRatio > 0) {
-          const confidence = this.calculateSplitConfidence(prevDay, currentDay, splitRatio);
+        // Rileva possibili splits
+        if (priceRatio >= this.config.splitThreshold) {
+          const splitRatio = this.calculateSplitRatio(priceRatio);
           
-          if (confidence > 0.7) { // Soglia di confidence per accettare lo split
-            splits.push({
-              date: currentDay.date,
-              symbol,
-              splitRatio,
-              splitFrom: 1,
-              splitTo: Math.round(splitRatio),
-              source: 'AUTO_DETECTION',
-              confidence
-            });
+          if (splitRatio > 0) {
+            const confidence = this.calculateSplitConfidence(prevDay, currentDay, splitRatio);
+            
+            if (confidence > 0.7) { // Soglia di confidence per accettare lo split
+              splits.push({
+                date: currentDay.date,
+                symbol,
+                splitRatio,
+                splitFrom: 1,
+                splitTo: Math.round(splitRatio),
+                source: 'AUTO_DETECTION',
+                confidence
+              });
+            }
           }
         }
-      }
-      
-      // Rileva reverse splits
-      else if (priceRatio <= (1 / this.config.splitThreshold)) {
-        const reverseSplitRatio = 1 / priceRatio;
         
-        if (reverseSplitRatio >= this.config.splitThreshold) {
-          const confidence = this.calculateSplitConfidence(prevDay, currentDay, reverseSplitRatio);
+        // Rileva reverse splits
+        else if (priceRatio <= (1 / this.config.splitThreshold)) {
+          const reverseSplitRatio = 1 / priceRatio;
           
-          if (confidence > 0.7) {
-            splits.push({
-              date: currentDay.date,
-              symbol,
-              splitRatio: 1 / reverseSplitRatio,
-              splitFrom: Math.round(reverseSplitRatio),
-              splitTo: 1,
-              source: 'AUTO_DETECTION_REVERSE',
-              confidence
-            });
+          if (reverseSplitRatio >= this.config.splitThreshold) {
+            const confidence = this.calculateSplitConfidence(prevDay, currentDay, reverseSplitRatio);
+            
+            if (confidence > 0.7) {
+              splits.push({
+                date: currentDay.date,
+                symbol,
+                splitRatio: 1 / reverseSplitRatio,
+                splitFrom: Math.round(reverseSplitRatio),
+                splitTo: 1,
+                source: 'AUTO_DETECTION_REVERSE',
+                confidence
+              });
+            }
           }
         }
+      } else {
+        // fallback: ignora la coppia non valida
+        continue;
       }
     }
 
@@ -199,7 +225,7 @@ export class PriceAdjuster {
   /**
    * Calcola confidence di un possibile split
    */
-  private calculateSplitConfidence(prevDay: Record<string, unknown>, currentDay: Record<string, unknown>, splitRatio: number): number {
+  private calculateSplitConfidence(prevDay: PriceDataRecord, currentDay: PriceDataRecord, splitRatio: number): number {
     let confidence = 0.5; // Base confidence
     
     // Fattori che aumentano confidence:
@@ -236,43 +262,62 @@ export class PriceAdjuster {
   /**
    * Applica aggiustamenti per splits ai dati
    */
-  private applySplitAdjustments(data: unknown[], splits: SplitEvent[]): unknown[] {
+  private applySplitAdjustments(data: PriceDataRecord[], splits: SplitEvent[]): PriceDataRecord[] {
     if (splits.length === 0) return data;
 
     // Ordina splits per data (più recenti prima)
     const sortedSplits = [...splits].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
     return data.map(item => {
-      let adjustmentFactor = 1.0;
-      
-      // Calcola fattore di aggiustamento cumulativo
-      for (const split of sortedSplits) {
-        if (new Date((item as Record<string, unknown>).date as string) < new Date(split.date)) {
-          adjustmentFactor *= split.splitRatio;
+      if (
+        item && typeof item === 'object' &&
+        'date' in item && 'open' in item && 'close' in item && 'high' in item && 'low' in item && 'volume' in item
+      ) {
+        let adjustmentFactor = 1.0;
+        
+        // Calcola fattore di aggiustamento cumulativo
+        for (const split of sortedSplits) {
+          if (new Date((item as PriceDataRecord).date) < new Date(split.date)) {
+            adjustmentFactor *= split.splitRatio;
+          }
         }
-      }
-      
-      // Applica aggiustamento se necessario
-      if (Math.abs(adjustmentFactor - 1.0) > 0.001) {
+        
+        // Applica aggiustamento se necessario
+        if (Math.abs(adjustmentFactor - 1.0) > 0.001) {
+          return {
+            ...(item as PriceDataRecord),
+            open: this.roundToDecimal((item as PriceDataRecord).open / adjustmentFactor, this.config.adjustmentPrecision),
+            high: this.roundToDecimal((item as PriceDataRecord).high / adjustmentFactor, this.config.adjustmentPrecision),
+            low: this.roundToDecimal((item as PriceDataRecord).low / adjustmentFactor, this.config.adjustmentPrecision),
+            close: this.roundToDecimal((item as PriceDataRecord).close / adjustmentFactor, this.config.adjustmentPrecision),
+            adjustedClose: (item as PriceDataRecord).adjustedClose || this.roundToDecimal((item as PriceDataRecord).close / adjustmentFactor, this.config.adjustmentPrecision),
+            volume: Math.round((item as PriceDataRecord).volume * adjustmentFactor), // Volume aumenta con split
+            splitAdjustmentFactor: adjustmentFactor,
+            splitAdjusted: true
+          };
+        }
+        
         return {
-          ...(item as Record<string, unknown>),
-          open: this.roundToDecimal(Number((item as Record<string, unknown>).open) / adjustmentFactor, this.config.adjustmentPrecision),
-          high: this.roundToDecimal(Number((item as Record<string, unknown>).high) / adjustmentFactor, this.config.adjustmentPrecision),
-          low: this.roundToDecimal(Number((item as Record<string, unknown>).low) / adjustmentFactor, this.config.adjustmentPrecision),
-          close: this.roundToDecimal(Number((item as Record<string, unknown>).close) / adjustmentFactor, this.config.adjustmentPrecision),
-          adjustedClose: (item as Record<string, unknown>).adjustedClose || this.roundToDecimal(Number((item as Record<string, unknown>).close) / adjustmentFactor, this.config.adjustmentPrecision),
-          volume: Math.round(Number((item as Record<string, unknown>).volume) * adjustmentFactor), // Volume aumenta con split
-          splitAdjustmentFactor: adjustmentFactor,
-          splitAdjusted: true
+          ...(item as PriceDataRecord),
+          adjustedClose: (item as PriceDataRecord).adjustedClose || (item as PriceDataRecord).close,
+          splitAdjustmentFactor: 1.0,
+          splitAdjusted: false
         };
+      } else {
+        // fallback: oggetto PriceDataRecord di default con warning
+        return {
+          date: '',
+          open: 0,
+          high: 0,
+          low: 0,
+          close: 0,
+          volume: 0,
+          adjustedClose: 0,
+          splitAdjustmentFactor: 1.0,
+          splitAdjusted: false,
+          warning: 'Invalid record structure'
+        } as PriceDataRecord;
       }
-      
-      return {
-        ...(item as Record<string, unknown>),
-        adjustedClose: (item as Record<string, unknown>).adjustedClose || (item as Record<string, unknown>).close,
-        splitAdjustmentFactor: 1.0,
-        splitAdjusted: false
-      };
     });
   }
 
@@ -319,7 +364,7 @@ export class PriceAdjuster {
   /**
    * Aggiusta per dividendi (implementazione base)
    */
-  public async adjustForDividends(data: unknown[], symbol: string): Promise<unknown[]> {
+  public async adjustForDividends(data: PriceDataRecord[], symbol: string): Promise<PriceDataRecord[]> {
     if (!this.config.enableDividendAdjustment) {
       return data;
     }
@@ -332,7 +377,7 @@ export class PriceAdjuster {
   /**
    * Valida aggiustamenti applicati
    */
-  public validateAdjustments(originalData: unknown[], adjustedData: unknown[]): {
+  public validateAdjustments(originalData: PriceDataRecord[], adjustedData: PriceDataRecord[]): {
     isValid: boolean;
     issues: string[];
     continuityScore: number;
@@ -347,7 +392,13 @@ export class PriceAdjuster {
     let continuityScore = 1.0;
     
     if (adjustedData.length > 1) {
-      const sortedData = [...adjustedData].sort((a, b) => new Date((a as Record<string, unknown>).date as string).getTime() - new Date((b as Record<string, unknown>).date as string).getTime());
+      const sortedData = [...adjustedData].sort((a, b) => {
+        const aDate = (a as Record<string, unknown>).date;
+        const bDate = (b as Record<string, unknown>).date;
+        const aDateStr = typeof aDate === 'string' ? aDate : '';
+        const bDateStr = typeof bDate === 'string' ? bDate : '';
+        return new Date(aDateStr).getTime() - new Date(bDateStr).getTime();
+      });
       
       let totalGaps = 0;
       let significantGaps = 0;
@@ -407,7 +458,7 @@ export class PriceAdjuster {
   /**
    * Test di rilevamento split su dati campione
    */
-  public testSplitDetection(data: unknown[], symbol: string): {
+  public testSplitDetection(data: PriceDataRecord[], symbol: string): {
     detectedSplits: SplitEvent[];
     confidence: number;
     recommendations: string[];
