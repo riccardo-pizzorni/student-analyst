@@ -371,10 +371,11 @@ export class NetworkResilienceService extends EventEmitter {
       const fallbackResult = await this.tryFallbackServices(context);
       if (fallbackResult.success) {
         return {
-          success: fallbackResult.success, source: fallbackResult.source, fromCache: fallbackResult.fromCache, error: fallbackResult.error,
+          ...fallbackResult,
           responseTime: Date.now() - startTime,
           retryCount,
           fallbackUsed: true,
+          data: fallbackResult.data as unknown as T,
         };
       }
     }
@@ -393,6 +394,7 @@ export class NetworkResilienceService extends EventEmitter {
       retryCount,
       fromCache: false,
       fallbackUsed,
+      data: undefined as T,
     };
   }
 
@@ -458,7 +460,7 @@ export class NetworkResilienceService extends EventEmitter {
           retryCount: 0,
           fromCache: false,
           fallbackUsed: true,
-          data: undefined as T,
+          data: undefined as unknown as T,
         };
       } catch (error) {
         console.warn(`Fallback service ${service.name} failed:`, error);
@@ -473,7 +475,7 @@ export class NetworkResilienceService extends EventEmitter {
       retryCount: 0,
       fromCache: false,
       fallbackUsed: true,
-      data: undefined as T,
+      data: undefined as unknown as T,
     };
   }
 
