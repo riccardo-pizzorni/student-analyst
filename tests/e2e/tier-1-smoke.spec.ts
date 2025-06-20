@@ -181,7 +181,7 @@ test.describe('TIER 1 - Smoke Testing (100% Pass Required)', () => {
     expect(loadTime).toBeLessThan(20000);
     
     const memoryUsage = await page.evaluate(() => 
-      (performance as any).memory?.usedJSHeapSize || 0
+      (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0
     );
     expect(memoryUsage).toBeLessThan(300 * 1024 * 1024);
     

@@ -9,12 +9,12 @@ import DataSanitizer from './dataSanitizer';
 
 export interface TestCase {
   name: string;
-  input: any;
+  input: unknown;
   expected: {
     isValid: boolean;
     hasErrors?: boolean;
     hasWarnings?: boolean;
-    sanitizedValue?: any;
+    sanitizedValue?: unknown;
   };
   category: string;
 }
@@ -567,37 +567,41 @@ export class DataSanitizationTester {
   /**
    * Verifica se il risultato del test corrisponde alle aspettative
    */
-  private static verifyTestResult(result: any, expected: any): boolean {
+  private static verifyTestResult(result: unknown, expected: unknown): boolean {
     if (!result) return false;
     
+    // Type assertion per mantenere la compatibilità con il codice esistente
+    const resultObj = result as Record<string, unknown>;
+    const expectedObj = expected as Record<string, unknown>;
+    
     // Controlla validità
-    if (result.isValid !== expected.isValid) {
+    if (resultObj.isValid !== expectedObj.isValid) {
       return false;
     }
     
     // Controlla errori se specificato
-    if (expected.hasErrors !== undefined) {
-      const hasErrors = (result.errors && result.errors.length > 0);
-      if (hasErrors !== expected.hasErrors) {
+    if (expectedObj.hasErrors !== undefined) {
+      const hasErrors = (resultObj.errors && Array.isArray(resultObj.errors) && resultObj.errors.length > 0);
+      if (hasErrors !== expectedObj.hasErrors) {
         return false;
       }
     }
     
     // Controlla warnings se specificato
-    if (expected.hasWarnings !== undefined) {
-      const hasWarnings = (result.warnings && result.warnings.length > 0);
-      if (hasWarnings !== expected.hasWarnings) {
+    if (expectedObj.hasWarnings !== undefined) {
+      const hasWarnings = (resultObj.warnings && Array.isArray(resultObj.warnings) && resultObj.warnings.length > 0);
+      if (hasWarnings !== expectedObj.hasWarnings) {
         return false;
       }
     }
     
     // Controlla valore sanitizzato se specificato
-    if (expected.sanitizedValue !== undefined) {
-      if (typeof expected.sanitizedValue === 'object') {
+    if (expectedObj.sanitizedValue !== undefined) {
+      if (typeof expectedObj.sanitizedValue === 'object') {
         // Confronto superficiale per oggetti
-        return JSON.stringify(result.sanitizedValue) === JSON.stringify(expected.sanitizedValue);
+        return JSON.stringify(resultObj.sanitizedValue) === JSON.stringify(expectedObj.sanitizedValue);
       } else {
-        return result.sanitizedValue === expected.sanitizedValue;
+        return resultObj.sanitizedValue === expectedObj.sanitizedValue;
       }
     }
     
