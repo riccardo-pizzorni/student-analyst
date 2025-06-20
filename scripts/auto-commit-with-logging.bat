@@ -4,13 +4,13 @@ setlocal enabledelayedexpansion
 rem Ottiene il carattere Carriage Return (CR) per sovrascrivere la riga
 for /f %%a in ('copy /z "%~f0" nul') do set "cr=%%a"
 
-echo { CICLO AUTO-COMMIT AVVIATO - %date% %time%
+echo { CICLO AUTO-COMMIT E PUSH AVVIATO - %date% %time%
 echo =================================================================
 echo.
 
 :loop
 echo.
-echo [1/4] Controllo modifiche con 'git status'
+echo [1/5] Controllo modifiche con 'git status'
 git status --porcelain > scripts\temp_git_status.txt 2>nul
 if %errorlevel% neq 0 (
     echo [ERRORE] Impossibile controllare lo stato Git
@@ -23,7 +23,7 @@ if %errorlevel% equ 0 (
     echo [INFO] Modifiche trovate.
     echo.
     echo =================================================================
-    echo [2/4] Eseguo 'git add -A'... (Output del comando qui sotto)
+    echo [2/5] Eseguo 'git add -A'... (Output del comando qui sotto)
     echo -----------------------------------------------------------------
     git add -A
     if %errorlevel% neq 0 (
@@ -33,7 +33,7 @@ if %errorlevel% equ 0 (
     echo -----------------------------------------------------------------
     echo.
     echo =================================================================
-    echo [3/4] Eseguo 'git commit'... (Output del comando qui sotto)
+    echo [3/5] Eseguo 'git commit'... (Output del comando qui sotto)
     echo -----------------------------------------------------------------
     git commit -m "Auto-commit: %date% %time%" --no-verify
     if %errorlevel% neq 0 (
@@ -42,7 +42,19 @@ if %errorlevel% equ 0 (
     )
     echo -----------------------------------------------------------------
     echo.
-    echo [4/4] Commit completato con successo!
+    echo [4/5] Commit completato con successo!
+    echo =================================================================
+    echo.
+    echo [5/5] Eseguo 'git push'... (Output del comando qui sotto)
+    echo -----------------------------------------------------------------
+    git push origin master
+    if %errorlevel% neq 0 (
+        echo [ERRORE] Il push e' fallito. I commit sono solo locali.
+        echo [INFO] Riproverò al prossimo ciclo.
+    ) else (
+        echo -----------------------------------------------------------------
+        echo [SUCCESSO] Push completato! Modifiche sincronizzate su GitHub.
+    )
     echo =================================================================
 ) else (
     echo [INFO] Nessuna modifica da committare.

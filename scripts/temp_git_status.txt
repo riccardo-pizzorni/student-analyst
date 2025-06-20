@@ -1,1 +1,2 @@
+ M scripts/auto-commit-with-logging.bat
  M scripts/temp_git_status.txt
