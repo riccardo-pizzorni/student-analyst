@@ -5,24 +5,24 @@
  * Test semplificato per il sistema di rate limiting e batch processing
  */
 
-import { ApiRateLimiter, RateLimitStats } from '../services/apiRateLimiter';
+import { ApiRateLimiter } from '../services/apiRateLimiter';
 import { BatchProcessor, BatchRequest } from '../services/batchProcessor';
 
 /**
  * Test semplificato per Rate Limiting
  */
 export class RateLimitingTestSuite {
-  private rateLimiter: ApiRateLimiter;
-  private batchProcessor: BatchProcessor;
+  private _rateLimiter: ApiRateLimiter;
+  private _batchProcessor: BatchProcessor;
 
   constructor() {
-    this.rateLimiter = new ApiRateLimiter({
+    this._rateLimiter = new ApiRateLimiter({
       requestsPerMinute: 5,
       requestsPerDay: 25,
       enableLogging: true,
     });
 
-    this.batchProcessor = new BatchProcessor(null, {
+    this._batchProcessor = new BatchProcessor(null, {
       maxConcurrentBatches: 2,
       defaultBatchSize: 5,
       enableProgressTracking: true,
@@ -60,7 +60,7 @@ export class RateLimitingTestSuite {
 
     try {
       // Test singola richiesta
-      const result = await this.rateLimiter.queueRequest('AAPL', 'daily', 1);
+      const result = await this._rateLimiter.queueRequest('AAPL', 'daily', 1);
 
       if (result && result.success) {
         console.log('✅ Single request successful');
@@ -69,7 +69,7 @@ export class RateLimitingTestSuite {
       }
 
       // Test statistiche
-      const stats = this.rateLimiter.getRateLimitStats();
+      const stats = this._rateLimiter.getRateLimitStats();
       console.log(
         `📊 Stats: ${stats.requestsInLastMinute} requests in last minute`
       );
@@ -91,7 +91,7 @@ export class RateLimitingTestSuite {
         options: { useCache: true },
       };
 
-      const batchResult = await this.batchProcessor.processBatch(batchRequest);
+      const batchResult = await this._batchProcessor.processBatch(batchRequest);
 
       if (batchResult && batchResult.success) {
         console.log(
@@ -113,7 +113,7 @@ export class RateLimitingTestSuite {
     console.log('\n📋 Test: Rate Limit Stats');
 
     try {
-      const stats = this.rateLimiter.getRateLimitStats();
+      const stats = this._rateLimiter.getRateLimitStats();
 
       console.log('📊 Rate Limit Statistics:');
       console.log(`  - Requests in last minute: ${stats.requestsInLastMinute}`);
@@ -146,7 +146,7 @@ export class RateLimitingTestSuite {
         options: { useCache: true },
       };
 
-      const result = await this.batchProcessor.processBatch(batchRequest);
+      const result = await this._batchProcessor.processBatch(batchRequest);
       const totalTime = Date.now() - startTime;
 
       console.log('\n📊 Performance Results:');
@@ -176,8 +176,8 @@ export class RateLimitingTestSuite {
    * Reset del sistema
    */
   reset(): void {
-    this.rateLimiter.reset();
-    this.batchProcessor.reset();
+    this._rateLimiter.reset();
+    this._batchProcessor.reset();
     console.log('🔄 Test system reset completed');
   }
 }

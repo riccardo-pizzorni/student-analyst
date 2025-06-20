@@ -1,2 +1,13 @@
- M backend/src/utils/dataSanitizer.ts
+ M backend/src/routes/apiRoutes.ts
+ M backend/src/routes/batchRoutes.ts
+ M backend/src/routes/errorHandlingRoutes.ts
+ M backend/src/services/alphaVantageService.ts
+ M backend/src/services/apiProxy.ts
+ M backend/src/services/batchProcessor.ts
+ M backend/src/services/dateNormalizer.ts
+ M backend/src/services/networkResilienceService.ts
+ M backend/src/services/priceAdjuster.ts
+ M backend/src/services/responseParser.ts
+ M backend/src/utils/testErrorHandling.ts
+ M backend/src/utils/testRateLimiting.ts
  M scripts/temp_git_status.txt

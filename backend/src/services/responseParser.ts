@@ -127,7 +127,7 @@ export class ResponseParser {
 
       // Trova chiavi di dati e metadati
       const keys = Object.keys(rawData);
-      const metadataKey = keys.find(key =>
+      const _metadataKey = keys.find(key =>
         key.toLowerCase().includes('meta data')
       );
       const dataKey = keys.find(

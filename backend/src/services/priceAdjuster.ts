@@ -92,7 +92,7 @@ export class PriceAdjuster {
     data: PriceDataRecord[],
     symbol: string
   ): Promise<PriceDataRecord[]> {
-    const startTime = Date.now();
+    const _startTime = Date.now();
 
     if (!this.config.enableSplitAdjustment || data.length === 0) {
       return data;
@@ -100,10 +100,10 @@ export class PriceAdjuster {
 
     try {
       // 1. Rileva splits automaticamente dai dati
-      const detectedSplits = this.detectSplitsFromData(data, symbol);
+      const detectedSplits = this.detectSplitsFromData(data, _symbol);
 
       // 2. Ottieni splits da cache o API esterne se abilitato
-      const cachedSplits = this.getCachedSplits(symbol);
+      const cachedSplits = this.getCachedSplits(_symbol);
 
       // 3. Combina e valida tutti gli splits
       const allSplits = this.mergeSplitEvents([
@@ -427,7 +427,7 @@ export class PriceAdjuster {
    * Ottieni splits dalla cache
    */
   private getCachedSplits(symbol: string): SplitEvent[] {
-    return this.splitCache.get(symbol) || [];
+    return this.splitCache.get(_symbol) || [];
   }
 
   /**
@@ -560,7 +560,7 @@ export class PriceAdjuster {
     confidence: number;
     recommendations: string[];
   } {
-    const splits = this.detectSplitsFromData(data, symbol);
+    const splits = this.detectSplitsFromData(data, _symbol);
     const avgConfidence =
       splits.length > 0
         ? splits.reduce((sum, split) => sum + split.confidence, 0) /

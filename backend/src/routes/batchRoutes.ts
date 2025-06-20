@@ -272,7 +272,7 @@ router.get('/status/:batchId', (req: Request, res: Response) => {
 router.get('/result/:batchId', (req: Request, res: Response) => {
   try {
     const { batchId } = req.params;
-    const { format = 'summary' } = req.query;
+    const { _format = 'summary' } = req.query;
 
     if (!batchId) {
       return res.status(400).json({
@@ -291,7 +291,7 @@ router.get('/result/:batchId', (req: Request, res: Response) => {
       });
     }
 
-    // Formato summary (default)
+    // _formato summary (default)
     res.json({
       success: batchResult.success,
       batchId,

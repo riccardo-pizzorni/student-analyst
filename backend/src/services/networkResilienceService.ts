@@ -139,7 +139,7 @@ class CircuitBreaker extends EventEmitter {
       const result = await operation();
       this.onSuccess();
       return result;
-    } catch (error) {
+    } catch (_error) {
       this.onFailure();
       throw error;
     }
@@ -341,7 +341,7 @@ export class NetworkResilienceService extends EventEmitter {
             fallbackUsed: false,
           };
         }
-      } catch (error) {
+      } catch (_error) {
         lastError = error as Error;
         retryCount = attempt;
 
@@ -462,7 +462,7 @@ export class NetworkResilienceService extends EventEmitter {
           fallbackUsed: true,
           data: undefined as unknown as T,
         };
-      } catch (error) {
+      } catch (_error) {
         console.warn(`Fallback service ${service.name} failed:`, error);
         continue;
       }
@@ -515,16 +515,16 @@ export class NetworkResilienceService extends EventEmitter {
    * Registra servizio di fallback
    */
   registerFallbackService(
-    primaryService: string,
+    _primaryService: string,
     fallbackService: FallbackService
   ): void {
-    if (!this.fallbackServices.has(primaryService)) {
-      this.fallbackServices.set(primaryService, []);
+    if (!this.fallbackServices.has(_primaryService)) {
+      this.fallbackServices.set(_primaryService, []);
     }
 
-    this.fallbackServices.get(primaryService)!.push(fallbackService);
+    this.fallbackServices.get(_primaryService)!.push(fallbackService);
     console.log(
-      `Registered fallback service ${fallbackService.name} for ${primaryService}`
+      `Registered fallback service ${fallbackService.name} for ${_primaryService}`
     );
   }
 
@@ -543,7 +543,7 @@ export class NetworkResilienceService extends EventEmitter {
    */
   private async performHealthChecks(): Promise<void> {
     for (const [
-      primaryService,
+      _primaryService,
       fallbackServices,
     ] of this.fallbackServices.entries()) {
       for (const service of fallbackServices) {
@@ -555,7 +555,7 @@ export class NetworkResilienceService extends EventEmitter {
           service.healthStatus = 'healthy';
           service.lastChecked = Date.now();
           service.responseTime = Date.now() - startTime;
-        } catch (error) {
+        } catch (_error) {
           service.healthStatus = 'unhealthy';
           service.lastChecked = Date.now();
         }
@@ -586,10 +586,10 @@ export class NetworkResilienceService extends EventEmitter {
     const status: Record<string, FallbackService[]> = {};
 
     for (const [
-      primaryService,
+      _primaryService,
       fallbackServices,
     ] of this.fallbackServices.entries()) {
-      status[primaryService] = [...fallbackServices];
+      status[_primaryService] = [...fallbackServices];
     }
 
     return status;

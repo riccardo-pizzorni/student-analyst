@@ -37,13 +37,13 @@ interface TestResult {
  * Suite di test per il sistema di gestione errori
  */
 export class ErrorHandlingTestSuite {
-  private errorHandler: ErrorCodeHandler;
-  private resilienceService: NetworkResilienceService;
-  private alphaVantageService: AlphaVantageService;
-  private results: TestResult[] = [];
+  private _errorHandler: ErrorCodeHandler;
+  private _resilienceService: NetworkResilienceService;
+  private _alphaVantageService: AlphaVantageService;
+  private _results: TestResult[] = [];
 
   constructor() {
-    this.errorHandler = ErrorCodeHandler.getInstance();
+    this._errorHandler = ErrorCodeHandler.getInstance();
 
     // Configurazione di resilienza per i test
     const resilienceConfig: NetworkResilienceConfig = {
@@ -64,9 +64,9 @@ export class ErrorHandlingTestSuite {
       enableFallback: true,
     };
 
-    this.resilienceService =
+    this._resilienceService =
       NetworkResilienceService.getInstance(resilienceConfig);
-    this.alphaVantageService = new AlphaVantageService({
+    this._alphaVantageService = new AlphaVantageService({
       timeout: 5000,
       retryAttempts: 2,
       retryDelay: 500,
@@ -80,7 +80,7 @@ export class ErrorHandlingTestSuite {
   async runAllTests(): Promise<TestResult[]> {
     console.log('🧪 Starting Error Handling Test Suite...\n');
 
-    this.results = [];
+    this._results = [];
 
     // Test di classificazione errori
     await this.testErrorClassification();
@@ -101,7 +101,7 @@ export class ErrorHandlingTestSuite {
     await this.testAlphaVantageIntegration();
 
     this.printSummary();
-    return this.results;
+    return this._results;
   }
 
   /**
@@ -166,7 +166,7 @@ export class ErrorHandlingTestSuite {
           timeframe: 'daily',
         };
 
-        const classified = this.errorHandler.classifyError(
+        const classified = this._errorHandler.classifyError(
           testCase.error,
           context
         );
@@ -174,7 +174,7 @@ export class ErrorHandlingTestSuite {
 
         const success = classified.type === testCase.expectedType;
 
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success,
           duration,
@@ -194,7 +194,7 @@ export class ErrorHandlingTestSuite {
           `  ${success ? '✅' : '❌'} ${testCase.name}: ${classified.type}`
         );
       } catch (error) {
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success: false,
           duration: Date.now() - startTime,
@@ -245,7 +245,7 @@ export class ErrorHandlingTestSuite {
           timeframe: 'daily',
         };
 
-        const classified = this.errorHandler.classifyError(error, context);
+        const classified = this._errorHandler.classifyError(error, context);
         const duration = Date.now() - startTime;
 
         const message = classified.userMessage.message.toLowerCase();
@@ -255,7 +255,7 @@ export class ErrorHandlingTestSuite {
 
         const success = hasKeywords && classified.userMessage.title.length > 0;
 
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success,
           duration,
@@ -269,7 +269,7 @@ export class ErrorHandlingTestSuite {
 
         console.log(`  ${success ? '✅' : '❌'} ${testCase.name}`);
       } catch (error) {
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success: false,
           duration: Date.now() - startTime,
@@ -321,7 +321,7 @@ export class ErrorHandlingTestSuite {
           timeframe: 'daily',
         };
 
-        const classified = this.errorHandler.classifyError(error, context);
+        const classified = this._errorHandler.classifyError(error, context);
         const duration = Date.now() - startTime;
 
         const retryableMatch =
@@ -332,7 +332,7 @@ export class ErrorHandlingTestSuite {
 
         const success = retryableMatch && strategyMatch;
 
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success,
           duration,
@@ -351,7 +351,7 @@ export class ErrorHandlingTestSuite {
 
         console.log(`  ${success ? '✅' : '❌'} ${testCase.name}`);
       } catch (error) {
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success: false,
           duration: Date.now() - startTime,
@@ -411,7 +411,7 @@ export class ErrorHandlingTestSuite {
           return { success: true, data: 'test data' };
         };
 
-        const result = await this.resilienceService.executeResilient(
+        const result = await this._resilienceService.executeResilient(
           mockOperation,
           context,
           { maxRetries: 1, timeout: 2000 }
@@ -420,7 +420,7 @@ export class ErrorHandlingTestSuite {
         const duration = Date.now() - startTime;
         const success = result.success === testCase.expectedSuccess;
 
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success,
           duration,
@@ -437,7 +437,7 @@ export class ErrorHandlingTestSuite {
           `  ${success ? '✅' : '❌'} ${testCase.name} (${result.retryCount} retries)`
         );
       } catch (error) {
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success: false,
           duration: Date.now() - startTime,
@@ -474,7 +474,7 @@ export class ErrorHandlingTestSuite {
       // Esegui operazioni fallimentari per aprire il circuit breaker
       for (let i = 0; i < 4; i++) {
         try {
-          await this.resilienceService.executeResilient(
+          await this._resilienceService.executeResilient(
             failingOperation,
             context,
             { maxRetries: 0 }
@@ -485,12 +485,12 @@ export class ErrorHandlingTestSuite {
       }
 
       // Verifica stato del circuit breaker
-      const stats = this.resilienceService.getCircuitBreakerStats();
+      const stats = this._resilienceService.getCircuitBreakerStats();
       const circuitBreakerExists = stats['circuit_test_service'] !== undefined;
 
       const duration = Date.now() - startTime;
 
-      this.results.push({
+      this._results.push({
         testName: 'Circuit Breaker Functionality',
         success: circuitBreakerExists,
         duration,
@@ -504,7 +504,7 @@ export class ErrorHandlingTestSuite {
         `  ${circuitBreakerExists ? '✅' : '❌'} Circuit Breaker Functionality`
       );
     } catch (error) {
-      this.results.push({
+      this._results.push({
         testName: 'Circuit Breaker Functionality',
         success: false,
         duration: Date.now() - startTime,
@@ -541,7 +541,7 @@ export class ErrorHandlingTestSuite {
       const startTime = Date.now();
 
       try {
-        const validation = this.alphaVantageService.validateRequest(
+        const validation = this._alphaVantageService.validateRequest(
           testCase.symbol,
           testCase.timeframe
         );
@@ -549,7 +549,7 @@ export class ErrorHandlingTestSuite {
         const duration = Date.now() - startTime;
         const success = validation.valid !== testCase.expectedError;
 
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success,
           duration,
@@ -563,7 +563,7 @@ export class ErrorHandlingTestSuite {
 
         console.log(`  ${success ? '✅' : '❌'} ${testCase.name}`);
       } catch (error) {
-        this.results.push({
+        this._results.push({
           testName: testCase.name,
           success: false,
           duration: Date.now() - startTime,
@@ -620,11 +620,11 @@ export class ErrorHandlingTestSuite {
    * Stampa il riassunto dei test
    */
   private printSummary(): void {
-    const totalTests = this.results.length;
-    const passedTests = this.results.filter(r => r.success).length;
+    const totalTests = this._results.length;
+    const passedTests = this._results.filter(r => r.success).length;
     const failedTests = totalTests - passedTests;
     const averageDuration =
-      this.results.reduce((sum, r) => sum + r.duration, 0) / totalTests;
+      this._results.reduce((sum, r) => sum + r.duration, 0) / totalTests;
 
     console.log('📊 Test Summary:');
     console.log(`  Total Tests: ${totalTests}`);
@@ -638,7 +638,7 @@ export class ErrorHandlingTestSuite {
 
     if (failedTests > 0) {
       console.log('❌ Failed Tests:');
-      this.results
+      this._results
         .filter(r => !r.success)
         .forEach(r => {
           console.log(
@@ -655,14 +655,14 @@ export class ErrorHandlingTestSuite {
    * Ottieni i risultati dei test
    */
   getResults(): TestResult[] {
-    return this.results;
+    return this._results;
   }
 
   /**
    * Pulisce le risorse dopo i test
    */
   cleanup(): void {
-    this.errorHandler.clearErrorHistory();
-    this.resilienceService.cleanup();
+    this._errorHandler.clearErrorHistory();
+    this._resilienceService.cleanup();
   }
 }
