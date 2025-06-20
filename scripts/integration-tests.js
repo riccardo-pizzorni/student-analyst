@@ -10,14 +10,14 @@
  * - Data flow validation
  */
 
+import { promises as fs } from 'fs';
 import http from 'http';
 import https from 'https';
-import { promises as fs } from 'fs';
 import path from 'path';
 
 const CONFIG = {
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
-  BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:3001',
+  BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:10000',
   TIMEOUT: 30000, // 30 seconds
 };
 
