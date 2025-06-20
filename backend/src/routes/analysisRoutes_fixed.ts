@@ -34,10 +34,10 @@ router.post('/', (req, res) => {
         });
       });
     return;
-  } catch (error) {
-    console.error('Errore durante l_esecuzione dell_analisi:', error);
+  } catch (_error) {
+    console.error('Errore durante l_esecuzione dell_analisi:', _error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Errore sconosciuto';
+      _error instanceof Error ? _error.message : 'Errore sconosciuto';
     res.status(500).json({
       error: 'Si è verificato un errore interno durante l_analisi.',
       details: errorMessage,

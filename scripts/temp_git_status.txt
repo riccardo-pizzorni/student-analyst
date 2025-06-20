@@ -1,5 +1,3 @@
- M backend/src/routes/batchRoutes.ts
- M backend/src/routes/errorHandlingRoutes.ts
- M scripts/README.md
+ M backend/src/routes/analysisRoutes_fixed.ts
+ M backend/src/routes/transformationRoutes.ts
  M scripts/temp_git_status.txt
-?? scripts/fix-eslint-warnings.bat

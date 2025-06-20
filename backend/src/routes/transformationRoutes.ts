@@ -5,16 +5,16 @@
  * Espone funzionalità di parsing, normalizzazione e validazione
  */
 
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import {
   DataTransformer,
-  SupportedDataSource,
   StandardFinancialResponse,
+  SupportedDataSource,
 } from '../services/dataTransformer';
 import { DateNormalizer } from '../services/dateNormalizer';
 import { PriceAdjuster } from '../services/priceAdjuster';
-import { VolumeHandler } from '../services/volumeHandler';
 import { ResponseParser } from '../services/responseParser';
+import { VolumeHandler } from '../services/volumeHandler';
 
 const router = Router();
 
@@ -73,11 +73,11 @@ router.post('/transform', async (req: Request, res: Response) => {
     );
 
     res.json(result);
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante trasformazione',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'TRANSFORMATION_ERROR',
     });
   }
@@ -111,11 +111,11 @@ router.post('/parse', async (req: Request, res: Response) => {
       source,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante parsing',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'PARSING_ERROR',
     });
   }
@@ -148,11 +148,11 @@ router.post('/normalize-dates', async (req: Request, res: Response) => {
       skipped: data.length - normalizedData.length,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante normalizzazione date',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'DATE_NORMALIZATION_ERROR',
     });
   }
@@ -193,11 +193,11 @@ router.post('/adjust-prices', async (req: Request, res: Response) => {
       symbol,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante aggiustamento prezzi',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'PRICE_ADJUSTMENT_ERROR',
     });
   }
@@ -230,11 +230,11 @@ router.post('/normalize-volume', async (req: Request, res: Response) => {
       stats: result.stats,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante normalizzazione volume',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'VOLUME_NORMALIZATION_ERROR',
     });
   }
@@ -274,11 +274,11 @@ router.get('/stats', (req: Request, res: Response) => {
       },
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante recupero statistiche',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'STATS_ERROR',
     });
   }
@@ -332,11 +332,11 @@ router.post('/test', async (req: Request, res: Response) => {
       ],
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante test',
-      details: (error as Error).message,
+      details: (_error as Error).message,
       code: 'TEST_ERROR',
     });
   }
@@ -381,11 +381,11 @@ router.get('/health', (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
     });
-  } catch (error) {
+  } catch (_error) {
     res.status(500).json({
       success: false,
       status: 'ERROR',
-      error: (error as Error).message,
+      error: (_error as Error).message,
       timestamp: new Date().toISOString(),
     });
   }
