@@ -1,2 +1,2 @@
  M scripts/temp_git_status.txt
- M tests/e2e/tier-3-integration.spec.ts
+ M tests/setup.ts

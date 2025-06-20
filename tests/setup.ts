@@ -9,8 +9,8 @@ import { TextDecoder, TextEncoder } from 'util';
 
 // Mock browser APIs
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as any;
-global.performance = performance as any;
+global.TextDecoder = TextDecoder as unknown as typeof TextDecoder;
+global.performance = performance as unknown as Performance;
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -85,9 +85,9 @@ const indexedDB = {
           })
         })
       },
-      onupgradeneeded: null as ((event: any) => void) | null,
-      onsuccess: null as ((event: any) => void) | null,
-      onerror: null as ((event: any) => void) | null
+      onupgradeneeded: null as ((event: unknown) => void) | null,
+      onsuccess: null as ((event: unknown) => void) | null,
+      onerror: null as ((event: unknown) => void) | null
     };
 
     // Simulate the upgrade needed event
