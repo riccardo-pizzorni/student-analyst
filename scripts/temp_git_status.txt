@@ -1,1 +1,2 @@
+ D backend/src/types/simple-statistics.d.ts
  M scripts/temp_git_status.txt
