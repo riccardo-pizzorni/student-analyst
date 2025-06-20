@@ -24,7 +24,7 @@ app.use(morgan('dev'));
 app.use(express.json()); // Per il parsing del body JSON delle richieste
 
 // Usa il middleware di sanitizzazione
-app.use(sanitizationMiddleware); // CORREZIONE: Passa la funzione direttamente
+app.use(sanitizationMiddleware());
 
 // Rotte API
 app.use('/api', apiRoutes);
