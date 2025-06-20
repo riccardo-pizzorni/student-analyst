@@ -5,41 +5,80 @@
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
+// Definizione delle interfacce per i mock
+interface MockCacheStats {
+  hits: number;
+  misses: number;
+  evictions: number;
+  currentEntries: number;
+  memoryUsage?: number;
+  size?: number;
+  totalStorageUsed?: number;
+  hitCount?: number;
+  missCount?: number;
+  totalSize?: number;
+  entryCount?: number;
+}
+
+interface MockCache {
+  clear: jest.Mock;
+  getStats: jest.Mock;
+  keys: jest.Mock;
+  get: jest.Mock;
+  remove: jest.Mock;
+  has: jest.Mock;
+  size: jest.Mock;
+  delete?: jest.Mock;
+  getAllKeys?: jest.Mock;
+}
+
+interface MockStorage {
+  getItem: jest.Mock;
+  setItem: jest.Mock;
+  removeItem: jest.Mock;
+  clear: jest.Mock;
+}
+
+interface MockStorageEstimate {
+  usage: number;
+  quota: number;
+}
+
 // Mock delle dipendenze del servizio
-const mockMemoryCache = {
-  clear: jest.fn<any>(),
-  getStats: jest.fn<any>(),
-  keys: jest.fn<any>(),
-  get: jest.fn<any>(),
-  remove: jest.fn<any>(),
-  has: jest.fn<any>(),
-  size: jest.fn<any>()
+const mockMemoryCache: MockCache = {
+  clear: jest.fn(),
+  getStats: jest.fn(),
+  keys: jest.fn(),
+  get: jest.fn(),
+  remove: jest.fn(),
+  has: jest.fn(),
+  size: jest.fn()
 };
 
-const mockLocalStorageCache = {
-  clear: jest.fn<any>(),
-  getStats: jest.fn<any>(),
-  keys: jest.fn<any>(),
-  get: jest.fn<any>(),
-  delete: jest.fn<any>(),
-  has: jest.fn<any>()
+const mockLocalStorageCache: MockCache = {
+  clear: jest.fn(),
+  getStats: jest.fn(),
+  keys: jest.fn(),
+  get: jest.fn(),
+  delete: jest.fn(),
+  has: jest.fn()
 };
 
-const mockIndexedDBCache = {
-  clear: jest.fn<any>(),
-  getStats: jest.fn<any>(),
-  getAllKeys: jest.fn<any>(),
-  get: jest.fn<any>(),
-  delete: jest.fn<any>(),
-  has: jest.fn<any>()
+const mockIndexedDBCache: MockCache = {
+  clear: jest.fn(),
+  getStats: jest.fn(),
+  getAllKeys: jest.fn(),
+  get: jest.fn(),
+  delete: jest.fn(),
+  has: jest.fn()
 };
 
 // Mock di localStorage
-const mockLocalStorage = {
-  getItem: jest.fn<any>(),
-  setItem: jest.fn<any>(),
-  removeItem: jest.fn<any>(),
-  clear: jest.fn<any>()
+const mockLocalStorage: MockStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn()
 };
 
 // Mock dei moduli
@@ -52,8 +91,8 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 // Setup setTimeout/clearTimeout mocks  
-const mockSetTimeout = jest.fn<any>();
-const mockClearTimeout = jest.fn<any>();
+const mockSetTimeout = jest.fn();
+const mockClearTimeout = jest.fn();
 Object.defineProperty(global, 'setTimeout', {
   value: mockSetTimeout,
   writable: true
@@ -66,7 +105,7 @@ Object.defineProperty(global, 'clearTimeout', {
 // Mock window.confirm
 Object.defineProperty(global, 'window', {
   value: {
-    confirm: jest.fn<any>()
+    confirm: jest.fn()
   },
   writable: true
 });
@@ -75,7 +114,7 @@ Object.defineProperty(global, 'window', {
 Object.defineProperty(global, 'navigator', {
   value: {
     storage: {
-      estimate: jest.fn<any>()
+      estimate: jest.fn()
     }
   },
   writable: true
