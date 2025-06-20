@@ -1,4 +1,1 @@
-M  backend/src/routes/analysisRoutes_fixed.ts
-M  backend/src/services/analysisService.ts
-MM scripts/temp_git_status.txt
- M vite.config.ts
+ M scripts/temp_git_status.txt
