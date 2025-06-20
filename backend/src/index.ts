@@ -10,7 +10,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { analysisRoutes } from './routes/analysisRoutes';
+import { analysisRoutes } from './routes/analysisRoutes_fixed';
 import { apiRoutes } from './routes/apiRoutes';
 
 const app = express();
