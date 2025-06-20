@@ -1,15 +1,18 @@
 @echo off
+
+:: Navigate to the script's directory, then go up one level to the project root
+cd /d "%~dp0..\"
+
 echo.
 echo ========================================
 echo   STUDENT ANALYST - CORS PROXY SERVER
 echo ========================================
 echo.
 
-cd /d "%~dp0"
-
 echo [1/4] Checking if server directory exists...
 if not exist "server" (
     echo ERROR: Server directory not found!
+    echo Current directory is: %cd%
     echo Please make sure you're running this from the project root.
     pause
     exit /b 1

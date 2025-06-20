@@ -11,8 +11,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo \"✅ Tests passed (placeholder)\" && exit 0",
-    "preview": "vite preview"
+    "test": "node scripts/test-runner.js",
+    "preview": "vite preview",
+    "monitor-status": "node scripts/monitor-status.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -73,6 +74,7 @@
     "@eslint/js": "^9.9.0",
     "@playwright/test": "^1.53.1",
     "@tailwindcss/typography": "^0.5.15",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.3",
@@ -90,6 +92,7 @@
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.11",
+    "ts-jest": "^29.4.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"

@@ -2,9 +2,10 @@
   "onStartup": {
     "commands": [
       {
-        "command": "npm",
-        "args": ["run", "auto-deploy"],
-        "cwd": "${workspaceFolder}"
+        "command": "cmd",
+        "args": ["/c", "scripts\\auto-commit-push.bat"],
+        "cwd": "${workspaceFolder}",
+        "terminal": true
       }
     ]
   }

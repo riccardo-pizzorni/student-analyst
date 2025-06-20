@@ -3,6 +3,8 @@
  * Verifica che i servizi supportino dependency injection
  */
 
+import { describe, expect, it, jest } from '@jest/globals';
+
 describe('Dependency Injection Test', () => {
   it('should test that DI is working concept', () => {
     // Semplice test che verifica che la sintassi DI funzioni
