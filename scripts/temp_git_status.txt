@@ -1,15 +1,2 @@
-A  .eslintignore
-M  backend/src/index.ts
-AM backend/src/routes/analysisRoutes.ts
-AM backend/src/services/analysisService.ts
-M  package-lock.json
-M  package.json
-MM scripts/temp_git_status.txt
-MM src/components/charts/CorrelationMatrix.tsx
-MM src/components/charts/HistoricalChart.tsx
-MM src/components/charts/PerformanceMetrics.tsx
-MM src/components/charts/VolatilityChart.tsx
-MM src/context/AnalysisContext.tsx
-D  src/hooks/useHistoricalData.ts
-D  src/hooks/useTechnicalIndicators.ts
-AM src/services/analysisAPI.ts
+ M eslint.config.js
+ M scripts/temp_git_status.txt
