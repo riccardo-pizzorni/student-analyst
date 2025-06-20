@@ -7,19 +7,12 @@ import {
 } from '@/components/ui/popover';
 import { useAnalysis } from '@/context/AnalysisContext';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { AlertTriangle, Calendar, CheckCircle, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 
 export default function UnifiedInputSection() {
-  const {
-    analysisState,
-    setTickers: setGlobalTickers,
-    setStartDate,
-    setEndDate,
-    setFrequency,
-    startAnalysis,
-  } = useAnalysis();
+  const { analysisState, setAnalysisState, startAnalysis } = useAnalysis();
 
   const [tickerInput, setTickerInput] = useState('');
   const [validatedTickers, setValidatedTickers] = useState<
@@ -39,6 +32,25 @@ export default function UnifiedInputSection() {
       change: 2.5,
     }))
   );
+
+  const setGlobalTickers = (tickers: string[]) => {
+    setAnalysisState(prev => ({ ...prev, tickers }));
+  };
+  const setStartDate = (date: Date | undefined) => {
+    setAnalysisState(prev => ({
+      ...prev,
+      startDate: date ? date.toISOString().split('T')[0] : '',
+    }));
+  };
+  const setEndDate = (date: Date | undefined) => {
+    setAnalysisState(prev => ({
+      ...prev,
+      endDate: date ? date.toISOString().split('T')[0] : '',
+    }));
+  };
+  const setFrequency = (frequency: 'daily' | 'weekly' | 'monthly') => {
+    setAnalysisState(prev => ({ ...prev, frequency }));
+  };
 
   const addTicker = () => {
     if (!tickerInput.trim()) return;
@@ -198,7 +210,11 @@ export default function UnifiedInputSection() {
                 >
                   <CalendarComponent
                     mode="single"
-                    selected={analysisState.startDate}
+                    selected={
+                      analysisState.startDate
+                        ? parseISO(analysisState.startDate)
+                        : undefined
+                    }
                     onSelect={setStartDate}
                     initialFocus
                     className="pointer-events-auto"
@@ -230,7 +246,11 @@ export default function UnifiedInputSection() {
                 >
                   <CalendarComponent
                     mode="single"
-                    selected={analysisState.endDate}
+                    selected={
+                      analysisState.endDate
+                        ? parseISO(analysisState.endDate)
+                        : undefined
+                    }
                     onSelect={setEndDate}
                     initialFocus
                     className="pointer-events-auto"
@@ -248,29 +268,41 @@ export default function UnifiedInputSection() {
           </label>
           <div className="flex gap-2">
             <Button
+              onClick={() => setFrequency('daily')}
               variant={
                 analysisState.frequency === 'daily' ? 'default' : 'outline'
               }
-              onClick={() => setFrequency('daily')}
-              className="flex-1"
+              className={`flex-1 transition-all text-sm ${
+                analysisState.frequency === 'daily'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-transparent border-slate-700/50 hover:bg-slate-700/50'
+              }`}
             >
               Giornaliera
             </Button>
             <Button
+              onClick={() => setFrequency('weekly')}
               variant={
                 analysisState.frequency === 'weekly' ? 'default' : 'outline'
               }
-              onClick={() => setFrequency('weekly')}
-              className="flex-1"
+              className={`flex-1 transition-all text-sm ${
+                analysisState.frequency === 'weekly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-transparent border-slate-700/50 hover:bg-slate-700/50'
+              }`}
             >
               Settimanale
             </Button>
             <Button
+              onClick={() => setFrequency('monthly')}
               variant={
                 analysisState.frequency === 'monthly' ? 'default' : 'outline'
               }
-              onClick={() => setFrequency('monthly')}
-              className="flex-1"
+              className={`flex-1 transition-all text-sm ${
+                analysisState.frequency === 'monthly'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-transparent border-slate-700/50 hover:bg-slate-700/50'
+              }`}
             >
               Mensile
             </Button>
@@ -300,14 +332,20 @@ export default function UnifiedInputSection() {
         </div>
 
         {/* Action Button */}
-        <div className="mt-auto pt-4 border-t border-slate-800/50">
+        <div className="mt-auto">
           <Button
-            size="lg"
-            className="w-full text-base"
             onClick={startAnalysis}
-            disabled={isAnalysisDisabled}
+            disabled={isAnalysisDisabled || analysisState.isLoading}
+            className="w-full h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg text-lg font-bold transition-all mt-auto disabled:bg-slate-600 disabled:cursor-not-allowed"
           >
-            Avvia Analisi
+            {analysisState.isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Analisi in corso...</span>
+              </div>
+            ) : (
+              'Avvia Analisi'
+            )}
           </Button>
         </div>
       </div>

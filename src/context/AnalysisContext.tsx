@@ -38,7 +38,11 @@ const initialState: AnalysisState = {
 interface AnalysisContextType {
   analysisState: AnalysisState;
   setAnalysisState: React.Dispatch<React.SetStateAction<AnalysisState>>;
-  startAnalysis: () => void; // La funzione verrà resa più complessa
+  startAnalysis: () => void;
+  setTickers: (tickers: string[]) => void;
+  setStartDate: (date: Date | undefined) => void;
+  setEndDate: (date: Date | undefined) => void;
+  setFrequency: (frequency: 'daily' | 'weekly' | 'monthly') => void;
 }
 
 // Creazione del contesto
@@ -50,6 +54,30 @@ const AnalysisContext = createContext<AnalysisContextType | undefined>(
 export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [analysisState, setAnalysisState] =
     useState<AnalysisState>(initialState);
+
+  const setTickers = (tickers: string[]) => {
+    setAnalysisState(prev => ({ ...prev, tickers }));
+  };
+
+  const setStartDate = (date: Date | undefined) => {
+    setAnalysisState(prev => ({
+      ...prev,
+      startDate: date
+        ? date.toISOString().split('T')[0]
+        : initialState.startDate,
+    }));
+  };
+
+  const setEndDate = (date: Date | undefined) => {
+    setAnalysisState(prev => ({
+      ...prev,
+      endDate: date ? date.toISOString().split('T')[0] : initialState.endDate,
+    }));
+  };
+
+  const setFrequency = (frequency: 'daily' | 'weekly' | 'monthly') => {
+    setAnalysisState(prev => ({ ...prev, frequency }));
+  };
 
   const startAnalysis = async () => {
     setAnalysisState(prevState => ({
@@ -86,7 +114,15 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AnalysisContext.Provider
-      value={{ analysisState, setAnalysisState, startAnalysis }}
+      value={{
+        analysisState,
+        setAnalysisState,
+        startAnalysis,
+        setTickers,
+        setStartDate,
+        setEndDate,
+        setFrequency,
+      }}
     >
       {children}
     </AnalysisContext.Provider>
