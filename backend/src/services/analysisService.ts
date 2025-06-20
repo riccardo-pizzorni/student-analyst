@@ -1,3 +1,9 @@
+interface PerformanceMetric {
+  name: string;
+  value: number;
+  unit?: string;
+}
+
 export interface AnalysisApiResponse {
   historicalData: {
     labels: string[];
@@ -11,13 +17,21 @@ export interface AnalysisApiResponse {
   volatility: {
     annualizedVolatility: number;
     sharpeRatio: number;
-    // ... altre metriche di volatilità
   } | null;
   correlation: {
     matrix: {
       symbol: string;
       values: number[];
     }[];
-    // ... altre metriche di correlazione
   } | null;
 }
+
+export async function performAnalysis(params: any): Promise<AnalysisApiResponse> {
+  return {
+    historicalData: { labels: [], datasets: [] },
+    performanceMetrics: [],
+    volatility: null,
+    correlation: null
+  };
+}
+

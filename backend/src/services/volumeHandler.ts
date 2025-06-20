@@ -159,7 +159,7 @@ export class VolumeHandler {
         };
 
         if (this.config.preserveOriginalValues) {
-          normalizedItem.originalVolume = typeof originalVolume === 'string' || typeof originalVolume === 'number' ? originalVolume : String(originalVolume);
+          normalizedItem.originalVolume = originalVolume;
           normalizedItem.volumeUnit = normalizationResult.detectedUnit;
         }
 
@@ -319,16 +319,22 @@ export class VolumeHandler {
     if (data.length === 0) return anomalies;
 
     // Calcola statistiche per rilevamento anomalie
-    const volumes = data.map(item => item.volumeNormalized || item.volume || 0);
-    const sortedVolumes = [...volumes].sort((a, b) => a - b);
-    const median = this.calculateMedian(sortedVolumes);
-    const mean = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
+    const volumes = data.map(item =>
+      toNumber(item.volumeNormalized ?? item.volume ?? 0)
+    );
+    const sortedVolumes = [...volumes].sort(
+      (a, b) => toNumber(a) - toNumber(b)
+    );
+    const median = this.calculateMedian(sortedVolumes.map(toNumber));
+    const mean =
+      volumes.reduce((sum, vol) => sum + toNumber(vol), 0) / volumes.length;
 
     const extremeThreshold = median * this.config.extremeVolumeThreshold;
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
-      const volume = item.volumeNormalized || item.volume || 0;
+      const volumeRaw = item.volumeNormalized ?? item.volume ?? 0;
+      const volume = toNumber(volumeRaw);
 
       // Volume zero
       if (volume === 0) {
@@ -377,7 +383,7 @@ export class VolumeHandler {
           originalValue: item.originalVolume || volume,
           normalizedValue: volume,
           severity: 'LOW',
-          description: `Volume estremamente basso: ${volume}`,
+          description: `Volume estremamente basso: ${volume} (mediana: ${median})`,
         });
       }
     }
@@ -428,20 +434,19 @@ export class VolumeHandler {
    * Interpola volume per un record specifico
    */
   private interpolateVolume(data: VolumeDataItem[], index: number): number {
-    const volumes = data.map(item => item.volumeNormalized || item.volume || 0);
-
+    const volumes = data.map(item =>
+      toNumber(item.volumeNormalized ?? item.volume ?? 0)
+    );
     switch (this.config.interpolationMethod) {
       case 'LINEAR': {
         return this.linearInterpolation(volumes, index);
       }
-
       case 'MEDIAN': {
         const nonZeroVolumes = volumes.filter(v => v > 0);
         return nonZeroVolumes.length > 0
           ? this.calculateMedian(nonZeroVolumes)
           : 0;
       }
-
       case 'AVERAGE': {
         const nonZeroVolumesAvg = volumes.filter(v => v > 0);
         return nonZeroVolumesAvg.length > 0
@@ -449,7 +454,6 @@ export class VolumeHandler {
               nonZeroVolumesAvg.length
           : 0;
       }
-
       default:
         return 0;
     }
@@ -509,27 +513,23 @@ export class VolumeHandler {
         volumeRange: { min: 0, max: 0 },
       };
     }
-
-    const volumes = data.map(item => item.volumeNormalized || item.volume || 0);
+    const volumes = data.map(item =>
+      toNumber(item.volumeNormalized ?? item.volume ?? 0)
+    );
     const validVolumes = volumes.filter(v => v >= 0);
-
-    const average =
-      validVolumes.length > 0
-        ? validVolumes.reduce((sum, v) => sum + v, 0) / validVolumes.length
-        : 0;
-
-    const median =
-      validVolumes.length > 0 ? this.calculateMedian(validVolumes) : 0;
-
-    const min = validVolumes.length > 0 ? Math.min(...validVolumes) : 0;
-    const max = validVolumes.length > 0 ? Math.max(...validVolumes) : 0;
-
     return {
       recordsProcessed: data.length,
       recordsNormalized: validVolumes.length,
-      averageVolume: Math.round(average),
-      medianVolume: Math.round(median),
-      volumeRange: { min, max },
+      averageVolume:
+        validVolumes.length > 0
+          ? validVolumes.reduce((sum, v) => sum + v, 0) / validVolumes.length
+          : 0,
+      medianVolume:
+        validVolumes.length > 0 ? this.calculateMedian(validVolumes) : 0,
+      volumeRange: {
+        min: validVolumes.length > 0 ? Math.min(...validVolumes) : 0,
+        max: validVolumes.length > 0 ? Math.max(...validVolumes) : 0,
+      },
     };
   }
 
@@ -616,4 +616,11 @@ export class VolumeHandler {
       };
     }
   }
+}
+
+// Utility function to ensure a value is a number
+function toNumber(val: string | number | undefined | null): number {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') return parseFloat(val) || 0;
+  return 0;
 }
