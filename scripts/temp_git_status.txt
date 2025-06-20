@@ -1,5 +1,8 @@
 M  backend/src/routes/analysisRoutes.ts
 A  backend/src/routes/analysisRoutes_fixed.ts
+M  backend/src/routes/apiRoutes.ts
+M  scripts/README.md
 M  scripts/backup-cursor-chat.bat
 M  scripts/start-cursor-and-auto-commit.bat
-MM temp_git_status.txt
+AM scripts/temp_git_status.txt
+M  temp_git_status.txt

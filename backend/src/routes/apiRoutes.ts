@@ -180,7 +180,7 @@ router.get(
   tickerValidationMiddleware,
   async (req: Request, res: Response) => {
     try {
-      const { symbol } = req.params;
+      const { symbol: _symbol } = req.params;
 
       // Per ora manteniamo compatibilità con ApiProxyService
       // In futuro si può migrare completamente ad AlphaVantageService
