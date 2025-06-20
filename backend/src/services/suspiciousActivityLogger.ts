@@ -6,6 +6,12 @@
  * nell'accesso alle API protette
  */
 
+export interface SuspiciousEventMetadata {
+  action?: string;
+  reason?: string;
+  [key: string]: unknown;
+}
+
 export interface SuspiciousEvent {
   id: string;
   timestamp: Date;
@@ -16,7 +22,7 @@ export interface SuspiciousEvent {
     userAgent: string;
     endpoint: string;
     description: string;
-    metadata?: any;
+    metadata?: SuspiciousEventMetadata;
   };
   resolved: boolean;
   actionTaken?: string;
@@ -30,6 +36,23 @@ export interface ThreatLevel {
   lastSeen: Date;
   blocked: boolean;
   whitelist: boolean;
+}
+
+export interface SecurityStats {
+  totalEvents: number;
+  last24Hours: number;
+  lastHour: number;
+  criticalEvents24h: number;
+  blockedIPs: string[];
+  whitelistedIPs: string[];
+  activeTreats: number;
+  highThreatIPs: Array<{ ip: string; level: number; lastSeen: Date }>;
+  eventsByType: Record<string, number>;
+  timestamp: string;
+}
+
+export interface EventsByType {
+  [key: string]: number;
 }
 
 /**
@@ -201,20 +224,22 @@ export class SuspiciousActivityLogger {
     const { ip, endpoint } = event.details;
     
     switch (event.type) {
-      case 'rate_limit_abuse':
+      case 'rate_limit_abuse': {
         // Blocco temporaneo per rate limit abuse
         setTimeout(() => {
           this.blockIP(ip, 'Rate limit abuse detected');
         }, 1000);
         break;
+      }
         
-      case 'repeated_failures':
+      case 'repeated_failures': {
         // Incrementa threat level per fallimenti ripetuti
         const threat = this.threatLevels.get(ip);
         if (threat && threat.level > 60) {
           this.blockIP(ip, 'Repeated API failures indicate malicious activity');
         }
         break;
+      }
         
       case 'invalid_api_key':
         // Log per tentativi di API key non valide
@@ -266,7 +291,7 @@ export class SuspiciousActivityLogger {
   /**
    * Ottieni statistiche di sicurezza
    */
-  getSecurityStats(): any {
+  getSecurityStats(): SecurityStats {
     const now = Date.now();
     const last24h = now - (24 * 60 * 60 * 1000);
     const last1h = now - (60 * 60 * 1000);
@@ -294,8 +319,8 @@ export class SuspiciousActivityLogger {
   /**
    * Raggruppa eventi per tipo
    */
-  private getEventsByType(events: SuspiciousEvent[]): any {
-    const byType: { [key: string]: number } = {};
+  private getEventsByType(events: SuspiciousEvent[]): EventsByType {
+    const byType: EventsByType = {};
     
     events.forEach(event => {
       byType[event.type] = (byType[event.type] || 0) + 1;

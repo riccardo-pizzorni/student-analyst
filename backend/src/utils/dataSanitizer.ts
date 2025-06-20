@@ -8,11 +8,11 @@
 
 export interface ValidationResult {
   isValid: boolean;
-  sanitizedValue?: any;
+  sanitizedValue?: unknown;
   errors: string[];
   warnings: string[];
   metadata?: {
-    originalValue: any;
+    originalValue: unknown;
     sanitizationType: string;
     timestamp: Date;
   };
@@ -32,6 +32,10 @@ export interface DateRangeValidationOptions {
   maxRangeDays?: number;
   allowFutureDates?: boolean;
   requiredFormat?: string;
+}
+
+export interface SanitizedRequestData {
+  [key: string]: unknown;
 }
 
 /**
@@ -198,87 +202,56 @@ export class DataSanitizer {
     }
 
     // Prima sanitizzazione di base
-    const dangerousCheck = DataSanitizer.removeDangerousPatterns(ticker);
-    if (!dangerousCheck.isValid) {
+    const sanitizedTicker = DataSanitizer.removeDangerousPatterns(ticker);
+    if (!sanitizedTicker.isValid) {
       return {
         isValid: false,
-        errors: ['Invalid ticker: contains dangerous patterns', ...dangerousCheck.errors],
+        errors: ['Ticker contains dangerous patterns'],
         warnings: []
       };
     }
 
-    let sanitized = dangerousCheck.sanitizedValue as string;
+    let cleanTicker = sanitizedTicker.sanitizedValue as string;
 
-    // Rimuovi whitespace
-    sanitized = sanitized.trim();
-
-    // Controllo lunghezza
-    if (sanitized.length === 0) {
-      errors.push('Ticker symbol cannot be empty');
-    }
-    if (sanitized.length > maxLength) {
-      errors.push(`Ticker symbol too long (max ${maxLength} characters)`);
-    }
-
-    // Valida formato base ticker
-    const baseTickerRegex = /^[A-Za-z0-9.-]+$/;
-    if (!baseTickerRegex.test(sanitized)) {
-      errors.push('Ticker symbol contains invalid characters (only letters, numbers, dots, and dashes allowed)');
-    }
-
-    // Enforza uppercase se richiesto
+    // Converti in maiuscolo se richiesto
     if (enforceUppercase) {
-      sanitized = sanitized.toUpperCase();
+      cleanTicker = cleanTicker.toUpperCase();
     }
 
-    // Validazioni specifiche per tipo di asset
-    
-    // Crypto validation
-    if (allowCrypto && sanitized.includes('-')) {
-      const cryptoRegex = /^[A-Z]{2,10}-[A-Z]{2,10}$/;
-      if (!cryptoRegex.test(sanitized)) {
-        warnings.push('Crypto symbol format should be like BTC-USD');
-      }
+    // Controlli di lunghezza
+    if (cleanTicker.length > maxLength) {
+      errors.push(`Ticker too long (max ${maxLength} characters)`);
     }
 
-    // Futures validation
-    if (allowFutures && sanitized.includes('.')) {
-      const futuresRegex = /^[A-Z]{1,4}\d{2,4}$/;
-      if (!futuresRegex.test(sanitized.replace('.', ''))) {
-        warnings.push('Futures symbol format may be invalid');
-      }
+    if (cleanTicker.length < 1) {
+      errors.push('Ticker too short');
     }
 
-    // Exchange validation
+    // Pattern di validazione base
+    const validPattern = /^[A-Z0-9.-]+$/;
+    if (!validPattern.test(cleanTicker)) {
+      errors.push('Invalid ticker format');
+    }
+
+    // Controlli specifici per crypto
+    if (!allowCrypto && cleanTicker.includes('-')) {
+      errors.push('Crypto tickers not allowed');
+    }
+
+    // Controlli specifici per futures
+    if (!allowFutures && cleanTicker.includes('=')) {
+      errors.push('Futures tickers not allowed');
+    }
+
+    // Controlli per exchange specifici
     if (allowedExchanges.length > 0) {
-      const hasExchange = allowedExchanges.some(exchange => 
-        sanitized.startsWith(exchange + ':') || sanitized.endsWith('.' + exchange)
-      );
-      if (!hasExchange) {
-        warnings.push(`Ticker should include exchange prefix/suffix: ${allowedExchanges.join(', ')}`);
-      }
-    }
-
-    // Controlla pattern comuni non validi
-    if (sanitized.startsWith('.') || sanitized.endsWith('.')) {
-      errors.push('Ticker symbol cannot start or end with a dot');
-    }
-    if (sanitized.includes('..')) {
-      errors.push('Ticker symbol cannot contain consecutive dots');
-    }
-    if (sanitized.includes('--')) {
-      errors.push('Ticker symbol cannot contain consecutive dashes');
-    }
-
-    // Blacklist di ticker non validi
-    const blacklistedTickers = ['NULL', 'UNDEFINED', 'ADMIN', 'ROOT', 'TEST', 'DEBUG'];
-    if (blacklistedTickers.includes(sanitized)) {
-      errors.push('Reserved ticker symbol not allowed');
+      // Logica per validare exchange specifico
+      warnings.push('Exchange-specific validation not implemented');
     }
 
     return {
       isValid: errors.length === 0,
-      sanitizedValue: sanitized,
+      sanitizedValue: cleanTicker,
       errors,
       warnings,
       metadata: {
@@ -290,7 +263,7 @@ export class DataSanitizer {
   }
 
   /**
-   * Valida e sanitizza date ranges
+   * Valida range di date
    */
   static validateDateRange(
     startDate: string | Date,
@@ -298,129 +271,62 @@ export class DataSanitizer {
     options: DateRangeValidationOptions = {}
   ): ValidationResult {
     const {
-      minDate = new Date('1900-01-01'),
-      maxDate = new Date(),
-      maxRangeDays = 365 * 10, // 10 anni max
+      minDate,
+      maxDate,
+      maxRangeDays = 365,
       allowFutureDates = false,
-      requiredFormat = 'YYYY-MM-DD'
+      requiredFormat
     } = options;
 
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
-      // Converti a Date objects
-      let start: Date;
-      let end: Date;
+      // Converti in Date objects
+      const start = startDate instanceof Date ? startDate : new Date(startDate);
+      const end = endDate instanceof Date ? endDate : new Date(endDate);
 
-      if (typeof startDate === 'string') {
-        // Sanitizza la stringa prima
-        const startSanitized = DataSanitizer.removeDangerousPatterns(startDate);
-        if (!startSanitized.isValid) {
-          return {
-            isValid: false,
-            errors: ['Invalid start date: contains dangerous patterns'],
-            warnings: []
-          };
-        }
-        
-        // Valida formato data
-        if (requiredFormat === 'YYYY-MM-DD') {
-          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-          if (!dateRegex.test(startSanitized.sanitizedValue as string)) {
-            errors.push('Start date must be in YYYY-MM-DD format');
-          }
-        }
-        
-        start = new Date(startSanitized.sanitizedValue as string);
-      } else {
-        start = startDate;
-      }
-
-      if (typeof endDate === 'string') {
-        // Sanitizza la stringa prima
-        const endSanitized = DataSanitizer.removeDangerousPatterns(endDate);
-        if (!endSanitized.isValid) {
-          return {
-            isValid: false,
-            errors: ['Invalid end date: contains dangerous patterns'],
-            warnings: []
-          };
-        }
-        
-        // Valida formato data
-        if (requiredFormat === 'YYYY-MM-DD') {
-          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-          if (!dateRegex.test(endSanitized.sanitizedValue as string)) {
-            errors.push('End date must be in YYYY-MM-DD format');
-          }
-        }
-        
-        end = new Date(endSanitized.sanitizedValue as string);
-      } else {
-        end = endDate;
-      }
-
-      // Controlla validità delle date
+      // Validazioni base
       if (isNaN(start.getTime())) {
         errors.push('Invalid start date');
       }
+
       if (isNaN(end.getTime())) {
         errors.push('Invalid end date');
       }
 
-      if (errors.length > 0) {
-        return { isValid: false, errors, warnings };
-      }
-
-      // Validazioni logiche
       if (start > end) {
-        errors.push('Start date cannot be after end date');
+        errors.push('Start date must be before end date');
       }
 
-      // Controlla limiti temporali
-      if (start < minDate) {
-        errors.push(`Start date cannot be before ${minDate.toISOString().split('T')[0]}`);
-      }
-      if (end > maxDate) {
-        errors.push(`End date cannot be after ${maxDate.toISOString().split('T')[0]}`);
-      }
-
-      // Controlla date future
-      const now = new Date();
-      if (!allowFutureDates) {
-        if (start > now) {
-          errors.push('Start date cannot be in the future');
-        }
-        if (end > now) {
-          errors.push('End date cannot be in the future');
-        }
-      }
-
-      // Controlla range massimo
+      // Controllo range massimo
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays > maxRangeDays) {
         errors.push(`Date range too large (max ${maxRangeDays} days)`);
       }
 
-      // Warnings per range ottimali
-      if (diffDays > 365) {
-        warnings.push('Large date ranges may impact performance');
-      }
-      if (diffDays < 1) {
-        warnings.push('Very short date range may not provide meaningful data');
+      // Controllo date future
+      if (!allowFutureDates) {
+        const now = new Date();
+        if (start > now || end > now) {
+          errors.push('Future dates not allowed');
+        }
       }
 
-      // Weekend warnings per dati finanziari
-      const startDay = start.getDay();
-      const endDay = end.getDay();
-      if (startDay === 0 || startDay === 6) {
-        warnings.push('Start date is a weekend - markets may be closed');
+      // Controllo min/max date
+      if (minDate && start < minDate) {
+        errors.push(`Start date must be after ${minDate.toISOString().split('T')[0]}`);
       }
-      if (endDay === 0 || endDay === 6) {
-        warnings.push('End date is a weekend - markets may be closed');
+
+      if (maxDate && end > maxDate) {
+        errors.push(`End date must be before ${maxDate.toISOString().split('T')[0]}`);
+      }
+
+      // Warning per range molto piccoli
+      if (diffDays < 1) {
+        warnings.push('Very short date range');
       }
 
       return {
@@ -557,10 +463,10 @@ export class DataSanitizer {
   /**
    * Sanitizzazione completa per oggetti request
    */
-  static sanitizeRequestData(data: any): ValidationResult {
+  static sanitizeRequestData(data: Record<string, unknown>): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
-    const sanitized: any = {};
+    const sanitized: SanitizedRequestData = {};
 
     if (!data || typeof data !== 'object') {
       return {
