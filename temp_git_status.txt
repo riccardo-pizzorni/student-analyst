@@ -1,2 +1,1 @@
- M scripts/auto-commit-with-logging.bat
  M temp_git_status.txt
