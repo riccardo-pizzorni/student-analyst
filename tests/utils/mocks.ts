@@ -17,9 +17,9 @@ interface IMockIDBTransaction {
   objectStore: jest.Mock;
   commit: jest.Mock;
   abort: jest.Mock;
-  oncomplete: ((this: IDBTransaction, ev: Event) => any) | null;
-  onerror: ((this: IDBTransaction, ev: Event) => any) | null;
-  onabort: ((this: IDBTransaction, ev: Event) => any) | null;
+  oncomplete: ((this: IDBTransaction, ev: Event) => unknown) | null;
+  onerror: ((this: IDBTransaction, ev: Event) => unknown) | null;
+  onabort: ((this: IDBTransaction, ev: Event) => unknown) | null;
 }
 
 interface IMockIDBDatabase {
@@ -30,9 +30,9 @@ interface IMockIDBDatabase {
   objectStoreNames: DOMStringList;
   name: string;
   version: number;
-  onclose: ((this: IDBDatabase, ev: Event) => any) | null;
-  onerror: ((this: IDBDatabase, ev: Event) => any) | null;
-  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => any) | null;
+  onclose: ((this: IDBDatabase, ev: Event) => unknown) | null;
+  onerror: ((this: IDBDatabase, ev: Event) => unknown) | null;
+  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => unknown) | null;
 }
 
 interface IMockIDBOpenDBRequest extends IDBRequest<IDBDatabase> {
@@ -482,12 +482,13 @@ export const cleanupGlobalMocks = () => {
   
   // Rimuovi tutti i mock dal window object
   Object.keys(mockWindow).forEach(key => {
-    delete (window as any)[key];
+    delete (window as { [key: string]: unknown })[key];
   });
 };
 
 // Esporta tutti i mock
 export {
-    mockIDBDatabase, mockIDBObjectStore, mockIDBTransaction, mockIndexedDB, mockLocalStorage,
-    mockSessionStorage, mockTextDecoder, mockTextEncoder, mockWindow
+  mockIDBDatabase, mockIDBObjectStore, mockIDBTransaction, mockIndexedDB, mockLocalStorage,
+  mockSessionStorage, mockTextDecoder, mockTextEncoder, mockWindow
 };
+
