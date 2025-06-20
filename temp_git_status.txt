@@ -1,2 +1,2 @@
+ M eslint.config.js
  M temp_git_status.txt
- M vite.config.ts
