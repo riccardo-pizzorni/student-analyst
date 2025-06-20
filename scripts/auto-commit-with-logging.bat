@@ -48,9 +48,11 @@ if %errorlevel% equ 0 (
 echo.
 echo Attendo 120 secondi prima del prossimo controllo...
 for /l %%i in (120,-1,1) do (
-    echo Countdown: %%i secondi rimanenti
+    <nul set /p "=Countdown: %%i secondi rimanenti...  \r"
     timeout /t 1 /nobreak >nul
 )
+echo.
+echo Countdown completato. Procedo con il controllo...
 
 goto loop
 
