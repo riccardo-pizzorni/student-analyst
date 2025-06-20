@@ -41,6 +41,7 @@ router.post('/', async (req: Request, res: Response) => {
       error: 'Si è verificato un errore interno durante l_analisi.',
       details: errorMessage,
     });
+    return;
   }
 });
 

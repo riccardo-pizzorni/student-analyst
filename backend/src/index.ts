@@ -10,9 +10,8 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { sanitizationMiddleware } from './middleware/sanitizationMiddleware';
 import analysisRoutes from './routes/analysisRoutes';
-import { router as apiRoutes } from './routes/apiRoutes';
+import { apiRoutes } from './routes/apiRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,19 +21,6 @@ app.use(cors()); // Abilita CORS per le richieste dal frontend
 app.use(helmet()); // Aggiunge header di sicurezza
 app.use(morgan('dev'));
 app.use(express.json()); // Per il parsing del body JSON delle richieste
-
-// Usa il middleware di sanitizzazione
-app.use(
-  sanitizationMiddleware({
-    enableBodySanitization: true,
-    enableParamsSanitization: true,
-    enableQuerySanitization: true,
-    logSuspiciousActivity: true,
-    blockOnDangerousPatterns: true,
-    maxRequestSize: 1024 * 1024,
-    trustedIPs: ['127.0.0.1', '::1', 'localhost'],
-  })
-);
 
 // Rotte API
 app.use('/api', apiRoutes);
