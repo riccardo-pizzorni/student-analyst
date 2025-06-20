@@ -147,7 +147,7 @@ router.post('/simulate', async (req: Request, res: Response) => {
     }
 
     // Simula l'errore richiesto
-    const simulatedError = simulateError(errorType, symbol, _timeframe);
+    const simulatedError = simulateError(errorType, symbol, __timeframe);
     const context: ErrorContext = {
       operation: 'error_simulation',
       apiService: 'test_service',

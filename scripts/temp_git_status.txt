@@ -1,1 +1,12 @@
+ M backend/src/routes/batchRoutes.ts
+ M backend/src/routes/errorHandlingRoutes.ts
+ M backend/src/services/alphaVantageService.ts
+ M backend/src/services/batchProcessor.ts
+ M backend/src/services/priceAdjuster.ts
+ M backend/src/utils/testAlphaVantageService.ts
  M scripts/temp_git_status.txt
+ M src/components/AppSidebar.tsx
+ M src/components/MainTabs.tsx
+ M src/components/ProgressBar.tsx
+ M src/components/charts/HistoricalChart.tsx
+ M src/hooks/use-toast.ts

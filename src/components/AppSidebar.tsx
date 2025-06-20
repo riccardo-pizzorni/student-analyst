@@ -13,8 +13,8 @@ import {
   FolderKanban,
   BarChart3,
   Zap,
-  Info,
-  Smile,
+  _Info,
+  _Smile,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -50,7 +50,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item, i) => (
+              {items.map((item, _i) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     isActive={item.active}

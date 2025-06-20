@@ -21,7 +21,7 @@ const TEST_CONFIG = {
   invalidSymbols: ['INVALID123', 'TOOLONG_SYMBOL', '!@#$%', ''],
 
   // Timeframe da testare
-  timeframes: Object.values(AlphaVantage_timeframe),
+  timeframes: Object.values(AlphaVantage__timeframe),
 
   // Configurazione servizio per test
   serviceConfig: {

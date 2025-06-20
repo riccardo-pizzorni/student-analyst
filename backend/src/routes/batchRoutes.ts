@@ -494,7 +494,7 @@ router.post('/multi-timeframe', async (req: Request, res: Response) => {
 
     // Gestisci risultato asincrono
     processingPromise
-      .then(results => {
+      .then(_results => {
         console.log(
           `✅ Multi-timeframe processing ${multiTimeframeId} completed`
         );

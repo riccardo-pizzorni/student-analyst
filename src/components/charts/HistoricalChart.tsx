@@ -105,7 +105,7 @@ const options: ChartOptions<'line'> = {
 
 type LineDataset = ChartDataset<'line', number[]>;
 type BarDataset = ChartDataset<'bar', number[]>;
-type MixedDataset = LineDataset | BarDataset;
+type _MixedDataset = LineDataset | BarDataset;
 
 const HistoricalChart = () => {
   const { analysisState } = useAnalysis();

@@ -205,14 +205,14 @@ export class AlphaVantageService {
     try {
       // Validazione input
       this.validateSymbol(symbol);
-      this.validateTimeframe(_timeframe);
+      this.validateTimeframe(__timeframe);
 
       // Generazione chiave cache
       const cacheKey = this.generateCacheKey(symbol, timeframe, options);
 
       // Controllo cache
       if (options?.useCache !== false && this.config.cacheEnabled) {
-        const cachedData = this.getCachedData(cacheKey, _timeframe);
+        const cachedData = this.getCachedData(cacheKey, __timeframe);
         if (cachedData) {
           return { ...cachedData, cacheHit: true };
         }
@@ -223,12 +223,12 @@ export class AlphaVantageService {
 
       // Caching della risposta
       if (this.config.cacheEnabled) {
-        this.setCachedData(cacheKey, response, _timeframe);
+        this.setCachedData(cacheKey, response, __timeframe);
       }
 
       return response;
     } catch (error) {
-      throw this.handleError(error, symbol, _timeframe);
+      throw this.handleError(error, symbol, __timeframe);
     }
   }
 
@@ -263,11 +263,11 @@ export class AlphaVantageService {
   /**
    * Validazione del timeframe
    */
-  private validateTimeframe(timeframe: AlphaVantage_timeframe): void {
-    if (!Object.values(AlphaVantage_timeframe).includes(_timeframe)) {
+  private validateTimeframe(timeframe: AlphaVantage__timeframe): void {
+    if (!Object.values(AlphaVantage__timeframe).includes(__timeframe)) {
       throw new AlphaVantageError(
         AlphaVantageErrorType.INVALID_TIMEFRAME,
-        `Timeframe "${timeframe}" non supportato. Valori supportati: ${Object.values(AlphaVantage_timeframe).join(', ')}`
+        `Timeframe "${timeframe}" non supportato. Valori supportati: ${Object.values(AlphaVantage__timeframe).join(', ')}`
       );
     }
   }
@@ -378,7 +378,7 @@ export class AlphaVantageService {
   ): AlphaVantageFunction {
     // Sposto dichiarazioni fuori dai case
     let apiFunction: AlphaVantageFunction;
-    switch (_timeframe) {
+    switch (__timeframe) {
       case AlphaVantageTimeframe.INTRADAY_1MIN:
       case AlphaVantageTimeframe.INTRADAY_5MIN:
       case AlphaVantageTimeframe.INTRADAY_15MIN:
@@ -951,7 +951,7 @@ export class AlphaVantageService {
     }
 
     try {
-      this.validateTimeframe(_timeframe);
+      this.validateTimeframe(__timeframe);
     } catch (error) {
       if (error instanceof AlphaVantageError) {
         errors.push(error.message);
