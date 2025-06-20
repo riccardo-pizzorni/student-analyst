@@ -1,2 +1,5 @@
+ M package-lock.json
+ M package.json
  M scripts/temp_git_status.txt
+ M tests/unit/automatic-cleanup-service.test.ts
  M tests/unit/cache-service.test.ts

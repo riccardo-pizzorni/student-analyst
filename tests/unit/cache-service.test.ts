@@ -4,117 +4,80 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { mockDeep } from 'jest-mock-extended';
 
-// Definizione delle interfacce per i mock
-interface MockCacheService {
-  get: jest.Mock;
-  set: jest.Mock;
-  remove?: jest.Mock;
-  delete?: jest.Mock;
-  clear: jest.Mock;
-  has: jest.Mock;
-  keys: jest.Mock;
-  getStats: jest.Mock;
-  getConfig?: jest.Mock;
-  updateConfig?: jest.Mock;
-  size: jest.Mock;
+// Definizione delle interfacce per i servizi
+interface ICacheService {
+  get(key: string): unknown;
+  set(key: string, value: unknown, ttl?: number): boolean;
+  remove?(key: string): boolean;
+  delete?(key: string): boolean;
+  clear(): void;
+  has(key: string): boolean;
+  keys(): string[];
+  getStats(): {
+    hits: number;
+    misses: number;
+    evictions: number;
+    currentEntries: number;
+    memoryUsage?: number;
+    size?: number;
+    totalStorageUsed?: number;
+    hitRate?: number;
+    lastAccess?: number;
+    hitCount?: number;
+    missCount?: number;
+    totalSize?: number;
+    entryCount?: number;
+    averageQueryTime?: number;
+  };
+  getConfig?(): unknown;
+  updateConfig?(config: unknown): void;
+  size(): number;
 }
 
-interface MockAnalyticsEngine {
-  trackCacheHit: jest.Mock;
-  trackCacheMiss: jest.Mock;
-  getMetrics: jest.Mock;
-  reset: jest.Mock;
+interface IAnalyticsEngine {
+  trackCacheHit(key: string, layer: string): void;
+  trackCacheMiss(key: string, layer: string): void;
+  getMetrics(): unknown;
+  reset(): void;
 }
 
-interface MockQualityService {
-  checkDataQuality: jest.Mock;
+interface IQualityService {
+  checkDataQuality(data: unknown): Promise<unknown>;
 }
 
-interface MockStorageMonitoring {
-  getStorageHealth: jest.Mock;
-  initialize: jest.Mock;
-  forceHealthCheck: jest.Mock;
+interface IStorageMonitoring {
+  getStorageHealth(): {
+    localStorage: { available: boolean; quota: number; used: number };
+    sessionStorage: { available: boolean; quota: number; used: number };
+    indexedDB: { available: boolean; quota: number; used: number };
+  };
+  initialize(): Promise<void>;
+  forceHealthCheck(): void;
 }
 
-interface MockAutomaticCleanup {
-  initialize: jest.Mock;
-  getConfig: jest.Mock;
-  updateConfig: jest.Mock;
-  getCleanupHistory: jest.Mock;
-  getCurrentOperations: jest.Mock;
-  forceCleanup: jest.Mock;
-  trackDataAccess: jest.Mock;
-  onProgress: jest.Mock;
-  onCompletion: jest.Mock;
-  shutdown: jest.Mock;
+interface IAutomaticCleanup {
+  initialize(): Promise<void>;
+  getConfig(): unknown;
+  updateConfig(config: unknown): void;
+  getCleanupHistory(): unknown[];
+  getCurrentOperations(): unknown[];
+  forceCleanup(): Promise<boolean>;
+  trackDataAccess(key: string, layer: string): void;
+  onProgress(callback: (progress: unknown) => void): void;
+  onCompletion(callback: (result: unknown) => void): void;
+  shutdown(): void;
 }
 
-// Mock delle dipendenze dei servizi cache
-const mockMemoryCacheL1: MockCacheService = {
-  get: jest.fn(),
-  set: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  has: jest.fn(),
-  keys: jest.fn(),
-  getStats: jest.fn(),
-  getConfig: jest.fn(),
-  updateConfig: jest.fn(),
-  size: jest.fn()
-};
-
-const mockLocalStorageCacheL2: MockCacheService = {
-  get: jest.fn(),
-  set: jest.fn(),
-  delete: jest.fn(),
-  clear: jest.fn(),
-  has: jest.fn(),
-  keys: jest.fn(),
-  getStats: jest.fn(),
-  size: jest.fn()
-};
-
-const mockIndexedDBCacheL3: MockCacheService = {
-  get: jest.fn(),
-  set: jest.fn(),
-  delete: jest.fn(),
-  clear: jest.fn(),
-  has: jest.fn(),
-  keys: jest.fn(),
-  getStats: jest.fn(),
-  size: jest.fn()
-};
-
-const mockCacheAnalyticsEngine: MockAnalyticsEngine = {
-  trackCacheHit: jest.fn(),
-  trackCacheMiss: jest.fn(),
-  getMetrics: jest.fn(),
-  reset: jest.fn()
-};
-
-const mockCacheQualityService: MockQualityService = {
-  checkDataQuality: jest.fn()
-};
-
-const mockStorageMonitoring: MockStorageMonitoring = {
-  getStorageHealth: jest.fn(),
-  initialize: jest.fn(),
-  forceHealthCheck: jest.fn()
-};
-
-const mockAutomaticCleanup: MockAutomaticCleanup = {
-  initialize: jest.fn(),
-  getConfig: jest.fn(),
-  updateConfig: jest.fn(),
-  getCleanupHistory: jest.fn(),
-  getCurrentOperations: jest.fn(),
-  forceCleanup: jest.fn(),
-  trackDataAccess: jest.fn(),
-  onProgress: jest.fn(),
-  onCompletion: jest.fn(),
-  shutdown: jest.fn()
-};
+// Mock delle dipendenze dei servizi cache usando jest-mock-extended
+const mockMemoryCacheL1 = mockDeep<ICacheService>();
+const mockLocalStorageCacheL2 = mockDeep<ICacheService>();
+const mockIndexedDBCacheL3 = mockDeep<ICacheService>();
+const mockCacheAnalyticsEngine = mockDeep<IAnalyticsEngine>();
+const mockCacheQualityService = mockDeep<IQualityService>();
+const mockStorageMonitoring = mockDeep<IStorageMonitoring>();
+const mockAutomaticCleanup = mockDeep<IAutomaticCleanup>();
 
 // Mock dei moduli
 jest.mock('../../src/services/MemoryCacheL1', () => ({
@@ -146,7 +109,7 @@ jest.mock('../../src/services/AutomaticCleanupService', () => ({
 }));
 
 // Mock di performance.now()
-const mockPerformanceNow = jest.fn();
+const mockPerformanceNow = jest.fn<number, []>();
 Object.defineProperty(global, 'performance', {
   value: { now: mockPerformanceNow },
   writable: true

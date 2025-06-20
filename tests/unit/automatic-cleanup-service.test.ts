@@ -4,82 +4,49 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { mockDeep } from 'jest-mock-extended';
 
-// Definizione delle interfacce per i mock
-interface MockCacheStats {
-  hits: number;
-  misses: number;
-  evictions: number;
-  currentEntries: number;
-  memoryUsage?: number;
-  size?: number;
-  totalStorageUsed?: number;
-  hitCount?: number;
-  missCount?: number;
-  totalSize?: number;
-  entryCount?: number;
+// Definizione delle interfacce per i servizi cache
+interface ICacheService {
+  clear(): void;
+  getStats(): {
+    hits: number;
+    misses: number;
+    evictions: number;
+    currentEntries: number;
+    memoryUsage?: number;
+    size?: number;
+    totalStorageUsed?: number;
+    hitCount?: number;
+    missCount?: number;
+    totalSize?: number;
+    entryCount?: number;
+  };
+  keys(): string[];
+  get(key: string): unknown;
+  remove?(key: string): boolean;
+  delete?(key: string): boolean;
+  has(key: string): boolean;
+  size(): number;
 }
 
-interface MockCache {
-  clear: jest.Mock;
-  getStats: jest.Mock;
-  keys: jest.Mock;
-  get: jest.Mock;
-  remove: jest.Mock;
-  has: jest.Mock;
-  size: jest.Mock;
-  delete?: jest.Mock;
-  getAllKeys?: jest.Mock;
+interface IStorageService {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+  clear(): void;
 }
 
-interface MockStorage {
-  getItem: jest.Mock;
-  setItem: jest.Mock;
-  removeItem: jest.Mock;
-  clear: jest.Mock;
-}
-
-interface MockStorageEstimate {
+interface IStorageEstimate {
   usage: number;
   quota: number;
 }
 
-// Mock delle dipendenze del servizio
-const mockMemoryCache: MockCache = {
-  clear: jest.fn(),
-  getStats: jest.fn(),
-  keys: jest.fn(),
-  get: jest.fn(),
-  remove: jest.fn(),
-  has: jest.fn(),
-  size: jest.fn()
-};
-
-const mockLocalStorageCache: MockCache = {
-  clear: jest.fn(),
-  getStats: jest.fn(),
-  keys: jest.fn(),
-  get: jest.fn(),
-  delete: jest.fn(),
-  has: jest.fn()
-};
-
-const mockIndexedDBCache: MockCache = {
-  clear: jest.fn(),
-  getStats: jest.fn(),
-  getAllKeys: jest.fn(),
-  get: jest.fn(),
-  delete: jest.fn(),
-  has: jest.fn()
-};
-
-// Mock di localStorage
-const mockLocalStorage: MockStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn()
-};
+// Mock delle dipendenze del servizio usando jest-mock-extended
+const mockMemoryCache = mockDeep<ICacheService>();
+const mockLocalStorageCache = mockDeep<ICacheService>();
+const mockIndexedDBCache = mockDeep<ICacheService>();
+const mockLocalStorage = mockDeep<IStorageService>();
 
 // Mock dei moduli
 jest.mock('../../src/services/interfaces/ICache', () => ({}));
@@ -91,8 +58,8 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 // Setup setTimeout/clearTimeout mocks  
-const mockSetTimeout = jest.fn();
-const mockClearTimeout = jest.fn();
+const mockSetTimeout = jest.fn<number, [() => void, number]>();
+const mockClearTimeout = jest.fn<void, [number]>();
 Object.defineProperty(global, 'setTimeout', {
   value: mockSetTimeout,
   writable: true
@@ -105,7 +72,7 @@ Object.defineProperty(global, 'clearTimeout', {
 // Mock window.confirm
 Object.defineProperty(global, 'window', {
   value: {
-    confirm: jest.fn()
+    confirm: jest.fn<boolean, [string]>()
   },
   writable: true
 });
@@ -114,7 +81,7 @@ Object.defineProperty(global, 'window', {
 Object.defineProperty(global, 'navigator', {
   value: {
     storage: {
-      estimate: jest.fn()
+      estimate: jest.fn<Promise<IStorageEstimate>, []>()
     }
   },
   writable: true
@@ -270,13 +237,13 @@ describe('AutomaticCleanupService', () => {
     it('should schedule for next day if time has passed today', async () => {
       const mockDate = new Date();
       mockDate.setHours(3, 0, 0, 0); // 3:00 AM
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as unknown);
 
       await service.initialize();
       
       expect(mockSetTimeout).toHaveBeenCalled();
       
-      (global.Date as any).mockRestore();
+      (global.Date as unknown).mockRestore();
     });
   });
 
@@ -307,7 +274,7 @@ describe('AutomaticCleanupService', () => {
     });
 
     it('should perform LRU cleanup on L3 cache', async () => {
-      mockIndexedDBCache.getAllKeys.mockResolvedValue(['key1', 'key2', 'key3']);
+      mockIndexedDBCache.getAllKeys?.mockResolvedValue(['key1', 'key2', 'key3']);
       mockIndexedDBCache.getStats.mockResolvedValue({
         hitCount: 200, missCount: 50, entryCount: 100,
         totalSize: 8000
@@ -360,7 +327,7 @@ describe('AutomaticCleanupService', () => {
         description: `Test item ${i}`
       }));
 
-      (global.window.confirm as jest.Mock).mockReturnValue(true);
+      (global.window.confirm as jest.Mock<boolean, [string]>).mockReturnValue(true);
 
       const result = await service.performManualCleanup(largeCleanupItems, true);
       
@@ -379,7 +346,7 @@ describe('AutomaticCleanupService', () => {
         description: `Test item ${i}`
       }));
 
-      (global.window.confirm as jest.Mock).mockReturnValue(false);
+      (global.window.confirm as jest.Mock<boolean, [string]>).mockReturnValue(false);
 
       const result = await service.performManualCleanup(largeCleanupItems, true);
       
