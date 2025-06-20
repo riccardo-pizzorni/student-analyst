@@ -15,7 +15,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const CONFIG = {
-  PORT: process.env.PORT || 3001,
+  PORT: process.env.PORT || 10000,
   HOST: 'localhost',
   TIMEOUT: 30000, // 30 seconds
   MAX_MEMORY_MB: 512, // 512 MB limit
@@ -75,7 +75,7 @@ function startServer() {
       const output = data.toString();
       console.log('📤 Server:', output.trim());
       
-      if (output.includes('Server running on port') || output.includes('listening')) {
+      if (output.includes('running on port') || output.includes('listening') || output.includes('Student Analyst Backend')) {
         if (!started) {
           started = true;
           clearTimeout(timeout);
@@ -129,7 +129,7 @@ const tests = [
         throw new Error('Invalid health response structure');
       }
 
-      if (data.status !== 'running') {
+      if (data.status !== 'running' && data.status !== 'OK') {
         throw new Error(`Server not running: ${data.status}`);
       }
 

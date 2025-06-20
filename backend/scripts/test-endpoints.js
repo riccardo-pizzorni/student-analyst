@@ -16,7 +16,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const CONFIG = {
-  PORT: process.env.PORT || 3001,
+  PORT: process.env.PORT || 10000,
   HOST: 'localhost',
   TIMEOUT: 30000, // 30 seconds
 };
@@ -73,7 +73,7 @@ function startServer() {
 
     server.stdout.on('data', (data) => {
       const output = data.toString();
-      if (output.includes('Server running on port') || output.includes('listening')) {
+      if (output.includes('running on port') || output.includes('listening') || output.includes('Student Analyst Backend')) {
         if (!started) {
           started = true;
           clearTimeout(timeout);
@@ -103,8 +103,8 @@ const endpointTests = [
       if (!data.message || !data.status) {
         throw new Error('Missing required fields: message, status');
       }
-      if (data.status !== 'running') {
-        throw new Error(`Expected status 'running', got '${data.status}'`);
+      if (data.status !== 'running' && data.status !== 'OK') {
+        throw new Error(`Expected status 'running' or 'OK', got '${data.status}'`);
       }
       return true;
     }

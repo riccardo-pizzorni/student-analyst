@@ -7,7 +7,7 @@ const http = require('http');
 const https = require('https');
 
 // Configurazione
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:10000';
 const ALPHA_VANTAGE_TEST_URL = 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=MSFT&apikey=demo';
 
 // Colori per output console

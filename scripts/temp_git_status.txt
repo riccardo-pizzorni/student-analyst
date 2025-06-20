@@ -1,1 +1,4 @@
+ M backend/scripts/monitoring-test.js
+ M backend/scripts/test-endpoints.js
+ M backend/scripts/test-health.js
  M scripts/temp_git_status.txt
