@@ -1,7 +1,1 @@
- M coverage/index.html
- M coverage/lcov-report/index.html
  M scripts/temp_git_status.txt
- D tests/unit/App.test.tsx
- M vercel.json
-?? docs/PRODUCTION_CONFIG.md
-?? tests/unit/simple-frontend.test.tsx
