@@ -33,12 +33,17 @@ if %errorlevel% equ 0 (
     echo -----------------------------------------------------------------
     echo.
     echo =================================================================
-    echo [3/5] Eseguo 'git commit'... (Output del comando qui sotto)
+    echo [3/5] Eseguo 'git commit' con --no-verify per saltare pre-commit hooks...
     echo -----------------------------------------------------------------
-    git commit -m "Auto-commit: %date% %time%" --no-verify
+    git commit -m "Auto-commit: %date% %time% - Modifiche automatiche" --no-verify
     if %errorlevel% neq 0 (
         echo [ERRORE] Il commit e' fallito. Controlla l'output qui sopra.
         echo [INFO] Potrebbe essere che non ci siano modifiche reali da committare.
+        echo [INFO] Verifico se ci sono conflitti o problemi di configurazione...
+        git status --porcelain | findstr "^UU" >nul
+        if %errorlevel% equ 0 (
+            echo [ERRORE] Trovati conflitti di merge! Risolvi manualmente.
+        )
         goto wait
     )
     echo -----------------------------------------------------------------
@@ -51,10 +56,13 @@ if %errorlevel% equ 0 (
     git push origin master
     if %errorlevel% neq 0 (
         echo [ERRORE] Il push e' fallito. I commit sono solo locali.
+        echo [INFO] Possibili cause: problemi di rete, credenziali, o repository remoto.
         echo [INFO] Riproverò al prossimo ciclo.
     ) else (
         echo -----------------------------------------------------------------
         echo [SUCCESSO] Push completato! Modifiche sincronizzate su GitHub.
+        echo [INFO] Commit hash: 
+        git rev-parse --short HEAD
     )
     echo =================================================================
 ) else (
