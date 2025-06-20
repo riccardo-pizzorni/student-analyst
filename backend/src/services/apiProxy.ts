@@ -394,19 +394,21 @@ export class ApiProxyService {
 
       // Validazione parametri base
       if (!queryParams.function) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Missing Function',
           message: 'Alpha Vantage function parameter is required',
           example: '?function=TIME_SERIES_DAILY&symbol=AAPL',
         });
+        return;
       }
 
       if (!queryParams.symbol) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Missing Symbol',
           message: 'Symbol parameter is required',
           example: '?function=TIME_SERIES_DAILY&symbol=AAPL',
         });
+        return;
       }
 
       // Chiama Alpha Vantage tramite manager sicuro
@@ -423,7 +425,7 @@ export class ApiProxyService {
       });
 
       // Restituisci dati
-      res.json(result.data);
+      res.json((result as any).data);
     } catch (error) {
       const responseTime = Date.now() - startTime;
       const errorMessage =
