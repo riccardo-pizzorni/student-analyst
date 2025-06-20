@@ -1486,9 +1486,9 @@ describe('StorageMonitoringService', () => {
     describe('Configuration Robustness', () => {
       it('should handle various configuration scenarios', () => {
         const configs = [
-          { checkInterval: -1, enableAutoCheck: 'invalid' as any },
-          { checkInterval: Infinity, enableAutoCheck: null as any },
-          { checkInterval: 'string' as any, enableAutoCheck: 123 as any }
+          { checkInterval: -1, enableAutoCheck: 'invalid' as unknown },
+          { checkInterval: Infinity, enableAutoCheck: null as unknown },
+          { checkInterval: 'string' as unknown, enableAutoCheck: 123 as unknown }
         ];
         
         configs.forEach(config => {
@@ -1552,7 +1552,7 @@ describe('StorageMonitoringService', () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
         mockNavigator.storage.estimate.mockRejectedValue(new Error('Storage API failed'));
-        (service as any).quotaCache = null;
+        (service as unknown).quotaCache = null;
         
         service.getStorageQuotas().catch(() => {
           // Expected to fail
@@ -1571,7 +1571,7 @@ describe('StorageMonitoringService', () => {
         mockNavigator.storage.estimate.mockRejectedValue(new Error('Storage quota detection failed'));
         
         // Clear quota cache to force detectStorageQuotas call
-        (service as any).quotaCache = null;
+        (service as unknown).quotaCache = null;
         
         try {
           await service.getStorageQuotas();
@@ -1591,13 +1591,13 @@ describe('StorageMonitoringService', () => {
         
         // Force error to trigger fallback quota assignment
         mockNavigator.storage.estimate.mockRejectedValue(new Error('No storage API'));
-        (service as any).quotaCache = null;
+        (service as unknown).quotaCache = null;
         
         try {
           await service.getStorageQuotas();
           
           // Check if quotaCache was set with fallback values (lines 258-263)
-          const quotaCache = (service as any).quotaCache;
+          const quotaCache = (service as unknown).quotaCache;
           if (quotaCache) {
             expect(quotaCache.localStorage).toBe(1024 * 1024);
             expect(quotaCache.sessionStorage).toBe(1024 * 1024);
@@ -1693,7 +1693,7 @@ describe('StorageMonitoringService', () => {
               onsuccess: null,
               onerror: null,
               result: { close: jest.fn() }
-            } as any);
+            } as unknown);
           }
           
           const health = testService.getStorageHealth();
@@ -1747,12 +1747,12 @@ describe('StorageMonitoringService', () => {
       it('should cover IndexedDB timeout and error paths (lines 433-450)', () => {
         // Test IndexedDB specific error handling
         const requestMock = {
-          onsuccess: null as any,
-          onerror: null as any,
+          onsuccess: null as unknown,
+          onerror: null as unknown,
           result: null
         };
         
-        mockIndexedDB.open.mockReturnValue(requestMock as any);
+        mockIndexedDB.open.mockReturnValue(requestMock as unknown);
         
         // Test that the timeout mechanism works
         const health = service.getStorageHealth();
