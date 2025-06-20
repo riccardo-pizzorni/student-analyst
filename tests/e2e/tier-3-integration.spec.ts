@@ -18,7 +18,7 @@ async function resilientExpect(assertion: () => Promise<void>, retries = 3) {
   }
 }
 
-async function safeEvaluate(page: Page, fn: () => any) {
+async function safeEvaluate(page: Page, fn: () => unknown) {
   try {
     return await page.evaluate(fn);
   } catch (error) {
@@ -181,7 +181,10 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
 
   test('Development tools and debugging features', async ({ page }) => {
     const devCheck = await page.evaluate(() => {
-      const win = window as any;
+      const win = window as { 
+        __REACT_DEVTOOLS_GLOBAL_HOOK__?: unknown;
+        SourceMap?: unknown;
+      };
       return {
         isDevelopment: window.location.port === '5173',
         hasConsole: typeof console !== 'undefined',
@@ -246,7 +249,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       try {
         memoryUsage = await page.evaluate(() => {
           try {
-            return (performance as any).memory?.usedJSHeapSize || 0;
+            return (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0;
           } catch {
             return 0;
           }
@@ -539,7 +542,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
     
     for (let i = 0; i < 5; i++) {
       const beforeMemory = await page.evaluate(() => 
-        (performance as any).memory?.usedJSHeapSize || 0);
+        (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0);
       
       // Simulate some memory-intensive operations
       await page.evaluate(() => {
@@ -551,7 +554,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       });
       
       const afterMemory = await page.evaluate(() => 
-        (performance as any).memory?.usedJSHeapSize || 0);
+        (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0);
       
       memoryTests.push({
         iteration: i + 1,
