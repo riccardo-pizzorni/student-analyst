@@ -1,9 +1,12 @@
-import express from 'express';
-import { performAnalysis } from '../services/analysisService';
+import express, { Request, Response } from 'express';
+import {
+  AnalysisApiResponse,
+  performAnalysis,
+} from '../services/analysisService';
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.post('/', (req: Request, res: Response) => {
   const { tickers, startDate, endDate, frequency } = req.body;
 
   if (
@@ -20,29 +23,15 @@ router.post('/', (req, res) => {
     });
   }
 
-  try {
-    performAnalysis({ tickers, startDate, endDate, frequency })
-      .then((results: any) => res.json(results))
-      .catch((error: any) => {
-        console.error('Errore durante l_esecuzione dell_analisi:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Errore sconosciuto';
-        res.status(500).json({
-          error: 'Si è verificato un errore interno durante l_analisi.',
-          details: errorMessage,
-        });
+  performAnalysis({ tickers, startDate, endDate, frequency })
+    .then((results: AnalysisApiResponse) => res.json(results))
+    .catch((error: Error) => {
+      console.error('Errore durante l_esecuzione dell_analisi:', error);
+      res.status(500).json({
+        error: 'Si è verificato un errore interno durante l_analisi.',
+        details: error.message,
       });
-    return;
-  } catch (_error) {
-    console.error('Errore durante l_esecuzione dell_analisi:', _error);
-    const errorMessage =
-      _error instanceof Error ? _error.message : 'Errore sconosciuto';
-    res.status(500).json({
-      error: 'Si è verificato un errore interno durante l_analisi.',
-      details: errorMessage,
     });
-    return;
-  }
 });
 
 export { router as analysisRoutes };

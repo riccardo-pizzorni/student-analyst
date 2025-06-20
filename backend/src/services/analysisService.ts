@@ -14,10 +14,8 @@ export interface AnalysisApiResponse {
     // ... altre metriche di volatilità
   } | null;
   correlation: {
-    matrix: {
-      symbol: string;
-      values: number[];
-    }[];
-    // ... altre metriche di correlazione
+    correlationMatrix: CorrelationMatrix;
+    diversificationIndex: number;
+    averageCorrelation: number;
   } | null;
 }
