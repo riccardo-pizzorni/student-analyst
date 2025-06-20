@@ -1,76 +1,99 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
+import {
+  AnalysisApiResponse,
+  fetchAnalysisData,
+} from '../services/analysisAPI';
 
-// 1. Definire i tipi per lo stato e le azioni
-interface AnalysisState {
+// Definizione dei tipi
+interface AnalysisInputState {
   tickers: string[];
-  startDate: Date | undefined;
-  endDate: Date | undefined;
+  startDate: string;
+  endDate: string;
   frequency: 'daily' | 'weekly' | 'monthly';
+  csvFile?: File;
 }
 
+// Espandiamo lo stato per includere i risultati, lo stato di caricamento e gli errori
+interface AnalysisState extends AnalysisInputState {
+  analysisResults: AnalysisApiResponse | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// Valori iniziali dello stato
+const initialState: AnalysisState = {
+  tickers: ['AAPL', 'MSFT', 'GOOGL'],
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: new Date(new Date().setMonth(new Date().getMonth() + 1))
+    .toISOString()
+    .split('T')[0],
+  frequency: 'daily',
+  csvFile: undefined,
+  analysisResults: null,
+  isLoading: false,
+  error: null,
+};
+
+// Tipo per il valore del contesto
 interface AnalysisContextType {
   analysisState: AnalysisState;
-  setTickers: (tickers: string[]) => void;
-  setStartDate: (date: Date | undefined) => void;
-  setEndDate: (date: Date | undefined) => void;
-  setFrequency: (frequency: 'daily' | 'weekly' | 'monthly') => void;
-  startAnalysis: () => void;
+  setAnalysisState: React.Dispatch<React.SetStateAction<AnalysisState>>;
+  startAnalysis: () => void; // La funzione verrà resa più complessa
 }
 
-// 2. Creare il Contesto
+// Creazione del contesto
 const AnalysisContext = createContext<AnalysisContextType | undefined>(
   undefined
 );
 
-// 3. Creare il Provider del Contesto
+// Provider del contesto
 export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
-  const [analysisState, setAnalysisState] = useState<AnalysisState>({
-    tickers: ['AAPL', 'MSFT', 'GOOGL'],
-    startDate: new Date('2024-05-30'),
-    endDate: undefined,
-    frequency: 'daily',
-  });
+  const [analysisState, setAnalysisState] =
+    useState<AnalysisState>(initialState);
 
-  const setTickers = (tickers: string[]) => {
-    setAnalysisState(prev => ({ ...prev, tickers }));
-  };
+  const startAnalysis = async () => {
+    setAnalysisState(prevState => ({
+      ...prevState,
+      isLoading: true,
+      error: null,
+      analysisResults: null, // Pulisce i risultati precedenti
+    }));
 
-  const setStartDate = (date: Date | undefined) => {
-    setAnalysisState(prev => ({ ...prev, startDate: date }));
-  };
+    try {
+      const { tickers, startDate, endDate, frequency } = analysisState;
+      const results = await fetchAnalysisData({
+        tickers,
+        startDate,
+        endDate,
+        frequency,
+      });
 
-  const setEndDate = (date: Date | undefined) => {
-    setAnalysisState(prev => ({ ...prev, endDate: date }));
-  };
-
-  const setFrequency = (frequency: 'daily' | 'weekly' | 'monthly') => {
-    setAnalysisState(prev => ({ ...prev, frequency }));
-  };
-
-  const startAnalysis = () => {
-    console.log('🚀 Starting Analysis with the following state:');
-    console.log(JSON.stringify(analysisState, null, 2));
-    // Qui andrà la logica per chiamare il backend
-    alert('Analisi avviata! Controlla la console per i dettagli.');
-  };
-
-  const value = {
-    analysisState,
-    setTickers,
-    setStartDate,
-    setEndDate,
-    setFrequency,
-    startAnalysis,
+      setAnalysisState(prevState => ({
+        ...prevState,
+        analysisResults: results,
+        isLoading: false,
+      }));
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Si è verificato un errore';
+      setAnalysisState(prevState => ({
+        ...prevState,
+        isLoading: false,
+        error: errorMessage,
+      }));
+    }
   };
 
   return (
-    <AnalysisContext.Provider value={value}>
+    <AnalysisContext.Provider
+      value={{ analysisState, setAnalysisState, startAnalysis }}
+    >
       {children}
     </AnalysisContext.Provider>
   );
 };
 
-// 4. Creare un Hook per usare il Contesto facilmente
+// Hook per usare il contesto
 export const useAnalysis = () => {
   const context = useContext(AnalysisContext);
   if (context === undefined) {

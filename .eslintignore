@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+coverage
+.vscode
+.husky/_
+
+# File di configurazione
+vite.config.ts.timestamp-*.mjs 

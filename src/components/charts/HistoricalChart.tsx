@@ -1,7 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useHistoricalData } from '@/hooks/useHistoricalData';
-import { useTechnicalIndicators } from '@/hooks/useTechnicalIndicators';
+import { useAnalysis } from '@/context/AnalysisContext';
 import {
   BarElement,
   CategoryScale,
@@ -108,102 +107,20 @@ type LineDataset = ChartDataset<'line', number[]>;
 type BarDataset = ChartDataset<'bar', number[]>;
 type MixedDataset = LineDataset | BarDataset;
 
-export default function HistoricalChart() {
-  const { data, loading, error, refresh } = useHistoricalData();
-  const indicators = useTechnicalIndicators(data);
+const HistoricalChart = () => {
+  const { analysisState } = useAnalysis();
+  const { isLoading, error, analysisResults } = analysisState;
+
+  const chartData = {
+    labels: analysisResults?.historicalData?.labels || [],
+    datasets: analysisResults?.historicalData?.datasets || [],
+  };
 
   const [showSMA20, setShowSMA20] = useState(true);
   const [showSMA50, setShowSMA50] = useState(true);
   const [showSMA200, setShowSMA200] = useState(true);
   const [showRSI, setShowRSI] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
-
-  const datasets: MixedDataset[] = [
-    {
-      type: 'line' as const,
-      label: 'Prezzo',
-      data: data.map(point => point.price),
-      borderColor: 'rgb(59, 130, 246)',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: true,
-      tension: 0.4,
-      yAxisID: 'y',
-    },
-    ...(showSMA20
-      ? [
-          {
-            type: 'line' as const,
-            label: 'SMA 20',
-            data: indicators.sma20,
-            borderColor: 'rgb(234, 179, 8)',
-            borderWidth: 1,
-            pointRadius: 0,
-            tension: 0.4,
-            yAxisID: 'y',
-          },
-        ]
-      : []),
-    ...(showSMA50
-      ? [
-          {
-            type: 'line' as const,
-            label: 'SMA 50',
-            data: indicators.sma50,
-            borderColor: 'rgb(249, 115, 22)',
-            borderWidth: 1,
-            pointRadius: 0,
-            tension: 0.4,
-            yAxisID: 'y',
-          },
-        ]
-      : []),
-    ...(showSMA200
-      ? [
-          {
-            type: 'line' as const,
-            label: 'SMA 200',
-            data: indicators.sma200,
-            borderColor: 'rgb(239, 68, 68)',
-            borderWidth: 1,
-            pointRadius: 0,
-            tension: 0.4,
-            yAxisID: 'y',
-          },
-        ]
-      : []),
-    ...(showRSI
-      ? [
-          {
-            type: 'line' as const,
-            label: 'RSI',
-            data: indicators.rsi,
-            borderColor: 'rgb(168, 85, 247)',
-            borderWidth: 1,
-            pointRadius: 0,
-            tension: 0.4,
-            yAxisID: 'y1',
-          },
-        ]
-      : []),
-    ...(showVolume
-      ? [
-          {
-            type: 'bar' as const,
-            label: 'Volume',
-            data: indicators.volumes,
-            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-            borderColor: 'rgba(59, 130, 246, 0.5)',
-            borderWidth: 1,
-            yAxisID: 'y1',
-          },
-        ]
-      : []),
-  ];
-
-  const chartData = {
-    labels: data.map(point => point.date),
-    datasets,
-  };
 
   return (
     <div className="dark-card rounded-xl p-8">
@@ -226,10 +143,7 @@ export default function HistoricalChart() {
           Andamento Storico
         </h3>
         <div className="flex gap-2">
-          <button
-            onClick={refresh}
-            className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
-          >
+          <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -319,11 +233,11 @@ export default function HistoricalChart() {
       </div>
 
       <div className="w-full h-96">
-        {loading ? (
+        {isLoading ? (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-              <p className="text-blue-300">Caricamento dati...</p>
+              <p className="text-blue-300">Caricamento dati in corso...</p>
             </div>
           </div>
         ) : error ? (
@@ -348,10 +262,39 @@ export default function HistoricalChart() {
               <p className="text-red-300">{error}</p>
             </div>
           </div>
+        ) : !analysisResults ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-blue-400 mx-auto"
+              >
+                <path d="M3 3v18h18" />
+                <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
+              </svg>
+              <h4 className="text-xl font-bold text-slate-200">
+                Nessuna Analisi Eseguita
+              </h4>
+              <p className="text-slate-400">
+                Vai alla sezione 'Input & Validazione' per avviare una nuova
+                analisi.
+              </p>
+            </div>
+          </div>
         ) : (
           <Line data={chartData} options={options} />
         )}
       </div>
     </div>
   );
-}
+};
+
+export default HistoricalChart;
