@@ -1,1 +1,5 @@
  M scripts/temp_git_status.txt
+?? backend/BACKEND_STARTUP_SOLUTION.md
+?? backend/start-backend.bat
+?? backend/test-backend-complete.js
+?? backend/test-backend.bat
