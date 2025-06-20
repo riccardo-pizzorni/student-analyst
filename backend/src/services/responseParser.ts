@@ -557,7 +557,7 @@ export class ResponseParser {
           ? rawData.dataset.column_names
           : ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'];
 
-      for (let i = 0; i < data.length; i++) {
+      for (let i = 0; Array.isArray(data) && i < data.length; i++) {
         const row = data[i];
 
         if (Array.isArray(row) && row.length >= 5) {
@@ -580,7 +580,7 @@ export class ResponseParser {
         warnings: [],
         stats: {
           recordsParsed: result.length,
-          recordsSkipped: data.length - result.length,
+          recordsSkipped: Array.isArray(data) ? data.length - result.length : 0,
           parsingTimeMs: 0,
         },
       };
@@ -657,7 +657,7 @@ export class ResponseParser {
     return {
       success: false,
       data: [],
-      errors: [{ type, message }],
+      errors: [{ type, message, originalValue: null }],
       warnings: [],
       stats: {
         recordsParsed: 0,
