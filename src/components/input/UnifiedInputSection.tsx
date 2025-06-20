@@ -1,14 +1,3 @@
-import React, { useState } from 'react';
-import {
-  Plus,
-  X,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  Search,
-  Calendar,
-  Upload,
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
@@ -16,12 +5,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { useAnalysis } from '@/context/AnalysisContext';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { AlertTriangle, Calendar, CheckCircle, Upload, X } from 'lucide-react';
+import { useState } from 'react';
 
 export default function UnifiedInputSection() {
+  const {
+    analysisState,
+    setTickers: setGlobalTickers,
+    setStartDate,
+    setEndDate,
+    setFrequency,
+    startAnalysis,
+  } = useAnalysis();
+
   const [tickerInput, setTickerInput] = useState('');
-  const [tickers, setTickers] = useState<
+  const [validatedTickers, setValidatedTickers] = useState<
     Array<{
       symbol: string;
       name: string;
@@ -29,33 +30,15 @@ export default function UnifiedInputSection() {
       price?: number;
       change?: number;
     }>
-  >([
-    {
-      symbol: 'AAPL',
-      name: 'Apple Inc.',
+  >(
+    analysisState.tickers.map(t => ({
+      symbol: t,
+      name: `${t} Name`,
       status: 'valid',
-      price: 182.52,
-      change: 2.3,
-    },
-    {
-      symbol: 'MSFT',
-      name: 'Microsoft Corporation',
-      status: 'valid',
-      price: 378.85,
-      change: -0.8,
-    },
-    {
-      symbol: 'GOOGL',
-      name: 'Alphabet Inc.',
-      status: 'valid',
-      price: 2847.35,
-      change: 1.2,
-    },
-  ]);
-
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
-  const [frequency, setFrequency] = useState('daily');
+      price: 150,
+      change: 2.5,
+    }))
+  );
 
   const addTicker = () => {
     if (!tickerInput.trim()) return;
@@ -64,10 +47,15 @@ export default function UnifiedInputSection() {
       .toUpperCase()
       .split(/[,\s]+/)
       .filter(s => s);
+    const newSymbols = symbols.filter(
+      s => !validatedTickers.find(t => t.symbol === s)
+    );
 
-    symbols.forEach(symbol => {
-      if (!tickers.find(t => t.symbol === symbol)) {
-        setTickers(prev => [
+    if (newSymbols.length > 0) {
+      setGlobalTickers([...analysisState.tickers, ...newSymbols]);
+
+      newSymbols.forEach(symbol => {
+        setValidatedTickers(prev => [
           ...prev,
           {
             symbol,
@@ -77,7 +65,7 @@ export default function UnifiedInputSection() {
         ]);
 
         setTimeout(() => {
-          setTickers(prev =>
+          setValidatedTickers(prev =>
             prev.map(t =>
               t.symbol === symbol
                 ? {
@@ -91,19 +79,25 @@ export default function UnifiedInputSection() {
             )
           );
         }, 1500);
-      }
-    });
+      });
+    }
 
     setTickerInput('');
   };
 
-  const removeTicker = (symbol: string) => {
-    setTickers(prev => prev.filter(t => t.symbol !== symbol));
+  const removeTicker = (symbolToRemove: string) => {
+    setGlobalTickers(analysisState.tickers.filter(t => t !== symbolToRemove));
+    setValidatedTickers(prev => prev.filter(t => t.symbol !== symbolToRemove));
   };
 
   const handleFileUpload = () => {
     console.log('File upload triggered');
   };
+
+  const isAnalysisDisabled =
+    analysisState.tickers.length === 0 ||
+    !analysisState.startDate ||
+    !analysisState.endDate;
 
   return (
     <div className="h-full max-w-4xl mx-auto px-6 py-4">
@@ -121,10 +115,10 @@ export default function UnifiedInputSection() {
           </div>
 
           {/* Current Tickers Display */}
-          {tickers.length > 0 && (
+          {validatedTickers.length > 0 && (
             <div className="mb-3">
               <div className="flex flex-wrap gap-2">
-                {tickers.map(ticker => (
+                {validatedTickers.map(ticker => (
                   <div
                     key={ticker.symbol}
                     className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ${
@@ -144,6 +138,7 @@ export default function UnifiedInputSection() {
                     <button
                       onClick={() => removeTicker(ticker.symbol)}
                       className="hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                      aria-label={`Remove ${ticker.symbol}`}
                     >
                       <X size={10} />
                     </button>
@@ -188,11 +183,13 @@ export default function UnifiedInputSection() {
                     variant="outline"
                     className={cn(
                       'w-full justify-start text-left font-normal bg-transparent border-slate-700/50 hover:border-slate-600 h-10 text-slate-300 text-sm',
-                      !startDate && 'text-slate-500'
+                      !analysisState.startDate && 'text-slate-500'
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, 'dd/MM/yyyy') : '30/05/2024'}
+                    {analysisState.startDate
+                      ? format(analysisState.startDate, 'dd/MM/yyyy')
+                      : '30/05/2024'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -201,7 +198,7 @@ export default function UnifiedInputSection() {
                 >
                   <CalendarComponent
                     mode="single"
-                    selected={startDate}
+                    selected={analysisState.startDate}
                     onSelect={setStartDate}
                     initialFocus
                     className="pointer-events-auto"
@@ -218,11 +215,13 @@ export default function UnifiedInputSection() {
                     variant="outline"
                     className={cn(
                       'w-full justify-start text-left font-normal bg-transparent border-slate-700/50 hover:border-slate-600 h-10 text-slate-300 text-sm',
-                      !endDate && 'text-slate-500'
+                      !analysisState.endDate && 'text-slate-500'
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, 'dd/MM/yyyy') : 'Seleziona data'}
+                    {analysisState.endDate
+                      ? format(analysisState.endDate, 'dd/MM/yyyy')
+                      : 'Seleziona data'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -231,7 +230,7 @@ export default function UnifiedInputSection() {
                 >
                   <CalendarComponent
                     mode="single"
-                    selected={endDate}
+                    selected={analysisState.endDate}
                     onSelect={setEndDate}
                     initialFocus
                     className="pointer-events-auto"
@@ -248,58 +247,68 @@ export default function UnifiedInputSection() {
             Frequenza dati
           </label>
           <div className="flex gap-2">
-            {[
-              { value: 'daily', label: 'Giornaliera' },
-              { value: 'weekly', label: 'Settimanale' },
-              { value: 'monthly', label: 'Mensile' },
-            ].map(option => (
-              <button
-                key={option.value}
-                onClick={() => setFrequency(option.value)}
-                className={`px-4 py-2 rounded-lg border transition-all duration-200 font-medium text-sm ${
-                  frequency === option.value
-                    ? 'border-blue-500/50 bg-blue-500/10 text-blue-300'
-                    : 'border-slate-700/50 bg-transparent text-slate-400 hover:border-slate-600 hover:text-slate-300'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
+            <Button
+              variant={
+                analysisState.frequency === 'daily' ? 'default' : 'outline'
+              }
+              onClick={() => setFrequency('daily')}
+              className="flex-1"
+            >
+              Giornaliera
+            </Button>
+            <Button
+              variant={
+                analysisState.frequency === 'weekly' ? 'default' : 'outline'
+              }
+              onClick={() => setFrequency('weekly')}
+              className="flex-1"
+            >
+              Settimanale
+            </Button>
+            <Button
+              variant={
+                analysisState.frequency === 'monthly' ? 'default' : 'outline'
+              }
+              onClick={() => setFrequency('monthly')}
+              className="flex-1"
+            >
+              Mensile
+            </Button>
           </div>
         </div>
 
         {/* File Upload */}
         <div className="space-y-3">
-          <label className="text-slate-300 text-sm font-medium block">
+          <label className="text-slate-300 text-sm font-medium">
             File CSV opzionale
           </label>
-          <button
-            onClick={handleFileUpload}
-            className="w-full py-4 px-4 border border-dashed border-slate-700/50 rounded-lg text-slate-500 hover:border-blue-500/50 hover:text-blue-400 transition-all duration-200 flex flex-col items-center justify-center gap-2 group bg-transparent"
-          >
-            <div className="w-6 h-6 rounded-full border border-slate-700 group-hover:border-blue-500/50 flex items-center justify-center transition-colors">
-              <Upload
-                size={14}
-                className="text-slate-500 group-hover:text-blue-400"
-              />
-            </div>
-            <div className="text-center">
-              <div className="text-sm">Drag and drop file here</div>
-              <div className="text-xs text-slate-600 mt-1">
-                Limit 200MB per file • CSV, XLS, XLSX
-              </div>
-            </div>
-          </button>
+          <div className="relative border-2 border-dashed border-slate-700/70 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-blue-500/50 transition-colors">
+            <Upload className="text-slate-500 w-10 h-10 mb-3" />
+            <p className="text-slate-400 text-sm font-medium">
+              Drag and drop file here
+            </p>
+            <p className="text-slate-500 text-xs mt-1">
+              Limit 200MB per file • CSV, XLS, XLSX
+            </p>
+            <input
+              type="file"
+              onChange={handleFileUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="File upload"
+            />
+          </div>
         </div>
 
         {/* Action Button */}
-        <div className="mt-auto pt-3 text-center">
-          <button
-            disabled={tickers.filter(t => t.status === 'valid').length < 1}
-            className="px-10 py-3 bg-blue-600/80 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium text-sm"
+        <div className="mt-auto pt-4 border-t border-slate-800/50">
+          <Button
+            size="lg"
+            className="w-full text-base"
+            onClick={startAnalysis}
+            disabled={isAnalysisDisabled}
           >
             Avvia Analisi
-          </button>
+          </Button>
         </div>
       </div>
     </div>

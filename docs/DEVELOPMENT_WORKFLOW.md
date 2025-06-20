@@ -1,9 +1,11 @@
 # 🔄 Workflow di Sviluppo - Student Analyst
+
 ## Guida Completa per Sviluppatori e AI
 
 ---
 
 ## 🎯 Obiettivo
+
 Questo documento definisce il workflow standardizzato per evitare errori e mantenere la qualità del codice.
 
 ---
@@ -11,12 +13,14 @@ Questo documento definisce il workflow standardizzato per evitare errori e mante
 ## 📋 Setup Iniziale
 
 ### **1. Installazione Dipendenze**
+
 ```bash
 npm install
 cd backend && npm install
 ```
 
 ### **2. Verifica Configurazione**
+
 ```bash
 # Verifica TypeScript
 npm run lint
@@ -29,6 +33,7 @@ npm test
 ```
 
 ### **3. Configurazione VS Code**
+
 ```json
 // .vscode/settings.json
 {
@@ -46,6 +51,7 @@ npm test
 ## 🔄 Workflow di Sviluppo
 
 ### **Fase 1: Preparazione**
+
 ```bash
 # 1. Pull ultime modifiche
 git pull origin main
@@ -57,6 +63,7 @@ npm test
 ```
 
 ### **Fase 2: Sviluppo**
+
 ```bash
 # 1. Crea branch
 git checkout -b feature/nome-feature
@@ -67,6 +74,7 @@ npm run format:check  # Prima di ogni commit
 ```
 
 ### **Fase 3: Pre-Commit**
+
 ```bash
 # 1. Formattazione automatica
 npm run format
@@ -81,6 +89,7 @@ npm run test:e2e
 ```
 
 ### **Fase 4: Commit e Push**
+
 ```bash
 # 1. Commit con messaggio descrittivo
 git commit -m "feat: aggiungi nuova funzionalità X"
@@ -94,6 +103,7 @@ git push origin feature/nome-feature
 ## 🚨 Controlli Critici
 
 ### **TypeScript Safety**
+
 ```typescript
 // ✅ SEMPRE: Definire interfacce
 interface UserData {
@@ -104,7 +114,7 @@ interface UserData {
 
 // ✅ SEMPRE: Tipizzare mock
 const mockUserService: UserService = {
-  getUser: jest.fn().mockResolvedValue(mockUser)
+  getUser: jest.fn().mockResolvedValue(mockUser),
 };
 
 // ❌ MAI: Usare any
@@ -112,6 +122,7 @@ const data: any = response.json();
 ```
 
 ### **Backend Configuration**
+
 ```javascript
 // ✅ SEMPRE: Porta coerente
 const PORT = process.env.PORT || 10000;
@@ -123,6 +134,7 @@ app.get('/health', (req, res) => {
 ```
 
 ### **Formattazione**
+
 ```bash
 # ✅ SEMPRE: Formattazione automatica
 npm run format
@@ -131,11 +143,23 @@ npm run format
 npm run format:check
 ```
 
+### **Gestione dello Stato Globale**
+
+- Per funzionalità che richiedono la condivisione di stato tra più componenti (come i dati del form di analisi), utilizzare il contesto React.
+- **Contesto Esistente**: `src/context/AnalysisContext.tsx` gestisce lo stato del form di input.
+- **Pattern**:
+  1.  Identificare la necessità di uno stato globale.
+  2.  Creare un nuovo file di contesto in `src/context/`.
+  3.  Definire stato, azioni e provider.
+  4.  Avvolgere l'applicazione (o la parte rilevante) nel provider in `App.tsx`.
+  5.  Usare l'hook custom (`useMyContext`) nei componenti necessari.
+
 ---
 
 ## 🧪 Testing Strategy
 
 ### **Unit Tests**
+
 ```bash
 # Esegui tutti i test unitari
 npm test
@@ -148,6 +172,7 @@ npm test -- --coverage
 ```
 
 ### **Backend Tests**
+
 ```bash
 # Test completi backend
 cd backend
@@ -158,6 +183,7 @@ npm test -- --testNamePattern="API Routes"
 ```
 
 ### **E2E Tests**
+
 ```bash
 # Test end-to-end
 npm run test:e2e
@@ -171,6 +197,7 @@ npm run test:e2e -- --project=chromium
 ## 🔧 Troubleshooting
 
 ### **Errori TypeScript**
+
 ```bash
 # 1. Verifica errori
 npm run lint
@@ -183,6 +210,7 @@ npx tsc --noEmit
 ```
 
 ### **Errori di Formattazione**
+
 ```bash
 # 1. Verifica formattazione
 npm run format:check
@@ -195,6 +223,7 @@ npm run format:check
 ```
 
 ### **Errori Backend**
+
 ```bash
 # 1. Verifica porta
 lsof -i :10000
@@ -212,21 +241,25 @@ curl http://localhost:10000/health
 ## 📊 Metriche di Qualità
 
 ### **Type Safety**
+
 - **Target**: 100% type coverage
 - **Check**: `npm run lint` → 0 errori
 - **Tool**: ESLint + TypeScript
 
 ### **Formattazione**
+
 - **Target**: 100% consistent
 - **Check**: `npm run format:check` → 0 errori
 - **Tool**: Prettier
 
 ### **Test Coverage**
+
 - **Target**: >80% coverage
 - **Check**: `npm test -- --coverage`
 - **Tool**: Jest
 
 ### **Performance**
+
 - **Target**: Build <30s
 - **Check**: `npm run build`
 - **Tool**: Vite
@@ -236,6 +269,7 @@ curl http://localhost:10000/health
 ## 🚀 CI/CD Pipeline
 
 ### **GitHub Actions Workflow**
+
 ```yaml
 name: CI/CD Pipeline
 
@@ -249,21 +283,21 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Lint and format check
         run: |
           npm run lint
           npm run format:check
-      
+
       - name: Run tests
         run: |
           npm test
           npm run test:backend
           npm run test:e2e
-      
+
       - name: Build
         run: npm run build
 ```
@@ -273,6 +307,7 @@ jobs:
 ## 📚 Best Practices
 
 ### **Commit Messages**
+
 ```bash
 # ✅ Buoni esempi
 git commit -m "feat: aggiungi autenticazione OAuth"
@@ -287,6 +322,7 @@ git commit -m "stuff"
 ```
 
 ### **Branch Naming**
+
 ```bash
 # ✅ Buoni esempi
 feature/user-authentication
@@ -301,6 +337,7 @@ update
 ```
 
 ### **Code Review Checklist**
+
 - [ ] Codice formattato correttamente
 - [ ] Nessun errore TypeScript
 - [ ] Test passano
@@ -312,6 +349,7 @@ update
 ## 🔄 Automazione
 
 ### **Pre-commit Hooks (Raccomandato)**
+
 ```bash
 # Installa husky
 npm install --save-dev husky
@@ -321,6 +359,7 @@ npx husky add .husky/pre-commit "npm run lint && npm run format:check && npm tes
 ```
 
 ### **VS Code Extensions**
+
 ```json
 // .vscode/extensions.json
 {
@@ -338,11 +377,13 @@ npx husky add .husky/pre-commit "npm run lint && npm run format:check && npm tes
 ## 📞 Supporto
 
 ### **Documentazione Correlata**
+
 - `docs/PRETTIER_INTEGRATION_AND_TYPE_SAFETY_FIXES.md` - Fix dettagliati
 - `docs/CRITICAL_FIXES_SUMMARY.md` - Riassunto esecutivo
 - `docs/TESTING_GUIDE.md` - Guida ai test
 
 ### **Comandi di Emergenza**
+
 ```bash
 # Reset completo
 git reset --hard HEAD
@@ -359,4 +400,4 @@ npm run build
 
 ---
 
-**⚠️ IMPORTANTE**: Seguire sempre questo workflow per evitare regressioni e mantenere la qualità del codice. 
+**⚠️ IMPORTANTE**: Seguire sempre questo workflow per evitare regressioni e mantenere la qualità del codice.

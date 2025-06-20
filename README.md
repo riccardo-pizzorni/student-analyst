@@ -31,7 +31,7 @@ cd backend && npm run dev  # Backend (porta 10000)
 
 ## 📋 Prerequisiti
 
-- **Node.js**: 18+ 
+- **Node.js**: 18+
 - **npm**: 9+
 - **TypeScript**: 5.5+
 - **VS Code**: Con estensioni Prettier e ESLint
@@ -54,19 +54,26 @@ student-analyst/
 ## 🔧 Configurazione Critica
 
 ### **Porte del Sistema**
+
 - **Frontend**: 8080
 - **Backend**: 10000 ⚠️ **CRITICO**
 - **Test**: 10000 ⚠️ **CRITICO**
 
 ### **TypeScript Safety**
+
 - **Strict Mode**: ON
 - **No Explicit Any**: ON
 - **Null Checks**: ON
 
 ### **Formattazione**
+
 - **Prettier**: Configurato automaticamente
 - **ESLint**: Regole TypeScript rigorose
 - **Auto-format**: Al salvataggio
+
+### **Gestione dello Stato**
+
+- **React Context**: Utilizzato per lo stato globale del form (`AnalysisContext`).
 
 ---
 
@@ -91,12 +98,14 @@ npm test -- --coverage
 ## 📚 Documentazione
 
 ### **Fix Critici e Ottimizzazioni**
+
 - [📋 Riassunto Esecutivo](docs/CRITICAL_FIXES_SUMMARY.md) - Fix critici del 2024-12-19
 - [🔧 Fix Dettagliati](docs/PRETTIER_INTEGRATION_AND_TYPE_SAFETY_FIXES.md) - Documentazione completa
 - [🤖 Guida AI](docs/AI_ASSISTANT_GUIDE.md) - Regole per AI Assistant
 - [🔄 Workflow](docs/DEVELOPMENT_WORKFLOW.md) - Processo di sviluppo
 
 ### **Tecnica**
+
 - [🧪 Testing Guide](docs/TESTING_GUIDE.md)
 - [💾 Cache System](docs/CACHE_SYSTEM.md)
 - [⚡ Performance](docs/PERFORMANCE_TESTING.md)
@@ -106,6 +115,7 @@ npm test -- --coverage
 ## 🚨 Errori Comuni da Evitare
 
 ### **❌ MAI usare `any` in TypeScript**
+
 ```typescript
 // SBAGLIATO
 const data: any = response.json();
@@ -119,6 +129,7 @@ const data: ApiResponse = response.json();
 ```
 
 ### **❌ MAI configurare porte diverse**
+
 ```javascript
 // SBAGLIATO: Server su 10000, test su 3001
 const PORT = 3001;
@@ -128,6 +139,7 @@ const PORT = 10000;
 ```
 
 ### **❌ MAI ignorare la formattazione**
+
 ```bash
 # SBAGLIATO: Formattazione manuale
 # CORRETTO: Automazione
@@ -139,6 +151,7 @@ npm run format
 ## 🔄 Workflow di Sviluppo
 
 ### **Pre-Commit Checklist**
+
 - [ ] `npm run lint` → 0 errori
 - [ ] `npm run format:check` → 0 errori
 - [ ] `npm test` → Tutti passati
@@ -146,6 +159,7 @@ npm run format
 - [ ] `npm run build` → Build successo
 
 ### **Comandi Essenziali**
+
 ```bash
 # Qualità del codice
 npm run lint              # Verifica TypeScript
@@ -168,6 +182,7 @@ cd backend && npm run build  # Build backend
 ## 🛠️ Tecnologie
 
 ### **Frontend**
+
 - **React 18** + TypeScript
 - **Vite** - Build tool
 - **Tailwind CSS** - Styling
@@ -176,17 +191,20 @@ cd backend && npm run build  # Build backend
 - **React Query** - Data fetching
 
 ### **Backend**
+
 - **Node.js** + Express
 - **TypeScript** - Type safety
 - **Jest** - Testing
 - **Alpha Vantage API** - Dati finanziari
 
 ### **Testing**
+
 - **Jest** - Unit testing
 - **Playwright** - E2E testing
 - **React Testing Library** - Component testing
 
 ### **Quality**
+
 - **ESLint** - Linting
 - **Prettier** - Formattazione
 - **TypeScript** - Type checking
@@ -206,12 +224,14 @@ cd backend && npm run build  # Build backend
 ## 🚀 Deployment
 
 ### **Frontend (Vercel)**
+
 ```bash
 npm run build
 vercel --prod
 ```
 
 ### **Backend (Railway/Render)**
+
 ```bash
 cd backend
 npm run build
@@ -229,6 +249,7 @@ npm run build
 5. **Testa tutto** prima del commit
 
 ### **Branch Naming**
+
 ```bash
 feature/nome-feature
 fix/nome-fix
@@ -241,11 +262,13 @@ test/nome-test
 ## 📞 Supporto
 
 ### **Documentazione**
+
 - [Fix Critici](docs/CRITICAL_FIXES_SUMMARY.md)
 - [Workflow](docs/DEVELOPMENT_WORKFLOW.md)
 - [Guida AI](docs/AI_ASSISTANT_GUIDE.md)
 
 ### **Comandi di Emergenza**
+
 ```bash
 # Reset completo
 git reset --hard HEAD
@@ -265,6 +288,7 @@ npm run build
 ## 📝 Changelog
 
 ### **2024-12-19 - Fix Critici**
+
 - ✅ Eliminazione completa uso di `any` in TypeScript
 - ✅ Integrazione Prettier per formattazione automatica
 - ✅ Fix configurazione porte backend (3001 → 10000)
@@ -280,6 +304,8 @@ MIT License - vedi [LICENSE](LICENSE) per dettagli.
 ---
 
 **⚠️ IMPORTANTE**: Questo progetto ha standard di qualità elevati. Leggi sempre la documentazione prima di contribuire.
+
+<!-- Trigger Vercel Redeploy -->
 
 ## ✨ Caratteristiche Principali
 
