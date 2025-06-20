@@ -354,7 +354,7 @@ class MockObjectStore implements IDBObjectStore {
     return request;
   }
 
-  getKey(query: IDBValidKey | IDBKeyRange): IDBRequest<any> {
+  getKey(query: IDBValidKey | IDBKeyRange): IDBRequest<IDBValidKey | undefined> {
     const request = new MockIDBRequest();
     const item = this.data.find(item => this.getKeyValue(item) === query);
     request.setResult(item ? this.getKeyValue(item) : undefined);
@@ -413,9 +413,9 @@ class MockTransaction implements IDBTransaction {
   readonly db: IDBDatabase;
   readonly error: DOMException | null;
   readonly durability: IDBTransactionDurability;
-  onabort: ((this: IDBTransaction, ev: Event) => any) | null;
-  oncomplete: ((this: IDBTransaction, ev: Event) => any) | null;
-  onerror: ((this: IDBTransaction, ev: Event) => any) | null;
+  onabort: ((this: IDBTransaction, ev: Event) => void) | null;
+  oncomplete: ((this: IDBTransaction, ev: Event) => void) | null;
+  onerror: ((this: IDBTransaction, ev: Event) => void) | null;
   private objectStores: Map<string, MockObjectStore<T>>;
 
   constructor(storeNames: string | string[] | Iterable<string>, mode: IDBTransactionMode, db: IDBDatabase) {
@@ -476,10 +476,10 @@ class MockDatabase implements IDBDatabase {
   readonly name: string;
   readonly version: number;
   objectStoreNames: DOMStringList;
-  onabort: ((this: IDBDatabase, ev: Event) => any) | null;
-  onclose: ((this: IDBDatabase, ev: Event) => any) | null;
-  onerror: ((this: IDBDatabase, ev: Event) => any) | null;
-  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => any) | null;
+  onabort: ((this: IDBDatabase, ev: Event) => void) | null;
+  onclose: ((this: IDBDatabase, ev: Event) => void) | null;
+  onerror: ((this: IDBDatabase, ev: Event) => void) | null;
+  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => void) | null;
   objectStores: Map<string, MockObjectStore<T>>;
 
   constructor(name: string, version: number) {
@@ -599,7 +599,7 @@ class MockIndexedDB implements IDBFactory {
     })));
   }
 
-  cmp(first: any, second: any): number {
+  cmp(first: unknown, second: unknown): number {
     if (first < second) return -1;
     if (first > second) return 1;
     return 0;

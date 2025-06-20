@@ -130,7 +130,7 @@ test.describe('TIER 2 - Functional Testing Simplified (90% Pass Required)', () =
     
     const performanceCheck = await page.evaluate(() => {
       return {
-        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+        memoryUsage: (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize || 0,
         resourceCount: performance.getEntriesByType('resource').length,
         domElements: document.querySelectorAll('*').length
       };
