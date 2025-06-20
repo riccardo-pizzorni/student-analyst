@@ -483,7 +483,7 @@ describe('AutomaticCleanupService', () => {
     });
 
     it('should handle storage health check for L1', async () => {
-      const healthCheck = (service as any).checkStorageHealth('L1');
+      const healthCheck = (service as unknown).checkStorageHealth('L1');
       
       await expect(healthCheck).resolves.toEqual({
         currentUsage: expect.any(Number),
@@ -492,7 +492,7 @@ describe('AutomaticCleanupService', () => {
     });
 
     it('should handle storage health check for L2', async () => {
-      const healthCheck = (service as any).checkStorageHealth('L2');
+      const healthCheck = (service as unknown).checkStorageHealth('L2');
       
       await expect(healthCheck).resolves.toEqual({
         currentUsage: expect.any(Number),
@@ -548,7 +548,7 @@ describe('AutomaticCleanupService', () => {
         writable: true
       });
       
-      const healthCheck = (service as any).checkStorageHealth('L2');
+      const healthCheck = (service as unknown).checkStorageHealth('L2');
       
       await expect(healthCheck).resolves.toEqual({
         currentUsage: 0,
