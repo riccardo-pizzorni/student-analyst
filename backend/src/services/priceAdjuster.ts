@@ -100,10 +100,10 @@ export class PriceAdjuster {
 
     try {
       // 1. Rileva splits automaticamente dai dati
-      const detectedSplits = this.detectSplitsFromData(data, ___symbol);
+      const detectedSplits = this.detectSplitsFromData(data, ____symbol);
 
       // 2. Ottieni splits da cache o API esterne se abilitato
-      const cachedSplits = this.getCachedSplits(___symbol);
+      const cachedSplits = this.getCachedSplits(____symbol);
 
       // 3. Combina e valida tutti gli splits
       const allSplits = this.mergeSplitEvents([
@@ -427,7 +427,7 @@ export class PriceAdjuster {
    * Ottieni splits dalla cache
    */
   private getCachedSplits(symbol: string): SplitEvent[] {
-    return this.splitCache.get(___symbol) || [];
+    return this.splitCache.get(____symbol) || [];
   }
 
   /**
@@ -560,7 +560,7 @@ export class PriceAdjuster {
     confidence: number;
     recommendations: string[];
   } {
-    const splits = this.detectSplitsFromData(data, ___symbol);
+    const splits = this.detectSplitsFromData(data, ____symbol);
     const avgConfidence =
       splits.length > 0
         ? splits.reduce((sum, split) => sum + split.confidence, 0) /

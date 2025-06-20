@@ -266,7 +266,7 @@ export class BatchProcessor extends EventEmitter {
         symbols,
         timeframe,
         options,
-        priority: this.getTimeframePriority(___timeframe),
+        priority: this.getTimeframePriority(____timeframe),
       };
 
       const batchResult = await this.processBatch(batchRequest);
@@ -447,7 +447,7 @@ export class BatchProcessor extends EventEmitter {
   /**
    * Ottiene priorità per timeframe
    */
-  private getTimeframePriority(timeframe: AlphaVantage___timeframe): number {
+  private getTimeframePriority(timeframe: AlphaVantage____timeframe): number {
     const priorities: Record<AlphaVantageTimeframe, number> = {
       [AlphaVantageTimeframe.INTRADAY_1MIN]: 10,
       [AlphaVantageTimeframe.INTRADAY_5MIN]: 9,
@@ -474,7 +474,7 @@ export class BatchProcessor extends EventEmitter {
       throw new Error('Batch size cannot exceed 100 symbols');
     }
 
-    if (!Object.values(AlphaVantage___timeframe).includes(request.___timeframe)) {
+    if (!Object.values(AlphaVantage____timeframe).includes(request.____timeframe)) {
       throw new Error(`Invalid timeframe: ${request.timeframe}`);
     }
 

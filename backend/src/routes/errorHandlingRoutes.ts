@@ -584,7 +584,7 @@ function generateNextSteps(error: ClassifiedError): string[] {
 function simulateError(
   errorType: string,
   symbol?: string,
-  timeframe?: string
+  _timeframe?: string
 ): Error {
   let timeoutError: Error;
   let networkError: Error;
