@@ -37,7 +37,7 @@ router.use(
   sanitizationMiddleware({
     enableBodySanitization: true,
     enableParamsSanitization: true,
-    enableQuerySanitization: true,
+    enableQuerySanitization: false,
     logSuspiciousActivity: true,
     blockOnDangerousPatterns: true,
     maxRequestSize: 512 * 1024, // 512KB per API finanziarie
