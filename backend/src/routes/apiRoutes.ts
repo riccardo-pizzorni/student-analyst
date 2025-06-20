@@ -150,7 +150,7 @@ router.get(
           cached: response.cacheHit || false,
         },
       });
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof AlphaVantageError) {
         const statusCode = getStatusCodeFromErrorType(error.type);
         return res.status(statusCode).json({
@@ -185,7 +185,7 @@ router.get(
       // Per ora manteniamo compatibilità con ApiProxyService
       // In futuro si può migrare completamente ad AlphaVantageService
       await ApiProxyService.getQuote(req, res);
-    } catch (_error) {
+    } catch (error) {
       console.error('Quote error:', error);
       res.status(500).json({
         error: 'Quote Error',
@@ -234,7 +234,7 @@ router.post('/validate/request', async (req: Request, res: Response) => {
       validation,
       timestamp: new Date().toISOString(),
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Validation error:', error);
     res.status(500).json({
       error: 'Validation Error',
@@ -325,7 +325,7 @@ router.post('/stock/batch', async (req: Request, res: Response) => {
             metadata: data.metadata,
             cached: data.cacheHit,
           };
-        } catch (_error) {
+        } catch (error) {
           return {
             symbol: symbol.toUpperCase(),
             success: false,
@@ -389,7 +389,7 @@ router.post('/stock/batch', async (req: Request, res: Response) => {
           ? 'Consider reducing batch size to preserve Alpha Vantage rate limits'
           : undefined,
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Batch stock data error:', error);
     res.status(500).json({
       error: 'Batch Processing Error',
@@ -472,7 +472,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
       errors: failedResults.length > 0 ? failedResults : undefined,
       timestamp: new Date().toISOString(),
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Batch quotes error:', error);
     res.status(500).json({
       error: 'Batch Processing Error',
@@ -500,7 +500,7 @@ router.get(
         service: 'AlphaVantageService',
         ...health,
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(503).json({
         success: false,
         service: 'AlphaVantageService',
@@ -525,7 +525,7 @@ router.get(
         cache: stats,
         timestamp: new Date().toISOString(),
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({
         error: 'Cache Stats Error',
         message: 'Failed to get cache statistics',
@@ -548,7 +548,7 @@ router.delete(
         message: 'Alpha Vantage cache cleared successfully',
         timestamp: new Date().toISOString(),
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({
         error: 'Cache Clear Error',
         message: 'Failed to clear cache',
@@ -591,7 +591,7 @@ router.get('/admin/cache-status', async (req: Request, res: Response) => {
         uptime: process.uptime(),
       },
     });
-  } catch (_error) {
+  } catch (error) {
     console.error('Cache status error:', error);
     res.status(500).json({
       error: 'Cache Status Error',
@@ -671,7 +671,7 @@ router.get('/health', async (req: Request, res: Response) => {
         nodeVersion: process.version,
       },
     });
-  } catch (_error) {
+  } catch (error) {
     res.status(503).json({
       success: false,
       error: 'Health Check Failed',

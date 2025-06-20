@@ -141,7 +141,7 @@ class ApiKeyManager {
       }
 
       return true;
-    } catch (_error) {
+    } catch (error) {
       console.error('API Key validation failed:', error);
       return false;
     }
@@ -230,7 +230,7 @@ class ApiKeyManager {
         responseTime,
         cached: false,
       };
-    } catch (_error) {
+    } catch (error) {
       console.error('Alpha Vantage API call failed:', error);
       throw error;
     }
@@ -274,7 +274,7 @@ class ApiKeyManager {
       }
 
       return { data, source: 'alpha-vantage', responseTime };
-    } catch (_error) {
+    } catch (error) {
       console.error('API call failed:', error);
       throw error;
     }
@@ -426,7 +426,7 @@ export class ApiProxyService {
 
       // Restituisci dati
       res.json((result as any).data);
-    } catch (_error) {
+    } catch (error) {
       const responseTime = Date.now() - startTime;
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
@@ -523,7 +523,7 @@ export class ApiProxyService {
       };
 
       res.json(formattedData);
-    } catch (_error) {
+    } catch (error) {
       const responseTime = Date.now() - startTime;
 
       apiKeyManager.logApiUsage({
@@ -675,7 +675,7 @@ export class ApiProxyService {
       };
 
       res.json(formattedData);
-    } catch (_error) {
+    } catch (error) {
       const responseTime = Date.now() - startTime;
 
       apiKeyManager.logApiUsage({
@@ -711,7 +711,7 @@ export class ApiProxyService {
         stats,
         timestamp: new Date().toISOString(),
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({
         error: 'Stats Error',
         message: 'Failed to get API statistics',
@@ -734,7 +734,7 @@ export class ApiProxyService {
           : 'API connection failed',
         timestamp: new Date().toISOString(),
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({
         success: false,
         connected: false,

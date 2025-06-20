@@ -233,7 +233,7 @@ export class BatchProcessor extends EventEmitter {
       );
 
       return batchResult;
-    } catch (_error) {
+    } catch (error) {
       // Gestione errore
       batchStatus.status = 'failed';
       batchStatus.endTime = new Date();
@@ -326,7 +326,7 @@ export class BatchProcessor extends EventEmitter {
         } else {
           uncached.push(symbol);
         }
-      } catch (_error) {
+      } catch (error) {
         // Se non in cache, aggiungi a uncached
         uncached.push(symbol);
       }
@@ -383,7 +383,7 @@ export class BatchProcessor extends EventEmitter {
             options
           );
           results.set(symbol, stockData);
-        } catch (_error) {
+        } catch (error) {
           this.log(`AlphaVantage error for ${symbol}: ${error}`);
           // Il rate limiter ha già gestito questo simbolo, non riproveremo
         }

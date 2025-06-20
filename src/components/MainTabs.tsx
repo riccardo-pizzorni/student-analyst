@@ -19,7 +19,7 @@ export default function MainTabs({
   onShowGlossary,
 }: {
   activeStep: string;
-  onShowGlossary?: () => void;
+  _onShowGlossary?: () => void;
 }) {
   const getTabsForStep = (step: string) => {
     switch (step) {

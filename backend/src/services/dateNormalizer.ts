@@ -163,7 +163,7 @@ export class DateNormalizer {
         };
 
         results.push(normalizedItem);
-      } catch (_error) {
+      } catch (error) {
         errors.push(
           `Record ${i}: Errore inaspettato - ${(error as Error).message}`
         );
@@ -212,7 +212,7 @@ export class DateNormalizer {
           if (result.success) {
             return result;
           }
-        } catch (_error) {
+        } catch (error) {
           // Continua con il prossimo pattern
         }
       }
@@ -233,7 +233,7 @@ export class DateNormalizer {
           errors: [],
         };
       }
-    } catch (_error) {
+    } catch (error) {
       // Fallback fallito
     }
 

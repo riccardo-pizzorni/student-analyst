@@ -1,1 +1,9 @@
+ M backend/src/routes/apiRoutes.ts
+ M backend/src/services/apiProxy.ts
+ M backend/src/services/batchProcessor.ts
+ M backend/src/services/dateNormalizer.ts
+ M backend/src/services/networkResilienceService.ts
+ M backend/src/utils/testAlphaVantageService.ts
+ M backend/src/utils/testApiProxy.ts
  M scripts/temp_git_status.txt
+ M src/components/MainTabs.tsx
