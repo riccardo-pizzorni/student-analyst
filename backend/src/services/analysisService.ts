@@ -1,7 +1,11 @@
-interface PerformanceMetric {
-  name: string;
-  value: number;
-  unit?: string;
+export interface PerformanceMetric {
+  label: string;
+  value: string;
+}
+
+export interface CorrelationMatrix {
+  symbols: string[];
+  matrix: number[][];
 }
 
 export interface AnalysisApiResponse {
@@ -19,19 +23,56 @@ export interface AnalysisApiResponse {
     sharpeRatio: number;
   } | null;
   correlation: {
-    matrix: {
-      symbol: string;
-      values: number[];
-    }[];
+    correlationMatrix: CorrelationMatrix;
+    diversificationIndex: number;
+    averageCorrelation: number;
   } | null;
 }
 
-export async function performAnalysis(params: any): Promise<AnalysisApiResponse> {
-  return {
-    historicalData: { labels: [], datasets: [] },
-    performanceMetrics: [],
-    volatility: null,
-    correlation: null
-  };
+interface AnalysisParams {
+  tickers: string[];
+  startDate: string;
+  endDate: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
 }
 
+export async function performAnalysis(
+  params: AnalysisParams
+): Promise<AnalysisApiResponse> {
+  // ... mock implementation ...
+  return {
+    historicalData: {
+      labels: ['2024-01', '2024-02', '2024-03'],
+      datasets: [
+        {
+          label: params.tickers[0] || 'AAPL',
+          data: [150, 155, 160],
+          borderColor: '#FF6384',
+        },
+      ],
+    },
+    performanceMetrics: [
+      { label: 'Return', value: '+6.67%' },
+      { label: 'Volatility', value: '15.2%' },
+      { label: 'Sharpe Ratio', value: '0.85' },
+    ],
+    volatility: {
+      annualizedVolatility: 15.2,
+      sharpeRatio: 0.85,
+    },
+    correlation:
+      params.tickers.length > 1
+        ? {
+            correlationMatrix: {
+              symbols: params.tickers,
+              matrix: [
+                [1, 0.7],
+                [0.7, 1],
+              ],
+            },
+            diversificationIndex: 0.3,
+            averageCorrelation: 0.7,
+          }
+        : null,
+  };
+}

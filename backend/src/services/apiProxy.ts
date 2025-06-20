@@ -47,13 +47,13 @@ export interface ApiUsageLog {
  * Gestione sicura delle API keys con rotazione
  */
 class ApiKeyManager {
-  private alphaVantageKeys: ApiKeyConfig;
-  private usageLogs: ApiUsageLog[] = [];
-  private cache: Map<string, { data: unknown; timestamp: Date; ttl: number }> =
+  private _alphaVantageKeys: ApiKeyConfig;
+  private _usageLogs: ApiUsageLog[] = [];
+  private _cache: Map<string, { data: unknown; timestamp: Date; ttl: number }> =
     new Map();
 
   constructor() {
-    this.alphaVantageKeys = {
+    this._alphaVantageKeys = {
       primary: process.env.VITE_API_KEY_ALPHA_VANTAGE || '',
       backup: process.env.VITE_API_KEY_ALPHA_VANTAGE_BACKUP || '',
       lastRotated: new Date(),
@@ -67,7 +67,7 @@ class ApiKeyManager {
    * Ottiene la chiave API attualmente attiva
    */
   private getCurrentApiKey(): string {
-    const config = this.alphaVantageKeys;
+    const config = this._alphaVantageKeys;
 
     // Controlla se è tempo di rotazione
     const timeSinceRotation = Date.now() - config.lastRotated.getTime();
@@ -85,7 +85,7 @@ class ApiKeyManager {
    * Rotazione automatica delle chiavi API
    */
   private rotateApiKey(): void {
-    const config = this.alphaVantageKeys;
+    const config = this._alphaVantageKeys;
 
     if (config.backup && config.backup !== config.primary) {
       // Scambia primary con backup
@@ -117,7 +117,7 @@ class ApiKeyManager {
    * Incrementa il contatore di utilizzo
    */
   private incrementUsage(): void {
-    this.alphaVantageKeys.usageCount++;
+    this._alphaVantageKeys.usageCount++;
   }
 
   /**
@@ -178,7 +178,7 @@ class ApiKeyManager {
 
     try {
       // Controlla cache prima
-      const cached = this.cache.get(cacheKey);
+      const cached = this._cache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp.getTime() < cached.ttl) {
         console.log(`📦 Cache hit for Alpha Vantage: ${cacheKey}`);
         return {
@@ -217,7 +217,7 @@ class ApiKeyManager {
         !dataAsRecord['Note'] &&
         !dataAsRecord['Information']
       ) {
-        this.cache.set(cacheKey, {
+        this._cache.set(cacheKey, {
           data,
           timestamp: new Date(),
           ttl,
@@ -245,7 +245,7 @@ class ApiKeyManager {
     ttl: number = 300000
   ): Promise<unknown> {
     // Controlla cache prima
-    const cached = this.cache.get(cacheKey);
+    const cached = this._cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp.getTime() < cached.ttl) {
       console.log(`📦 Cache hit for ${cacheKey}`);
       return { data: cached.data, source: 'cache' };
@@ -266,7 +266,7 @@ class ApiKeyManager {
 
       // Salva in cache solo se è una risposta valida
       if (!data['Error Message'] && !data['Note']) {
-        this.cache.set(cacheKey, {
+        this._cache.set(cacheKey, {
           data,
           timestamp: new Date(),
           ttl,
@@ -284,11 +284,11 @@ class ApiKeyManager {
    * Log degli utilizzi API per monitoraggio
    */
   logApiUsage(log: ApiUsageLog): void {
-    this.usageLogs.push(log);
+    this._usageLogs.push(log);
 
     // Mantieni solo gli ultimi 1000 log
-    if (this.usageLogs.length > 1000) {
-      this.usageLogs = this.usageLogs.slice(-1000);
+    if (this._usageLogs.length > 1000) {
+      this._usageLogs = this._usageLogs.slice(-1000);
     }
 
     // Rileva pattern sospetti
@@ -299,7 +299,7 @@ class ApiKeyManager {
    * Rileva attività sospette (molte richieste, errori ripetuti, etc.)
    */
   private detectSuspiciousActivity(log: ApiUsageLog): void {
-    const recentLogs = this.usageLogs.filter(
+    const recentLogs = this._usageLogs.filter(
       l => Date.now() - l.timestamp.getTime() < 300000 // ultimi 5 minuti
     );
 
@@ -332,22 +332,22 @@ class ApiKeyManager {
    */
   getUsageStats(): unknown {
     const now = Date.now();
-    const last24h = this.usageLogs.filter(
+    const last24h = this._usageLogs.filter(
       l => now - l.timestamp.getTime() < 24 * 60 * 60 * 1000
     );
 
     return {
-      currentKeyUsage: this.alphaVantageKeys.usageCount,
-      maxKeyUsage: this.alphaVantageKeys.maxUsage,
-      lastRotated: this.alphaVantageKeys.lastRotated,
+      currentKeyUsage: this._alphaVantageKeys.usageCount,
+      maxKeyUsage: this._alphaVantageKeys.maxUsage,
+      lastRotated: this._alphaVantageKeys.lastRotated,
       requests24h: last24h.length,
       errors24h: last24h.filter(l => !l.success).length,
       avgResponseTime:
         last24h.length > 0
           ? last24h.reduce((sum, l) => sum + l.responseTime, 0) / last24h.length
           : 0,
-      cacheSize: this.cache.size,
-      suspiciousRequests: this.usageLogs.filter(l => l.suspicious).length,
+      cacheSize: this._cache.size,
+      suspiciousRequests: this._usageLogs.filter(l => l.suspicious).length,
     };
   }
 
@@ -358,13 +358,13 @@ class ApiKeyManager {
     const now = Date.now();
     const keysToDelete: string[] = [];
 
-    this.cache.forEach((value, key) => {
+    this._cache.forEach((value, key) => {
       if (now - value.timestamp.getTime() > value.ttl) {
         keysToDelete.push(key);
       }
     });
 
-    keysToDelete.forEach(key => this.cache.delete(key));
+    keysToDelete.forEach(key => this._cache.delete(key));
 
     if (keysToDelete.length > 0) {
       console.log(`🧹 Cleaned ${keysToDelete.length} expired cache entries`);
@@ -486,7 +486,14 @@ export class ApiProxyService {
       });
 
       // Verifica se ci sono dati validi
-      const globalQuote = typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? (result as any).data['Global Quote'] : null;
+      const globalQuote =
+        typeof result === 'object' &&
+        result !== null &&
+        'data' in result &&
+        typeof (result as any).data === 'object' &&
+        (result as any).data !== null
+          ? (result as any).data['Global Quote']
+          : null;
       if (!globalQuote || Object.keys(globalQuote).length === 0) {
         res.status(404).json({
           error: 'Symbol Not Found',
@@ -508,7 +515,10 @@ export class ApiProxyService {
         low: parseFloat(globalQuote['04. low'] || '0'),
         volume: parseInt(globalQuote['06. volume'] || '0'),
         latestTradingDay: globalQuote['07. latest trading day'] || '',
-        source: typeof result === 'object' && result !== null && 'source' in result ? (result as any).source : 'unknown',
+        source:
+          typeof result === 'object' && result !== null && 'source' in result
+            ? (result as any).source
+            : 'unknown',
         timestamp: new Date().toISOString(),
       };
 
@@ -606,10 +616,27 @@ export class ApiProxyService {
       });
 
       // Verifica dati
-      const keys = typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? Object.keys((result as any).data) : [];
+      const keys =
+        typeof result === 'object' &&
+        result !== null &&
+        'data' in result &&
+        typeof (result as any).data === 'object' &&
+        (result as any).data !== null
+          ? Object.keys((result as any).data)
+          : [];
       const dataKey = keys.find(key => key.includes('Time Series'));
 
-      if (!dataKey || !(typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null && (result as any).data[dataKey])) {
+      if (
+        !dataKey ||
+        !(
+          typeof result === 'object' &&
+          result !== null &&
+          'data' in result &&
+          typeof (result as any).data === 'object' &&
+          (result as any).data !== null &&
+          (result as any).data[dataKey]
+        )
+      ) {
         res.status(404).json({
           error: 'No Data Available',
           message: `No historical data available for symbol: ${symbol}`,
@@ -624,9 +651,26 @@ export class ApiProxyService {
         symbol: symbol.toUpperCase(),
         interval,
         outputsize,
-        data: typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? (result as any).data[dataKey] : {},
-        metadata: typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? (result as any).data['Meta Data'] || {} : {},
-        source: typeof result === 'object' && result !== null && 'source' in result ? (result as any).source : 'unknown',
+        data:
+          typeof result === 'object' &&
+          result !== null &&
+          'data' in result &&
+          typeof (result as any).data === 'object' &&
+          (result as any).data !== null
+            ? (result as any).data[dataKey]
+            : {},
+        metadata:
+          typeof result === 'object' &&
+          result !== null &&
+          'data' in result &&
+          typeof (result as any).data === 'object' &&
+          (result as any).data !== null
+            ? (result as any).data['Meta Data'] || {}
+            : {},
+        source:
+          typeof result === 'object' && result !== null && 'source' in result
+            ? (result as any).source
+            : 'unknown',
         timestamp: new Date().toISOString(),
       };
 

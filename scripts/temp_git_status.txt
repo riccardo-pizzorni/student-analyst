@@ -1,4 +1,3 @@
- M backend/src/routes/apiRoutes.ts
+ M backend/src/services/analysisService.ts
+ M backend/src/services/apiProxy.ts
  M scripts/temp_git_status.txt
- M src/components/ui/navigation-menu.tsx
- M src/components/ui/toggle.tsx
