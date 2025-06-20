@@ -11,7 +11,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo \"Tests passed\" && exit 0",
+    "test": "echo \"✅ Tests passed (placeholder)\" && exit 0",
     "preview": "vite preview"
   },
   "dependencies": {
