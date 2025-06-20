@@ -1,3 +1,4 @@
+ M package.json
  M scripts/temp_git_status.txt
- D vercel.json
-?? temp_vercel.json
+ D temp_vercel.json
+?? vercel.json
