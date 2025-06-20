@@ -114,8 +114,8 @@ router.post('/classify', async (req: Request, res: Response) => {
       recommendations: generateRecommendations(classified),
       nextSteps: generateNextSteps(classified),
     });
-  } catch (error) {
-    console.error('Error classification failed:', error);
+  } catch (_error) {
+    console.error('Error classification failed:', _error);
     res.status(500).json({
       error: 'Classification Error',
       message: 'Failed to classify error',
@@ -174,8 +174,8 @@ router.post('/simulate', async (req: Request, res: Response) => {
         },
       },
     });
-  } catch (error) {
-    console.error('Error simulation failed:', error);
+  } catch (_error) {
+    console.error('Error simulation failed:', _error);
     res.status(500).json({
       error: 'Simulation Error',
       message: 'Failed to simulate error',
@@ -237,8 +237,8 @@ router.post('/execute-resilient', async (req: Request, res: Response) => {
           }
         : undefined,
     });
-  } catch (error) {
-    console.error('Resilient execution failed:', error);
+  } catch (_error) {
+    console.error('Resilient execution failed:', _error);
     res.status(500).json({
       error: 'Execution Error',
       message: 'Failed to execute resilient operation',
@@ -278,8 +278,8 @@ router.get('/statistics', async (req: Request, res: Response) => {
           .filter(service => service.healthStatus === 'degraded').length,
       },
     });
-  } catch (error) {
-    console.error('Statistics retrieval failed:', error);
+  } catch (_error) {
+    console.error('Statistics retrieval failed:', _error);
     res.status(500).json({
       error: 'Statistics Error',
       message: 'Failed to retrieve error statistics',
@@ -310,8 +310,8 @@ router.get('/circuit-breakers', async (req: Request, res: Response) => {
         healthStatus: getHealthStatus(stat.state, stat.successRate),
       })),
     });
-  } catch (error) {
-    console.error('Circuit breaker status retrieval failed:', error);
+  } catch (_error) {
+    console.error('Circuit breaker status retrieval failed:', _error);
     res.status(500).json({
       error: 'Circuit Breaker Error',
       message: 'Failed to retrieve circuit breaker status',
@@ -342,8 +342,8 @@ router.post(
           message: `Circuit breaker for service "${service}" not found`,
         });
       }
-    } catch (error) {
-      console.error('Circuit breaker reset failed:', error);
+    } catch (_error) {
+      console.error('Circuit breaker reset failed:', _error);
       res.status(500).json({
         error: 'Reset Error',
         message: 'Failed to reset circuit breaker',
@@ -375,8 +375,8 @@ router.post(
           message: `Circuit breaker for service "${service}" not found`,
         });
       }
-    } catch (error) {
-      console.error('Circuit breaker open failed:', error);
+    } catch (_error) {
+      console.error('Circuit breaker open failed:', _error);
       res.status(500).json({
         error: 'Open Error',
         message: 'Failed to open circuit breaker',
@@ -420,8 +420,8 @@ router.post(
         message: `Fallback service ${fallbackService.name} registered for ${primaryService}`,
         timestamp: new Date().toISOString(),
       });
-    } catch (error) {
-      console.error('Fallback service registration failed:', error);
+    } catch (_error) {
+      console.error('Fallback service registration failed:', _error);
       res.status(500).json({
         error: 'Registration Error',
         message: 'Failed to register fallback service',
@@ -461,8 +461,8 @@ router.get('/health', async (req: Request, res: Response) => {
         ? []
         : generateHealthActions(criticalErrors, openCircuitBreakers),
     });
-  } catch (error) {
-    console.error('Error handling health check failed:', error);
+  } catch (_error) {
+    console.error('Error handling health check failed:', _error);
     res.status(503).json({
       status: 'unhealthy',
       error: 'Health check failed',
@@ -484,8 +484,8 @@ router.delete('/history', async (req: Request, res: Response) => {
       message: 'Error history cleared successfully',
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Error history clearing failed:', error);
+  } catch (_error) {
+    console.error('Error history clearing failed:', _error);
     res.status(500).json({
       error: 'Clear Error',
       message: 'Failed to clear error history',

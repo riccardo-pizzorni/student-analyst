@@ -1,8 +1,5 @@
-M  backend/src/routes/analysisRoutes.ts
-A  backend/src/routes/analysisRoutes_fixed.ts
-M  backend/src/routes/apiRoutes.ts
-M  scripts/README.md
-M  scripts/backup-cursor-chat.bat
-M  scripts/start-cursor-and-auto-commit.bat
-AM scripts/temp_git_status.txt
-M  temp_git_status.txt
+ M backend/src/routes/batchRoutes.ts
+ M backend/src/routes/errorHandlingRoutes.ts
+ M scripts/README.md
+ M scripts/temp_git_status.txt
+?? scripts/fix-eslint-warnings.bat

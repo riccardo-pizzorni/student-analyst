@@ -171,14 +171,14 @@ router.post('/process', async (req: Request, res: Response) => {
       .catch((error: Error) => {
         console.error(`❌ Batch ${actualBatchId} failed:`, error.message);
       });
-  } catch (error) {
+  } catch (_error) {
     const responseTime = Date.now() - startTime;
-    console.error('Batch processing error:', error);
+    console.error('Batch processing error:', _error);
 
     res.status(500).json({
       error: 'Batch Processing Error',
       message: 'Failed to start batch processing',
-      details: error instanceof Error ? error.message : 'Unknown error',
+      details: _error instanceof Error ? _error.message : 'Unknown error',
       responseTime,
       timestamp: new Date().toISOString(),
     });
@@ -256,8 +256,8 @@ router.get('/status/:batchId', (req: Request, res: Response) => {
       },
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Batch status error:', error);
+  } catch (_error) {
+    console.error('Batch status error:', _error);
     res.status(500).json({
       error: 'Status Retrieval Error',
       message: 'Failed to get batch status',
@@ -332,8 +332,8 @@ router.get('/result/:batchId', (req: Request, res: Response) => {
       },
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Batch result error:', error);
+  } catch (_error) {
+    console.error('Batch result error:', _error);
     res.status(500).json({
       error: 'Result Retrieval Error',
       message: 'Failed to get batch results',
@@ -372,8 +372,8 @@ router.delete('/cancel/:batchId', (req: Request, res: Response) => {
       batchId,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Batch cancellation error:', error);
+  } catch (_error) {
+    console.error('Batch cancellation error:', _error);
     res.status(500).json({
       error: 'Cancellation Error',
       message: 'Failed to cancel batch',
@@ -403,8 +403,8 @@ router.get('/active', (req: Request, res: Response) => {
       rateLimitStats: batchProcessor.getRateLimitStats(),
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Active batches error:', error);
+  } catch (_error) {
+    console.error('Active batches error:', _error);
     res.status(500).json({
       error: 'Active Batches Error',
       message: 'Failed to get active batches',
@@ -506,8 +506,8 @@ router.post('/multi-timeframe', async (req: Request, res: Response) => {
           error
         );
       });
-  } catch (error) {
-    console.error('Multi-timeframe processing error:', error);
+  } catch (_error) {
+    console.error('Multi-timeframe processing error:', _error);
     res.status(500).json({
       error: 'Multi-Timeframe Processing Error',
       message: 'Failed to start multi-timeframe processing',
@@ -551,8 +551,8 @@ router.get('/stats', (req: Request, res: Response) => {
       },
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Batch stats error:', error);
+  } catch (_error) {
+    console.error('Batch stats error:', _error);
     res.status(500).json({
       error: 'Stats Error',
       message: 'Failed to get batch processing statistics',
@@ -574,8 +574,8 @@ router.delete('/cancel-all', (req: Request, res: Response) => {
       cancelledBatches: cancelledCount,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Cancel all batches error:', error);
+  } catch (_error) {
+    console.error('Cancel all batches error:', _error);
     res.status(500).json({
       error: 'Cancel All Error',
       message: 'Failed to cancel all batches',
