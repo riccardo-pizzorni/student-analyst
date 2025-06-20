@@ -47,8 +47,12 @@ export const fetchAnalysisData = async (
 ): Promise<AnalysisApiResponse> => {
   console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
 
-  // Questo URL verrà reindirizzato dal proxy di Vite in sviluppo al nostro backend
-  const API_URL = '/api/analysis';
+  // In produzione, VITE_API_BASE_URL sarà l'URL del backend deployato (es. su Railway).
+  // In sviluppo, sarà una stringa vuota, e la chiamata userà il proxy di Vite.
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+  const API_URL = `${API_BASE_URL}/api/analysis`;
+
+  console.log(`Frontend: Eseguo la chiamata a: ${API_URL}`);
 
   try {
     const response = await fetch(API_URL, {
