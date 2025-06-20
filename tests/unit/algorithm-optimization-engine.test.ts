@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import AlgorithmOptimizationEngine from '../../src/services/AlgorithmOptimizationEngine';
 
 // Definizione delle interfacce per i mock
@@ -14,7 +21,7 @@ interface IMockFunction<TArgs extends unknown[], TReturn> {
 const mockPerformanceNow = jest.fn<number, []>();
 Object.defineProperty(global, 'performance', {
   value: { now: mockPerformanceNow },
-  writable: true
+  writable: true,
 });
 
 describe('AlgorithmOptimizationEngine', () => {
@@ -33,7 +40,7 @@ describe('AlgorithmOptimizationEngine', () => {
   describe('Construction and Initial State', () => {
     it('should create engine with empty caches and zero metrics', () => {
       const metrics = engine.getMetrics();
-      
+
       expect(metrics.cacheHitRate).toBe(0);
       expect(metrics.averageComputeTime).toBe(0);
       expect(metrics.totalOperations).toBe(0);
@@ -43,7 +50,7 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should provide immutable metrics object', () => {
       const metrics1 = engine.getMetrics();
       const metrics2 = engine.getMetrics();
-      
+
       expect(metrics1).not.toBe(metrics2);
       expect(metrics1).toEqual(metrics2);
     });
@@ -53,12 +60,10 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should calculate covariance matrix correctly', async () => {
       const returns = [
         [0.1, 0.2, 0.15],
-        [0.05, 0.12, 0.08]
+        [0.05, 0.12, 0.08],
       ];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1100);
+      mockPerformanceNow.mockReturnValueOnce(1000).mockReturnValueOnce(1100);
 
       const result = await engine.calculateOptimizedCovariance(returns);
 
@@ -66,17 +71,18 @@ describe('AlgorithmOptimizationEngine', () => {
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(2);
       expect(result[0].length).toBe(2);
-      
+
       // Check symmetry
       expect(result[0][1]).toBe(result[1][0]);
     });
 
     it('should use cache for repeated calculations', async () => {
-      const returns = [[0.1, 0.2], [0.05, 0.12]];
+      const returns = [
+        [0.1, 0.2],
+        [0.05, 0.12],
+      ];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1050);
+      mockPerformanceNow.mockReturnValueOnce(1000).mockReturnValueOnce(1050);
 
       const result1 = await engine.calculateOptimizedCovariance(returns);
       const result2 = await engine.calculateOptimizedCovariance(returns);
@@ -87,18 +93,19 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should handle empty returns array', async () => {
       const returns: number[][] = [];
       const result = await engine.calculateOptimizedCovariance(returns);
-      
+
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(0);
     });
 
     it('should record computation time correctly', async () => {
-      const returns = [[0.1, 0.2], [0.05, 0.12]];
+      const returns = [
+        [0.1, 0.2],
+        [0.05, 0.12],
+      ];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(5000)
-        .mockReturnValueOnce(5200);
+      mockPerformanceNow.mockReturnValueOnce(5000).mockReturnValueOnce(5200);
 
       await engine.calculateOptimizedCovariance(returns);
       const metrics = engine.getMetrics();
@@ -110,7 +117,9 @@ describe('AlgorithmOptimizationEngine', () => {
 
   describe('Memoization', () => {
     it('should memoize function results', () => {
-      const mockFn = jest.fn<number, [number, number]>((x: number, y: number) => x + y);
+      const mockFn = jest.fn<number, [number, number]>(
+        (x: number, y: number) => x + y
+      );
 
       const result1 = engine.memoize(mockFn, 5, 3);
       const result2 = engine.memoize(mockFn, 5, 3);
@@ -174,11 +183,15 @@ describe('AlgorithmOptimizationEngine', () => {
     });
 
     it('should handle cache TTL expiration', async () => {
-      const returns = [[0.1, 0.2], [0.05, 0.12]];
-      
+      const returns = [
+        [0.1, 0.2],
+        [0.05, 0.12],
+      ];
+
       // Mock Date.now for TTL testing
       const originalDateNow = Date.now;
-      Date.now = jest.fn<number, []>()
+      Date.now = jest
+        .fn<number, []>()
         .mockReturnValueOnce(1000) // First cache set
         .mockReturnValueOnce(301001); // Beyond TTL (300000ms + 1)
 
@@ -190,13 +203,13 @@ describe('AlgorithmOptimizationEngine', () => {
 
       // First calculation
       await engine.calculateOptimizedCovariance(returns);
-      
+
       // Second calculation should miss cache due to TTL
       await engine.calculateOptimizedCovariance(returns);
-      
+
       const metrics = engine.getMetrics();
       expect(metrics.totalOperations).toBe(2);
-      
+
       // Restore Date.now
       Date.now = originalDateNow;
     });
@@ -206,12 +219,10 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should handle negative returns', async () => {
       const returns = [
         [-0.1, 0.2, -0.05],
-        [0.05, -0.12, 0.08]
+        [0.05, -0.12, 0.08],
       ];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1100);
+      mockPerformanceNow.mockReturnValueOnce(1000).mockReturnValueOnce(1100);
 
       const result = await engine.calculateOptimizedCovariance(returns);
 
@@ -222,9 +233,7 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should handle single return series', async () => {
       const returns = [[0.1, 0.2, 0.15]];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(2000)
-        .mockReturnValueOnce(2050);
+      mockPerformanceNow.mockReturnValueOnce(2000).mockReturnValueOnce(2050);
 
       const result = await engine.calculateOptimizedCovariance(returns);
 
@@ -236,12 +245,10 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should handle zero variance case', async () => {
       const returns = [
         [0.1, 0.1, 0.1],
-        [0.05, 0.12, 0.08]
+        [0.05, 0.12, 0.08],
       ];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(1000)
-        .mockReturnValueOnce(1100);
+      mockPerformanceNow.mockReturnValueOnce(1000).mockReturnValueOnce(1100);
 
       const result = await engine.calculateOptimizedCovariance(returns);
 
@@ -253,12 +260,10 @@ describe('AlgorithmOptimizationEngine', () => {
       const returns = [
         [0.1, 0.2, 0.15, 0.25],
         [0.05, 0.12, 0.08],
-        [0.08, 0.18]
+        [0.08, 0.18],
       ];
 
-      mockPerformanceNow
-        .mockReturnValueOnce(3000)
-        .mockReturnValueOnce(3075);
+      mockPerformanceNow.mockReturnValueOnce(3000).mockReturnValueOnce(3075);
 
       const result = await engine.calculateOptimizedCovariance(returns);
 
@@ -267,4 +272,4 @@ describe('AlgorithmOptimizationEngine', () => {
       expect(result[0].length).toBe(3);
     });
   });
-}); 
+});

@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - Data Sanitization & Validation System
  * =======================================================
- * 
+ *
  * Sistema completo per la sanitizzazione e validazione di tutti i dati
  * di input per proteggere contro XSS, injection attacks, e dati non validi
  */
@@ -42,7 +42,6 @@ export interface SanitizedRequestData {
  * Sistema di sanitizzazione principale
  */
 export class DataSanitizer {
-  
   // Patterns pericolosi da rilevare e neutralizzare
   private static readonly DANGEROUS_PATTERNS = {
     // SQL Injection patterns
@@ -51,9 +50,9 @@ export class DataSanitizer {
       /(UNION\s+SELECT)/gi,
       /(\|\||&&|--|\/\*|\*\/)/g,
       /((')|('')|(--)|(\;)|(\/)))/g,
-      /(0x[0-9a-f]+)/gi
+      /(0x[0-9a-f]+)/gi,
     ],
-    
+
     // XSS patterns
     xss: [
       /<script[^>]*>(.*?)<\/script>/gi,
@@ -67,24 +66,24 @@ export class DataSanitizer {
       /on\w+\s*=/gi,
       /data\s*:\s*text\/html/gi,
       /eval\s*\(/gi,
-      /expression\s*\(/gi
+      /expression\s*\(/gi,
     ],
-    
+
     // Command injection patterns
     command: [
       /(\||&&|;|\$\(|`)/g,
       /(\.\.\/|\.\.\\)/g,
       /(\/bin\/|\/usr\/|\/etc\/)/g,
-      /(curl|wget|nc|netcat)/gi
+      /(curl|wget|nc|netcat)/gi,
     ],
-    
+
     // File path traversal
     pathTraversal: [
       /(\.\.\/|\.\.\\)/g,
       /(\/\.\.|\\\.\.)/g,
       /(%2e%2e%2f|%2e%2e%5c)/gi,
-      /(%252e%252e%252f)/gi
-    ]
+      /(%252e%252e%252f)/gi,
+    ],
   };
 
   // Caratteri HTML che devono essere escapati
@@ -96,7 +95,7 @@ export class DataSanitizer {
     "'": '&#x27;',
     '/': '&#x2F;',
     '`': '&#x60;',
-    '=': '&#x3D;'
+    '=': '&#x3D;',
   };
 
   /**
@@ -107,8 +106,9 @@ export class DataSanitizer {
       return '';
     }
 
-    return input.replace(/[&<>"'`=/]/g, (char) => 
-      DataSanitizer.HTML_ESCAPE_MAP[char] || char
+    return input.replace(
+      /[&<>"'`=/]/g,
+      char => DataSanitizer.HTML_ESCAPE_MAP[char] || char
     );
   }
 
@@ -121,7 +121,7 @@ export class DataSanitizer {
         isValid: true,
         sanitizedValue: '',
         errors: [],
-        warnings: []
+        warnings: [],
       };
     }
 
@@ -169,8 +169,8 @@ export class DataSanitizer {
       metadata: {
         originalValue: input,
         sanitizationType: 'dangerous-patterns',
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
@@ -178,7 +178,7 @@ export class DataSanitizer {
    * Valida e sanitizza ticker symbols
    */
   static validateTicker(
-    ticker: string, 
+    ticker: string,
     options: TickerValidationOptions = {}
   ): ValidationResult {
     const {
@@ -186,7 +186,7 @@ export class DataSanitizer {
       allowedExchanges = [],
       enforceUppercase = true,
       allowCrypto = false,
-      allowFutures = false
+      allowFutures = false,
     } = options;
 
     const errors: string[] = [];
@@ -197,7 +197,7 @@ export class DataSanitizer {
       return {
         isValid: false,
         errors: ['Ticker symbol is required'],
-        warnings: []
+        warnings: [],
       };
     }
 
@@ -207,7 +207,7 @@ export class DataSanitizer {
       return {
         isValid: false,
         errors: ['Ticker contains dangerous patterns'],
-        warnings: []
+        warnings: [],
       };
     }
 
@@ -257,8 +257,8 @@ export class DataSanitizer {
       metadata: {
         originalValue: ticker,
         sanitizationType: 'ticker-validation',
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
@@ -275,7 +275,7 @@ export class DataSanitizer {
       maxDate,
       maxRangeDays = 365,
       allowFutureDates = false,
-      requiredFormat
+      requiredFormat,
     } = options;
 
     const errors: string[] = [];
@@ -317,11 +317,15 @@ export class DataSanitizer {
 
       // Controllo min/max date
       if (minDate && start < minDate) {
-        errors.push(`Start date must be after ${minDate.toISOString().split('T')[0]}`);
+        errors.push(
+          `Start date must be after ${minDate.toISOString().split('T')[0]}`
+        );
       }
 
       if (maxDate && end > maxDate) {
-        errors.push(`End date must be before ${maxDate.toISOString().split('T')[0]}`);
+        errors.push(
+          `End date must be before ${maxDate.toISOString().split('T')[0]}`
+        );
       }
 
       // Warning per range molto piccoli
@@ -334,22 +338,21 @@ export class DataSanitizer {
         sanitizedValue: {
           startDate: start.toISOString().split('T')[0],
           endDate: end.toISOString().split('T')[0],
-          rangeDays: diffDays
+          rangeDays: diffDays,
         },
         errors,
         warnings,
         metadata: {
           originalValue: { startDate, endDate },
           sanitizationType: 'date-range-validation',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       };
-
     } catch (error) {
       return {
         isValid: false,
         errors: [`Date validation error: ${error}`],
-        warnings: []
+        warnings: [],
       };
     }
   }
@@ -375,7 +378,7 @@ export class DataSanitizer {
       return {
         isValid: false,
         errors: ['Numeric value is required'],
-        warnings: []
+        warnings: [],
       };
     }
 
@@ -386,7 +389,7 @@ export class DataSanitizer {
         return {
           isValid: false,
           errors: ['Invalid numeric input: contains dangerous patterns'],
-          warnings: []
+          warnings: [],
         };
       }
       value = dangerousCheck.sanitizedValue as string;
@@ -422,16 +425,18 @@ export class DataSanitizer {
           warnings.push('Very high price value');
         }
         break;
-        
+
       case 'quantity':
         if (numValue < 0) {
           errors.push('Quantity cannot be negative');
         }
         if (numValue % 1 !== 0) {
-          warnings.push('Fractional quantities may not be supported for all assets');
+          warnings.push(
+            'Fractional quantities may not be supported for all assets'
+          );
         }
         break;
-        
+
       case 'percentage':
         if (numValue < -100 || numValue > 100) {
           errors.push('Percentage must be between -100 and 100');
@@ -442,7 +447,9 @@ export class DataSanitizer {
     // Controlla decimali
     const decimalsCount = numValue.toString().split('.')[1]?.length || 0;
     if (decimalsCount > decimals) {
-      warnings.push(`Value has ${decimalsCount} decimals, max recommended is ${decimals}`);
+      warnings.push(
+        `Value has ${decimalsCount} decimals, max recommended is ${decimals}`
+      );
     }
 
     const sanitizedValue = parseFloat(numValue.toFixed(decimals));
@@ -455,8 +462,8 @@ export class DataSanitizer {
       metadata: {
         originalValue: value,
         sanitizationType: `numeric-${type}`,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 
@@ -472,7 +479,7 @@ export class DataSanitizer {
       return {
         isValid: false,
         errors: ['Invalid request data'],
-        warnings: []
+        warnings: [],
       };
     }
 
@@ -493,7 +500,9 @@ export class DataSanitizer {
           errors.push(`Invalid value for field ${cleanKey}`);
           continue;
         }
-        sanitized[cleanKey] = DataSanitizer.sanitizeHtml(valueSanitized.sanitizedValue as string);
+        sanitized[cleanKey] = DataSanitizer.sanitizeHtml(
+          valueSanitized.sanitizedValue as string
+        );
       } else if (typeof value === 'number') {
         const numValidation = DataSanitizer.validateNumericInput(value);
         if (!numValidation.isValid) {
@@ -506,14 +515,20 @@ export class DataSanitizer {
         const sanitizedArray = value.map(item => {
           if (typeof item === 'string') {
             const itemSanitized = DataSanitizer.removeDangerousPatterns(item);
-            return itemSanitized.isValid ? DataSanitizer.sanitizeHtml(itemSanitized.sanitizedValue as string) : '';
+            return itemSanitized.isValid
+              ? DataSanitizer.sanitizeHtml(
+                  itemSanitized.sanitizedValue as string
+                )
+              : '';
           }
           return item;
         });
         sanitized[cleanKey] = sanitizedArray;
       } else {
         // Mantieni altri tipi ma logga warning
-        warnings.push(`Unsanitized field type for ${cleanKey}: ${typeof value}`);
+        warnings.push(
+          `Unsanitized field type for ${cleanKey}: ${typeof value}`
+        );
         sanitized[cleanKey] = value;
       }
     }
@@ -526,10 +541,10 @@ export class DataSanitizer {
       metadata: {
         originalValue: data,
         sanitizationType: 'request-data',
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     };
   }
 }
 
-export default DataSanitizer; 
+export default DataSanitizer;

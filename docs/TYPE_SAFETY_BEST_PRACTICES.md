@@ -7,6 +7,7 @@ Questo documento descrive le best practices implementate per mantenere la massim
 ## ✅ Regole Fondamentali
 
 ### 1. **Mai usare `any` esplicito**
+
 ```typescript
 // ❌ SBAGLIATO
 const data: any = getData();
@@ -18,6 +19,7 @@ const result = (service as unknown).method();
 ```
 
 ### 2. **Preferire `unknown` quando il tipo non è chiaro**
+
 ```typescript
 // ❌ SBAGLIATO
 function processData(data: any): any {
@@ -34,11 +36,12 @@ function processData(data: unknown): unknown {
 ```
 
 ### 3. **Usare interfacce specifiche per i mock**
+
 ```typescript
 // ❌ SBAGLIATO
 const mockService: any = {
   get: jest.fn(),
-  set: jest.fn()
+  set: jest.fn(),
 };
 
 // ✅ CORRETTO
@@ -53,6 +56,7 @@ const mockService = mockDeep<ICacheService>();
 ## 🧪 Best Practices per i Test
 
 ### 1. **jest-mock-extended per mock tipizzati**
+
 ```typescript
 import { mockDeep } from 'jest-mock-extended';
 
@@ -67,15 +71,19 @@ const mockUserService = mockDeep<IUserService>();
 ```
 
 ### 2. **Mock Functions con tipi specifici**
+
 ```typescript
 // ❌ SBAGLIATO
 const mockFn = jest.fn() as any;
 
 // ✅ CORRETTO
-const mockFn = jest.fn<number, [string, number]>((str, num) => str.length + num);
+const mockFn = jest.fn<number, [string, number]>(
+  (str, num) => str.length + num
+);
 ```
 
 ### 3. **Record<string, unknown> per oggetti dinamici**
+
 ```typescript
 // ❌ SBAGLIATO
 const config: any = { key: 'value' };
@@ -87,18 +95,19 @@ const config: Record<string, unknown> = { key: 'value' };
 ## 🔧 Strategie di Refactoring
 
 ### 1. **Sostituzione graduale**
+
 1. Identificare tutti gli usi di `any`
 2. Sostituire con `unknown` come primo passo
 3. Aggiungere type guards dove necessario
 4. Definire interfacce specifiche
 
 ### 2. **Type Guards per `unknown`**
+
 ```typescript
 function isUserData(data: unknown): data is User {
-  return typeof data === 'object' && 
-         data !== null && 
-         'id' in data && 
-         'name' in data;
+  return (
+    typeof data === 'object' && data !== null && 'id' in data && 'name' in data
+  );
 }
 
 function processUserData(data: unknown): User | null {
@@ -110,6 +119,7 @@ function processUserData(data: unknown): User | null {
 ```
 
 ### 3. **Interfacce per strutture dati complesse**
+
 ```typescript
 interface CacheStats {
   hits: number;
@@ -131,6 +141,7 @@ interface ICacheService {
 ## 📋 Checklist per Code Review
 
 ### ✅ Prima di ogni commit:
+
 - [ ] Nessun `any` esplicito nel codice
 - [ ] Tutti i mock sono tipizzati
 - [ ] Le funzioni con `unknown` hanno type guards
@@ -138,6 +149,7 @@ interface ICacheService {
 - [ ] ESLint non segnala errori "no-explicit-any"
 
 ### ✅ Per i test:
+
 - [ ] Uso di `jest-mock-extended` per mock complessi
 - [ ] Mock functions con tipi specifici
 - [ ] `Record<string, unknown>` per oggetti dinamici
@@ -146,6 +158,7 @@ interface ICacheService {
 ## 🚀 Configurazione ESLint
 
 ### Regola obbligatoria nel progetto:
+
 ```json
 {
   "rules": {
@@ -155,6 +168,7 @@ interface ICacheService {
 ```
 
 ### CI/CD Integration:
+
 ```yaml
 # .github/workflows/type-check.yml
 - name: Type Check
@@ -166,11 +180,13 @@ interface ICacheService {
 ## 📚 Risorse Utili
 
 ### Librerie Consigliate:
+
 - **jest-mock-extended**: Per mock tipizzati nei test
 - **zod**: Per runtime type validation
 - **io-ts**: Per type-safe data parsing
 
 ### Documentazione:
+
 - [TypeScript Handbook - Type Guards](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
 - [TypeScript Handbook - unknown](https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown)
 - [jest-mock-extended Documentation](https://github.com/marchaos/jest-mock-extended)
@@ -186,16 +202,18 @@ interface ICacheService {
 ## 🔄 Mantenimento
 
 ### Monitoraggio Continuo:
+
 - Eseguire `npm run lint` prima di ogni commit
 - Verificare `npx tsc --noEmit` regolarmente
 - Code review focalizzata sulla type safety
 - Aggiornare le interfacce quando necessario
 
 ### Training del Team:
+
 - Condividere questo documento con tutti i developer
 - Organizzare sessioni di training su TypeScript avanzato
 - Implementare pair programming per code review
 
 ---
 
-**Ricorda**: La type safety non è un obiettivo, è un processo continuo. Mantieni sempre alta l'attenzione sulla qualità del codice! 🚀 
+**Ricorda**: La type safety non è un obiettivo, è un processo continuo. Mantieni sempre alta l'attenzione sulla qualità del codice! 🚀

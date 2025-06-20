@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - API Proxy Test Utility
  * ========================================
- * 
+ *
  * Utility per testare il sistema di API proxy e validare
  * tutte le funzionalità di sicurezza implementate
  */
@@ -38,24 +38,24 @@ export class ApiProxyTester {
    */
   async runAllTests(): Promise<TestSuite> {
     console.log('🧪 Starting API Proxy Test Suite...\n');
-    
+
     this.results = [];
-    
+
     // Test di base
     await this.testBasicFunctionality();
-    
+
     // Test di sicurezza
     await this.testSecurityFeatures();
-    
+
     // Test di performance
     await this.testPerformance();
-    
+
     // Test di logging
     await this.testLogging();
-    
+
     // Test di cache
     await this.testCaching();
-    
+
     return this.generateSummary();
   }
 
@@ -64,7 +64,7 @@ export class ApiProxyTester {
    */
   private async testBasicFunctionality(): Promise<void> {
     console.log('📋 Testing basic functionality...');
-    
+
     // Test 1: Mock request per quote
     await this.runTest(
       'Mock Quote Request',
@@ -72,32 +72,33 @@ export class ApiProxyTester {
         const mockReq = {
           params: { symbol: 'AAPL' },
           ip: '127.0.0.1',
-          get: (header: string) => header === 'user-agent' ? 'test-agent' : '',
+          get: (header: string) =>
+            header === 'user-agent' ? 'test-agent' : '',
         };
         const mockRes = {
           json: (data: unknown) => data,
-          status: (code: number) => ({ json: (data: unknown) => data })
+          status: (code: number) => ({ json: (data: unknown) => data }),
         };
-        
+
         // Simuliamo una chiamata (in realtà non farà chiamate API reali)
         return true;
       },
       'Basic request handling should work'
     );
-    
+
     // Test 2: Validazione simboli
     await this.runTest(
       'Symbol Validation',
       async () => {
         const validSymbols = ['AAPL', 'MSFT', 'GOOGL', 'TSLA'];
         const invalidSymbols = ['', 'TOOLONGSYMBOL', '123$%', null];
-        
+
         // In un test reale, testeremmo la validazione
         return validSymbols.length === 4 && invalidSymbols.length === 4;
       },
       'Symbol validation logic should work correctly'
     );
-    
+
     // Test 3: Error handling
     await this.runTest(
       'Error Handling',
@@ -118,13 +119,14 @@ export class ApiProxyTester {
    */
   private async testSecurityFeatures(): Promise<void> {
     console.log('🔒 Testing security features...');
-    
+
     // Test 1: Suspicious activity logging
     await this.runTest(
       'Suspicious Activity Logging',
       async () => {
-        const initialEventCount = suspiciousActivityLogger.getSecurityStats().totalEvents;
-        
+        const initialEventCount =
+          suspiciousActivityLogger.getSecurityStats().totalEvents;
+
         suspiciousActivityLogger.logSuspiciousEvent({
           type: 'rate_limit_abuse',
           severity: 'medium',
@@ -132,41 +134,42 @@ export class ApiProxyTester {
             ip: '192.168.1.100',
             userAgent: 'test-bot',
             endpoint: '/api/v1/test',
-            description: 'Test suspicious activity'
-          }
+            description: 'Test suspicious activity',
+          },
         });
-        
-        const finalEventCount = suspiciousActivityLogger.getSecurityStats().totalEvents;
+
+        const finalEventCount =
+          suspiciousActivityLogger.getSecurityStats().totalEvents;
         return finalEventCount > initialEventCount;
       },
       'Suspicious activity should be logged correctly'
     );
-    
+
     // Test 2: IP blocking
     await this.runTest(
       'IP Blocking System',
       async () => {
         const testIP = '192.168.1.200';
-        
+
         // Test block
         suspiciousActivityLogger.blockIP(testIP, 'Test block');
         const isBlocked = suspiciousActivityLogger.isIPBlocked(testIP);
-        
+
         // Test unblock
         suspiciousActivityLogger.unblockIP(testIP, 'Test unblock');
         const isUnblocked = !suspiciousActivityLogger.isIPBlocked(testIP);
-        
+
         return isBlocked && isUnblocked;
       },
       'IP blocking and unblocking should work correctly'
     );
-    
+
     // Test 3: Threat level calculation
     await this.runTest(
       'Threat Level Calculation',
       async () => {
         const testIP = '192.168.1.300';
-        
+
         // Simula eventi multipli
         for (let i = 0; i < 3; i++) {
           suspiciousActivityLogger.logSuspiciousEvent({
@@ -176,31 +179,31 @@ export class ApiProxyTester {
               ip: testIP,
               userAgent: 'test-agent',
               endpoint: '/api/v1/test',
-              description: `Test event ${i}`
-            }
+              description: `Test event ${i}`,
+            },
           });
         }
-        
+
         const threat = suspiciousActivityLogger.getThreatLevel(testIP);
         return threat !== null && threat.level > 0;
       },
       'Threat level should increase with suspicious events'
     );
-    
+
     // Test 4: Whitelist functionality
     await this.runTest(
       'Whitelist Functionality',
       async () => {
         const testIP = '192.168.1.400';
-        
+
         suspiciousActivityLogger.addToWhitelist(testIP, 'Test whitelist');
-        
+
         // Tenta di bloccare IP whitelistato
         suspiciousActivityLogger.blockIP(testIP, 'Test block attempt');
         const isStillNotBlocked = !suspiciousActivityLogger.isIPBlocked(testIP);
-        
+
         suspiciousActivityLogger.removeFromWhitelist(testIP);
-        
+
         return isStillNotBlocked;
       },
       'Whitelisted IPs should not be blocked'
@@ -212,16 +215,16 @@ export class ApiProxyTester {
    */
   private async testPerformance(): Promise<void> {
     console.log('⚡ Testing performance...');
-    
+
     // Test 1: Response time
     await this.runTest(
       'Response Time Test',
       async () => {
         const startTime = Date.now();
-        
+
         // Simula elaborazione
         await new Promise(resolve => setTimeout(resolve, 50));
-        
+
         const responseTime = Date.now() - startTime;
         return responseTime < 1000; // Deve essere sotto 1 secondo
       },
@@ -229,32 +232,32 @@ export class ApiProxyTester {
       undefined,
       true // Misura response time
     );
-    
+
     // Test 2: Concurrent requests simulation
     await this.runTest(
       'Concurrent Requests Handling',
       async () => {
         const promises = [];
-        
+
         for (let i = 0; i < 10; i++) {
           promises.push(
             new Promise(resolve => setTimeout(() => resolve(true), 10))
           );
         }
-        
+
         const results = await Promise.all(promises);
         return results.every(result => result === true);
       },
       'System should handle multiple concurrent requests'
     );
-    
+
     // Test 3: Memory usage
     await this.runTest(
       'Memory Usage',
       async () => {
         const used = process.memoryUsage();
         const heapUsedMB = used.heapUsed / 1024 / 1024;
-        
+
         // Controlla che l'uso di memoria sia ragionevole (< 100MB)
         return heapUsedMB < 100;
       },
@@ -267,40 +270,42 @@ export class ApiProxyTester {
    */
   private async testLogging(): Promise<void> {
     console.log('📝 Testing logging system...');
-    
+
     // Test 1: Log export
     await this.runTest(
       'Log Export JSON',
       async () => {
         const exportedLogs = suspiciousActivityLogger.exportLogs('json');
         const parsed = JSON.parse(exportedLogs);
-        
+
         return parsed.exportTimestamp && parsed.events && parsed.stats;
       },
       'Log export in JSON format should work'
     );
-    
+
     // Test 2: Log export CSV
     await this.runTest(
       'Log Export CSV',
       async () => {
         const exportedLogs = suspiciousActivityLogger.exportLogs('csv');
         const lines = exportedLogs.split('\n');
-        
+
         return lines.length > 0 && lines[0].includes('Timestamp');
       },
       'Log export in CSV format should work'
     );
-    
+
     // Test 3: Security stats
     await this.runTest(
       'Security Statistics',
       async () => {
         const stats = suspiciousActivityLogger.getSecurityStats();
-        
-        return typeof stats.totalEvents === 'number' &&
-               typeof stats.last24Hours === 'number' &&
-               Array.isArray(stats.blockedIPs);
+
+        return (
+          typeof stats.totalEvents === 'number' &&
+          typeof stats.last24Hours === 'number' &&
+          Array.isArray(stats.blockedIPs)
+        );
       },
       'Security statistics should provide comprehensive data'
     );
@@ -311,7 +316,7 @@ export class ApiProxyTester {
    */
   private async testCaching(): Promise<void> {
     console.log('💾 Testing caching system...');
-    
+
     // Test 1: Cache TTL
     await this.runTest(
       'Cache TTL Logic',
@@ -320,17 +325,17 @@ export class ApiProxyTester {
         const cacheEntry = {
           data: { test: 'data' },
           timestamp: new Date(),
-          ttl: 1000 // 1 secondo
+          ttl: 1000, // 1 secondo
         };
-        
+
         // Simula controllo TTL
-        const isExpired = (now - cacheEntry.timestamp.getTime()) > cacheEntry.ttl;
-        
+        const isExpired = now - cacheEntry.timestamp.getTime() > cacheEntry.ttl;
+
         return typeof isExpired === 'boolean';
       },
       'Cache TTL logic should work correctly'
     );
-    
+
     // Test 2: Cache key generation
     await this.runTest(
       'Cache Key Generation',
@@ -338,7 +343,7 @@ export class ApiProxyTester {
         const symbol = 'AAPL';
         const interval = 'daily';
         const cacheKey = `historical_${symbol}_${interval}`;
-        
+
         return cacheKey === 'historical_AAPL_daily';
       },
       'Cache keys should be generated consistently'
@@ -356,29 +361,30 @@ export class ApiProxyTester {
     measureTime: boolean = false
   ): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       const result = await testFunction();
       const responseTime = measureTime ? Date.now() - startTime : undefined;
-      
+
       this.results.push({
         test: testName,
         passed: result,
         message: result ? `✅ ${description}` : `❌ ${description}`,
         details,
-        responseTime
+        responseTime,
       });
-      
-      console.log(`  ${result ? '✅' : '❌'} ${testName}: ${description}${responseTime ? ` (${responseTime}ms)` : ''}`);
-      
+
+      console.log(
+        `  ${result ? '✅' : '❌'} ${testName}: ${description}${responseTime ? ` (${responseTime}ms)` : ''}`
+      );
     } catch (error) {
       this.results.push({
         test: testName,
         passed: false,
         message: `❌ ${description} - Error: ${error}`,
-        details: { error: String(error) }
+        details: { error: String(error) },
       });
-      
+
       console.log(`  ❌ ${testName}: Error - ${error}`);
     }
   }
@@ -390,8 +396,9 @@ export class ApiProxyTester {
     const totalTests = this.results.length;
     const passed = this.results.filter(r => r.passed).length;
     const failed = totalTests - passed;
-    const successRate = totalTests > 0 ? ((passed / totalTests) * 100).toFixed(2) + '%' : '0%';
-    
+    const successRate =
+      totalTests > 0 ? ((passed / totalTests) * 100).toFixed(2) + '%' : '0%';
+
     const summary = {
       suiteName: 'API Proxy Security Test Suite',
       results: this.results,
@@ -399,16 +406,16 @@ export class ApiProxyTester {
         totalTests,
         passed,
         failed,
-        successRate
-      }
+        successRate,
+      },
     };
-    
+
     console.log('\n📊 Test Summary:');
     console.log(`   Total Tests: ${totalTests}`);
     console.log(`   Passed: ${passed} ✅`);
     console.log(`   Failed: ${failed} ${failed > 0 ? '❌' : ''}`);
     console.log(`   Success Rate: ${successRate}\n`);
-    
+
     return summary;
   }
 
@@ -417,11 +424,11 @@ export class ApiProxyTester {
    */
   static async quickTest(): Promise<boolean> {
     console.log('🚀 Running quick API proxy test...');
-    
+
     try {
       // Test basic imports
       const statsInitial = suspiciousActivityLogger.getSecurityStats();
-      
+
       // Test logging
       suspiciousActivityLogger.logSuspiciousEvent({
         type: 'rate_limit_abuse',
@@ -430,17 +437,16 @@ export class ApiProxyTester {
           ip: '127.0.0.1',
           userAgent: 'quick-test',
           endpoint: '/test',
-          description: 'Quick test event'
-        }
+          description: 'Quick test event',
+        },
       });
-      
+
       const statsAfter = suspiciousActivityLogger.getSecurityStats();
-      
+
       const success = statsAfter.totalEvents > statsInitial.totalEvents;
-      
+
       console.log(`Quick test result: ${success ? '✅ PASSED' : '❌ FAILED'}`);
       return success;
-      
     } catch (error) {
       console.error('❌ Quick test failed:', error);
       return false;
@@ -449,4 +455,4 @@ export class ApiProxyTester {
 }
 
 // Export per uso standalone
-export default ApiProxyTester; 
+export default ApiProxyTester;

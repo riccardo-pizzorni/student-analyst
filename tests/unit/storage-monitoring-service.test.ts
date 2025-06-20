@@ -1,9 +1,16 @@
 /**
- * STUDENT ANALYST - StorageMonitoringService Unit Tests  
+ * STUDENT ANALYST - StorageMonitoringService Unit Tests
  * SIMPLE VERSION FOR 100% COVERAGE
  */
 
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import { mockDeep } from 'jest-mock-extended';
 import { StorageMonitoringService } from '../../src/services/StorageMonitoringService';
 
@@ -50,7 +57,7 @@ const mockConsole = {
   log: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  info: jest.fn()
+  info: jest.fn(),
 };
 
 // Mock di setTimeout/clearTimeout
@@ -63,44 +70,44 @@ const mockPerformanceNow = jest.fn();
 // Setup dei mock globali
 Object.defineProperty(global, 'localStorage', {
   value: mockLocalStorage,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'sessionStorage', {
   value: mockSessionStorage,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'indexedDB', {
   value: mockIndexedDB,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'navigator', {
   value: {
-    storage: mockNavigatorStorage
+    storage: mockNavigatorStorage,
   },
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'console', {
   value: mockConsole,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'setTimeout', {
   value: mockSetTimeout,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'clearTimeout', {
   value: mockClearTimeout,
-  writable: true
+  writable: true,
 });
 
 Object.defineProperty(global, 'performance', {
   value: { now: mockPerformanceNow },
-  writable: true
+  writable: true,
 });
 
 describe('StorageMonitoringService', () => {
@@ -109,12 +116,12 @@ describe('StorageMonitoringService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    
+
     service = new StorageMonitoringService({
       localStorage: mockLocalStorage,
       sessionStorage: mockSessionStorage,
       indexedDB: mockIndexedDB,
-      navigator: mockNavigatorStorage
+      navigator: mockNavigatorStorage,
     });
   });
 
@@ -154,7 +161,7 @@ describe('StorageMonitoringService', () => {
     it('should update configuration', () => {
       const newConfig = { checkInterval: 15000 };
       service.updateConfig(newConfig);
-      
+
       const config = service.getConfig();
       expect(config.checkInterval).toBe(15000);
     });
@@ -162,7 +169,7 @@ describe('StorageMonitoringService', () => {
     it('should maintain other config values when updating', () => {
       const newConfig = { warningThreshold: 0.7 };
       service.updateConfig(newConfig);
-      
+
       const config = service.getConfig();
       expect(config.warningThreshold).toBe(0.7);
       expect(config.checkInterval).toBe(30000); // unchanged
@@ -185,10 +192,10 @@ describe('StorageMonitoringService', () => {
     it('should handle multiple start monitoring calls', () => {
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.startMonitoring(); // Should not crash
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.stopMonitoring(); // cleanup
     });
 
@@ -196,7 +203,7 @@ describe('StorageMonitoringService', () => {
       service.startMonitoring();
       service.stopMonitoring();
       expect(service.isServiceMonitoring()).toBe(false);
-      
+
       service.stopMonitoring(); // Should not crash
       expect(service.isServiceMonitoring()).toBe(false);
     });
@@ -252,12 +259,12 @@ describe('StorageMonitoringService', () => {
         checkInterval: 45000,
         warningThreshold: 0.75,
         criticalThreshold: 0.9,
-        enableAutoCheck: false
+        enableAutoCheck: false,
       };
-      
+
       service.updateConfig(fullConfig);
       const config = service.getConfig();
-      
+
       expect(config.checkInterval).toBe(45000);
       expect(config.warningThreshold).toBe(0.75);
       expect(config.criticalThreshold).toBe(0.9);
@@ -267,10 +274,10 @@ describe('StorageMonitoringService', () => {
     it('should handle edge case configuration values', () => {
       service.updateConfig({ warningThreshold: 0.0 });
       expect(service.getConfig().warningThreshold).toBe(0.0);
-      
+
       service.updateConfig({ criticalThreshold: 1.0 });
       expect(service.getConfig().criticalThreshold).toBe(1.0);
-      
+
       service.updateConfig({ checkInterval: 1000 });
       expect(service.getConfig().checkInterval).toBe(1000);
     });
@@ -278,15 +285,15 @@ describe('StorageMonitoringService', () => {
     it('should handle configuration reset scenarios', () => {
       // Make changes
       service.updateConfig({ checkInterval: 99999 });
-      
+
       // Reset to defaults
       service.updateConfig({
         checkInterval: 30000,
         warningThreshold: 0.8,
         criticalThreshold: 0.95,
-        enableAutoCheck: true
+        enableAutoCheck: true,
       });
-      
+
       const config = service.getConfig();
       expect(config.checkInterval).toBe(30000);
       expect(config.warningThreshold).toBe(0.8);
@@ -300,15 +307,15 @@ describe('StorageMonitoringService', () => {
       // Start monitoring
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       // Update config while monitoring
       service.updateConfig({ checkInterval: 15000 });
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       // Stop monitoring
       service.stopMonitoring();
       expect(service.isServiceMonitoring()).toBe(false);
-      
+
       // Dispose
       service.dispose();
       expect(service.isServiceInitialized()).toBe(false);
@@ -320,7 +327,7 @@ describe('StorageMonitoringService', () => {
       service.stopMonitoring();
       service.startMonitoring();
       service.stopMonitoring();
-      
+
       expect(service.isServiceMonitoring()).toBe(false);
     });
   });
@@ -331,13 +338,13 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: mockNavigatorStorage
+        navigator: mockNavigatorStorage,
       });
-      
+
       expect(altService.getConfig()).toEqual(service.getConfig());
       expect(altService.isServiceInitialized()).toBe(false);
       expect(altService.isServiceMonitoring()).toBe(false);
-      
+
       altService.dispose();
     });
 
@@ -354,15 +361,15 @@ describe('StorageMonitoringService', () => {
       // Initial state
       expect(service.isServiceInitialized()).toBe(false);
       expect(service.isServiceMonitoring()).toBe(false);
-      
+
       // Start monitoring
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       // Config update shouldn't affect monitoring state
       service.updateConfig({ warningThreshold: 0.6 });
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       // Cleanup
       service.stopMonitoring();
       service.dispose();
@@ -392,10 +399,10 @@ describe('StorageMonitoringService', () => {
     it('should handle quota refresh after timeout', async () => {
       try {
         await service.getStorageQuotas();
-        
+
         // Fast forward past cache timeout
         jest.advanceTimersByTime(6 * 60 * 1000); // 6 minutes
-        
+
         await service.getStorageQuotas();
         expect(mockNavigatorStorage.estimate).toHaveBeenCalledTimes(2);
       } catch (error) {
@@ -409,20 +416,20 @@ describe('StorageMonitoringService', () => {
     it('should handle enableAutoCheck configuration changes', () => {
       service.updateConfig({ enableAutoCheck: false });
       service.startMonitoring();
-      
+
       service.updateConfig({ enableAutoCheck: true });
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.stopMonitoring(); // cleanup
     });
 
     it('should restart monitoring on interval change', () => {
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.updateConfig({ checkInterval: 60000 });
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.stopMonitoring(); // cleanup
     });
   });
@@ -432,7 +439,7 @@ describe('StorageMonitoringService', () => {
       expect(mockLocalStorage.setItem).toBeDefined();
       expect(mockLocalStorage.getItem).toBeDefined();
       expect(mockLocalStorage.removeItem).toBeDefined();
-      
+
       // Test mock behavior
       mockLocalStorage.setItem('test', 'value');
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith('test', 'value');
@@ -442,7 +449,7 @@ describe('StorageMonitoringService', () => {
       expect(mockSessionStorage.setItem).toBeDefined();
       expect(mockSessionStorage.getItem).toBeDefined();
       expect(mockSessionStorage.removeItem).toBeDefined();
-      
+
       // Test mock behavior
       mockSessionStorage.setItem('test', 'value');
       expect(mockSessionStorage.setItem).toHaveBeenCalledWith('test', 'value');
@@ -453,7 +460,7 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('localStorage error');
       });
-      
+
       expect(() => {
         try {
           mockLocalStorage.setItem('test', 'value');
@@ -461,7 +468,7 @@ describe('StorageMonitoringService', () => {
           // Expected error
         }
       }).not.toThrow();
-      
+
       // Reset mock
       mockLocalStorage.setItem.mockReset();
     });
@@ -481,7 +488,7 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: mockNavigatorStorage
+        navigator: mockNavigatorStorage,
       };
       const instance1 = StorageMonitoringService.getInstance(deps);
       const instance2 = StorageMonitoringService.getInstance(deps);
@@ -507,7 +514,7 @@ describe('StorageMonitoringService', () => {
         overall: 'healthy',
         lastCheck: 0,
         totalUsage: 0,
-        estimatedQuota: 0
+        estimatedQuota: 0,
       });
     });
   });
@@ -523,7 +530,7 @@ describe('StorageMonitoringService', () => {
     it('should handle multiple config updates', () => {
       service.updateConfig({ checkInterval: 15000 });
       service.updateConfig({ warningThreshold: 0.9 });
-      
+
       const config = service.getConfig();
       expect(config.checkInterval).toBe(15000);
       expect(config.warningThreshold).toBe(0.9);
@@ -580,7 +587,7 @@ describe('StorageMonitoringService', () => {
     it('should handle threshold configurations', () => {
       service.updateConfig({
         warningThreshold: 0.75,
-        criticalThreshold: 0.9
+        criticalThreshold: 0.9,
       });
 
       const config = service.getConfig();
@@ -590,7 +597,7 @@ describe('StorageMonitoringService', () => {
 
     it('should handle interval changes', () => {
       const intervals = [10000, 20000, 60000];
-      
+
       intervals.forEach(interval => {
         service.updateConfig({ checkInterval: interval });
         expect(service.getConfig().checkInterval).toBe(interval);
@@ -603,7 +610,9 @@ describe('StorageMonitoringService', () => {
       try {
         const quotas = await Promise.race([
           service.getStorageQuotas(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 500))
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 500)
+          ),
         ]);
         expect(quotas).toHaveProperty('localStorage');
         expect(quotas).toHaveProperty('sessionStorage');
@@ -620,7 +629,7 @@ describe('StorageMonitoringService', () => {
       expect(typeof service.forceHealthCheck).toBe('function');
       expect(typeof service.initialize).toBe('function');
       expect(typeof service.getStorageQuotas).toBe('function');
-      
+
       // Test that they return promises
       expect(service.forceHealthCheck()).toBeInstanceOf(Promise);
       expect(service.initialize()).toBeInstanceOf(Promise);
@@ -631,17 +640,17 @@ describe('StorageMonitoringService', () => {
   describe('Configuration Branch Coverage', () => {
     it('should handle enableAutoCheck true when not monitoring', () => {
       expect(service.isServiceMonitoring()).toBe(false);
-      
+
       service.updateConfig({ enableAutoCheck: true });
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.stopMonitoring(); // cleanup
     });
 
     it('should handle enableAutoCheck false when monitoring', () => {
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.updateConfig({ enableAutoCheck: false });
       expect(service.isServiceMonitoring()).toBe(false);
     });
@@ -649,17 +658,17 @@ describe('StorageMonitoringService', () => {
     it('should handle checkInterval change when monitoring', () => {
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       const oldInterval = service.getConfig().checkInterval;
       service.updateConfig({ checkInterval: oldInterval + 1000 });
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.stopMonitoring(); // cleanup
     });
 
     it('should handle checkInterval change when not monitoring', () => {
       expect(service.isServiceMonitoring()).toBe(false);
-      
+
       const oldInterval = service.getConfig().checkInterval;
       service.updateConfig({ checkInterval: oldInterval + 1000 });
       expect(service.isServiceMonitoring()).toBe(false);
@@ -671,16 +680,16 @@ describe('StorageMonitoringService', () => {
       try {
         // First call should create cache
         await service.getStorageQuotas();
-        
+
         // Second call should use cache
         await service.getStorageQuotas();
-        
+
         // Fast forward time to expire cache
         jest.advanceTimersByTime(70000); // 70 seconds
-        
+
         // Third call should refresh cache
         await service.getStorageQuotas();
-        
+
         expect(true).toBe(true); // Test completed successfully
       } catch (error) {
         // If async fails, just verify the method exists
@@ -690,7 +699,7 @@ describe('StorageMonitoringService', () => {
 
     it('should handle storage health initialization', () => {
       const health = service.getStorageHealth();
-      
+
       // Test all required properties exist
       expect(health.localStorage).toBeDefined();
       expect(health.sessionStorage).toBeDefined();
@@ -699,7 +708,7 @@ describe('StorageMonitoringService', () => {
       expect(health.lastCheck).toBeDefined();
       expect(health.totalUsage).toBeDefined();
       expect(health.estimatedQuota).toBeDefined();
-      
+
       // Test initial values
       expect(health.localStorage.status).toBe('unknown');
       expect(health.sessionStorage.status).toBe('unknown');
@@ -717,33 +726,35 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: {} as Navigator // Navigator without storage API
+        navigator: {} as Navigator, // Navigator without storage API
       });
-      
+
       try {
         await serviceWithoutStorage.getStorageQuotas();
         expect(true).toBe(true); // Should not crash
       } catch (error) {
         expect(true).toBe(true); // Error is acceptable
       }
-      
+
       serviceWithoutStorage.dispose();
     });
 
     it('should handle storage estimate rejection', async () => {
-      mockNavigatorStorage.estimate.mockRejectedValue(new Error('Storage API error'));
-      
+      mockNavigatorStorage.estimate.mockRejectedValue(
+        new Error('Storage API error')
+      );
+
       try {
         await service.getStorageQuotas();
         expect(true).toBe(true); // Should handle error gracefully
       } catch (error) {
         expect(true).toBe(true); // Error is acceptable
       }
-      
+
       // Reset mock
       mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 1024,
-        quota: 10240
+        quota: 10240,
       });
     });
 
@@ -752,10 +763,10 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('localStorage not available');
       });
-      
+
       // This should not crash the service
       expect(() => service.getStorageHealth()).not.toThrow();
-      
+
       // Reset mock
       mockLocalStorage.setItem.mockReset();
     });
@@ -767,7 +778,7 @@ describe('StorageMonitoringService', () => {
       for (let i = 0; i < 3; i++) {
         service.startMonitoring();
         expect(service.isServiceMonitoring()).toBe(true);
-        
+
         service.stopMonitoring();
         expect(service.isServiceMonitoring()).toBe(false);
       }
@@ -776,12 +787,12 @@ describe('StorageMonitoringService', () => {
     it('should handle monitoring with timer advancement', () => {
       service.startMonitoring();
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       // Advance timers to trigger monitoring cycle
       jest.advanceTimersByTime(35000); // 35 seconds
-      
+
       expect(service.isServiceMonitoring()).toBe(true);
-      
+
       service.stopMonitoring();
     });
   });
@@ -792,16 +803,16 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.setItem.mockImplementation((key, value) => {
         mockLocalStorage[key] = value;
       });
-      mockLocalStorage.getItem.mockImplementation((key) => {
+      mockLocalStorage.getItem.mockImplementation(key => {
         return mockLocalStorage[key] || null;
       });
-      mockLocalStorage.removeItem.mockImplementation((key) => {
+      mockLocalStorage.removeItem.mockImplementation(key => {
         delete mockLocalStorage[key];
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mocks
       mockLocalStorage.setItem.mockReset();
       mockLocalStorage.getItem.mockReset();
@@ -813,10 +824,10 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.setItem.mockImplementation(() => {});
       mockLocalStorage.getItem.mockReturnValue('wrong_value');
       mockLocalStorage.removeItem.mockImplementation(() => {});
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mocks
       mockLocalStorage.setItem.mockReset();
       mockLocalStorage.getItem.mockReset();
@@ -828,16 +839,16 @@ describe('StorageMonitoringService', () => {
       mockSessionStorage.setItem.mockImplementation((key, value) => {
         mockSessionStorage[key] = value;
       });
-      mockSessionStorage.getItem.mockImplementation((key) => {
+      mockSessionStorage.getItem.mockImplementation(key => {
         return mockSessionStorage[key] || null;
       });
-      mockSessionStorage.removeItem.mockImplementation((key) => {
+      mockSessionStorage.removeItem.mockImplementation(key => {
         delete mockSessionStorage[key];
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.sessionStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mocks
       mockSessionStorage.setItem.mockReset();
       mockSessionStorage.getItem.mockReset();
@@ -847,16 +858,16 @@ describe('StorageMonitoringService', () => {
     it('should handle storage size calculation', () => {
       // Mock storage with data
       mockLocalStorage.length = 2;
-      mockLocalStorage.key.mockImplementation((index) => {
+      mockLocalStorage.key.mockImplementation(index => {
         return index === 0 ? 'key1' : index === 1 ? 'key2' : null;
       });
-      mockLocalStorage.getItem.mockImplementation((key) => {
+      mockLocalStorage.getItem.mockImplementation(key => {
         return key === 'key1' ? 'value1' : key === 'key2' ? 'value2' : null;
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mocks
       mockLocalStorage.key.mockReset();
       mockLocalStorage.getItem.mockReset();
@@ -866,10 +877,10 @@ describe('StorageMonitoringService', () => {
       // Mock storage with null key
       mockLocalStorage.length = 1;
       mockLocalStorage.key.mockReturnValue(null);
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mocks
       mockLocalStorage.key.mockReset();
     });
@@ -879,10 +890,10 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.length = 1;
       mockLocalStorage.key.mockReturnValue('key1');
       mockLocalStorage.getItem.mockReturnValue(null);
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mocks
       mockLocalStorage.key.mockReset();
       mockLocalStorage.getItem.mockReset();
@@ -892,19 +903,21 @@ describe('StorageMonitoringService', () => {
   describe('Error Handling Edge Cases', () => {
     it('should handle quota detection errors', async () => {
       // Mock navigator.storage.estimate to throw error
-      mockNavigatorStorage.estimate.mockRejectedValue(new Error('Quota detection failed'));
-      
+      mockNavigatorStorage.estimate.mockRejectedValue(
+        new Error('Quota detection failed')
+      );
+
       try {
         await service.getStorageQuotas();
         expect(true).toBe(true); // Should handle error gracefully
       } catch (error) {
         expect(true).toBe(true); // Error is acceptable
       }
-      
+
       // Reset mock
       mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 1024,
-        quota: 10240
+        quota: 10240,
       });
     });
 
@@ -913,10 +926,10 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.setItem.mockImplementation(() => {
         throw new Error('localStorage error');
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mock
       mockLocalStorage.setItem.mockReset();
     });
@@ -926,10 +939,10 @@ describe('StorageMonitoringService', () => {
       mockLocalStorage.setItem.mockImplementation(() => {
         throw 'string error';
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.localStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mock
       mockLocalStorage.setItem.mockReset();
     });
@@ -939,10 +952,10 @@ describe('StorageMonitoringService', () => {
       mockSessionStorage.setItem.mockImplementation(() => {
         throw new Error('sessionStorage error');
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.sessionStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mock
       mockSessionStorage.setItem.mockReset();
     });
@@ -952,10 +965,10 @@ describe('StorageMonitoringService', () => {
       mockSessionStorage.setItem.mockImplementation(() => {
         throw 'string error';
       });
-      
+
       const health = service.getStorageHealth();
       expect(health.sessionStorage.status).toBe('unknown'); // Initial state
-      
+
       // Reset mock
       mockSessionStorage.setItem.mockReset();
     });
@@ -967,7 +980,7 @@ describe('StorageMonitoringService', () => {
       expect(mockIndexedDB.deleteDatabase).toBeDefined();
       expect(mockIndexedDB.cmp).toBeDefined();
       expect(mockIndexedDB.databases).toBeDefined();
-      
+
       // Test that open returns a mock request
       const request = mockIndexedDB.open('test', 1);
       expect(request).toHaveProperty('onsuccess');
@@ -980,16 +993,16 @@ describe('StorageMonitoringService', () => {
         onsuccess: null as unknown,
         onerror: null as unknown,
         result: {
-          close: jest.fn()
-        }
+          close: jest.fn(),
+        },
       };
       mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
-      
+
       // Simulate success callback
       if (mockRequest.onsuccess) {
         mockRequest.onsuccess();
       }
-      
+
       expect(mockRequest.result.close).toBeDefined();
     });
 
@@ -997,15 +1010,15 @@ describe('StorageMonitoringService', () => {
       const mockRequest = {
         onsuccess: null as unknown,
         onerror: null as unknown,
-        result: null
+        result: null,
       };
       mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
-      
+
       // Simulate error callback
       if (mockRequest.onerror) {
         mockRequest.onerror();
       }
-      
+
       expect(true).toBe(true); // Test completed
     });
   });
@@ -1016,16 +1029,16 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: {} as Navigator
+        navigator: {} as Navigator,
       });
-      
+
       try {
         const quotas = await serviceWithoutStorage.getStorageQuotas();
         expect(quotas.total).toBeGreaterThan(0); // Should use fallback
       } catch (error) {
         expect(true).toBe(true); // Error is acceptable
       }
-      
+
       serviceWithoutStorage.dispose();
     });
 
@@ -1034,64 +1047,75 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: { storage: {} } as Navigator
+        navigator: { storage: {} } as Navigator,
       });
-      
+
       try {
         const quotas = await serviceWithPartialStorage.getStorageQuotas();
         expect(quotas.total).toBeGreaterThan(0); // Should use fallback
       } catch (error) {
         expect(true).toBe(true); // Error is acceptable
       }
-      
+
       serviceWithPartialStorage.dispose();
     });
 
     it('should handle zero quota from storage API', async () => {
       mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 0,
-        quota: 0
+        quota: 0,
       });
-      
+
       try {
         const quotas = await service.getStorageQuotas();
         expect(quotas.total).toBeGreaterThan(0); // Should use fallback
       } catch (error) {
         expect(true).toBe(true); // Error is acceptable
       }
-      
+
       // Reset mock
       mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 1024,
-        quota: 10240
+        quota: 10240,
       });
     });
   });
 
   describe('ULTRA-COMPREHENSIVE COVERAGE - Every Line Tested', () => {
-    
     describe('Error Handling in detectStorageQuotas', () => {
       it('should trigger console.error and set fallback quotas on error', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-        const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-        
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+        const consoleWarnSpy = jest
+          .spyOn(console, 'warn')
+          .mockImplementation(() => {});
+
         // Force an error in detectStorageQuotas
-        mockNavigatorStorage.estimate.mockRejectedValue(new Error('Test error'));
-        
+        mockNavigatorStorage.estimate.mockRejectedValue(
+          new Error('Test error')
+        );
+
         try {
           const quotas = await Promise.race([
             service.getStorageQuotas(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 100))
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('timeout')), 100)
+            ),
           ]);
-          
+
           // Should use fallback quotas
-          if (quotas && typeof quotas === 'object' && 'localStorage' in quotas) {
+          if (
+            quotas &&
+            typeof quotas === 'object' &&
+            'localStorage' in quotas
+          ) {
             expect((quotas as unknown).localStorage).toBe(1024 * 1024); // 1MB
             expect((quotas as unknown).sessionStorage).toBe(1024 * 1024); // 1MB
             expect((quotas as unknown).indexedDB).toBe(10 * 1024 * 1024); // 10MB
             expect((quotas as unknown).total).toBe(12 * 1024 * 1024); // 12MB
           }
-          
+
           // Either console.error or console.warn should be called
           const errorCalled = consoleSpy.mock.calls.length > 0;
           const warnCalled = consoleWarnSpy.mock.calls.length > 0;
@@ -1102,14 +1126,14 @@ describe('StorageMonitoringService', () => {
           const warnCalled = consoleWarnSpy.mock.calls.length > 0;
           expect(errorCalled || warnCalled).toBe(true);
         }
-        
+
         consoleSpy.mockRestore();
         consoleWarnSpy.mockRestore();
-        
+
         // Reset mock
         mockNavigatorStorage.estimate.mockResolvedValue({
           usage: 1024,
-          quota: 10240
+          quota: 10240,
         });
       });
     });
@@ -1198,11 +1222,11 @@ describe('StorageMonitoringService', () => {
         mockLocalStorage.setItem.mockImplementation(() => {});
         mockLocalStorage.getItem.mockReturnValue('wrong_value'); // Different from 'test'
         mockLocalStorage.removeItem.mockImplementation(() => {});
-        
+
         // This tests the "if (retrieved !== testValue)" branch
         const health = service.getStorageHealth(); // This will eventually call checkLocalStorageHealth
         expect(health.localStorage.status).toBe('unknown'); // Initial state
-        
+
         mockLocalStorage.setItem.mockReset();
         mockLocalStorage.getItem.mockReset();
         mockLocalStorage.removeItem.mockReset();
@@ -1211,7 +1235,7 @@ describe('StorageMonitoringService', () => {
       it('should calculate storage size with multiple items', async () => {
         // Mock localStorage with multiple items
         mockLocalStorage.setItem.mockImplementation(() => {});
-        mockLocalStorage.getItem.mockImplementation((key) => {
+        mockLocalStorage.getItem.mockImplementation(key => {
           if (key === '__storage_test__') return 'test';
           if (key === 'item1') return 'value1';
           if (key === 'item2') return 'value2';
@@ -1219,15 +1243,15 @@ describe('StorageMonitoringService', () => {
         });
         mockLocalStorage.removeItem.mockImplementation(() => {});
         mockLocalStorage.length = 2;
-        mockLocalStorage.key.mockImplementation((index) => {
+        mockLocalStorage.key.mockImplementation(index => {
           if (index === 0) return 'item1';
           if (index === 1) return 'item2';
           return null;
         });
-        
+
         const health = service.getStorageHealth();
         expect(health.localStorage.status).toBe('unknown'); // Initial state
-        
+
         // Reset mocks
         mockLocalStorage.setItem.mockReset();
         mockLocalStorage.getItem.mockReset();
@@ -1240,10 +1264,10 @@ describe('StorageMonitoringService', () => {
         mockLocalStorage.setItem.mockImplementation(() => {
           throw new Error('Specific localStorage error');
         });
-        
+
         const health = service.getStorageHealth();
         expect(health.localStorage.status).toBe('unknown'); // Initial state
-        
+
         mockLocalStorage.setItem.mockReset();
       });
 
@@ -1252,10 +1276,10 @@ describe('StorageMonitoringService', () => {
         mockLocalStorage.setItem.mockImplementation(() => {
           throw 'String error'; // Not an Error object
         });
-        
+
         const health = service.getStorageHealth();
         expect(health.localStorage.status).toBe('unknown'); // Initial state
-        
+
         mockLocalStorage.setItem.mockReset();
       });
     });
@@ -1266,10 +1290,10 @@ describe('StorageMonitoringService', () => {
         mockSessionStorage.setItem.mockImplementation(() => {});
         mockSessionStorage.getItem.mockReturnValue('wrong_value'); // Different from 'test'
         mockSessionStorage.removeItem.mockImplementation(() => {});
-        
+
         const health = service.getStorageHealth();
         expect(health.sessionStorage.status).toBe('unknown'); // Initial state
-        
+
         mockSessionStorage.setItem.mockReset();
         mockSessionStorage.getItem.mockReset();
         mockSessionStorage.removeItem.mockReset();
@@ -1279,10 +1303,10 @@ describe('StorageMonitoringService', () => {
         mockSessionStorage.setItem.mockImplementation(() => {
           throw new Error('Specific sessionStorage error');
         });
-        
+
         const health = service.getStorageHealth();
         expect(health.sessionStorage.status).toBe('unknown'); // Initial state
-        
+
         mockSessionStorage.setItem.mockReset();
       });
 
@@ -1290,10 +1314,10 @@ describe('StorageMonitoringService', () => {
         mockSessionStorage.setItem.mockImplementation(() => {
           throw 'String error'; // Not an Error object
         });
-        
+
         const health = service.getStorageHealth();
         expect(health.sessionStorage.status).toBe('unknown'); // Initial state
-        
+
         mockSessionStorage.setItem.mockReset();
       });
     });
@@ -1303,18 +1327,18 @@ describe('StorageMonitoringService', () => {
         const mockRequest = {
           onsuccess: null as unknown,
           onerror: null as unknown,
-          result: null
+          result: null,
         };
-        
+
         mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
-        
+
         // Test the onerror callback manually
-        const errorResult = { 
-          status: 'error', 
-          usage: 0, 
-          error: 'Failed to open test database' 
+        const errorResult = {
+          status: 'error',
+          usage: 0,
+          error: 'Failed to open test database',
         };
-        
+
         expect(errorResult.status).toBe('error');
         expect(errorResult.usage).toBe(0);
         expect(errorResult.error).toBe('Failed to open test database');
@@ -1325,18 +1349,20 @@ describe('StorageMonitoringService', () => {
           onsuccess: null as unknown,
           onerror: null as unknown,
           result: {
-            close: jest.fn()
-          }
+            close: jest.fn(),
+          },
         };
-        
+
         const mockDeleteRequest = {
           onsuccess: null as unknown,
-          onerror: null as unknown
+          onerror: null as unknown,
         };
-        
+
         mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
-        mockIndexedDB.deleteDatabase.mockReturnValue(mockDeleteRequest as unknown);
-        
+        mockIndexedDB.deleteDatabase.mockReturnValue(
+          mockDeleteRequest as unknown
+        );
+
         // Test the success flow manually
         const successResult = { status: 'healthy', usage: 0 };
         expect(successResult.status).toBe('healthy');
@@ -1348,18 +1374,20 @@ describe('StorageMonitoringService', () => {
           onsuccess: null as unknown,
           onerror: null as unknown,
           result: {
-            close: jest.fn()
-          }
+            close: jest.fn(),
+          },
         };
-        
+
         const mockDeleteRequest = {
           onsuccess: null as unknown,
-          onerror: null as unknown
+          onerror: null as unknown,
         };
-        
+
         mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
-        mockIndexedDB.deleteDatabase.mockReturnValue(mockDeleteRequest as unknown);
-        
+        mockIndexedDB.deleteDatabase.mockReturnValue(
+          mockDeleteRequest as unknown
+        );
+
         // Test the deleteRequest.onerror flow
         const errorResult = { status: 'healthy', usage: 0 };
         expect(errorResult.status).toBe('healthy');
@@ -1368,38 +1396,38 @@ describe('StorageMonitoringService', () => {
 
       it('should handle IndexedDB timeout scenario', () => {
         jest.useFakeTimers();
-        
+
         const mockRequest = {
           onsuccess: null as unknown,
           onerror: null as unknown,
-          result: null
+          result: null,
         };
-        
+
         mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
-        
+
         // Test timeout result
-        const timeoutResult = { 
-          status: 'warning', 
-          usage: 0, 
-          error: 'IndexedDB response timeout' 
+        const timeoutResult = {
+          status: 'warning',
+          usage: 0,
+          error: 'IndexedDB response timeout',
         };
-        
+
         expect(timeoutResult.status).toBe('warning');
         expect(timeoutResult.usage).toBe(0);
         expect(timeoutResult.error).toBe('IndexedDB response timeout');
-        
+
         jest.useRealTimers();
       });
 
       it('should handle IndexedDB try-catch error - Error object', () => {
         // Test the catch block with Error object
         const error = new Error('IndexedDB error');
-        const result = { 
-          status: 'error', 
-          usage: 0, 
-          error: error.message 
+        const result = {
+          status: 'error',
+          usage: 0,
+          error: error.message,
         };
-        
+
         expect(result.status).toBe('error');
         expect(result.usage).toBe(0);
         expect(result.error).toBe('IndexedDB error');
@@ -1408,12 +1436,12 @@ describe('StorageMonitoringService', () => {
       it('should handle IndexedDB try-catch error - non-Error object', () => {
         // Test the catch block with non-Error object
         const error = 'String error';
-        const result = { 
-          status: 'error', 
-          usage: 0, 
-          error: 'Unknown error' 
+        const result = {
+          status: 'error',
+          usage: 0,
+          error: 'Unknown error',
         };
-        
+
         expect(result.status).toBe('error');
         expect(result.usage).toBe(0);
         expect(result.error).toBe('Unknown error');
@@ -1424,13 +1452,13 @@ describe('StorageMonitoringService', () => {
       it('should handle quota cache with exact timing', async () => {
         // Test the quota cache timing logic exactly
         const now = Date.now();
-        
+
         try {
           await service.getStorageQuotas(); // First call
-          
+
           // Simulate exactly 60000ms later (cache expiry)
           jest.advanceTimersByTime(60001);
-          
+
           await service.getStorageQuotas(); // Second call should refresh
         } catch (error) {
           expect(true).toBe(true); // Acceptable
@@ -1441,26 +1469,43 @@ describe('StorageMonitoringService', () => {
         const minimalService = new StorageMonitoringService({
           // No dependencies provided
         });
-        
+
         expect(minimalService.isServiceInitialized()).toBe(false);
         expect(minimalService.isServiceMonitoring()).toBe(false);
-        
+
         minimalService.dispose();
       });
 
       it('should test every config combination', () => {
         const configs = [
-          { checkInterval: 1000, warningThreshold: 0.1, criticalThreshold: 0.2, enableAutoCheck: true },
-          { checkInterval: 999999, warningThreshold: 0.99, criticalThreshold: 1.0, enableAutoCheck: false },
-          { checkInterval: 0, warningThreshold: 0.0, criticalThreshold: 0.0, enableAutoCheck: true },
+          {
+            checkInterval: 1000,
+            warningThreshold: 0.1,
+            criticalThreshold: 0.2,
+            enableAutoCheck: true,
+          },
+          {
+            checkInterval: 999999,
+            warningThreshold: 0.99,
+            criticalThreshold: 1.0,
+            enableAutoCheck: false,
+          },
+          {
+            checkInterval: 0,
+            warningThreshold: 0.0,
+            criticalThreshold: 0.0,
+            enableAutoCheck: true,
+          },
         ];
-        
+
         configs.forEach(config => {
           service.updateConfig(config);
           const currentConfig = service.getConfig();
           expect(currentConfig.checkInterval).toBe(config.checkInterval);
           expect(currentConfig.warningThreshold).toBe(config.warningThreshold);
-          expect(currentConfig.criticalThreshold).toBe(config.criticalThreshold);
+          expect(currentConfig.criticalThreshold).toBe(
+            config.criticalThreshold
+          );
           expect(currentConfig.enableAutoCheck).toBe(config.enableAutoCheck);
         });
       });
@@ -1468,27 +1513,27 @@ describe('StorageMonitoringService', () => {
       it('should handle monitoring state changes in all combinations', () => {
         // Test all possible state transitions
         expect(service.isServiceMonitoring()).toBe(false);
-        
+
         service.startMonitoring();
         expect(service.isServiceMonitoring()).toBe(true);
-        
+
         service.startMonitoring(); // Already monitoring
         expect(service.isServiceMonitoring()).toBe(true);
-        
+
         service.stopMonitoring();
         expect(service.isServiceMonitoring()).toBe(false);
-        
+
         service.stopMonitoring(); // Already stopped
         expect(service.isServiceMonitoring()).toBe(false);
-        
+
         // Test with config changes
         service.startMonitoring();
         service.updateConfig({ enableAutoCheck: false });
         expect(service.isServiceMonitoring()).toBe(false);
-        
+
         service.updateConfig({ enableAutoCheck: true });
         expect(service.isServiceMonitoring()).toBe(true);
-        
+
         service.stopMonitoring();
       });
 
@@ -1501,7 +1546,7 @@ describe('StorageMonitoringService', () => {
           ['key', 'value'], // Normal case
           ['very_long_key_name_here', 'very_long_value_content_here'], // Long strings
         ];
-        
+
         scenarios.forEach(([key, value]) => {
           const blob = new Blob([key + value]);
           expect(blob.size).toBeGreaterThanOrEqual(0);
@@ -1513,20 +1558,31 @@ describe('StorageMonitoringService', () => {
       it('should handle service initialization states', () => {
         // Test initialization state tracking
         expect(service.isServiceInitialized()).toBe(false);
-        
+
         // Test that initialize method exists
         expect(typeof service.initialize).toBe('function');
-        
+
         // Test various scenarios synchronously
         const scenarios = [
-          () => mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 }),
-          () => mockNavigatorStorage.estimate.mockResolvedValue({ usage: 0, quota: 0 }),
-          () => mockNavigatorStorage.estimate.mockRejectedValue(new Error('API error'))
+          () =>
+            mockNavigatorStorage.estimate.mockResolvedValue({
+              usage: 1024,
+              quota: 10240,
+            }),
+          () =>
+            mockNavigatorStorage.estimate.mockResolvedValue({
+              usage: 0,
+              quota: 0,
+            }),
+          () =>
+            mockNavigatorStorage.estimate.mockRejectedValue(
+              new Error('API error')
+            ),
         ];
-        
+
         scenarios.forEach(setup => {
           setup();
-          
+
           // Just test that calling initialize doesn't immediately crash
           try {
             service.initialize(); // Don't await
@@ -1534,11 +1590,14 @@ describe('StorageMonitoringService', () => {
           } catch (error) {
             expect(true).toBe(true); // Expected
           }
-          
+
           service.dispose();
         });
-        
-        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+
+        mockNavigatorStorage.estimate.mockResolvedValue({
+          usage: 1024,
+          quota: 10240,
+        });
       });
     });
 
@@ -1547,17 +1606,20 @@ describe('StorageMonitoringService', () => {
         const configs = [
           { checkInterval: -1, enableAutoCheck: 'invalid' as unknown },
           { checkInterval: Infinity, enableAutoCheck: null as unknown },
-          { checkInterval: 'string' as unknown, enableAutoCheck: 123 as unknown }
+          {
+            checkInterval: 'string' as unknown,
+            enableAutoCheck: 123 as unknown,
+          },
         ];
-        
+
         configs.forEach(config => {
           service.updateConfig(config);
           const currentConfig = service.getConfig();
-          
+
           // Should have some config - either valid or the raw value passed through
           expect(currentConfig).toBeDefined();
           expect(typeof currentConfig).toBe('object');
-          
+
           // The service should handle the config gracefully
           expect(true).toBe(true);
         });
@@ -1567,19 +1629,31 @@ describe('StorageMonitoringService', () => {
     describe('ULTRA-SPECIFIC LINE COVERAGE', () => {
       it('should test every branch of storage null checks', () => {
         const scenarios = [
-          { keyReturn: null, valueReturn: 'value', description: 'null key scenario' },
-          { keyReturn: 'key', valueReturn: null, description: 'null value scenario' },
-          { keyReturn: 'key', valueReturn: 'value', description: 'valid key-value pair' },
+          {
+            keyReturn: null,
+            valueReturn: 'value',
+            description: 'null key scenario',
+          },
+          {
+            keyReturn: 'key',
+            valueReturn: null,
+            description: 'null value scenario',
+          },
+          {
+            keyReturn: 'key',
+            valueReturn: 'value',
+            description: 'valid key-value pair',
+          },
         ];
-        
-        scenarios.forEach((scenario) => {
+
+        scenarios.forEach(scenario => {
           mockLocalStorage.length = 1;
           mockLocalStorage.key.mockReturnValue(scenario.keyReturn);
           mockLocalStorage.getItem.mockReturnValue(scenario.valueReturn);
-          
+
           const health = service.getStorageHealth();
           expect(health.localStorage.status).toBe('unknown');
-          
+
           mockLocalStorage.key.mockReset();
           mockLocalStorage.getItem.mockReset();
         });
@@ -1588,73 +1662,94 @@ describe('StorageMonitoringService', () => {
       it('should cover every possible quota cache scenario', () => {
         const scenarios = [
           { quota: 1000, usage: 950 }, // 95% usage - critical
-          { quota: 1000, usage: 800 }, // 80% usage - warning  
+          { quota: 1000, usage: 800 }, // 80% usage - warning
           { quota: 1000, usage: 500 }, // 50% usage - healthy
-          { quota: 0, usage: 0 },      // Zero quota
+          { quota: 0, usage: 0 }, // Zero quota
         ];
-        
+
         scenarios.forEach(scenario => {
           mockNavigatorStorage.estimate.mockResolvedValue({
             usage: scenario.usage,
-            quota: scenario.quota
+            quota: scenario.quota,
           });
-          
+
           const health = service.getStorageHealth();
           expect(health.estimatedQuota).toBeDefined();
         });
-        
-        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+
+        mockNavigatorStorage.estimate.mockResolvedValue({
+          usage: 1024,
+          quota: 10240,
+        });
       });
 
       it('should test ultra-precise line coverage for all missing branches', () => {
         // Test console.error in detectStorageQuotas (line 256)
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-        
-        mockNavigatorStorage.estimate.mockRejectedValue(new Error('Storage API failed'));
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+
+        mockNavigatorStorage.estimate.mockRejectedValue(
+          new Error('Storage API failed')
+        );
         (service as unknown).quotaCache = null;
-        
+
         service.getStorageQuotas().catch(() => {
           // Expected to fail
         });
-        
+
         consoleSpy.mockRestore();
-        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({
+          usage: 1024,
+          quota: 10240,
+        });
       });
     });
 
     describe('ULTRA-TARGETED LINE COVERAGE - Lines 256-480', () => {
       it('should cover console.error in detectStorageQuotas catch block', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-        
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+
         // Force storage.estimate to fail to hit line 256
-        mockNavigatorStorage.estimate.mockRejectedValue(new Error('Storage quota detection failed'));
-        
+        mockNavigatorStorage.estimate.mockRejectedValue(
+          new Error('Storage quota detection failed')
+        );
+
         // Clear quota cache to force detectStorageQuotas call
         (service as unknown).quotaCache = null;
-        
+
         try {
           await service.getStorageQuotas();
         } catch (error) {
           // Expected
         }
-        
+
         // Should have called console.error (line 256)
         expect(consoleSpy.mock.calls.length > 0 || true).toBe(true);
-        
+
         consoleSpy.mockRestore();
-        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({
+          usage: 1024,
+          quota: 10240,
+        });
       });
 
       it('should cover fallback quota assignment lines 258-263', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-        
+        const consoleSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+
         // Force error to trigger fallback quota assignment
-        mockNavigatorStorage.estimate.mockRejectedValue(new Error('No storage API'));
+        mockNavigatorStorage.estimate.mockRejectedValue(
+          new Error('No storage API')
+        );
         (service as unknown).quotaCache = null;
-        
+
         try {
           await service.getStorageQuotas();
-          
+
           // Check if quotaCache was set with fallback values (lines 258-263)
           const quotaCache = (service as unknown).quotaCache;
           if (quotaCache) {
@@ -1666,29 +1761,32 @@ describe('StorageMonitoringService', () => {
         } catch (error) {
           // Expected behavior
         }
-        
+
         consoleSpy.mockRestore();
-        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({
+          usage: 1024,
+          quota: 10240,
+        });
       });
 
       it('should cover Blob size calculation with null key/value (lines 376-389)', () => {
         // Test the specific lines where key or value could be null
         mockLocalStorage.length = 2;
-        mockLocalStorage.key.mockImplementation((index) => {
+        mockLocalStorage.key.mockImplementation(index => {
           if (index === 0) return null; // Test null key path
           if (index === 1) return 'valid_key';
           return null;
         });
-        mockLocalStorage.getItem.mockImplementation((key) => {
+        mockLocalStorage.getItem.mockImplementation(key => {
           if (key === 'valid_key') return null; // Test null value path
           if (key === '__storage_test__') return 'test';
           return null;
         });
-        
+
         // This should trigger the Blob size calculation with null checks
         const health = service.getStorageHealth();
         expect(health.localStorage.status).toBe('unknown');
-        
+
         mockLocalStorage.key.mockReset();
         mockLocalStorage.getItem.mockReset();
       });
@@ -1696,20 +1794,20 @@ describe('StorageMonitoringService', () => {
       it('should cover sessionStorage Blob size calculation (lines 416-427)', () => {
         // Similar test for sessionStorage
         mockSessionStorage.length = 2;
-        mockSessionStorage.key.mockImplementation((index) => {
+        mockSessionStorage.key.mockImplementation(index => {
           if (index === 0) return null; // Test null key
           if (index === 1) return 'session_key';
           return null;
         });
-        mockSessionStorage.getItem.mockImplementation((key) => {
+        mockSessionStorage.getItem.mockImplementation(key => {
           if (key === 'session_key') return null; // Test null value
           if (key === '__session_test__') return 'test';
           return null;
         });
-        
+
         const health = service.getStorageHealth();
         expect(health.sessionStorage.status).toBe('unknown');
-        
+
         mockSessionStorage.key.mockReset();
         mockSessionStorage.getItem.mockReset();
       });
@@ -1717,14 +1815,26 @@ describe('StorageMonitoringService', () => {
       it('should cover determineOverallHealth error status branches (lines 433-480)', () => {
         // Create new service to test determineOverallHealth indirectly
         const testService = new StorageMonitoringService();
-        
+
         // Test error status scenarios by checking different combinations
         const errorScenarios = [
-          { localStorage: 'error', sessionStorage: 'healthy', indexedDB: 'healthy' },
-          { localStorage: 'healthy', sessionStorage: 'error', indexedDB: 'healthy' },
-          { localStorage: 'healthy', sessionStorage: 'healthy', indexedDB: 'error' },
+          {
+            localStorage: 'error',
+            sessionStorage: 'healthy',
+            indexedDB: 'healthy',
+          },
+          {
+            localStorage: 'healthy',
+            sessionStorage: 'error',
+            indexedDB: 'healthy',
+          },
+          {
+            localStorage: 'healthy',
+            sessionStorage: 'healthy',
+            indexedDB: 'error',
+          },
         ];
-        
+
         errorScenarios.forEach(scenario => {
           // Mock the health states indirectly through getStorageHealth
           if (scenario.localStorage === 'error') {
@@ -1734,7 +1844,7 @@ describe('StorageMonitoringService', () => {
           } else {
             mockLocalStorage.setItem.mockImplementation(() => {});
           }
-          
+
           if (scenario.sessionStorage === 'error') {
             mockSessionStorage.setItem.mockImplementation(() => {
               throw new Error('sessionStorage error');
@@ -1742,7 +1852,7 @@ describe('StorageMonitoringService', () => {
           } else {
             mockSessionStorage.setItem.mockImplementation(() => {});
           }
-          
+
           if (scenario.indexedDB === 'error') {
             mockIndexedDB.open.mockImplementation(() => {
               throw new Error('indexedDB error');
@@ -1751,19 +1861,23 @@ describe('StorageMonitoringService', () => {
             mockIndexedDB.open.mockReturnValue({
               onsuccess: null,
               onerror: null,
-              result: { close: jest.fn() }
+              result: { close: jest.fn() },
             } as unknown);
           }
-          
+
           const health = testService.getStorageHealth();
-          expect(['error', 'unknown', 'healthy', 'warning', 'critical'].includes(health.overall)).toBe(true);
-          
+          expect(
+            ['error', 'unknown', 'healthy', 'warning', 'critical'].includes(
+              health.overall
+            )
+          ).toBe(true);
+
           // Reset mocks
           mockLocalStorage.setItem.mockReset();
           mockSessionStorage.setItem.mockReset();
           mockIndexedDB.open.mockReset();
         });
-        
+
         testService.dispose();
       });
 
@@ -1773,34 +1887,41 @@ describe('StorageMonitoringService', () => {
           localStorage: mockLocalStorage,
           sessionStorage: mockSessionStorage,
           indexedDB: mockIndexedDB,
-          navigator: mockNavigatorStorage
+          navigator: mockNavigatorStorage,
         });
-        
+
         // Update config to test thresholds
         testService.updateConfig({
           warningThreshold: 0.7,
-          criticalThreshold: 0.9
+          criticalThreshold: 0.9,
         });
-        
+
         // Test various usage vs quota scenarios
         const scenarios = [
           { usage: 950, quota: 1000 }, // 95% - should be critical
           { usage: 800, quota: 1000 }, // 80% - should be warning
           { usage: 500, quota: 1000 }, // 50% - should be healthy
         ];
-        
+
         scenarios.forEach(scenario => {
           mockNavigatorStorage.estimate.mockResolvedValue({
             usage: scenario.usage,
-            quota: scenario.quota
+            quota: scenario.quota,
           });
-          
+
           const health = testService.getStorageHealth();
-          expect(['healthy', 'warning', 'critical', 'error', 'unknown'].includes(health.overall)).toBe(true);
+          expect(
+            ['healthy', 'warning', 'critical', 'error', 'unknown'].includes(
+              health.overall
+            )
+          ).toBe(true);
         });
-        
+
         testService.dispose();
-        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({
+          usage: 1024,
+          quota: 10240,
+        });
       });
 
       it('should cover IndexedDB timeout and error paths (lines 433-450)', () => {
@@ -1808,20 +1929,20 @@ describe('StorageMonitoringService', () => {
         const requestMock = {
           onsuccess: null as unknown,
           onerror: null as unknown,
-          result: null
+          result: null,
         };
-        
+
         mockIndexedDB.open.mockReturnValue(requestMock as unknown);
-        
+
         // Test that the timeout mechanism works
         const health = service.getStorageHealth();
         expect(health.indexedDB.status).toBe('unknown');
-        
+
         // Test error callback manually
         if (requestMock.onerror) {
           requestMock.onerror();
         }
-        
+
         expect(true).toBe(true); // Test completed without crash
       });
 
@@ -1846,16 +1967,16 @@ describe('StorageMonitoringService', () => {
               callCount++;
               return callCount % 2 === 0 ? null : 'key' + callCount;
             });
-          }
+          },
         ];
-        
+
         edgeCases.forEach(setup => {
           setup();
           const health = service.getStorageHealth();
           expect(health).toBeDefined();
           expect(health.overall).toBeDefined();
         });
-        
+
         // Reset all mocks
         mockLocalStorage.length = 0;
         mockSessionStorage.length = 0;
@@ -1864,5 +1985,4 @@ describe('StorageMonitoringService', () => {
       });
     });
   });
-}); 
-
+});

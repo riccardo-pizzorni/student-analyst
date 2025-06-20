@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - API Rate Limiter
  * =================================
- * 
+ *
  * Sistema intelligente di gestione rate limiting per Alpha Vantage API
  * Gestisce code, progress tracking, e batch processing rispettando i limiti:
  * - 5 richieste al minuto (free tier)
@@ -93,16 +93,16 @@ export class ApiRateLimiter extends EventEmitter {
 
   constructor(config: Partial<RateLimiterConfig> = {}) {
     super();
-    
+
     this.config = {
       requestsPerMinute: 5, // Alpha Vantage free tier
-      requestsPerDay: 25,   // Alpha Vantage free tier
-      windowSizeMs: 60000,  // 1 minuto
+      requestsPerDay: 25, // Alpha Vantage free tier
+      windowSizeMs: 60000, // 1 minuto
       retryAttempts: 3,
       retryDelayMs: 1000,
       batchSize: 10,
       enableLogging: true,
-      ...config
+      ...config,
     };
   }
 
@@ -110,14 +110,14 @@ export class ApiRateLimiter extends EventEmitter {
    * Aggiunge richiesta singola alla coda
    */
   async queueRequest(
-    symbol: string, 
-    timeframe: string, 
+    symbol: string,
+    timeframe: string,
     priority: number = 1,
     options?: Record<string, unknown>
   ): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const requestId = `${symbol}-${timeframe}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const queuedRequest: QueuedRequest = {
         id: requestId,
         symbol: symbol.toUpperCase(),
@@ -127,11 +127,13 @@ export class ApiRateLimiter extends EventEmitter {
         retryCount: 0,
         options,
         resolve,
-        reject
+        reject,
       };
 
       this.queue.push(queuedRequest);
-      this.log(`Queued request for ${symbol} (${timeframe}). Queue size: ${this.queue.length}`);
+      this.log(
+        `Queued request for ${symbol} (${timeframe}). Queue size: ${this.queue.length}`
+      );
 
       // Avvia elaborazione se non è già in corso
       if (!this.isProcessing) {
@@ -144,8 +146,8 @@ export class ApiRateLimiter extends EventEmitter {
    * Aggiunge batch di richieste alla coda
    */
   async queueBatch(
-    symbols: string[], 
-    timeframe: string, 
+    symbols: string[],
+    timeframe: string,
     options?: Record<string, unknown>
   ): Promise<Map<string, unknown>> {
     const batchId = `batch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -153,7 +155,7 @@ export class ApiRateLimiter extends EventEmitter {
 
     this.log(`Starting batch processing for ${symbols.length} symbols`);
 
-    const promises = symbols.map((symbol, index) => 
+    const promises = symbols.map((symbol, index) =>
       this.queueRequest(symbol, timeframe, symbols.length - index, options)
     );
 
@@ -170,9 +172,10 @@ export class ApiRateLimiter extends EventEmitter {
         }
       });
 
-      this.log(`Batch processing completed. Success: ${results.filter(r => r.status === 'fulfilled').length}/${symbols.length}`);
+      this.log(
+        `Batch processing completed. Success: ${results.filter(r => r.status === 'fulfilled').length}/${symbols.length}`
+      );
       return resultMap;
-
     } finally {
       this.currentBatchId = undefined;
     }
@@ -214,26 +217,28 @@ export class ApiRateLimiter extends EventEmitter {
 
       // Simula chiamata API (qui verrà integrato AlphaVantageService)
       const result = await this.makeApiCall(request);
-      
+
       const responseTime = Date.now() - startTime;
 
       // Registra successo
       this.recordRequest();
-      
+
       request.resolve(result);
       this.log(`Request completed for ${request.symbol} (${responseTime}ms)`);
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
       // Gestione retry
       if (request.retryCount < this.config.retryAttempts) {
         request.retryCount++;
-        this.log(`Retrying request for ${request.symbol} (attempt ${request.retryCount}/${this.config.retryAttempts})`);
-        
+        this.log(
+          `Retrying request for ${request.symbol} (attempt ${request.retryCount}/${this.config.retryAttempts})`
+        );
+
         // Riaggiunge alla coda
         this.queue.unshift(request);
-        
+
         await this.delay(this.config.retryDelayMs * request.retryCount);
         return;
       }
@@ -258,7 +263,7 @@ export class ApiRateLimiter extends EventEmitter {
     if (this.requestHistory.length >= this.config.requestsPerMinute) {
       const oldestRequest = this.requestHistory[0];
       const timeToWait = 60000 - (Date.now() - oldestRequest.getTime());
-      
+
       if (timeToWait > 0) {
         this.log(`Rate limiting: waiting ${timeToWait}ms before next request`);
         await this.delay(timeToWait);
@@ -279,7 +284,7 @@ export class ApiRateLimiter extends EventEmitter {
       timeframe: request.timeframe,
       data: [],
       source: Math.random() > 0.3 ? 'alpha_vantage' : 'cache',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -297,7 +302,9 @@ export class ApiRateLimiter extends EventEmitter {
    */
   private cleanupRequestHistory(): void {
     const oneMinuteAgo = Date.now() - 60000;
-    this.requestHistory = this.requestHistory.filter(req => req.getTime() > oneMinuteAgo);
+    this.requestHistory = this.requestHistory.filter(
+      req => req.getTime() > oneMinuteAgo
+    );
   }
 
   /**
@@ -305,7 +312,9 @@ export class ApiRateLimiter extends EventEmitter {
    */
   private cleanupDailyHistory(): void {
     const oneDayAgo = Date.now() - 86400000; // 24 ore
-    this.dailyRequestHistory = this.dailyRequestHistory.filter(req => req.getTime() > oneDayAgo);
+    this.dailyRequestHistory = this.dailyRequestHistory.filter(
+      req => req.getTime() > oneDayAgo
+    );
   }
 
   /**
@@ -319,13 +328,19 @@ export class ApiRateLimiter extends EventEmitter {
       requestsInLastMinute: this.requestHistory.length,
       requestsInLastDay: this.dailyRequestHistory.length,
       timeUntilNextSlot: this.getTimeUntilNextSlot(),
-      dailyQuotaRemaining: Math.max(0, this.config.requestsPerDay - this.dailyRequestHistory.length),
-      minuteQuotaRemaining: Math.max(0, this.config.requestsPerMinute - this.requestHistory.length),
+      dailyQuotaRemaining: Math.max(
+        0,
+        this.config.requestsPerDay - this.dailyRequestHistory.length
+      ),
+      minuteQuotaRemaining: Math.max(
+        0,
+        this.config.requestsPerMinute - this.requestHistory.length
+      ),
       isThrottled: this.requestHistory.length >= this.config.requestsPerMinute,
       totalRequestsMade: this.dailyRequestHistory.length,
       cacheHitRate: 0, // Placeholder
       averageResponseTime: 0, // Placeholder
-      queueLength: this.queue.length
+      queueLength: this.queue.length,
     };
   }
 
@@ -384,4 +399,4 @@ export class ApiRateLimiter extends EventEmitter {
   }
 }
 
-export default ApiRateLimiter; 
+export default ApiRateLimiter;

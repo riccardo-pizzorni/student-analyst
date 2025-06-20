@@ -1,6 +1,6 @@
 /**
  * Date Normalizer per STUDENT ANALYST
- * 
+ *
  * Gestisce la normalizzazione di date da diversi formati in standard ISO
  * Supporta fusi orari, validazione e correzione automatica
  */
@@ -9,12 +9,12 @@
 
 export interface DateParsingResult {
   success: boolean;
-  date: string;        // YYYY-MM-DD
-  timestamp: string;   // YYYY-MM-DDTHH:MM:SS.sssZ
+  date: string; // YYYY-MM-DD
+  timestamp: string; // YYYY-MM-DDTHH:MM:SS.sssZ
   originalValue: string;
   detectedFormat: string;
   timezone: string;
-  confidence: number;  // 0-1
+  confidence: number; // 0-1
   errors: string[];
 }
 
@@ -31,30 +31,58 @@ export interface DateValidationRules {
 export class DateNormalizer {
   private readonly timezone: string;
   private readonly validationRules: DateValidationRules;
-  
+
   // Pattern regex per diversi formati di date
   private readonly datePatterns = [
     // Formati ISO
-    { pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/, format: 'ISO_FULL', priority: 10 },
-    { pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$/, format: 'ISO_SECONDS', priority: 9 },
-    { pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})Z$/, format: 'ISO_MINUTES', priority: 8 },
+    {
+      pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/,
+      format: 'ISO_FULL',
+      priority: 10,
+    },
+    {
+      pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z$/,
+      format: 'ISO_SECONDS',
+      priority: 9,
+    },
+    {
+      pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})Z$/,
+      format: 'ISO_MINUTES',
+      priority: 8,
+    },
     { pattern: /^(\d{4})-(\d{2})-(\d{2})$/, format: 'ISO_DATE', priority: 7 },
-    
+
     // Formati Alpha Vantage
-    { pattern: /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/, format: 'ALPHA_VANTAGE_FULL', priority: 6 },
-    { pattern: /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/, format: 'ALPHA_VANTAGE_MINUTES', priority: 5 },
-    
+    {
+      pattern: /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/,
+      format: 'ALPHA_VANTAGE_FULL',
+      priority: 6,
+    },
+    {
+      pattern: /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/,
+      format: 'ALPHA_VANTAGE_MINUTES',
+      priority: 5,
+    },
+
     // Formati Yahoo Finance
     { pattern: /^(\d{2})\/(\d{2})\/(\d{4})$/, format: 'YAHOO_US', priority: 4 }, // MM/DD/YYYY
-    { pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, format: 'YAHOO_US_FLEXIBLE', priority: 3 },
-    
+    {
+      pattern: /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+      format: 'YAHOO_US_FLEXIBLE',
+      priority: 3,
+    },
+
     // Formati Unix timestamp
     { pattern: /^(\d{10})$/, format: 'UNIX_SECONDS', priority: 2 },
     { pattern: /^(\d{13})$/, format: 'UNIX_MILLISECONDS', priority: 1 },
-    
+
     // Formati generici
-    { pattern: /^(\d{1,2})-(\d{1,2})-(\d{4})$/, format: 'GENERIC_DMY', priority: 0 },
-    { pattern: /^(\d{4})(\d{2})(\d{2})$/, format: 'COMPACT_YMD', priority: 0 }
+    {
+      pattern: /^(\d{1,2})-(\d{1,2})-(\d{4})$/,
+      format: 'GENERIC_DMY',
+      priority: 0,
+    },
+    { pattern: /^(\d{4})(\d{2})(\d{2})$/, format: 'COMPACT_YMD', priority: 0 },
   ];
 
   // Mapping dei fusi orari comuni
@@ -66,10 +94,13 @@ export class DateNormalizer {
     ['GMT', 'UTC'],
     ['UTC', 'UTC'],
     ['US/Eastern', 'America/New_York'],
-    ['US/Pacific', 'America/Los_Angeles']
+    ['US/Pacific', 'America/Los_Angeles'],
   ]);
 
-  constructor(timezone: string = 'America/New_York', validationRules?: Partial<DateValidationRules>) {
+  constructor(
+    timezone: string = 'America/New_York',
+    validationRules?: Partial<DateValidationRules>
+  ) {
     this.timezone = this.normalizeTimezone(timezone);
     this.validationRules = {
       allowFutureDates: false,
@@ -77,7 +108,7 @@ export class DateNormalizer {
       allowHolidaysForDaily: true,
       maxDateRange: 365 * 5, // 5 anni
       minDateRange: 1,
-      ...validationRules
+      ...validationRules,
     };
   }
 
@@ -90,7 +121,7 @@ export class DateNormalizer {
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
-      
+
       try {
         // Trova il campo data nell'oggetto
         if (typeof item !== 'object' || item === null) {
@@ -104,7 +135,9 @@ export class DateNormalizer {
         }
 
         // Parsing della data
-        const parseResult = this.parseDate((item as Record<string, unknown>)[dateField]);
+        const parseResult = this.parseDate(
+          (item as Record<string, unknown>)[dateField]
+        );
         if (!parseResult.success) {
           errors.push(`Record ${i}: ${parseResult.errors.join(', ')}`);
           continue;
@@ -126,18 +159,22 @@ export class DateNormalizer {
           timestamp: parseResult.timestamp,
           originalDate: (item as Record<string, unknown>)[dateField],
           dateFormat: parseResult.detectedFormat,
-          dateConfidence: parseResult.confidence
+          dateConfidence: parseResult.confidence,
         };
 
         results.push(normalizedItem);
-
       } catch (error) {
-        errors.push(`Record ${i}: Errore inaspettato - ${(error as Error).message}`);
+        errors.push(
+          `Record ${i}: Errore inaspettato - ${(error as Error).message}`
+        );
       }
     }
 
     if (errors.length > 0) {
-      console.warn(`DateNormalizer: ${errors.length} errori durante normalizzazione:`, errors.slice(0, 5));
+      console.warn(
+        `DateNormalizer: ${errors.length} errori durante normalizzazione:`,
+        errors.slice(0, 5)
+      );
     }
 
     return results;
@@ -148,7 +185,7 @@ export class DateNormalizer {
    */
   public parseDate(dateValue: unknown): DateParsingResult {
     const originalValue = String(dateValue);
-    
+
     if (!dateValue || dateValue === '') {
       return {
         success: false,
@@ -158,13 +195,15 @@ export class DateNormalizer {
         detectedFormat: 'EMPTY',
         timezone: this.timezone,
         confidence: 0,
-        errors: ['Valore data vuoto']
+        errors: ['Valore data vuoto'],
       };
     }
 
     // Prova tutti i pattern in ordine di priorità
-    const sortedPatterns = [...this.datePatterns].sort((a, b) => b.priority - a.priority);
-    
+    const sortedPatterns = [...this.datePatterns].sort(
+      (a, b) => b.priority - a.priority
+    );
+
     for (const { pattern, format } of sortedPatterns) {
       const match = originalValue.match(pattern);
       if (match) {
@@ -191,7 +230,7 @@ export class DateNormalizer {
           detectedFormat: 'JAVASCRIPT_NATIVE',
           timezone: this.timezone,
           confidence: 0.5,
-          errors: []
+          errors: [],
         };
       }
     } catch (error) {
@@ -206,14 +245,18 @@ export class DateNormalizer {
       detectedFormat: 'UNKNOWN',
       timezone: this.timezone,
       confidence: 0,
-      errors: [`Formato data non riconosciuto: ${originalValue}`]
+      errors: [`Formato data non riconosciuto: ${originalValue}`],
     };
   }
 
   /**
    * Parsing con formato specifico
    */
-  private parseWithFormat(match: RegExpMatchArray, format: string, originalValue: string): DateParsingResult {
+  private parseWithFormat(
+    match: RegExpMatchArray,
+    format: string,
+    originalValue: string
+  ): DateParsingResult {
     let date: Date;
     let confidence = 1.0;
     let month: string, day: string, year: string;
@@ -260,7 +303,11 @@ export class DateNormalizer {
       case 'GENERIC_DMY':
         // Assumiamo DD-MM-YYYY (formato europeo)
         [, dayDMY = '', monthDMY = '', yearDMY = ''] = match;
-        date = new Date(parseInt(yearDMY), parseInt(monthDMY) - 1, parseInt(dayDMY));
+        date = new Date(
+          parseInt(yearDMY),
+          parseInt(monthDMY) - 1,
+          parseInt(dayDMY)
+        );
         confidence = 0.7; // Formato ambiguo
         break;
 
@@ -269,9 +316,13 @@ export class DateNormalizer {
         [, fullYear = '', fullMonth = '', fullDay = ''] = [
           match[0].slice(0, 4),
           match[0].slice(4, 6),
-          match[0].slice(6, 8)
+          match[0].slice(6, 8),
         ];
-        date = new Date(parseInt(fullYear), parseInt(fullMonth) - 1, parseInt(fullDay));
+        date = new Date(
+          parseInt(fullYear),
+          parseInt(fullMonth) - 1,
+          parseInt(fullDay)
+        );
         break;
 
       default:
@@ -290,7 +341,7 @@ export class DateNormalizer {
       detectedFormat: format,
       timezone: this.timezone,
       confidence,
-      errors: []
+      errors: [],
     };
   }
 
@@ -310,17 +361,19 @@ export class DateNormalizer {
       return {
         isValid: false,
         reason: 'Data futura non ammessa',
-        severity: 'HIGH'
+        severity: 'HIGH',
       };
     }
 
     // Controllo range date
-    const daysDiff = Math.abs((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.abs(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
     if (daysDiff > this.validationRules.maxDateRange) {
       return {
         isValid: false,
         reason: `Data troppo lontana (${Math.round(daysDiff)} giorni)`,
-        severity: 'MEDIUM'
+        severity: 'MEDIUM',
       };
     }
 
@@ -328,18 +381,19 @@ export class DateNormalizer {
       return {
         isValid: false,
         reason: 'Data troppo recente',
-        severity: 'LOW'
+        severity: 'LOW',
       };
     }
 
     // Controllo weekend per dati daily
     if (!this.validationRules.allowWeekendsForDaily) {
       const dayOfWeek = date.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) { // Domenica o Sabato
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        // Domenica o Sabato
         return {
           isValid: false,
           reason: 'Weekend non ammesso per dati giornalieri',
-          severity: 'LOW'
+          severity: 'LOW',
         };
       }
     }
@@ -349,14 +403,14 @@ export class DateNormalizer {
       return {
         isValid: false,
         reason: 'Confidence di parsing troppo bassa',
-        severity: 'MEDIUM'
+        severity: 'MEDIUM',
       };
     }
 
     return {
       isValid: true,
       reason: 'Data valida',
-      severity: 'LOW'
+      severity: 'LOW',
     };
   }
 
@@ -365,13 +419,25 @@ export class DateNormalizer {
    */
   private findDateField(item: Record<string, unknown>): string | null {
     const dateFields = [
-      'date', 'timestamp', 'time', 'datetime',
-      'Date', 'Timestamp', 'Time', 'DateTime',
-      'DATE', 'TIMESTAMP', 'TIME', 'DATETIME'
+      'date',
+      'timestamp',
+      'time',
+      'datetime',
+      'Date',
+      'Timestamp',
+      'Time',
+      'DateTime',
+      'DATE',
+      'TIMESTAMP',
+      'TIME',
+      'DATETIME',
     ];
 
     for (const field of dateFields) {
-      if (Object.prototype.hasOwnProperty.call(item, field) && item[field] != null) {
+      if (
+        Object.prototype.hasOwnProperty.call(item, field) &&
+        item[field] != null
+      ) {
         return field;
       }
     }
@@ -379,7 +445,10 @@ export class DateNormalizer {
     // Cerca in chiavi dell'oggetto
     const keys = Object.keys(item);
     for (const key of keys) {
-      if (key.toLowerCase().includes('date') || key.toLowerCase().includes('time')) {
+      if (
+        key.toLowerCase().includes('date') ||
+        key.toLowerCase().includes('time')
+      ) {
         return key;
       }
     }
@@ -391,9 +460,13 @@ export class DateNormalizer {
    * Formatta Date JavaScript in formato ISO date (YYYY-MM-DD)
    */
   private formatToISODate(date: Date): string {
-    return date.getFullYear() + '-' +
-           String(date.getMonth() + 1).padStart(2, '0') + '-' +
-           String(date.getDate()).padStart(2, '0');
+    return (
+      date.getFullYear() +
+      '-' +
+      String(date.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(date.getDate()).padStart(2, '0')
+    );
   }
 
   /**
@@ -414,7 +487,7 @@ export class DateNormalizer {
     return {
       supportedFormats: this.datePatterns.map(p => p.format),
       timezone: this.timezone,
-      validationRules: this.validationRules
+      validationRules: this.validationRules,
     };
   }
 
@@ -432,7 +505,7 @@ export class DateNormalizer {
       recognized: result.success,
       format: result.detectedFormat,
       confidence: result.confidence,
-      parsed: result.success ? result : undefined
+      parsed: result.success ? result : undefined,
     };
   }
-} 
+}

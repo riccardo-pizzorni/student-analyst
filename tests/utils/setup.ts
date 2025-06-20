@@ -20,28 +20,59 @@ class MockIDBRequest {
 
 class MockObjectStore {
   store: Record<string, unknown>;
-  constructor(store: Record<string, unknown>) { this.store = store; }
-  get(key: string) { return new MockIDBRequest(this.store[key] ?? undefined); }
-  put(entry: { key: string; value: unknown }) { this.store[entry.key] = entry; return new MockIDBRequest(undefined); }
-  delete(key: string) { delete this.store[key]; return new MockIDBRequest(undefined); }
-  clear() { Object.keys(this.store).forEach(k => delete this.store[k]); return new MockIDBRequest(undefined); }
-  getAllKeys() { return new MockIDBRequest(Object.keys(this.store)); }
-  count() { return new MockIDBRequest(Object.keys(this.store).length); }
-  index() { return this; }
-  openCursor() { return new MockIDBRequest({ continue: () => {} }); }
+  constructor(store: Record<string, unknown>) {
+    this.store = store;
+  }
+  get(key: string) {
+    return new MockIDBRequest(this.store[key] ?? undefined);
+  }
+  put(entry: { key: string; value: unknown }) {
+    this.store[entry.key] = entry;
+    return new MockIDBRequest(undefined);
+  }
+  delete(key: string) {
+    delete this.store[key];
+    return new MockIDBRequest(undefined);
+  }
+  clear() {
+    Object.keys(this.store).forEach(k => delete this.store[k]);
+    return new MockIDBRequest(undefined);
+  }
+  getAllKeys() {
+    return new MockIDBRequest(Object.keys(this.store));
+  }
+  count() {
+    return new MockIDBRequest(Object.keys(this.store).length);
+  }
+  index() {
+    return this;
+  }
+  openCursor() {
+    return new MockIDBRequest({ continue: () => {} });
+  }
 }
 
 class MockTransaction {
   store: Record<string, unknown>;
-  constructor(store: Record<string, unknown>) { this.store = store; }
-  objectStore() { return new MockObjectStore(this.store); }
+  constructor(store: Record<string, unknown>) {
+    this.store = store;
+  }
+  objectStore() {
+    return new MockObjectStore(this.store);
+  }
 }
 
 class MockIDBDatabase {
   store: Record<string, unknown>;
-  constructor(store: Record<string, unknown>) { this.store = store; }
-  transaction() { return new MockTransaction(this.store); }
-  createObjectStore() { return new MockObjectStore(this.store); }
+  constructor(store: Record<string, unknown>) {
+    this.store = store;
+  }
+  transaction() {
+    return new MockTransaction(this.store);
+  }
+  createObjectStore() {
+    return new MockObjectStore(this.store);
+  }
   close() {}
 }
 
@@ -93,7 +124,10 @@ const sessionStorage = {
 
 // Mock TextEncoder/TextDecoder
 class MockTextDecoder {
-  decode(input?: ArrayBuffer | ArrayBufferView | null, options?: { stream?: boolean }): string {
+  decode(
+    input?: ArrayBuffer | ArrayBufferView | null,
+    options?: { stream?: boolean }
+  ): string {
     // Implementazione minima per i test
     return '';
   }
@@ -144,7 +178,10 @@ Object.defineProperty(global.window, 'IDBKeyRange', {
 
 // Mock window.setInterval
 Object.defineProperty(global.window, 'setInterval', {
-  value: (callback: (...args: unknown[]) => void, delay: number): NodeJS.Timeout => {
+  value: (
+    callback: (...args: unknown[]) => void,
+    delay: number
+  ): NodeJS.Timeout => {
     return setInterval(callback, delay);
   },
   writable: true,
@@ -160,4 +197,3 @@ Object.defineProperty(global.window, 'clearInterval', {
 
 // Export for use in tests
 export { localStorage, mockIndexedDB, sessionStorage };
-

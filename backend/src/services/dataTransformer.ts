@@ -1,7 +1,7 @@
 /**
  * Data Transformation Service per STUDENT ANALYST
- * 
- * Sistema di trasformazione universale che converte dati finanziari 
+ *
+ * Sistema di trasformazione universale che converte dati finanziari
  * da diversi formati (Alpha Vantage, Yahoo Finance, etc.) in formato standard
  */
 
@@ -12,18 +12,18 @@
  * Tutti i dati vengono convertiti in questo formato
  */
 export interface StandardOHLCVData {
-  date: string;           // ISO format YYYY-MM-DD
-  timestamp: string;      // ISO format YYYY-MM-DDTHH:MM:SS.sssZ
+  date: string; // ISO format YYYY-MM-DD
+  timestamp: string; // ISO format YYYY-MM-DDTHH:MM:SS.sssZ
   open: number;
   high: number;
   low: number;
   close: number;
-  adjustedClose: number;  // Sempre presente, aggiustato per splits/dividendi
+  adjustedClose: number; // Sempre presente, aggiustato per splits/dividendi
   volume: number;
   volumeNormalized: number; // Volume in unità standard (non K/M/B)
-  source: string;         // 'alpha_vantage' | 'yahoo_finance' | etc.
+  source: string; // 'alpha_vantage' | 'yahoo_finance' | etc.
   symbol: string;
-  timeframe: string;      // '1min' | '5min' | 'daily' | etc.
+  timeframe: string; // '1min' | '5min' | 'daily' | etc.
   dataQuality: DataQualityFlags;
 }
 
@@ -92,7 +92,11 @@ export interface TransformationConfig {
  * Errore di trasformazione
  */
 export interface TransformationError {
-  type: 'PARSING_ERROR' | 'VALIDATION_ERROR' | 'FORMAT_ERROR' | 'DATA_QUALITY_ERROR';
+  type:
+    | 'PARSING_ERROR'
+    | 'VALIDATION_ERROR'
+    | 'FORMAT_ERROR'
+    | 'DATA_QUALITY_ERROR';
   message: string;
   field?: string;
   originalValue?: unknown;
@@ -107,7 +111,7 @@ export enum SupportedDataSource {
   YAHOO_FINANCE = 'yahoo_finance',
   IEX_CLOUD = 'iex_cloud',
   POLYGON = 'polygon',
-  QUANDL = 'quandl'
+  QUANDL = 'quandl',
 }
 
 export enum StandardTimeframe {
@@ -118,7 +122,7 @@ export enum StandardTimeframe {
   HOUR_1 = '1hour',
   DAILY = 'daily',
   WEEKLY = 'weekly',
-  MONTHLY = 'monthly'
+  MONTHLY = 'monthly',
 }
 
 // ========== CLASSE PRINCIPALE ==========
@@ -145,7 +149,7 @@ export class DataTransformer {
       removeAnomalies: true,
       timezone: 'America/New_York',
       qualityThreshold: 0.7,
-      ...config
+      ...config,
     };
 
     this.dateNormalizer = new DateNormalizer(this.config.timezone);
@@ -171,26 +175,29 @@ export class DataTransformer {
     try {
       // 1. Parsing del formato originale
       const parsedData = this.responseParser.parse(rawData, source);
-      
+
       // 2. Normalizzazione date
       const normalizedData = this.dateNormalizer.normalize(parsedData);
-      
+
       // 3. Aggiustamento prezzi per splits/dividendi
       let adjustedData = normalizedData;
       if (this.config.enableSplitAdjustment) {
-        adjustedData = await this.priceAdjuster.adjustForSplits(adjustedData, symbol);
+        adjustedData = await this.priceAdjuster.adjustForSplits(
+          adjustedData,
+          symbol
+        );
       }
-      
+
       // 4. Gestione volume
       const volumeProcessedData = this.config.enableVolumeNormalization
         ? this.volumeHandler.normalizeVolume(adjustedData)
         : adjustedData;
-      
+
       // 5. Validazione qualità dati
       const validatedData = this.config.enableDataValidation
         ? this.dataValidator.validate(volumeProcessedData)
         : volumeProcessedData;
-      
+
       // 6. Conversione al formato standard
       const standardData = this.convertToStandardFormat(
         validatedData,
@@ -198,16 +205,19 @@ export class DataTransformer {
         symbol,
         timeframe
       );
-      
+
       // 7. Calcolo metriche finali
       const processingTime = Date.now() - startTime;
       const qualityScore = this.calculateQualityScore(standardData);
-      
+
       const metadata: StandardMetadata = {
         symbol,
         source,
         timeframe,
-        startDate: standardData.length > 0 ? standardData[standardData.length - 1].date : '',
+        startDate:
+          standardData.length > 0
+            ? standardData[standardData.length - 1].date
+            : '',
         endDate: standardData.length > 0 ? standardData[0].date : '',
         timezone: this.config.timezone,
         lastRefreshed: new Date().toISOString(),
@@ -215,7 +225,7 @@ export class DataTransformer {
         transformationTimestamp: new Date().toISOString(),
         splitAdjusted: this.config.enableSplitAdjustment,
         dividendAdjusted: this.config.enableDividendAdjustment,
-        qualityScore
+        qualityScore,
       };
 
       return {
@@ -228,16 +238,15 @@ export class DataTransformer {
           processingTimeMs: processingTime,
           recordsProcessed: standardData.length,
           recordsSkipped: parsedData.length - standardData.length,
-          cacheHit: false
-        }
+          cacheHit: false,
+        },
       };
-
     } catch (error) {
       errors.push({
         type: 'PARSING_ERROR',
         message: `Errore durante trasformazione: ${(error as Error).message}`,
         timestamp: new Date().toISOString(),
-        severity: 'CRITICAL'
+        severity: 'CRITICAL',
       });
 
       return {
@@ -250,8 +259,8 @@ export class DataTransformer {
           processingTimeMs: Date.now() - startTime,
           recordsProcessed: 0,
           recordsSkipped: 0,
-          cacheHit: false
-        }
+          cacheHit: false,
+        },
       };
     }
   }
@@ -276,7 +285,8 @@ export class DataTransformer {
         close: obj.close as number,
         adjustedClose: (obj.adjustedClose as number) || (obj.close as number),
         volume: obj.volume as number,
-        volumeNormalized: (obj.volumeNormalized as number) || (obj.volume as number),
+        volumeNormalized:
+          (obj.volumeNormalized as number) || (obj.volume as number),
         source,
         symbol,
         timeframe,
@@ -286,8 +296,8 @@ export class DataTransformer {
           priceAnomalies: false,
           adjustedForSplits: this.config.enableSplitAdjustment,
           validated: this.config.enableDataValidation,
-          confidence: 1.0
-        }
+          confidence: 1.0,
+        },
       };
     });
   }
@@ -299,19 +309,32 @@ export class DataTransformer {
     if (data.length === 0) return 0;
 
     const scores = data.map(item => item.dataQuality.confidence);
-    const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    
+    const average =
+      scores.reduce((sum, score) => sum + score, 0) / scores.length;
+
     // Penalizzazioni per problemi specifici
-    const gapPenalty = data.filter(item => item.dataQuality.hasGaps).length / data.length * 0.2;
-    const anomalyPenalty = data.filter(item => item.dataQuality.priceAnomalies).length / data.length * 0.3;
-    
-    return Math.max(0, Math.min(100, (average - gapPenalty - anomalyPenalty) * 100));
+    const gapPenalty =
+      (data.filter(item => item.dataQuality.hasGaps).length / data.length) *
+      0.2;
+    const anomalyPenalty =
+      (data.filter(item => item.dataQuality.priceAnomalies).length /
+        data.length) *
+      0.3;
+
+    return Math.max(
+      0,
+      Math.min(100, (average - gapPenalty - anomalyPenalty) * 100)
+    );
   }
 
   /**
    * Crea metadata di errore
    */
-  private createErrorMetadata(symbol: string, source: string, timeframe: string): StandardMetadata {
+  private createErrorMetadata(
+    symbol: string,
+    source: string,
+    timeframe: string
+  ): StandardMetadata {
     return {
       symbol,
       source,
@@ -324,7 +347,7 @@ export class DataTransformer {
       transformationTimestamp: new Date().toISOString(),
       splitAdjusted: false,
       dividendAdjusted: false,
-      qualityScore: 0
+      qualityScore: 0,
     };
   }
 
@@ -339,7 +362,7 @@ export class DataTransformer {
     return {
       config: this.config,
       supportedSources: Object.values(SupportedDataSource),
-      supportedTimeframes: Object.values(StandardTimeframe)
+      supportedTimeframes: Object.values(StandardTimeframe),
     };
   }
 
@@ -362,7 +385,7 @@ import { VolumeHandler } from './volumeHandler';
 
 class DataValidator {
   constructor(private qualityThreshold: number) {}
-  
+
   validate(data: unknown[]): unknown[] {
     // Validazione base per ora
     return data.filter(item => {
@@ -377,9 +400,10 @@ class DataValidator {
         (obj.high as number) > 0 &&
         (obj.low as number) > 0 &&
         (obj.close as number) > 0 &&
-        (obj.high as number) >= Math.max(obj.open as number, obj.close as number) &&
+        (obj.high as number) >=
+          Math.max(obj.open as number, obj.close as number) &&
         (obj.low as number) <= Math.min(obj.open as number, obj.close as number)
       );
     });
   }
-} 
+}

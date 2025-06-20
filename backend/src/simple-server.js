@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - Backend Server (Ultra Simple Version)
  * ======================================================
- * 
+ *
  * Server Express.js ultra-semplificato per Render deployment
  * Versione minimale senza middleware problematici
  */
@@ -17,11 +17,13 @@ const PORT = process.env.PORT || 10000;
 app.set('trust proxy', 1);
 
 // Basic CORS
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -39,8 +41,8 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       test: '/api/test',
-      status: '/api/status'
-    }
+      status: '/api/status',
+    },
   });
 });
 
@@ -53,7 +55,7 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     version: '1.0.0',
     uptime: Math.floor(process.uptime()),
-    memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB'
+    memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
   });
 });
 
@@ -64,7 +66,7 @@ app.get('/api/test', (req, res) => {
     message: 'API is working correctly',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    server: 'Ultra Simple Express'
+    server: 'Ultra Simple Express',
   });
 });
 
@@ -72,17 +74,17 @@ app.get('/api/test', (req, res) => {
 app.get('/api/status', (req, res) => {
   const uptime = process.uptime();
   const memoryUsage = process.memoryUsage();
-  
+
   res.json({
     status: 'healthy',
     uptime: `${Math.floor(uptime / 60)} minutes ${Math.floor(uptime % 60)} seconds`,
     memory: {
       used: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`,
-      total: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`
+      total: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`,
     },
     environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),
-    node_version: process.version
+    node_version: process.version,
   });
 });
 
@@ -90,30 +92,30 @@ app.get('/api/status', (req, res) => {
 app.post('/api/validate/ticker', (req, res) => {
   try {
     const { ticker } = req.body;
-    
+
     if (!ticker) {
       return res.status(400).json({
         success: false,
-        error: 'Ticker symbol is required'
+        error: 'Ticker symbol is required',
       });
     }
-    
+
     // Simple ticker validation
     const cleanTicker = ticker.toString().toUpperCase().trim();
     const isValid = /^[A-Z]{1,5}$/.test(cleanTicker);
-    
+
     res.json({
       success: true,
       ticker: cleanTicker,
       valid: isValid,
       message: isValid ? 'Ticker is valid' : 'Invalid ticker format',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -130,30 +132,32 @@ app.use((req, res) => {
       'GET /health',
       'GET /api/test',
       'GET /api/status',
-      'POST /api/validate/ticker'
+      'POST /api/validate/ticker',
     ],
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Simple error handler
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
-  
+
   res.status(500).json({
     error: 'Internal Server Error',
     message: 'Something went wrong on our end',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Student Analyst Backend (Ultra Simple) running on port ${PORT}`);
+  console.log(
+    `🚀 Student Analyst Backend (Ultra Simple) running on port ${PORT}`
+  );
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Deployment: Render ready`);
   console.log(`📡 Health check: http://localhost:${PORT}/health`);
   console.log(`⚡ Ultra simple version - no problematic middleware`);
 });
 
-module.exports = app; 
+module.exports = app;

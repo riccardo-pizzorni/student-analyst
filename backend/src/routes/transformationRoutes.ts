@@ -1,12 +1,16 @@
 /**
  * Transformation Routes per STUDENT ANALYST
- * 
+ *
  * API endpoints per il sistema di trasformazione dati finanziari
  * Espone funzionalità di parsing, normalizzazione e validazione
  */
 
 import { Router, Request, Response } from 'express';
-import { DataTransformer, SupportedDataSource, StandardFinancialResponse } from '../services/dataTransformer';
+import {
+  DataTransformer,
+  SupportedDataSource,
+  StandardFinancialResponse,
+} from '../services/dataTransformer';
 import { DateNormalizer } from '../services/dateNormalizer';
 import { PriceAdjuster } from '../services/priceAdjuster';
 import { VolumeHandler } from '../services/volumeHandler';
@@ -34,7 +38,7 @@ router.post('/transform', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Campo rawData richiesto',
-        code: 'MISSING_RAW_DATA'
+        code: 'MISSING_RAW_DATA',
       });
     }
 
@@ -43,7 +47,7 @@ router.post('/transform', async (req: Request, res: Response) => {
         success: false,
         error: 'Fonte dati non supportata',
         supportedSources: Object.values(SupportedDataSource),
-        code: 'INVALID_SOURCE'
+        code: 'INVALID_SOURCE',
       });
     }
 
@@ -51,7 +55,7 @@ router.post('/transform', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Simbolo richiesto',
-        code: 'MISSING_SYMBOL'
+        code: 'MISSING_SYMBOL',
       });
     }
 
@@ -69,13 +73,12 @@ router.post('/transform', async (req: Request, res: Response) => {
     );
 
     res.json(result);
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante trasformazione',
       details: (error as Error).message,
-      code: 'TRANSFORMATION_ERROR'
+      code: 'TRANSFORMATION_ERROR',
     });
   }
 });
@@ -92,26 +95,28 @@ router.post('/parse', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'rawData e source richiesti',
-        code: 'MISSING_PARAMETERS'
+        code: 'MISSING_PARAMETERS',
       });
     }
 
-    const parsedData = responseParser.parse(rawData, source as SupportedDataSource);
+    const parsedData = responseParser.parse(
+      rawData,
+      source as SupportedDataSource
+    );
 
     res.json({
       success: true,
       data: parsedData,
       count: parsedData.length,
       source,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante parsing',
       details: (error as Error).message,
-      code: 'PARSING_ERROR'
+      code: 'PARSING_ERROR',
     });
   }
 });
@@ -128,7 +133,7 @@ router.post('/normalize-dates', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Array di dati richiesto',
-        code: 'INVALID_DATA'
+        code: 'INVALID_DATA',
       });
     }
 
@@ -141,15 +146,14 @@ router.post('/normalize-dates', async (req: Request, res: Response) => {
       originalCount: data.length,
       normalizedCount: normalizedData.length,
       skipped: data.length - normalizedData.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante normalizzazione date',
       details: (error as Error).message,
-      code: 'DATE_NORMALIZATION_ERROR'
+      code: 'DATE_NORMALIZATION_ERROR',
     });
   }
 });
@@ -166,7 +170,7 @@ router.post('/adjust-prices', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Array di dati richiesto',
-        code: 'INVALID_DATA'
+        code: 'INVALID_DATA',
       });
     }
 
@@ -174,7 +178,7 @@ router.post('/adjust-prices', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Simbolo richiesto',
-        code: 'MISSING_SYMBOL'
+        code: 'MISSING_SYMBOL',
       });
     }
 
@@ -187,15 +191,14 @@ router.post('/adjust-prices', async (req: Request, res: Response) => {
       originalCount: data.length,
       adjustedCount: adjustedData.length,
       symbol,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante aggiustamento prezzi',
       details: (error as Error).message,
-      code: 'PRICE_ADJUSTMENT_ERROR'
+      code: 'PRICE_ADJUSTMENT_ERROR',
     });
   }
 });
@@ -212,7 +215,7 @@ router.post('/normalize-volume', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'Array di dati richiesto',
-        code: 'INVALID_DATA'
+        code: 'INVALID_DATA',
       });
     }
 
@@ -225,15 +228,14 @@ router.post('/normalize-volume', async (req: Request, res: Response) => {
       conversions: result.conversions,
       anomalies: result.anomalies,
       stats: result.stats,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante normalizzazione volume',
       details: (error as Error).message,
-      code: 'VOLUME_NORMALIZATION_ERROR'
+      code: 'VOLUME_NORMALIZATION_ERROR',
     });
   }
 });
@@ -247,7 +249,7 @@ router.get('/supported-sources', (req: Request, res: Response) => {
     success: true,
     sources: Object.values(SupportedDataSource),
     count: Object.values(SupportedDataSource).length,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -268,17 +270,16 @@ router.get('/stats', (req: Request, res: Response) => {
         transformer: transformerStats,
         dateNormalizer: dateNormalizerStats,
         priceAdjuster: priceAdjusterStats,
-        volumeHandler: { config: volumeHandlerConfig }
+        volumeHandler: { config: volumeHandlerConfig },
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante recupero statistiche',
       details: (error as Error).message,
-      code: 'STATS_ERROR'
+      code: 'STATS_ERROR',
     });
   }
 });
@@ -295,13 +296,16 @@ router.post('/test', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         error: 'rawData e source richiesti per test',
-        code: 'MISSING_TEST_PARAMETERS'
+        code: 'MISSING_TEST_PARAMETERS',
       });
     }
 
     // Test parsing
-    const parseTest = responseParser.testParsing(rawData, source as SupportedDataSource);
-    
+    const parseTest = responseParser.testParsing(
+      rawData,
+      source as SupportedDataSource
+    );
+
     // Test normalizzazione date se parsing riuscito
     let dateTest = null;
     if (parseTest.canParse && parseTest.preview.length > 0) {
@@ -319,22 +323,21 @@ router.post('/test', async (req: Request, res: Response) => {
       tests: {
         parsing: parseTest,
         dateNormalization: dateTest,
-        volumeNormalization: volumeTest
+        volumeNormalization: volumeTest,
       },
       recommendations: [
         parseTest.canParse ? 'Parsing: OK' : 'Parsing: FAILED',
         dateTest?.recognized ? 'Date: OK' : 'Date: CHECK FORMAT',
-        volumeTest?.canNormalize ? 'Volume: OK' : 'Volume: CHECK FORMAT'
+        volumeTest?.canNormalize ? 'Volume: OK' : 'Volume: CHECK FORMAT',
       ],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       error: 'Errore durante test',
       details: (error as Error).message,
-      code: 'TEST_ERROR'
+      code: 'TEST_ERROR',
     });
   }
 });
@@ -346,20 +349,26 @@ router.post('/test', async (req: Request, res: Response) => {
 router.get('/health', (req: Request, res: Response) => {
   try {
     // Test rapido di tutti i componenti
-    const testData = [{
-      date: '2023-12-01',
-      open: 100,
-      high: 105,
-      low: 98,
-      close: 103,
-      volume: '1.5M'
-    }];
+    const testData = [
+      {
+        date: '2023-12-01',
+        open: 100,
+        high: 105,
+        low: 98,
+        close: 103,
+        volume: '1.5M',
+      },
+    ];
 
-    const parseTest = responseParser.testParsing(testData, SupportedDataSource.ALPHA_VANTAGE);
+    const parseTest = responseParser.testParsing(
+      testData,
+      SupportedDataSource.ALPHA_VANTAGE
+    );
     const dateTest = dateNormalizer.testDateFormat('2023-12-01');
     const volumeTest = volumeHandler.testNormalization('1.5M');
 
-    const allHealthy = parseTest.canParse && dateTest.recognized && volumeTest.canNormalize;
+    const allHealthy =
+      parseTest.canParse && dateTest.recognized && volumeTest.canNormalize;
 
     res.json({
       success: true,
@@ -367,20 +376,19 @@ router.get('/health', (req: Request, res: Response) => {
       components: {
         parser: parseTest.canParse ? 'OK' : 'ERROR',
         dateNormalizer: dateTest.recognized ? 'OK' : 'ERROR',
-        volumeHandler: volumeTest.canNormalize ? 'OK' : 'ERROR'
+        volumeHandler: volumeTest.canNormalize ? 'OK' : 'ERROR',
       },
       timestamp: new Date().toISOString(),
-      uptime: process.uptime()
+      uptime: process.uptime(),
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       status: 'ERROR',
       error: (error as Error).message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
 
-export default router; 
+export default router;

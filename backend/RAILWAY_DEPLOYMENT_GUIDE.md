@@ -9,11 +9,13 @@ In parole semplici: stai per mettere il "cervello" del tuo sito web (il backend)
 ## 🎯 **PREREQUISITI (COSA TI SERVE)**
 
 ### **1. Account Render (GRATUITO SEMPRE)**
+
 - Vai su [render.com](https://render.com)
 - Clicca "Get Started for Free"
 - Collegati con il tuo account GitHub (quello dove hai caricato il progetto)
 
 ### **2. Progetto GitHub Pronto**
+
 - Il tuo codice deve essere su GitHub (✅ già fatto)
 - Repository: `https://github.com/riccardo-pizzorni/student-analyst`
 
@@ -59,6 +61,7 @@ Vai su **"Settings"** → **"Deploy"** e imposta:
 ## 🔧 **FILE IMPORTANTI CREATI PER TE**
 
 ### **📁 railway.json**
+
 ```json
 {
   "name": "student-analyst-backend",
@@ -82,11 +85,13 @@ Vai su **"Settings"** → **"Deploy"** e imposta:
 ```
 
 ### **📁 Procfile**
+
 ```
 web: npm start
 ```
 
 ### **📁 package.json (aggiornato)**
+
 - Script ottimizzati per Railway
 - Dipendenze corrette
 - Node.js versione specificata
@@ -96,13 +101,16 @@ web: npm start
 ## ✅ **VERIFICA CHE TUTTO FUNZIONI**
 
 ### **1. Controlla URL Railway**
+
 - Railway ti darà un URL tipo: `https://your-app.up.railway.app`
 - Apri questo URL nel browser
 - Dovresti vedere il messaggio di benvenuto del backend
 
 ### **2. Testa Health Check**
+
 - Vai su: `https://your-railway-app.up.railway.app/health`
 - Dovresti vedere:
+
 ```json
 {
   "status": "OK",
@@ -112,6 +120,7 @@ web: npm start
 ```
 
 ### **3. Testa API**
+
 - Vai su: `https://your-railway-app.up.railway.app/api/test`
 - Dovresti vedere una risposta JSON positiva
 
@@ -120,24 +129,32 @@ web: npm start
 ## 🚨 **PROBLEMI COMUNI E SOLUZIONI**
 
 ### **❌ "Build Failed"**
+
 **SOLUZIONE:**
+
 1. Controlla che la cartella sia `/backend`
 2. Verifica che `package.json` esista
 3. Controlla i logs per errori specifici
 
 ### **❌ "Port Binding Error"**
+
 **SOLUZIONE:**
+
 1. Assicurati che `PORT` sia nelle variabili d'ambiente
 2. Il server deve usare `process.env.PORT`
 
 ### **❌ "Cannot GET /"**
+
 **SOLUZIONE:**
+
 1. Il server si è avviato ma le route non funzionano
 2. Controlla i logs per errori JavaScript
 3. Verifica che `simple-server.js` sia presente
 
 ### **❌ "CORS Error dal Frontend"**
+
 **SOLUZIONE:**
+
 1. Aggiungi l'URL Railway alle variabili d'ambiente
 2. Aggiorna `PRODUCTION_URL` con l'URL corretto
 3. Riavvia il deployment
@@ -147,12 +164,15 @@ web: npm start
 ## 🔗 **COLLEGAMENTO CON FRONTEND**
 
 ### **1. Aggiorna Frontend Vercel**
+
 Nel tuo frontend (Vercel), aggiungi la variabile d'ambiente:
+
 ```env
 VITE_BACKEND_URL=https://your-railway-app.up.railway.app
 ```
 
 ### **2. Testa Connessione**
+
 - Frontend su Vercel: `https://student-analyst.vercel.app`
 - Backend su Railway: `https://your-railway-app.up.railway.app`
 - Devono comunicare senza errori CORS
@@ -162,16 +182,19 @@ VITE_BACKEND_URL=https://your-railway-app.up.railway.app
 ## 📊 **MONITORING & LOGS**
 
 ### **1. Accedi ai Logs**
+
 - Dashboard Railway → **"Deployments"** → **"View Logs"**
 - Monitora errori e performance
 
 ### **2. Health Monitoring**
+
 - Railway controlla automaticamente `/health`
 - Se il server non risponde, riavvia automaticamente
 
 ### **3. Metriche Gratuite**
+
 - CPU usage
-- Memory usage  
+- Memory usage
 - Network requests
 - Uptime statistics
 
@@ -180,6 +203,7 @@ VITE_BACKEND_URL=https://your-railway-app.up.railway.app
 ## 🎯 **COSA FARE DOPO IL DEPLOYMENT**
 
 ### **✅ VERIFICHE FINALI**
+
 1. [ ] Backend risponde su Railway URL
 2. [ ] Health check funziona
 3. [ ] Frontend comunica con backend
@@ -187,6 +211,7 @@ VITE_BACKEND_URL=https://your-railway-app.up.railway.app
 5. [ ] Logs puliti senza errori
 
 ### **🚀 PROSSIMI PASSI**
+
 1. **Collegare API finanziarie** (Alpha Vantage, Yahoo Finance)
 2. **Testare funzionalità complete**
 3. **Ottimizzare performance**
@@ -197,6 +222,7 @@ VITE_BACKEND_URL=https://your-railway-app.up.railway.app
 ## 📞 **SUPPORTO**
 
 Se qualcosa non funziona:
+
 1. **Controlla sempre i logs** su Railway
 2. **Verifica le variabili d'ambiente**
 3. **Testa gli endpoint manualmente**
@@ -207,10 +233,11 @@ Se qualcosa non funziona:
 ## 🏆 **RISULTATO FINALE**
 
 Dopo aver completato questa guida, avrai:
+
 - ✅ **Backend live su Railway** (gratuito)
-- ✅ **Frontend live su Vercel** (gratuito)  
+- ✅ **Frontend live su Vercel** (gratuito)
 - ✅ **Comunicazione frontend-backend funzionante**
 - ✅ **Health monitoring attivo**
 - ✅ **Zero costi operativi**
 
-**🎉 Il tuo Student Analyst sarà completamente online e accessibile da tutto il mondo!** 
+**🎉 Il tuo Student Analyst sarà completamente online e accessibile da tutto il mondo!**

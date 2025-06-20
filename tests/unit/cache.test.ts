@@ -16,7 +16,8 @@ class MockIDBRequest {
   constructor(result: unknown) {
     setTimeout(() => {
       this.result = result;
-      if (typeof this.onsuccess === 'function') this.onsuccess({ target: this });
+      if (typeof this.onsuccess === 'function')
+        this.onsuccess({ target: this });
     }, 1);
   }
 }
@@ -46,7 +47,7 @@ describe('Cache System Tests', () => {
 
       // Test L3
       await indexedDBCacheL3.set(key, value).then(() => {});
-      const l3Result = await indexedDBCacheL3.get(key) as typeof value;
+      const l3Result = (await indexedDBCacheL3.get(key)) as typeof value;
       expect(l3Result).toEqual(value);
     });
 
@@ -85,7 +86,7 @@ describe('Cache System Tests', () => {
 
       // Test L3
       await indexedDBCacheL3.set(key, obj).then(() => {});
-      const l3Result = await indexedDBCacheL3.get(key) as typeof obj;
+      const l3Result = (await indexedDBCacheL3.get(key)) as typeof obj;
       expect(l3Result.data).toBe('test');
       expect(l3Result.self).toBe(l3Result);
     });
@@ -153,7 +154,7 @@ describe('Cache System Tests', () => {
       for (let i = 0; i < 5; i++) {
         operations.push(
           memoryCacheL1.set(`${key}-${i}`, value).then(() => {}),
-          new Promise<void>((resolve) => {
+          new Promise<void>(resolve => {
             localStorageCacheL2.set(`${key}-${i}`, value);
             resolve();
           }),
@@ -167,7 +168,9 @@ describe('Cache System Tests', () => {
       for (let i = 0; i < 5; i++) {
         const l1Result = memoryCacheL1.get(`${key}-${i}`) as typeof value;
         const l2Result = localStorageCacheL2.get(`${key}-${i}`) as typeof value;
-        const l3Result = await indexedDBCacheL3.get(`${key}-${i}`) as typeof value;
+        const l3Result = (await indexedDBCacheL3.get(
+          `${key}-${i}`
+        )) as typeof value;
 
         expect(l1Result).toEqual(value);
         expect(l2Result).toEqual(value);
@@ -194,7 +197,7 @@ describe('Cache System Tests', () => {
 
       // Verify L1 and L3 data
       const l1Result = memoryCacheL1.get(key) as typeof value;
-      const l3Result = await indexedDBCacheL3.get(key) as typeof value;
+      const l3Result = (await indexedDBCacheL3.get(key)) as typeof value;
       expect(l1Result).toEqual(value);
       expect(l3Result).toEqual(value);
 
@@ -221,7 +224,7 @@ describe('Cache System Tests', () => {
 
       // L2 and L3 should still have data
       const l2Result = localStorageCacheL2.get(key) as typeof value;
-      const l3Result = await indexedDBCacheL3.get(key) as typeof value;
+      const l3Result = (await indexedDBCacheL3.get(key)) as typeof value;
       expect(l2Result).toEqual(value);
       expect(l3Result).toEqual(value);
     });
@@ -232,8 +235,8 @@ describe('Cache System Tests', () => {
         data: 'test-value',
         nested: {
           array: [1, 2, 3],
-          object: { a: 1, b: 2 }
-        }
+          object: { a: 1, b: 2 },
+        },
       };
 
       // Set complex data in all caches
@@ -244,7 +247,7 @@ describe('Cache System Tests', () => {
       // Verify data integrity
       const l1Result = memoryCacheL1.get(key) as typeof value;
       const l2Result = localStorageCacheL2.get(key) as typeof value;
-      const l3Result = await indexedDBCacheL3.get(key) as typeof value;
+      const l3Result = (await indexedDBCacheL3.get(key)) as typeof value;
 
       expect(l1Result).toEqual(value);
       expect(l2Result).toEqual(value);
@@ -269,7 +272,7 @@ describe('Cache System Tests', () => {
       // Verify new version data
       const l1Result = memoryCacheL1.get(key) as typeof newValue;
       const l2Result = localStorageCacheL2.get(key) as typeof newValue;
-      const l3Result = await indexedDBCacheL3.get(key) as typeof newValue;
+      const l3Result = (await indexedDBCacheL3.get(key)) as typeof newValue;
 
       expect(l1Result).toEqual(newValue);
       expect(l2Result).toEqual(newValue);
@@ -288,12 +291,12 @@ describe('Cache System Tests', () => {
         const value = {
           id: i,
           data: 'x'.repeat(1000), // 1KB per item
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         operations.push(
           memoryCacheL1.set(key, value).then(() => {}),
-          new Promise<void>((resolve) => {
+          new Promise<void>(resolve => {
             localStorageCacheL2.set(key, value);
             resolve();
           }),
@@ -328,12 +331,14 @@ describe('Cache System Tests', () => {
         const expectedValue = {
           id: i,
           data: 'x'.repeat(1000),
-          timestamp: expect.any(Number)
+          timestamp: expect.any(Number),
         };
 
         const l1Result = memoryCacheL1.get(key) as typeof expectedValue;
         const l2Result = localStorageCacheL2.get(key) as typeof expectedValue;
-        const l3Result = await indexedDBCacheL3.get(key) as typeof expectedValue;
+        const l3Result = (await indexedDBCacheL3.get(
+          key
+        )) as typeof expectedValue;
 
         expect(l1Result).toMatchObject(expectedValue);
         expect(l2Result).toMatchObject(expectedValue);
@@ -341,4 +346,4 @@ describe('Cache System Tests', () => {
       }
     });
   });
-}); 
+});

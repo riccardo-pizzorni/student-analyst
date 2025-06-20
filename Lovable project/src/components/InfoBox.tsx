@@ -1,5 +1,4 @@
-
-import { Info } from "lucide-react";
+import { Info } from 'lucide-react';
 
 export default function InfoBox({ children }: { children: React.ReactNode }) {
   return (

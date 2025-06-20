@@ -2,9 +2,9 @@ name: 🚀 CI/CD Pipeline - Student Analyst
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 env:
   NODE_VERSION: '18'
@@ -41,7 +41,7 @@ jobs:
           echo "📦 Bundle Size Analysis:"
           du -sh dist/
           ls -la dist/assets/
-          
+
       - name: 🧪 Test build output
         run: |
           echo "✅ Checking build outputs..."
@@ -110,7 +110,7 @@ jobs:
         run: |
           npm ci
           npm audit --audit-level=high
-          
+
       - name: 🔒 Backend security audit
         working-directory: ./backend
         run: |
@@ -144,7 +144,7 @@ jobs:
         run: |
           nohup npm start &
           sleep 10
-          
+
       - name: 🌐 Build and serve frontend
         run: |
           npm run build
@@ -155,10 +155,10 @@ jobs:
         run: |
           echo "🔗 Testing API connectivity..."
           curl -f http://localhost:10000/health
-          
+
           echo "🔗 Testing frontend serve..."
           curl -f http://localhost:3000
-          
+
           echo "✅ Integration tests passed"
 
   # =====================================
@@ -289,4 +289,4 @@ jobs:
           echo "🎉 DEPLOYMENT SUCCESSFUL!"
           echo "🌐 Frontend: ${{ needs.deploy-frontend.outputs.deployment-url }}"
           echo "🔧 Backend: ${{ needs.deploy-backend.outputs.deployment-url }}"
-          echo "✅ All systems operational" 
+          echo "✅ All systems operational"

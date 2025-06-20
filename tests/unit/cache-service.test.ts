@@ -3,7 +3,14 @@
  * Test completi per il servizio principale di cache multi-layer
  */
 
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from '@jest/globals';
 import { mockDeep } from 'jest-mock-extended';
 
 // Definizione delle interfacce per i servizi
@@ -81,42 +88,44 @@ const mockAutomaticCleanup = mockDeep<IAutomaticCleanup>();
 
 // Mock dei moduli
 jest.mock('../../src/services/MemoryCacheL1', () => ({
-  memoryCacheL1: mockMemoryCacheL1
+  memoryCacheL1: mockMemoryCacheL1,
 }));
 
 jest.mock('../../src/services/LocalStorageCacheL2', () => ({
-  localStorageCacheL2: mockLocalStorageCacheL2
+  localStorageCacheL2: mockLocalStorageCacheL2,
 }));
 
 jest.mock('../../src/services/IndexedDBCacheL3', () => ({
-  indexedDBCacheL3: mockIndexedDBCacheL3
+  indexedDBCacheL3: mockIndexedDBCacheL3,
 }));
 
 jest.mock('../../src/services/CacheAnalyticsEngine', () => ({
-  cacheAnalytics: mockCacheAnalyticsEngine
+  cacheAnalytics: mockCacheAnalyticsEngine,
 }));
 
 jest.mock('../../src/services/CacheQualityService', () => ({
-  cacheQualityService: mockCacheQualityService
+  cacheQualityService: mockCacheQualityService,
 }));
 
 jest.mock('../../src/services/StorageMonitoringService', () => ({
-  storageMonitoring: mockStorageMonitoring
+  storageMonitoring: mockStorageMonitoring,
 }));
 
 jest.mock('../../src/services/AutomaticCleanupService', () => ({
-  automaticCleanup: mockAutomaticCleanup
+  automaticCleanup: mockAutomaticCleanup,
 }));
 
 // Mock di performance.now()
 const mockPerformanceNow = jest.fn<number, []>();
 Object.defineProperty(global, 'performance', {
   value: { now: mockPerformanceNow },
-  writable: true
+  writable: true,
 });
 
 // Import del servizio
-import CacheService, { cacheService } from '../../src/features/cache/services/CacheService';
+import CacheService, {
+  cacheService,
+} from '../../src/features/cache/services/CacheService';
 
 describe('CacheService', () => {
   let service: CacheService;
@@ -124,7 +133,7 @@ describe('CacheService', () => {
   beforeEach(() => {
     service = new CacheService();
     jest.clearAllMocks();
-    
+
     // Setup mock defaults
     mockPerformanceNow.mockReturnValue(100);
     mockMemoryCacheL1.get.mockReturnValue(null);
@@ -134,26 +143,42 @@ describe('CacheService', () => {
     mockLocalStorageCacheL2.set.mockReturnValue(true);
     mockIndexedDBCacheL3.set.mockResolvedValue(true);
     mockCacheQualityService.checkDataQuality.mockResolvedValue(undefined);
-    
+
     // Mock storage health
     mockStorageMonitoring.getStorageHealth.mockReturnValue({
       localStorage: { available: true, quota: 10000, used: 1000 },
       sessionStorage: { available: true, quota: 10000, used: 500 },
-      indexedDB: { available: true, quota: 100000, used: 5000 }
+      indexedDB: { available: true, quota: 100000, used: 5000 },
     });
-    
+
     // Mock stats
     mockMemoryCacheL1.getStats.mockReturnValue({
-      hits: 0, misses: 0, evictions: 0, currentEntries: 0, 
-      memoryUsage: 0, averageAccessTime: 0, size: 0, hitRate: 0
+      hits: 0,
+      misses: 0,
+      evictions: 0,
+      currentEntries: 0,
+      memoryUsage: 0,
+      averageAccessTime: 0,
+      size: 0,
+      hitRate: 0,
     });
     mockLocalStorageCacheL2.getStats.mockReturnValue({
-      hits: 0, misses: 0, evictions: 0, currentEntries: 0,
-      totalStorageUsed: 0, hitRate: 0, lastAccess: Date.now()
+      hits: 0,
+      misses: 0,
+      evictions: 0,
+      currentEntries: 0,
+      totalStorageUsed: 0,
+      hitRate: 0,
+      lastAccess: Date.now(),
     });
     mockIndexedDBCacheL3.getStats.mockResolvedValue({
-      hitCount: 0, missCount: 0, totalSize: 0, entryCount: 0,
-      hitRate: 0, averageQueryTime: 0, lastAccess: Date.now()
+      hitCount: 0,
+      missCount: 0,
+      totalSize: 0,
+      entryCount: 0,
+      hitRate: 0,
+      averageQueryTime: 0,
+      lastAccess: Date.now(),
     });
   });
 
@@ -169,7 +194,7 @@ describe('CacheService', () => {
     it('should have correct default configuration', () => {
       const defaultTTL = (service as unknown).defaultTTL;
       const keyPrefix = (service as unknown).keyPrefix;
-      
+
       expect(defaultTTL).toBe(60 * 60 * 1000); // 1 hour
       expect(keyPrefix).toBe('student-analyst');
     });
@@ -177,20 +202,24 @@ describe('CacheService', () => {
 
   describe('Cache Key Generation', () => {
     it('should generate correct cache keys with default prefix', () => {
-      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(
+        service
+      );
       const key = generateCacheKey('test-key');
-      
+
       expect(key).toBe('student-analyst:test-key');
     });
 
     it('should generate cache keys with custom options', () => {
-      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(
+        service
+      );
       const key = generateCacheKey('test-key', {
         prefix: 'custom',
         includeTimestamp: true,
-        customSuffix: 'suffix'
+        customSuffix: 'suffix',
       });
-      
+
       expect(key).toMatch(/^custom:test-key:\d+:suffix$/);
     });
   });
@@ -198,7 +227,9 @@ describe('CacheService', () => {
   describe('get() - Three Layer Caching', () => {
     const testKey = 'test-key';
     const testData = { message: 'test data' };
-    const fetchFunction = jest.fn<() => Promise<unknown>>().mockResolvedValue(testData);
+    const fetchFunction = jest
+      .fn<() => Promise<unknown>>()
+      .mockResolvedValue(testData);
 
     it('should return data from L1 cache when available', async () => {
       mockMemoryCacheL1.get.mockReturnValue(testData);
@@ -210,7 +241,7 @@ describe('CacheService', () => {
         fromCache: true,
         timestamp: expect.any(Number),
         cacheKey: 'student-analyst:test-key',
-        ttl: 60 * 60 * 1000
+        ttl: 60 * 60 * 1000,
       });
       expect(mockCacheAnalyticsEngine.trackCacheHit).toHaveBeenCalled();
       expect(mockCacheQualityService.checkDataQuality).toHaveBeenCalled();
@@ -228,10 +259,16 @@ describe('CacheService', () => {
         fromCache: true,
         timestamp: expect.any(Number),
         cacheKey: 'student-analyst:test-key',
-        ttl: 60 * 60 * 1000
+        ttl: 60 * 60 * 1000,
       });
-      expect(mockMemoryCacheL1.set).toHaveBeenCalledWith('student-analyst:test-key', testData, 60 * 60 * 1000);
-      expect(mockLocalStorageCacheL2.delete).toHaveBeenCalledWith('student-analyst:test-key');
+      expect(mockMemoryCacheL1.set).toHaveBeenCalledWith(
+        'student-analyst:test-key',
+        testData,
+        60 * 60 * 1000
+      );
+      expect(mockLocalStorageCacheL2.delete).toHaveBeenCalledWith(
+        'student-analyst:test-key'
+      );
     });
 
     it('should return data from L3 cache when L1 and L2 miss', async () => {
@@ -246,7 +283,7 @@ describe('CacheService', () => {
         fromCache: true,
         timestamp: expect.any(Number),
         cacheKey: 'student-analyst:test-key',
-        ttl: 60 * 60 * 1000
+        ttl: 60 * 60 * 1000,
       });
       expect(mockLocalStorageCacheL2.set).toHaveBeenCalled();
       expect(mockMemoryCacheL1.set).toHaveBeenCalled();
@@ -264,7 +301,7 @@ describe('CacheService', () => {
         fromCache: false,
         timestamp: expect.any(Number),
         cacheKey: 'student-analyst:test-key',
-        ttl: 60 * 60 * 1000
+        ttl: 60 * 60 * 1000,
       });
       expect(fetchFunction).toHaveBeenCalled();
       expect(mockMemoryCacheL1.set).toHaveBeenCalled();
@@ -275,15 +312,19 @@ describe('CacheService', () => {
     it('should handle API errors and return stale data from L2 cache', async () => {
       const apiError = new Error('API Error');
       const staleData = { message: 'stale data' };
-      const failingFetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(apiError);
-      
+      const failingFetch = jest
+        .fn<() => Promise<unknown>>()
+        .mockRejectedValue(apiError);
+
       mockMemoryCacheL1.get.mockReturnValue(null);
       mockLocalStorageCacheL2.get
         .mockReturnValueOnce(null) // First call for regular cache check
         .mockReturnValueOnce(staleData); // Second call for stale data check
       mockIndexedDBCacheL3.get.mockResolvedValue(null);
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       const result = await service.get(testKey, failingFetch);
 
@@ -292,7 +333,7 @@ describe('CacheService', () => {
         fromCache: true,
         timestamp: expect.any(Number),
         cacheKey: 'student-analyst:test-key',
-        ttl: 0 // Indicates stale data
+        ttl: 0, // Indicates stale data
       });
       expect(consoleSpy).toHaveBeenCalledWith(
         `API error, returning stale data for student-analyst:test-key:`,
@@ -305,15 +346,19 @@ describe('CacheService', () => {
     it('should handle API errors and return stale data from L3 cache when L2 unavailable', async () => {
       const apiError = new Error('API Error');
       const staleData = { message: 'stale data from L3' };
-      const failingFetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(apiError);
-      
+      const failingFetch = jest
+        .fn<() => Promise<unknown>>()
+        .mockRejectedValue(apiError);
+
       mockMemoryCacheL1.get.mockReturnValue(null);
       mockLocalStorageCacheL2.get.mockReturnValue(null);
       mockIndexedDBCacheL3.get
         .mockResolvedValueOnce(null) // First call for regular cache check
         .mockResolvedValueOnce(staleData); // Second call for stale data check
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       const result = await service.get(testKey, failingFetch);
 
@@ -322,7 +367,7 @@ describe('CacheService', () => {
         fromCache: true,
         timestamp: expect.any(Number),
         cacheKey: 'student-analyst:test-key',
-        ttl: 0
+        ttl: 0,
       });
       expect(consoleSpy).toHaveBeenCalledWith(
         `API error, returning stale data for student-analyst:test-key:`,
@@ -334,13 +379,17 @@ describe('CacheService', () => {
 
     it('should handle API errors and throw when no stale data available', async () => {
       const apiError = new Error('API Error');
-      const failingFetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(apiError);
-      
+      const failingFetch = jest
+        .fn<() => Promise<unknown>>()
+        .mockRejectedValue(apiError);
+
       mockMemoryCacheL1.get.mockReturnValue(null);
       mockLocalStorageCacheL2.get.mockReturnValue(null);
       mockIndexedDBCacheL3.get.mockResolvedValue(null);
 
-      await expect(service.get(testKey, failingFetch)).rejects.toThrow('API Error');
+      await expect(service.get(testKey, failingFetch)).rejects.toThrow(
+        'API Error'
+      );
     });
 
     it('should handle cache quality check failures gracefully', async () => {
@@ -348,17 +397,22 @@ describe('CacheService', () => {
       mockMemoryCacheL1.get.mockReturnValue(testData);
       mockCacheQualityService.checkDataQuality.mockRejectedValue(qualityError);
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       const result = await service.get(testKey, fetchFunction);
 
       expect(result.data).toEqual(testData);
       expect(result.fromCache).toBe(true);
-      
+
       // Wait for async quality check to complete
       await new Promise(resolve => setTimeout(resolve, 0));
-      
-      expect(consoleSpy).toHaveBeenCalledWith('Quality check failed for L1 data:', qualityError);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Quality check failed for L1 data:',
+        qualityError
+      );
 
       consoleSpy.mockRestore();
     });
@@ -366,7 +420,9 @@ describe('CacheService', () => {
     it('should bypass cache when forceRefresh is true', async () => {
       mockMemoryCacheL1.get.mockReturnValue(testData);
 
-      const result = await service.get(testKey, fetchFunction, { forceRefresh: true });
+      const result = await service.get(testKey, fetchFunction, {
+        forceRefresh: true,
+      });
 
       expect(result.fromCache).toBe(false);
       expect(fetchFunction).toHaveBeenCalled();
@@ -374,7 +430,9 @@ describe('CacheService', () => {
     });
 
     it('should skip caching when enableCache is false', async () => {
-      const result = await service.get(testKey, fetchFunction, { enableCache: false });
+      const result = await service.get(testKey, fetchFunction, {
+        enableCache: false,
+      });
 
       expect(result.fromCache).toBe(false);
       expect(mockMemoryCacheL1.set).not.toHaveBeenCalled();
@@ -386,7 +444,7 @@ describe('CacheService', () => {
   describe('Error Handling in getStaleData()', () => {
     it('should handle errors in getStaleData and return null', async () => {
       const getStaleData = (service as unknown).getStaleData.bind(service);
-      
+
       mockLocalStorageCacheL2.get.mockImplementation(() => {
         throw new Error('Storage error');
       });
@@ -398,7 +456,7 @@ describe('CacheService', () => {
 
     it('should handle errors in IndexedDB access during stale data retrieval', async () => {
       const getStaleData = (service as unknown).getStaleData.bind(service);
-      
+
       mockLocalStorageCacheL2.get.mockReturnValue(null);
       mockIndexedDBCacheL3.get.mockRejectedValue(new Error('IndexedDB error'));
 
@@ -409,7 +467,9 @@ describe('CacheService', () => {
   });
 
   describe('Specialized Cache Methods', () => {
-    const fetchFunction = jest.fn<() => Promise<unknown>>().mockResolvedValue({ data: 'test' });
+    const fetchFunction = jest
+      .fn<() => Promise<unknown>>()
+      .mockResolvedValue({ data: 'test' });
 
     beforeEach(() => {
       mockMemoryCacheL1.get.mockReturnValue(null);
@@ -429,7 +489,11 @@ describe('CacheService', () => {
     });
 
     it('should cache fundamentals data with correct TTL and key', async () => {
-      const result = await service.cacheFundamentalsData('AAPL', 'income', fetchFunction);
+      const result = await service.cacheFundamentalsData(
+        'AAPL',
+        'income',
+        fetchFunction
+      );
 
       expect(result.cacheKey).toBe('student-analyst:fundamentals:AAPL:income');
       expect(mockMemoryCacheL1.set).toHaveBeenCalledWith(
@@ -452,14 +516,21 @@ describe('CacheService', () => {
 
     it('should cache analysis data with parameter hash', async () => {
       const parameters = { period: 30, metric: 'volatility' };
-      const result = await service.cacheAnalysisData('risk', 'AAPL', parameters, fetchFunction);
+      const result = await service.cacheAnalysisData(
+        'risk',
+        'AAPL',
+        parameters,
+        fetchFunction
+      );
 
-      expect(result.cacheKey).toMatch(/^student-analyst:analysis:risk:AAPL:\w+$/);
+      expect(result.cacheKey).toMatch(
+        /^student-analyst:analysis:risk:AAPL:\w+$/
+      );
     });
 
     it('should cache stock data with custom options', async () => {
       const customOptions = { ttl: 120 * 60 * 1000 }; // 2 hours
-      
+
       await service.cacheStockData('GOOGL', '5m', fetchFunction, customOptions);
 
       expect(mockMemoryCacheL1.set).toHaveBeenCalledWith(
@@ -496,7 +567,7 @@ describe('CacheService', () => {
       const l1Stats = { hits: 10, misses: 5, memoryUsage: 1000 };
       const l2Stats = { hits: 8, misses: 3, totalStorageUsed: 2000 };
       const l3Stats = { hitCount: 5, missCount: 2, totalSize: 5000 };
-      
+
       mockMemoryCacheL1.getStats.mockReturnValue(l1Stats);
       mockLocalStorageCacheL2.getStats.mockReturnValue(l2Stats);
       mockIndexedDBCacheL3.getStats.mockResolvedValue(l3Stats);
@@ -523,8 +594,13 @@ describe('CacheService', () => {
     });
 
     it('should invalidate pattern across multiple layers', async () => {
-      mockMemoryCacheL1.keys.mockReturnValue(['student-analyst:stock-data:AAPL', 'student-analyst:market:overview']);
-      mockLocalStorageCacheL2.keys.mockReturnValue(['student-analyst:stock-data:GOOGL']);
+      mockMemoryCacheL1.keys.mockReturnValue([
+        'student-analyst:stock-data:AAPL',
+        'student-analyst:market:overview',
+      ]);
+      mockLocalStorageCacheL2.keys.mockReturnValue([
+        'student-analyst:stock-data:GOOGL',
+      ]);
       mockMemoryCacheL1.remove.mockReturnValue(true);
 
       const result = await service.invalidatePatternMultiLayer('stock-data');
@@ -561,41 +637,55 @@ describe('CacheService', () => {
     it('should check if key exists in L1 cache', () => {
       mockMemoryCacheL1.has.mockReturnValue(true);
       const result = service.has('test-key');
-      
+
       expect(result).toBe(true);
-      expect(mockMemoryCacheL1.has).toHaveBeenCalledWith('student-analyst:test-key');
+      expect(mockMemoryCacheL1.has).toHaveBeenCalledWith(
+        'student-analyst:test-key'
+      );
     });
 
     it('should set data in L1 cache', () => {
       mockMemoryCacheL1.set.mockReturnValue(true);
       const result = service.set('test-key', 'test-data', 5000);
-      
+
       expect(result).toBe(true);
-      expect(mockMemoryCacheL1.set).toHaveBeenCalledWith('student-analyst:test-key', 'test-data', 5000);
+      expect(mockMemoryCacheL1.set).toHaveBeenCalledWith(
+        'student-analyst:test-key',
+        'test-data',
+        5000
+      );
     });
 
     it('should set data in L1 cache with default TTL', () => {
       mockMemoryCacheL1.set.mockReturnValue(true);
       const result = service.set('test-key', 'test-data');
-      
+
       expect(result).toBe(true);
-      expect(mockMemoryCacheL1.set).toHaveBeenCalledWith('student-analyst:test-key', 'test-data', 60 * 60 * 1000);
+      expect(mockMemoryCacheL1.set).toHaveBeenCalledWith(
+        'student-analyst:test-key',
+        'test-data',
+        60 * 60 * 1000
+      );
     });
 
     it('should remove data from L1 and L2 caches', () => {
       mockMemoryCacheL1.remove.mockReturnValue(true);
       const result = service.remove('test-key');
-      
+
       expect(result).toBe(true);
-      expect(mockLocalStorageCacheL2.delete).toHaveBeenCalledWith('student-analyst:test-key');
-      expect(mockMemoryCacheL1.remove).toHaveBeenCalledWith('student-analyst:test-key');
+      expect(mockLocalStorageCacheL2.delete).toHaveBeenCalledWith(
+        'student-analyst:test-key'
+      );
+      expect(mockMemoryCacheL1.remove).toHaveBeenCalledWith(
+        'student-analyst:test-key'
+      );
     });
   });
 
   describe('Automatic Cleanup Integration', () => {
     it('should initialize automatic cleanup', async () => {
       mockAutomaticCleanup.initialize.mockResolvedValue(undefined);
-      
+
       await service.initializeAutomaticCleanup();
 
       expect(mockAutomaticCleanup.initialize).toHaveBeenCalled();
@@ -604,16 +694,18 @@ describe('CacheService', () => {
     it('should handle cleanup initialization errors', async () => {
       const error = new Error('Cleanup init failed');
       mockAutomaticCleanup.initialize.mockRejectedValue(error);
-      
-      await expect(service.initializeAutomaticCleanup()).rejects.toThrow('Cleanup init failed');
+
+      await expect(service.initializeAutomaticCleanup()).rejects.toThrow(
+        'Cleanup init failed'
+      );
     });
 
     it('should get cleanup configuration', () => {
       const config = { interval: 10000 };
       mockAutomaticCleanup.getConfig.mockReturnValue(config);
-      
+
       const result = service.getCleanupConfig();
-      
+
       expect(mockAutomaticCleanup.getConfig).toHaveBeenCalled();
       expect(result).toBe(config);
     });
@@ -627,9 +719,9 @@ describe('CacheService', () => {
     it('should get cleanup history', () => {
       const history = [{ timestamp: Date.now(), cleaned: 10 }];
       mockAutomaticCleanup.getCleanupHistory.mockReturnValue(history);
-      
+
       const result = service.getCleanupHistory();
-      
+
       expect(mockAutomaticCleanup.getCleanupHistory).toHaveBeenCalled();
       expect(result).toBe(history);
     });
@@ -637,16 +729,16 @@ describe('CacheService', () => {
     it('should get current cleanup operations', () => {
       const operations = { running: true, progress: 50 };
       mockAutomaticCleanup.getCurrentOperations.mockReturnValue(operations);
-      
+
       const result = service.getCurrentCleanupOperations();
-      
+
       expect(mockAutomaticCleanup.getCurrentOperations).toHaveBeenCalled();
       expect(result).toBe(operations);
     });
 
     it('should force cleanup', async () => {
       mockAutomaticCleanup.forceCleanup.mockResolvedValue(true);
-      
+
       const result = await service.forceCleanup('L1');
 
       expect(result).toBe(true);
@@ -655,7 +747,7 @@ describe('CacheService', () => {
 
     it('should force cleanup without layer parameter', async () => {
       mockAutomaticCleanup.forceCleanup.mockResolvedValue(true);
-      
+
       const result = await service.forceCleanup();
 
       expect(result).toBe(true);
@@ -664,16 +756,19 @@ describe('CacheService', () => {
 
     it('should track data access', () => {
       service.trackDataAccess('test-key', 'L2');
-      expect(mockAutomaticCleanup.trackDataAccess).toHaveBeenCalledWith('test-key', 'L2');
+      expect(mockAutomaticCleanup.trackDataAccess).toHaveBeenCalledWith(
+        'test-key',
+        'L2'
+      );
     });
 
     it('should register cleanup progress listener', () => {
       const callback = jest.fn();
       const unsubscribe = jest.fn();
       mockAutomaticCleanup.onProgress.mockReturnValue(unsubscribe);
-      
+
       const result = service.onCleanupProgress(callback);
-      
+
       expect(mockAutomaticCleanup.onProgress).toHaveBeenCalledWith(callback);
       expect(result).toBe(unsubscribe);
     });
@@ -682,9 +777,9 @@ describe('CacheService', () => {
       const callback = jest.fn();
       const unsubscribe = jest.fn();
       mockAutomaticCleanup.onCompletion.mockReturnValue(unsubscribe);
-      
+
       const result = service.onCleanupCompletion(callback);
-      
+
       expect(mockAutomaticCleanup.onCompletion).toHaveBeenCalledWith(callback);
       expect(result).toBe(unsubscribe);
     });
@@ -698,7 +793,7 @@ describe('CacheService', () => {
   describe('Helper Methods', () => {
     it('should calculate correct L2 TTL based on L1 TTL', () => {
       const getL2TTL = (service as unknown).getL2TTL.bind(service);
-      
+
       expect(getL2TTL(10 * 60 * 1000)).toBe(50 * 60 * 1000); // 5x for ≤15 min
       expect(getL2TTL(30 * 60 * 1000)).toBe(24 * 60 * 60 * 1000); // 24 hours for ≤1 hour
       expect(getL2TTL(2 * 60 * 60 * 1000)).toBe(7 * 24 * 60 * 60 * 1000); // 7 days for >1 hour
@@ -711,9 +806,11 @@ describe('CacheService', () => {
 
     it('should determine correct data type from cache key', () => {
       const getDataType = (service as unknown).getDataType.bind(service);
-      
+
       expect(getDataType('student-analyst:stock-data:AAPL')).toBe('stock');
-      expect(getDataType('student-analyst:fundamentals:AAPL')).toBe('fundamentals');
+      expect(getDataType('student-analyst:fundamentals:AAPL')).toBe(
+        'fundamentals'
+      );
       expect(getDataType('student-analyst:market:overview')).toBe('market');
       expect(getDataType('student-analyst:analysis:risk')).toBe('analysis');
       expect(getDataType('student-analyst:other:data')).toBe('general');
@@ -721,36 +818,43 @@ describe('CacheService', () => {
 
     it('should hash parameters correctly', () => {
       const hashParameters = (service as unknown).hashParameters.bind(service);
-      
+
       const params1 = { b: 2, a: 1 };
       const params2 = { a: 1, b: 2 };
-      
+
       expect(hashParameters(params1)).toBe(hashParameters(params2));
     });
 
     it('should handle hash parameters errors', () => {
       const hashParameters = (service as unknown).hashParameters.bind(service);
-      
+
       // Create circular reference
       const circular: Record<string, unknown> = { a: 1 };
       circular.self = circular;
-      
+
       expect(hashParameters(circular)).toBe('hash-error');
     });
 
     it('should sort object keys recursively', () => {
       const sortObjectKeys = (service as unknown).sortObjectKeys.bind(service);
-      
+
       const obj = { b: { d: 4, c: 3 }, a: [{ z: 26, y: 25 }] };
       const sorted = sortObjectKeys(obj);
-      
-      expect(Object.keys(sorted as Record<string, unknown>)).toEqual(['a', 'b']);
-      expect(Object.keys((sorted as Record<string, unknown>).b as Record<string, unknown>)).toEqual(['c', 'd']);
+
+      expect(Object.keys(sorted as Record<string, unknown>)).toEqual([
+        'a',
+        'b',
+      ]);
+      expect(
+        Object.keys(
+          (sorted as Record<string, unknown>).b as Record<string, unknown>
+        )
+      ).toEqual(['c', 'd']);
     });
 
     it('should handle non-object values in sortObjectKeys', () => {
       const sortObjectKeys = (service as unknown).sortObjectKeys.bind(service);
-      
+
       expect(sortObjectKeys(null)).toBe(null);
       expect(sortObjectKeys('string')).toBe('string');
       expect(sortObjectKeys(123)).toBe(123);
@@ -758,11 +862,11 @@ describe('CacheService', () => {
 
     it('should generate simple hash for strings', () => {
       const simpleHash = (service as unknown).simpleHash.bind(service);
-      
+
       const hash1 = simpleHash('test');
       const hash2 = simpleHash('test');
       const hash3 = simpleHash('different');
-      
+
       expect(hash1).toBe(hash2);
       expect(hash1).not.toBe(hash3);
       expect(simpleHash('')).toBe('0');
@@ -771,11 +875,11 @@ describe('CacheService', () => {
     it('should test stale data recovery', async () => {
       const getStaleData = (service as unknown).getStaleData.bind(service);
       const staleData = { message: 'stale' };
-      
+
       mockLocalStorageCacheL2.get.mockReturnValue(staleData);
-      
+
       const result = await getStaleData('test-key');
-      
+
       expect(result).toEqual(staleData);
       expect(mockLocalStorageCacheL2.get).toHaveBeenCalledWith('test-key');
     });
@@ -783,25 +887,25 @@ describe('CacheService', () => {
     it('should test stale data from L3 when L2 empty', async () => {
       const getStaleData = (service as unknown).getStaleData.bind(service);
       const staleData = { message: 'stale from L3' };
-      
+
       mockLocalStorageCacheL2.get.mockReturnValue(null);
       mockIndexedDBCacheL3.get.mockResolvedValue(staleData);
-      
+
       const result = await getStaleData('test-key');
-      
+
       expect(result).toEqual(staleData);
       expect(mockIndexedDBCacheL3.get).toHaveBeenCalledWith('test-key');
     });
 
     it('should handle stale data errors gracefully', async () => {
       const getStaleData = (service as unknown).getStaleData.bind(service);
-      
+
       mockLocalStorageCacheL2.get.mockImplementation(() => {
         throw new Error('L2 error');
       });
-      
+
       const result = await getStaleData('test-key');
-      
+
       expect(result).toBe(null);
     });
   });
@@ -809,15 +913,15 @@ describe('CacheService', () => {
   describe('Private Helper Methods', () => {
     it('should calculate L2 TTL based on L1 TTL', () => {
       const getL2TTL = (service as unknown).getL2TTL.bind(service);
-      
+
       // For L1 TTL <= 15 minutes, L2 TTL should be 5x L1 TTL
       const shortTTL = 10 * 60 * 1000; // 10 minutes
       expect(getL2TTL(shortTTL)).toBe(shortTTL * 5);
-      
+
       // For L1 TTL <= 1 hour, L2 TTL should be 24 hours
       const mediumTTL = 30 * 60 * 1000; // 30 minutes
       expect(getL2TTL(mediumTTL)).toBe(24 * 60 * 60 * 1000);
-      
+
       // For L1 TTL > 1 hour, L2 TTL should be 7 days
       const longTTL = 2 * 60 * 60 * 1000; // 2 hours
       expect(getL2TTL(longTTL)).toBe(7 * 24 * 60 * 60 * 1000);
@@ -827,13 +931,13 @@ describe('CacheService', () => {
       const getL3TTL = (service as unknown).getL3TTL.bind(service);
       const l1TTL = 60 * 60 * 1000; // 1 hour
       const l3TTL = getL3TTL(l1TTL);
-      
+
       expect(l3TTL).toBe(7 * 24 * 60 * 60 * 1000); // 7 days
     });
 
     it('should identify data type from cache key - stock data', () => {
       const getDataType = (service as unknown).getDataType.bind(service);
-      
+
       expect(getDataType('stock-data:AAPL:1D')).toBe('stock');
       expect(getDataType('fundamentals:MSFT:overview')).toBe('fundamentals');
       expect(getDataType('market:overview')).toBe('market');
@@ -844,11 +948,15 @@ describe('CacheService', () => {
     it('should hash parameters correctly for consistent cache keys', () => {
       const hashParameters = (service as unknown).hashParameters.bind(service);
       const params = { symbol: 'AAPL', period: '1y', type: 'price' };
-      
+
       const hash1 = hashParameters(params);
       const hash2 = hashParameters(params);
-      const hash3 = hashParameters({ period: '1y', symbol: 'AAPL', type: 'price' }); // Different order
-      
+      const hash3 = hashParameters({
+        period: '1y',
+        symbol: 'AAPL',
+        type: 'price',
+      }); // Different order
+
       expect(hash1).toBe(hash2);
       expect(hash1).toBe(hash3); // Should be same due to key sorting
       expect(typeof hash1).toBe('string');
@@ -861,116 +969,142 @@ describe('CacheService', () => {
         b: 2,
         a: {
           z: 1,
-          x: { c: 3, a: 1 }
-        }
+          x: { c: 3, a: 1 },
+        },
       };
-      
+
       const sorted = sortObjectKeys(complexObj);
       const keys = Object.keys(sorted);
-      
+
       expect(keys).toEqual(['a', 'b']);
-      expect(Object.keys((sorted as Record<string, unknown>).a as Record<string, unknown>)).toEqual(['x', 'z']);
-      expect(Object.keys(((sorted as Record<string, unknown>).a as Record<string, unknown>).x as Record<string, unknown>)).toEqual(['a', 'c']);
+      expect(
+        Object.keys(
+          (sorted as Record<string, unknown>).a as Record<string, unknown>
+        )
+      ).toEqual(['x', 'z']);
+      expect(
+        Object.keys(
+          ((sorted as Record<string, unknown>).a as Record<string, unknown>)
+            .x as Record<string, unknown>
+        )
+      ).toEqual(['a', 'c']);
     });
 
     it('should generate simple hash from string', () => {
       const simpleHash = (service as unknown).simpleHash.bind(service);
-      
+
       const hash1 = simpleHash('test string');
       const hash2 = simpleHash('test string');
       const hash3 = simpleHash('different string');
-      
+
       expect(hash1).toBe(hash2);
       expect(hash1).not.toBe(hash3);
       expect(typeof hash1).toBe('string');
     });
 
     it('should invalidate cache entries by pattern', () => {
-      const invalidateByPattern = (service as unknown).invalidateByPattern.bind(service);
-      
+      const invalidateByPattern = (service as unknown).invalidateByPattern.bind(
+        service
+      );
+
       mockMemoryCacheL1.keys.mockReturnValue([
         'student-analyst:stock-data:AAPL:1D',
         'student-analyst:stock-data:MSFT:1H',
         'student-analyst:fundamentals:AAPL:overview',
-        'student-analyst:market:overview'
+        'student-analyst:market:overview',
       ]);
       mockMemoryCacheL1.remove.mockReturnValue(true);
-      
+
       const removed = invalidateByPattern('stock-data.*');
-      
+
       expect(removed).toBe(2);
-      expect(mockMemoryCacheL1.remove).toHaveBeenCalledWith('student-analyst:stock-data:AAPL:1D');
-      expect(mockMemoryCacheL1.remove).toHaveBeenCalledWith('student-analyst:stock-data:MSFT:1H');
+      expect(mockMemoryCacheL1.remove).toHaveBeenCalledWith(
+        'student-analyst:stock-data:AAPL:1D'
+      );
+      expect(mockMemoryCacheL1.remove).toHaveBeenCalledWith(
+        'student-analyst:stock-data:MSFT:1H'
+      );
     });
   });
 
   describe('Additional Edge Cases and Error Handling', () => {
     it('should handle cache key generation with all options', () => {
-      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
-      
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(
+        service
+      );
+
       const key = generateCacheKey('test-key', {
         prefix: 'custom-prefix',
         includeTimestamp: true,
         includeParams: true,
-        customSuffix: 'custom-suffix'
+        customSuffix: 'custom-suffix',
       });
-      
+
       expect(key).toMatch(/^custom-prefix:test-key:\d+:custom-suffix$/);
     });
 
     it('should handle invalidatePatternMultiLayer with L3 limitations', async () => {
       mockMemoryCacheL1.keys.mockReturnValue(['test-key-1', 'test-key-2']);
-      mockLocalStorageCacheL2.keys.mockReturnValue(['test-key-1', 'different-key']);
+      mockLocalStorageCacheL2.keys.mockReturnValue([
+        'test-key-1',
+        'different-key',
+      ]);
       mockMemoryCacheL1.remove.mockReturnValue(true);
       mockLocalStorageCacheL2.delete.mockReturnValue(true);
-      
+
       const result = await service.invalidatePatternMultiLayer('test-key.*');
-      
+
       expect(result).toEqual({
         l1Removed: 2,
         l2Removed: 1,
         l3Removed: 0, // L3 implementation limitation
-        total: 3
+        total: 3,
       });
     });
 
     it('should handle complex parameter hashing with nested objects', () => {
       const hashParameters = (service as unknown).hashParameters.bind(service);
-      
+
       const complexParams = {
         config: {
           nested: {
             value: 'test',
-            number: 42
+            number: 42,
           },
-          array: [1, 2, { key: 'value' }]
+          array: [1, 2, { key: 'value' }],
         },
-        simple: 'string'
+        simple: 'string',
       };
-      
+
       const hash = hashParameters(complexParams);
-      
+
       expect(typeof hash).toBe('string');
       expect(hash.length).toBeGreaterThan(0);
     });
 
     it('should handle cache key generation with timestamp', () => {
-      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
-      
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(
+        service
+      );
+
       const originalDateNow = Date.now;
-      Date.now = jest.fn(() => 123456789) as jest.MockedFunction<typeof Date.now>;
-      
+      Date.now = jest.fn(() => 123456789) as jest.MockedFunction<
+        typeof Date.now
+      >;
+
       const key = generateCacheKey('test', { includeTimestamp: true });
-      
+
       expect(key).toBe('student-analyst:test:123456789');
-      
+
       Date.now = originalDateNow;
     });
 
     it('should handle multiple consecutive cache misses and hits', async () => {
       const testKey = 'multi-test-key';
       const testData = { value: 'test' };
-      const fetchFunction = jest.fn<() => Promise<{ value: string }>>().mockResolvedValue(testData);
+      const fetchFunction = jest
+        .fn<() => Promise<{ value: string }>>()
+        .mockResolvedValue(testData);
 
       // First call - all cache miss, should fetch
       mockMemoryCacheL1.get.mockReturnValue(null);
@@ -983,7 +1117,7 @@ describe('CacheService', () => {
 
       // Second call - L1 hit
       mockMemoryCacheL1.get.mockReturnValue(testData);
-      
+
       const result2 = await service.get(testKey, fetchFunction);
       expect(result2.fromCache).toBe(true);
       expect(fetchFunction).toHaveBeenCalledTimes(1); // Should not fetch again

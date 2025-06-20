@@ -1,13 +1,7 @@
 {
-  "extends": [
-    "@typescript-eslint/recommended"
-  ],
+  "extends": ["@typescript-eslint/recommended"],
   "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint",
-    "react-hooks",
-    "react-refresh"
-  ],
+  "plugins": ["@typescript-eslint", "react-hooks", "react-refresh"],
   "rules": {
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-explicit-any": "warn",
@@ -19,10 +13,5 @@
     "prefer-const": "warn",
     "no-empty": "warn"
   },
-  "ignorePatterns": [
-    "dist/",
-    "node_modules/",
-    "*.test.ts",
-    "*.test.tsx"
-  ]
-} 
+  "ignorePatterns": ["dist/", "node_modules/", "*.test.ts", "*.test.tsx"]
+}

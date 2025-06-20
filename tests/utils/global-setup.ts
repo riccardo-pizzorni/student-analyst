@@ -44,35 +44,67 @@ async function globalSetup() {
     constructor(result: unknown) {
       setTimeout(() => {
         this.result = result;
-        if (typeof this.onsuccess === 'function') this.onsuccess({ target: this });
+        if (typeof this.onsuccess === 'function')
+          this.onsuccess({ target: this });
       }, 1);
     }
   }
 
   class MockObjectStore {
     store: Record<string, unknown>;
-    constructor(store: Record<string, unknown>) { this.store = store; }
-    get(key) { return new MockIDBRequest(this.store[key] ?? undefined); }
-    put(entry) { this.store[entry.key] = entry; return new MockIDBRequest(undefined); }
-    delete(key) { delete this.store[key]; return new MockIDBRequest(undefined); }
-    clear() { Object.keys(this.store).forEach(k => delete this.store[k]); return new MockIDBRequest(undefined); }
-    getAllKeys() { return new MockIDBRequest(Object.keys(this.store)); }
-    count() { return new MockIDBRequest(Object.keys(this.store).length); }
-    index() { return this; }
-    openCursor() { return new MockIDBRequest({ continue: () => {} }); }
+    constructor(store: Record<string, unknown>) {
+      this.store = store;
+    }
+    get(key) {
+      return new MockIDBRequest(this.store[key] ?? undefined);
+    }
+    put(entry) {
+      this.store[entry.key] = entry;
+      return new MockIDBRequest(undefined);
+    }
+    delete(key) {
+      delete this.store[key];
+      return new MockIDBRequest(undefined);
+    }
+    clear() {
+      Object.keys(this.store).forEach(k => delete this.store[k]);
+      return new MockIDBRequest(undefined);
+    }
+    getAllKeys() {
+      return new MockIDBRequest(Object.keys(this.store));
+    }
+    count() {
+      return new MockIDBRequest(Object.keys(this.store).length);
+    }
+    index() {
+      return this;
+    }
+    openCursor() {
+      return new MockIDBRequest({ continue: () => {} });
+    }
   }
 
   class MockTransaction {
     store: Record<string, unknown>;
-    constructor(store: Record<string, unknown>) { this.store = store; }
-    objectStore() { return new MockObjectStore(this.store); }
+    constructor(store: Record<string, unknown>) {
+      this.store = store;
+    }
+    objectStore() {
+      return new MockObjectStore(this.store);
+    }
   }
 
   class MockIDBDatabase {
     store: Record<string, unknown>;
-    constructor(store: Record<string, unknown>) { this.store = store; }
-    transaction() { return new MockTransaction(this.store); }
-    createObjectStore() { return new MockObjectStore(this.store); }
+    constructor(store: Record<string, unknown>) {
+      this.store = store;
+    }
+    transaction() {
+      return new MockTransaction(this.store);
+    }
+    createObjectStore() {
+      return new MockObjectStore(this.store);
+    }
     close() {}
   }
 
@@ -81,7 +113,8 @@ async function globalSetup() {
     open: () => {
       const req = new MockIDBRequest(new MockIDBDatabase(_mockIDBStore));
       setTimeout(() => {
-        if (typeof req.onupgradeneeded === 'function') req.onupgradeneeded({ target: req });
+        if (typeof req.onupgradeneeded === 'function')
+          req.onupgradeneeded({ target: req });
         if (typeof req.onsuccess === 'function') req.onsuccess({ target: req });
       }, 1);
       return req;
@@ -98,7 +131,10 @@ async function globalSetup() {
 
   // Mock window.setInterval
   Object.defineProperty(global.window, 'setInterval', {
-    value: (callback: (...args: unknown[]) => void, delay: number): NodeJS.Timeout => {
+    value: (
+      callback: (...args: unknown[]) => void,
+      delay: number
+    ): NodeJS.Timeout => {
       return setInterval(callback, delay);
     },
     writable: true,
@@ -133,4 +169,4 @@ async function globalSetup() {
   });
 }
 
-export default globalSetup; 
+export default globalSetup;

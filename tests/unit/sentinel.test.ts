@@ -12,4 +12,4 @@ describe('Sentinel Tests - Ambiente di test', () => {
   it('should compare two objects', () => {
     expect({ a: 1, b: 2 }).toEqual({ a: 1, b: 2 });
   });
-}); 
+});

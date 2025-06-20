@@ -1,17 +1,22 @@
 /**
  * STUDENT ANALYST - Batch Processing Routes
  * ========================================
- * 
+ *
  * Endpoints API per gestione batch processing di richieste finanziarie
  * con progress tracking in tempo reale e rate limiting intelligente
  */
 
 import { Request, Response, Router } from 'express';
+import { sanitizationMiddleware } from '../middleware/sanitizationMiddleware';
 import {
-    sanitizationMiddleware
-} from '../middleware/sanitizationMiddleware';
-import { AlphaVantageService, AlphaVantageTimeframe } from '../services/alphaVantageService';
-import { BatchProcessor, BatchRequest, BatchResult } from '../services/batchProcessor';
+  AlphaVantageService,
+  AlphaVantageTimeframe,
+} from '../services/alphaVantageService';
+import {
+  BatchProcessor,
+  BatchRequest,
+  BatchResult,
+} from '../services/batchProcessor';
 
 const router = Router();
 
@@ -21,7 +26,7 @@ const alphaVantageService = new AlphaVantageService({
   timeout: 30000,
   retryAttempts: 3,
   cacheEnabled: true,
-  validateData: true
+  validateData: true,
 });
 
 const batchProcessor = new BatchProcessor(alphaVantageService, {
@@ -29,19 +34,21 @@ const batchProcessor = new BatchProcessor(alphaVantageService, {
   defaultBatchSize: 10,
   enableProgressTracking: true,
   enableAutoRetry: true,
-  cacheFirstStrategy: true
+  cacheFirstStrategy: true,
 });
 
 // Applica sanitizzazione a tutte le route batch
-router.use(sanitizationMiddleware({
-  enableBodySanitization: true,
-  enableParamsSanitization: true,
-  enableQuerySanitization: true,
-  logSuspiciousActivity: true,
-  blockOnDangerousPatterns: true,
-  maxRequestSize: 1024 * 1024, // 1MB
-  trustedIPs: ['127.0.0.1', '::1', 'localhost']
-}));
+router.use(
+  sanitizationMiddleware({
+    enableBodySanitization: true,
+    enableParamsSanitization: true,
+    enableQuerySanitization: true,
+    logSuspiciousActivity: true,
+    blockOnDangerousPatterns: true,
+    maxRequestSize: 1024 * 1024, // 1MB
+    trustedIPs: ['127.0.0.1', '::1', 'localhost'],
+  })
+);
 
 /**
  * BATCH PROCESSING ENDPOINTS
@@ -51,7 +58,7 @@ router.use(sanitizationMiddleware({
 /**
  * POST /api/v1/batch/process
  * Avvia elaborazione batch di simboli multipli
- * 
+ *
  * Body:
  * {
  *   "symbols": ["AAPL", "MSFT", "GOOGL"],
@@ -67,9 +74,15 @@ router.use(sanitizationMiddleware({
  */
 router.post('/process', async (req: Request, res: Response) => {
   const startTime = Date.now();
-  
+
   try {
-    const { symbols, timeframe, options = {}, priority = 1, batchId } = req.body;
+    const {
+      symbols,
+      timeframe,
+      options = {},
+      priority = 1,
+      batchId,
+    } = req.body;
 
     // Validazione input
     if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
@@ -78,8 +91,8 @@ router.post('/process', async (req: Request, res: Response) => {
         message: 'symbols array is required and must not be empty',
         example: {
           symbols: ['AAPL', 'MSFT', 'GOOGL'],
-          timeframe: 'daily'
-        }
+          timeframe: 'daily',
+        },
       });
     }
 
@@ -88,7 +101,8 @@ router.post('/process', async (req: Request, res: Response) => {
         error: 'Batch Size Limit Exceeded',
         message: 'Maximum 50 symbols allowed per batch request',
         provided: symbols.length,
-        suggestion: 'Split into multiple smaller batches for better performance'
+        suggestion:
+          'Split into multiple smaller batches for better performance',
       });
     }
 
@@ -96,7 +110,16 @@ router.post('/process', async (req: Request, res: Response) => {
       return res.status(400).json({
         error: 'Invalid Timeframe',
         message: 'timeframe is required',
-        supportedTimeframes: ['1min', '5min', '15min', '30min', '60min', 'daily', 'weekly', 'monthly']
+        supportedTimeframes: [
+          '1min',
+          '5min',
+          '15min',
+          '30min',
+          '60min',
+          'daily',
+          'weekly',
+          'monthly',
+        ],
       });
     }
 
@@ -106,7 +129,7 @@ router.post('/process', async (req: Request, res: Response) => {
       timeframe,
       options,
       priority,
-      batchId
+      batchId,
     };
 
     // Avvia elaborazione batch (asincrona)
@@ -125,36 +148,39 @@ router.post('/process', async (req: Request, res: Response) => {
         symbols: batchRequest.symbols,
         timeframe: batchRequest.timeframe,
         symbolCount: batchRequest.symbols.length,
-        estimatedTimeMinutes: Math.ceil((batchRequest.symbols.length * 12) / 60)
+        estimatedTimeMinutes: Math.ceil(
+          (batchRequest.symbols.length * 12) / 60
+        ),
       },
       monitoring: {
         statusEndpoint: `/api/v1/batch/status/${actualBatchId}`,
         resultEndpoint: `/api/v1/batch/result/${actualBatchId}`,
-        cancelEndpoint: `/api/v1/batch/cancel/${actualBatchId}`
+        cancelEndpoint: `/api/v1/batch/cancel/${actualBatchId}`,
       },
       responseTime,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Gestisci risultato asincrono
     processingPromise
       .then((result: BatchResult) => {
-        console.log(`✅ Batch ${actualBatchId} completed: ${result.successfulSymbols}/${result.totalSymbols} successful`);
+        console.log(
+          `✅ Batch ${actualBatchId} completed: ${result.successfulSymbols}/${result.totalSymbols} successful`
+        );
       })
       .catch((error: Error) => {
         console.error(`❌ Batch ${actualBatchId} failed:`, error.message);
       });
-
   } catch (error) {
     const responseTime = Date.now() - startTime;
     console.error('Batch processing error:', error);
-    
+
     res.status(500).json({
       error: 'Batch Processing Error',
       message: 'Failed to start batch processing',
       details: error instanceof Error ? error.message : 'Unknown error',
       responseTime,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -170,12 +196,12 @@ router.get('/status/:batchId', (req: Request, res: Response) => {
     if (!batchId) {
       return res.status(400).json({
         error: 'Missing Batch ID',
-        message: 'Batch ID is required'
+        message: 'Batch ID is required',
       });
     }
 
     const batchStatus = batchProcessor.getBatchStatus(batchId);
-    
+
     if (!batchStatus) {
       // Controlla se è un batch completato
       const completedResult = batchProcessor.getBatchResult(batchId);
@@ -188,25 +214,25 @@ router.get('/status/:batchId', (req: Request, res: Response) => {
             completed: completedResult.totalSymbols,
             total: completedResult.totalSymbols,
             percentage: 100,
-            estimatedTimeRemainingMs: 0
+            estimatedTimeRemainingMs: 0,
           },
           result: {
             successfulSymbols: completedResult.successfulSymbols,
             failedSymbols: completedResult.failedSymbols,
             executionTimeMs: completedResult.executionTimeMs,
             cacheHits: completedResult.cacheHits,
-            apiCalls: completedResult.apiCalls
+            apiCalls: completedResult.apiCalls,
           },
           links: {
-            result: `/api/v1/batch/result/${batchId}`
-          }
+            result: `/api/v1/batch/result/${batchId}`,
+          },
         });
       }
 
       return res.status(404).json({
         error: 'Batch Not Found',
         message: `No batch found with ID: ${batchId}`,
-        suggestion: 'Check the batch ID or the batch may have expired'
+        suggestion: 'Check the batch ID or the batch may have expired',
       });
     }
 
@@ -219,17 +245,22 @@ router.get('/status/:batchId', (req: Request, res: Response) => {
       endTime: batchStatus.endTime,
       errors: batchStatus.errors.slice(-5), // Ultimi 5 errori
       links: {
-        result: batchStatus.status === 'completed' ? `/api/v1/batch/result/${batchId}` : null,
-        cancel: batchStatus.status === 'processing' ? `/api/v1/batch/cancel/${batchId}` : null
+        result:
+          batchStatus.status === 'completed'
+            ? `/api/v1/batch/result/${batchId}`
+            : null,
+        cancel:
+          batchStatus.status === 'processing'
+            ? `/api/v1/batch/cancel/${batchId}`
+            : null,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Batch status error:', error);
     res.status(500).json({
       error: 'Status Retrieval Error',
-      message: 'Failed to get batch status'
+      message: 'Failed to get batch status',
     });
   }
 });
@@ -246,17 +277,17 @@ router.get('/result/:batchId', (req: Request, res: Response) => {
     if (!batchId) {
       return res.status(400).json({
         error: 'Missing Batch ID',
-        message: 'Batch ID is required'
+        message: 'Batch ID is required',
       });
     }
 
     const batchResult = batchProcessor.getBatchResult(batchId);
-    
+
     if (!batchResult) {
       return res.status(404).json({
         error: 'Batch Result Not Found',
         message: `No completed batch found with ID: ${batchId}`,
-        suggestion: 'Check the batch ID or ensure the batch has completed'
+        suggestion: 'Check the batch ID or ensure the batch has completed',
       });
     }
 
@@ -271,25 +302,41 @@ router.get('/result/:batchId', (req: Request, res: Response) => {
         cacheHits: batchResult.cacheHits,
         apiCalls: batchResult.apiCalls,
         executionTimeMs: batchResult.executionTimeMs,
-        successRate: ((batchResult.successfulSymbols / batchResult.totalSymbols) * 100).toFixed(1) + '%'
+        successRate:
+          (
+            (batchResult.successfulSymbols / batchResult.totalSymbols) *
+            100
+          ).toFixed(1) + '%',
       },
       symbolsSummary: {
         successful: Array.from(batchResult.results.keys()),
-        failed: Array.from(batchResult.errors.keys())
+        failed: Array.from(batchResult.errors.keys()),
       },
       performance: {
-        averageTimePerSymbol: Math.round(batchResult.executionTimeMs / batchResult.totalSymbols),
-        cacheHitRate: batchResult.cacheHits > 0 ? ((batchResult.cacheHits / (batchResult.cacheHits + batchResult.apiCalls)) * 100).toFixed(1) + '%' : '0%',
-        apiEfficiency: batchResult.apiCalls + ' API calls for ' + batchResult.totalSymbols + ' symbols'
+        averageTimePerSymbol: Math.round(
+          batchResult.executionTimeMs / batchResult.totalSymbols
+        ),
+        cacheHitRate:
+          batchResult.cacheHits > 0
+            ? (
+                (batchResult.cacheHits /
+                  (batchResult.cacheHits + batchResult.apiCalls)) *
+                100
+              ).toFixed(1) + '%'
+            : '0%',
+        apiEfficiency:
+          batchResult.apiCalls +
+          ' API calls for ' +
+          batchResult.totalSymbols +
+          ' symbols',
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Batch result error:', error);
     res.status(500).json({
       error: 'Result Retrieval Error',
-      message: 'Failed to get batch results'
+      message: 'Failed to get batch results',
     });
   }
 });
@@ -305,17 +352,17 @@ router.delete('/cancel/:batchId', (req: Request, res: Response) => {
     if (!batchId) {
       return res.status(400).json({
         error: 'Missing Batch ID',
-        message: 'Batch ID is required'
+        message: 'Batch ID is required',
       });
     }
 
     const cancelled = batchProcessor.cancelBatch(batchId);
-    
+
     if (!cancelled) {
       return res.status(404).json({
         error: 'Batch Not Found or Not Cancellable',
         message: `Batch ${batchId} not found or already completed`,
-        suggestion: 'Check batch status or ensure batch is still processing'
+        suggestion: 'Check batch status or ensure batch is still processing',
       });
     }
 
@@ -323,14 +370,13 @@ router.delete('/cancel/:batchId', (req: Request, res: Response) => {
       success: true,
       message: `Batch ${batchId} cancelled successfully`,
       batchId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Batch cancellation error:', error);
     res.status(500).json({
       error: 'Cancellation Error',
-      message: 'Failed to cancel batch'
+      message: 'Failed to cancel batch',
     });
   }
 });
@@ -352,17 +398,16 @@ router.get('/active', (req: Request, res: Response) => {
         status: batch.status,
         progress: batch.progress,
         startTime: batch.startTime,
-        errors: batch.errors.length
+        errors: batch.errors.length,
       })),
       rateLimitStats: batchProcessor.getRateLimitStats(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Active batches error:', error);
     res.status(500).json({
       error: 'Active Batches Error',
-      message: 'Failed to get active batches'
+      message: 'Failed to get active batches',
     });
   }
 });
@@ -379,34 +424,37 @@ router.post('/multi-timeframe', async (req: Request, res: Response) => {
     if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
       return res.status(400).json({
         error: 'Invalid Symbols',
-        message: 'symbols array is required'
+        message: 'symbols array is required',
       });
     }
 
     if (!timeframes || !Array.isArray(timeframes) || timeframes.length === 0) {
       return res.status(400).json({
         error: 'Invalid Timeframes',
-        message: 'timeframes array is required'
+        message: 'timeframes array is required',
       });
     }
 
     if (symbols.length > 20) {
       return res.status(400).json({
         error: 'Symbol Limit Exceeded',
-        message: 'Maximum 20 symbols allowed for multi-timeframe processing'
+        message: 'Maximum 20 symbols allowed for multi-timeframe processing',
       });
     }
 
     if (timeframes.length > 5) {
       return res.status(400).json({
         error: 'Timeframe Limit Exceeded',
-        message: 'Maximum 5 timeframes allowed per request'
+        message: 'Maximum 5 timeframes allowed per request',
       });
     }
 
     // Valida timeframes
-    const invalidTimeframes = timeframes.filter((tf: unknown) => 
-      !Object.values(AlphaVantageTimeframe).includes(tf as AlphaVantageTimeframe)
+    const invalidTimeframes = timeframes.filter(
+      (tf: unknown) =>
+        !Object.values(AlphaVantageTimeframe).includes(
+          tf as AlphaVantageTimeframe
+        )
     );
 
     if (invalidTimeframes.length > 0) {
@@ -414,7 +462,7 @@ router.post('/multi-timeframe', async (req: Request, res: Response) => {
         error: 'Invalid Timeframes',
         message: 'Some timeframes are not supported',
         invalidTimeframes,
-        supportedTimeframes: Object.values(AlphaVantageTimeframe)
+        supportedTimeframes: Object.values(AlphaVantageTimeframe),
       });
     }
 
@@ -437,26 +485,32 @@ router.post('/multi-timeframe', async (req: Request, res: Response) => {
         symbols: symbols.length,
         timeframes: timeframes.length,
         totalCombinations: symbols.length * timeframes.length,
-        estimatedTimeMinutes: Math.ceil((symbols.length * timeframes.length * 12) / 60)
+        estimatedTimeMinutes: Math.ceil(
+          (symbols.length * timeframes.length * 12) / 60
+        ),
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // Gestisci risultato asincrono
     processingPromise
-      .then((results) => {
-        console.log(`✅ Multi-timeframe processing ${multiTimeframeId} completed`);
+      .then(results => {
+        console.log(
+          `✅ Multi-timeframe processing ${multiTimeframeId} completed`
+        );
         // Qui potresti salvare i risultati in un database o cache per recupero successivo
       })
-      .catch((error) => {
-        console.error(`❌ Multi-timeframe processing ${multiTimeframeId} failed:`, error);
+      .catch(error => {
+        console.error(
+          `❌ Multi-timeframe processing ${multiTimeframeId} failed:`,
+          error
+        );
       });
-
   } catch (error) {
     console.error('Multi-timeframe processing error:', error);
     res.status(500).json({
       error: 'Multi-Timeframe Processing Error',
-      message: 'Failed to start multi-timeframe processing'
+      message: 'Failed to start multi-timeframe processing',
     });
   }
 });
@@ -475,33 +529,33 @@ router.get('/stats', (req: Request, res: Response) => {
       rateLimiting: rateLimitStats,
       batches: {
         active: activeBatches.size,
-        maxConcurrent: 3
+        maxConcurrent: 3,
       },
       quotas: {
         daily: {
           used: rateLimitStats.totalRequestsMade,
           remaining: rateLimitStats.dailyQuotaRemaining,
-          total: 25
+          total: 25,
         },
         perMinute: {
           used: rateLimitStats.requestsInLastMinute,
           remaining: rateLimitStats.minuteQuotaRemaining,
-          total: 5
-        }
+          total: 5,
+        },
       },
       performance: {
         cacheHitRate: rateLimitStats.cacheHitRate.toFixed(1) + '%',
-        averageResponseTime: rateLimitStats.averageResponseTime.toFixed(0) + 'ms',
-        queueLength: rateLimitStats.queueLength
+        averageResponseTime:
+          rateLimitStats.averageResponseTime.toFixed(0) + 'ms',
+        queueLength: rateLimitStats.queueLength,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Batch stats error:', error);
     res.status(500).json({
       error: 'Stats Error',
-      message: 'Failed to get batch processing statistics'
+      message: 'Failed to get batch processing statistics',
     });
   }
 });
@@ -518,14 +572,13 @@ router.delete('/cancel-all', (req: Request, res: Response) => {
       success: true,
       message: `Cancelled ${cancelledCount} active batches`,
       cancelledBatches: cancelledCount,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Cancel all batches error:', error);
     res.status(500).json({
       error: 'Cancel All Error',
-      message: 'Failed to cancel all batches'
+      message: 'Failed to cancel all batches',
     });
   }
 });

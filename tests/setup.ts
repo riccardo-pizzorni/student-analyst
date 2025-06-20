@@ -66,11 +66,11 @@ const indexedDB = {
           clear: jest.fn(),
           index: jest.fn().mockReturnValue({
             get: jest.fn(),
-            openCursor: jest.fn()
-          })
+            openCursor: jest.fn(),
+          }),
         }),
         objectStoreNames: {
-          contains: jest.fn().mockReturnValue(true)
+          contains: jest.fn().mockReturnValue(true),
         },
         transaction: jest.fn().mockReturnValue({
           objectStore: jest.fn().mockReturnValue({
@@ -80,14 +80,14 @@ const indexedDB = {
             clear: jest.fn(),
             index: jest.fn().mockReturnValue({
               get: jest.fn(),
-              openCursor: jest.fn()
-            })
-          })
-        })
+              openCursor: jest.fn(),
+            }),
+          }),
+        }),
       },
       onupgradeneeded: null as ((event: unknown) => void) | null,
       onsuccess: null as ((event: unknown) => void) | null,
-      onerror: null as ((event: unknown) => void) | null
+      onerror: null as ((event: unknown) => void) | null,
     };
 
     // Simulate the upgrade needed event
@@ -104,8 +104,8 @@ const indexedDB = {
   }),
   deleteDatabase: jest.fn().mockImplementation(() => ({
     onsuccess: null,
-    onerror: null
-  }))
+    onerror: null,
+  })),
 };
 
 // Setup performance mock
@@ -115,7 +115,7 @@ const performanceMock = {
   measure: jest.fn(),
   getEntriesByName: jest.fn(),
   clearMarks: jest.fn(),
-  clearMeasures: jest.fn()
+  clearMeasures: jest.fn(),
 };
 
 // Setup console mocks
@@ -124,20 +124,20 @@ const consoleMock = {
   error: jest.fn(),
   warn: jest.fn(),
   info: jest.fn(),
-  debug: jest.fn()
+  debug: jest.fn(),
 };
 
 // Apply mocks
 Object.defineProperty(window, 'indexedDB', { value: indexedDB });
-Object.defineProperty(window, 'localStorage', { 
+Object.defineProperty(window, 'localStorage', {
   value: {
     getItem: jest.fn(),
     setItem: jest.fn(),
     removeItem: jest.fn(),
     clear: jest.fn(),
     key: jest.fn(),
-    length: 0
-  }
+    length: 0,
+  },
 });
 Object.defineProperty(window, 'performance', { value: performanceMock });
 Object.defineProperty(window, 'console', { value: consoleMock });
@@ -151,10 +151,10 @@ beforeAll(() => {
 beforeEach(() => {
   // Reset all mocks before each test
   jest.clearAllMocks();
-  
+
   // Reset localStorage
   localStorageMock.clear();
-  
+
   // Reset IndexedDB
   indexedDB.databases.mockClear();
   indexedDB.open.mockClear();
@@ -169,4 +169,4 @@ afterEach(() => {
 afterAll(() => {
   // Clean up after all tests
   jest.clearAllMocks();
-}); 
+});

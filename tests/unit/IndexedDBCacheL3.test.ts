@@ -58,11 +58,19 @@ class MockEvent implements Event {
     // No-op
   }
 
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): void {
     // No-op
   }
 
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ): void {
     // No-op
   }
 
@@ -71,7 +79,10 @@ class MockEvent implements Event {
   }
 }
 
-class MockIDBVersionChangeEvent extends MockEvent implements IDBVersionChangeEvent {
+class MockIDBVersionChangeEvent
+  extends MockEvent
+  implements IDBVersionChangeEvent
+{
   readonly oldVersion: number;
   readonly newVersion: number | null;
 
@@ -88,8 +99,12 @@ class MockIDBRequest implements IDBRequest<Record<string, unknown>> {
   source: IDBObjectStore | IDBIndex | IDBCursor;
   transaction: IDBTransaction | null;
   readyState: IDBRequestReadyState;
-  onsuccess: ((this: IDBRequest<Record<string, unknown>>, ev: Event) => void) | null;
-  onerror: ((this: IDBRequest<Record<string, unknown>>, ev: Event) => void) | null;
+  onsuccess:
+    | ((this: IDBRequest<Record<string, unknown>>, ev: Event) => void)
+    | null;
+  onerror:
+    | ((this: IDBRequest<Record<string, unknown>>, ev: Event) => void)
+    | null;
 
   constructor() {
     this.result = {} as Record<string, unknown>;
@@ -117,11 +132,19 @@ class MockIDBRequest implements IDBRequest<Record<string, unknown>> {
     }
   }
 
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): void {
     // No-op
   }
 
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ): void {
     // No-op
   }
 
@@ -131,8 +154,12 @@ class MockIDBRequest implements IDBRequest<Record<string, unknown>> {
 }
 
 class MockIDBOpenDBRequest extends MockIDBRequest implements IDBOpenDBRequest {
-  onblocked: ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => void) | null;
-  onupgradeneeded: ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => void) | null;
+  onblocked:
+    | ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => void)
+    | null;
+  onupgradeneeded:
+    | ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => void)
+    | null;
 
   constructor() {
     super();
@@ -157,7 +184,12 @@ class MockIndex implements IDBIndex {
   readonly unique: boolean;
   readonly objectStore: IDBObjectStore;
 
-  constructor(name: string, keyPath: string | string[], options: IDBIndexParameters, objectStore: IDBObjectStore) {
+  constructor(
+    name: string,
+    keyPath: string | string[],
+    options: IDBIndexParameters,
+    objectStore: IDBObjectStore
+  ) {
     this.name = name;
     this.keyPath = keyPath;
     this.multiEntry = options.multiEntry || false;
@@ -165,7 +197,9 @@ class MockIndex implements IDBIndex {
     this.objectStore = objectStore;
   }
 
-  get(key: IDBValidKey | IDBKeyRange): IDBRequest<Record<string, unknown> | undefined> {
+  get(
+    key: IDBValidKey | IDBKeyRange
+  ): IDBRequest<Record<string, unknown> | undefined> {
     const request = new MockIDBRequest();
     const result = (this.objectStore as MockObjectStore).data.find(item => {
       const keyValue = this.getKeyValue(item);
@@ -185,7 +219,10 @@ class MockIndex implements IDBIndex {
     return request;
   }
 
-  getAll(query?: IDBValidKey | IDBKeyRange | null, count?: number): IDBRequest<Record<string, unknown>[]> {
+  getAll(
+    query?: IDBValidKey | IDBKeyRange | null,
+    count?: number
+  ): IDBRequest<Record<string, unknown>[]> {
     const request = new MockIDBRequest();
     const results = (this.objectStore as MockObjectStore).data.filter(item => {
       const keyValue = this.getKeyValue(item);
@@ -195,9 +232,14 @@ class MockIndex implements IDBIndex {
     return request;
   }
 
-  getAllKeys(query?: IDBValidKey | IDBKeyRange | null, count?: number): IDBRequest<IDBValidKey[]> {
+  getAllKeys(
+    query?: IDBValidKey | IDBKeyRange | null,
+    count?: number
+  ): IDBRequest<IDBValidKey[]> {
     const request = new MockIDBRequest();
-    const keys = (this.objectStore as MockObjectStore).data.map(item => this.getKeyValue(item));
+    const keys = (this.objectStore as MockObjectStore).data.map(item =>
+      this.getKeyValue(item)
+    );
     const results = query ? keys.filter(key => key === query) : keys;
     request.setResult(count ? results.slice(0, count) : results);
     return request;
@@ -213,13 +255,19 @@ class MockIndex implements IDBIndex {
     return request;
   }
 
-  openCursor(range?: IDBValidKey | IDBKeyRange | null, direction?: IDBCursorDirection): IDBRequest<IDBCursorWithValue | null> {
+  openCursor(
+    range?: IDBValidKey | IDBKeyRange | null,
+    direction?: IDBCursorDirection
+  ): IDBRequest<IDBCursorWithValue | null> {
     const request = new MockIDBRequest();
     request.setResult(null);
     return request;
   }
 
-  openKeyCursor(range?: IDBValidKey | IDBKeyRange | null, direction?: IDBCursorDirection): IDBRequest<IDBCursor | null> {
+  openKeyCursor(
+    range?: IDBValidKey | IDBKeyRange | null,
+    direction?: IDBCursorDirection
+  ): IDBRequest<IDBCursor | null> {
     const request = new MockIDBRequest();
     request.setResult(null);
     return request;
@@ -242,7 +290,11 @@ class MockObjectStore implements IDBObjectStore {
   indexNames: DOMStringList;
   readonly transaction: IDBTransaction;
 
-  constructor(name: string, options: IDBObjectStoreParameters, transaction: IDBTransaction) {
+  constructor(
+    name: string,
+    options: IDBObjectStoreParameters,
+    transaction: IDBTransaction
+  ) {
     this.name = name;
     this.keyPath = options.keyPath || 'key';
     this.autoIncrement = options.autoIncrement || false;
@@ -252,7 +304,11 @@ class MockObjectStore implements IDBObjectStore {
     this.transaction = transaction;
   }
 
-  createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters): IDBIndex {
+  createIndex(
+    name: string,
+    keyPath: string | string[],
+    options?: IDBIndexParameters
+  ): IDBIndex {
     if (this.indexes.has(name)) {
       throw new DOMException(`Index ${name} already exists`, 'ConstraintError');
     }
@@ -278,7 +334,9 @@ class MockObjectStore implements IDBObjectStore {
     return index;
   }
 
-  get(key: IDBValidKey | IDBKeyRange): IDBRequest<Record<string, unknown> | undefined> {
+  get(
+    key: IDBValidKey | IDBKeyRange
+  ): IDBRequest<Record<string, unknown> | undefined> {
     const request = new MockIDBRequest();
     const result = this.data.find(item => {
       if (typeof this.keyPath === 'string') {
@@ -297,7 +355,10 @@ class MockObjectStore implements IDBObjectStore {
     return request;
   }
 
-  add(value: Record<string, unknown>, key?: IDBValidKey): IDBRequest<Record<string, unknown>> {
+  add(
+    value: Record<string, unknown>,
+    key?: IDBValidKey
+  ): IDBRequest<Record<string, unknown>> {
     const request = new MockIDBRequest();
     this.data.push(value);
     request.setResult(value);
@@ -313,7 +374,9 @@ class MockObjectStore implements IDBObjectStore {
 
   count(key?: IDBValidKey | IDBKeyRange): IDBRequest<number> {
     const request = new MockIDBRequest();
-    const count = key ? this.data.filter(item => this.getKeyValue(item) === key).length : this.data.length;
+    const count = key
+      ? this.data.filter(item => this.getKeyValue(item) === key).length
+      : this.data.length;
     request.setResult(count);
     return request;
   }
@@ -328,7 +391,10 @@ class MockObjectStore implements IDBObjectStore {
     return request;
   }
 
-  getAll(query?: IDBValidKey | IDBKeyRange | null, count?: number): IDBRequest<Record<string, unknown>[]> {
+  getAll(
+    query?: IDBValidKey | IDBKeyRange | null,
+    count?: number
+  ): IDBRequest<Record<string, unknown>[]> {
     const request = new MockIDBRequest();
     const results = this.data.filter(item => {
       if (!query) return true;
@@ -341,7 +407,10 @@ class MockObjectStore implements IDBObjectStore {
     return request;
   }
 
-  getAllKeys(query?: IDBValidKey | IDBKeyRange | null, count?: number): IDBRequest<IDBValidKey[]> {
+  getAllKeys(
+    query?: IDBValidKey | IDBKeyRange | null,
+    count?: number
+  ): IDBRequest<IDBValidKey[]> {
     const request = new MockIDBRequest();
     const keys = this.data.map(item => {
       if (typeof this.keyPath === 'string') {
@@ -361,13 +430,19 @@ class MockObjectStore implements IDBObjectStore {
     return request;
   }
 
-  openCursor(query?: IDBValidKey | IDBKeyRange | null, direction?: IDBCursorDirection): IDBRequest<IDBCursorWithValue | null> {
+  openCursor(
+    query?: IDBValidKey | IDBKeyRange | null,
+    direction?: IDBCursorDirection
+  ): IDBRequest<IDBCursorWithValue | null> {
     const request = new MockIDBRequest();
     request.setResult(null);
     return request;
   }
 
-  openKeyCursor(query?: IDBValidKey | IDBKeyRange | null, direction?: IDBCursorDirection): IDBRequest<IDBCursor | null> {
+  openKeyCursor(
+    query?: IDBValidKey | IDBKeyRange | null,
+    direction?: IDBCursorDirection
+  ): IDBRequest<IDBCursor | null> {
     const request = new MockIDBRequest<IDBCursor | null>();
     request.setResult(null);
     return request;
@@ -418,8 +493,16 @@ class MockTransaction implements IDBTransaction {
   onerror: ((this: IDBTransaction, ev: Event) => unknown) | null;
   private objectStores: Map<string, MockObjectStore<T>>;
 
-  constructor(storeNames: string | string[] | Iterable<string>, mode: IDBTransactionMode, db: IDBDatabase) {
-    const names = Array.isArray(storeNames) ? storeNames : typeof storeNames === 'string' ? [storeNames] : Array.from(storeNames);
+  constructor(
+    storeNames: string | string[] | Iterable<string>,
+    mode: IDBTransactionMode,
+    db: IDBDatabase
+  ) {
+    const names = Array.isArray(storeNames)
+      ? storeNames
+      : typeof storeNames === 'string'
+        ? [storeNames]
+        : Array.from(storeNames);
     this.objectStoreNames = new MockDOMStringList(names);
     this.mode = mode;
     this.db = db;
@@ -459,11 +542,19 @@ class MockTransaction implements IDBTransaction {
     }
   }
 
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): void {
     // No-op
   }
 
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ): void {
     // No-op
   }
 
@@ -479,7 +570,9 @@ class MockDatabase implements IDBDatabase {
   onabort: ((this: IDBDatabase, ev: Event) => unknown) | null;
   onclose: ((this: IDBDatabase, ev: Event) => unknown) | null;
   onerror: ((this: IDBDatabase, ev: Event) => unknown) | null;
-  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => unknown) | null;
+  onversionchange:
+    | ((this: IDBDatabase, ev: IDBVersionChangeEvent) => unknown)
+    | null;
   objectStores: Map<string, MockObjectStore<T>>;
 
   constructor(name: string, version: number) {
@@ -493,14 +586,26 @@ class MockDatabase implements IDBDatabase {
     this.objectStores = new Map();
   }
 
-  createObjectStore(name: string, options?: IDBObjectStoreParameters): IDBObjectStore {
+  createObjectStore(
+    name: string,
+    options?: IDBObjectStoreParameters
+  ): IDBObjectStore {
     if (this.objectStores.has(name)) {
-      throw new DOMException(`Object store ${name} already exists`, 'ConstraintError');
+      throw new DOMException(
+        `Object store ${name} already exists`,
+        'ConstraintError'
+      );
     }
     const transaction = new MockTransaction([name], 'readwrite', this);
-    const store = new MockObjectStore<Record<string, unknown>>(name, options || {}, transaction);
+    const store = new MockObjectStore<Record<string, unknown>>(
+      name,
+      options || {},
+      transaction
+    );
     this.objectStores.set(name, store);
-    this.objectStoreNames = new MockDOMStringList(Array.from(this.objectStores.keys()));
+    this.objectStoreNames = new MockDOMStringList(
+      Array.from(this.objectStores.keys())
+    );
     return store;
   }
 
@@ -509,10 +614,15 @@ class MockDatabase implements IDBDatabase {
       throw new DOMException(`Object store ${name} not found`, 'NotFoundError');
     }
     this.objectStores.delete(name);
-    this.objectStoreNames = new MockDOMStringList(Array.from(this.objectStores.keys()));
+    this.objectStoreNames = new MockDOMStringList(
+      Array.from(this.objectStores.keys())
+    );
   }
 
-  transaction(storeNames: string | string[] | Iterable<string>, mode?: IDBTransactionMode): IDBTransaction {
+  transaction(
+    storeNames: string | string[] | Iterable<string>,
+    mode?: IDBTransactionMode
+  ): IDBTransaction {
     return new MockTransaction(storeNames, mode || 'readonly', this);
   }
 
@@ -522,11 +632,19 @@ class MockDatabase implements IDBDatabase {
     }
   }
 
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+  addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): void {
     // No-op
   }
 
-  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
+  removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ): void {
     // No-op
   }
 
@@ -553,7 +671,7 @@ class MockIndexedDB implements IDBFactory {
       } else if (newVersion > existingDb.version) {
         const event = new MockIDBVersionChangeEvent('upgradeneeded', {
           oldVersion: existingDb.version,
-          newVersion: newVersion
+          newVersion: newVersion,
         });
         if (request.onupgradeneeded) {
           request.onupgradeneeded.call(request, event);
@@ -580,7 +698,7 @@ class MockIndexedDB implements IDBFactory {
     if (existingDb) {
       const event = new MockIDBVersionChangeEvent('blocked', {
         oldVersion: existingDb.version,
-        newVersion: null
+        newVersion: null,
       });
       if (request.onblocked) {
         request.onblocked.call(request, event);
@@ -593,10 +711,12 @@ class MockIndexedDB implements IDBFactory {
   }
 
   databases(): Promise<IDBDatabaseInfo[]> {
-    return Promise.resolve(Array.from(this._databases.values()).map(db => ({
-      name: db.name,
-      version: db.version
-    })));
+    return Promise.resolve(
+      Array.from(this._databases.values()).map(db => ({
+        name: db.name,
+        version: db.version,
+      }))
+    );
   }
 
   cmp(first: unknown, second: unknown): number {
@@ -686,4 +806,4 @@ describe('IndexedDBCacheL3', () => {
     const size = await cache.size();
     expect(size).toBe(2);
   });
-}); 
+});

@@ -6,14 +6,13 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('📸 Visual Regression - Basic', () => {
-  
   test('🏠 Homepage Screenshot', async ({ page }) => {
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');
-    
+
     // Attendi stabilizzazione
     await page.waitForTimeout(2000);
-    
+
     // Screenshot senza elementi dinamici problematici
     await expect(page).toHaveScreenshot('homepage-stable.png', {
       fullPage: true,
@@ -21,8 +20,8 @@ test.describe('📸 Visual Regression - Basic', () => {
       mask: [
         page.locator('[class*="loading"]'),
         page.locator('[class*="spinner"]'),
-        page.locator('[id*="timestamp"]')
-      ]
+        page.locator('[id*="timestamp"]'),
+      ],
     });
   });
 
@@ -31,9 +30,9 @@ test.describe('📸 Visual Regression - Basic', () => {
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     await expect(page).toHaveScreenshot('mobile-view.png', {
-      fullPage: true
+      fullPage: true,
     });
   });
 
@@ -42,10 +41,10 @@ test.describe('📸 Visual Regression - Basic', () => {
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     await expect(page).toHaveScreenshot('desktop-view.png', {
       fullPage: false, // Solo viewport per desktop
-      clip: { x: 0, y: 0, width: 1920, height: 1080 }
+      clip: { x: 0, y: 0, width: 1920, height: 1080 },
     });
   });
 
@@ -53,10 +52,10 @@ test.describe('📸 Visual Regression - Basic', () => {
     await page.goto('http://localhost:5173/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     // Screenshot del tema corrente
     await expect(page).toHaveScreenshot('current-theme.png', {
-      clip: { x: 0, y: 0, width: 1200, height: 800 }
+      clip: { x: 0, y: 0, width: 1200, height: 800 },
     });
   });
 
@@ -69,15 +68,15 @@ test.describe('📸 Visual Regression - Basic', () => {
         route.continue();
       }
     });
-    
+
     await page.goto('http://localhost:5173/');
     await page.waitForTimeout(3000);
-    
+
     // Screenshot dello stato con errori di rete
     await expect(page).toHaveScreenshot('network-error-state.png', {
-      clip: { x: 0, y: 0, width: 1200, height: 800 }
+      clip: { x: 0, y: 0, width: 1200, height: 800 },
     });
-    
+
     await page.unroute('**/*');
   });
-}); 
+});

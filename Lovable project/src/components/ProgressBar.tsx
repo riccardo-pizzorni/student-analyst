@@ -1,5 +1,4 @@
-
-import React from "react";
+import React from 'react';
 
 interface ProgressBarProps {
   progress: number;
@@ -8,7 +7,12 @@ interface ProgressBarProps {
   totalSteps: number;
 }
 
-export default function ProgressBar({ progress, label, currentStep, totalSteps }: ProgressBarProps) {
+export default function ProgressBar({
+  progress,
+  label,
+  currentStep,
+  totalSteps,
+}: ProgressBarProps) {
   return (
     <div className="dark-card rounded-xl p-6">
       <div className="flex justify-between items-center">

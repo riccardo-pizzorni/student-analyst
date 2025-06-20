@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - Suspicious Activity Logger
  * ===========================================
- * 
+ *
  * Sistema avanzato per rilevare, loggare e monitorare attività sospette
  * nell'accesso alle API protette
  */
@@ -15,7 +15,12 @@ export interface SuspiciousEventMetadata {
 export interface SuspiciousEvent {
   id: string;
   timestamp: Date;
-  type: 'rate_limit_abuse' | 'invalid_api_key' | 'suspicious_user_agent' | 'repeated_failures' | 'unusual_pattern';
+  type:
+    | 'rate_limit_abuse'
+    | 'invalid_api_key'
+    | 'suspicious_user_agent'
+    | 'repeated_failures'
+    | 'unusual_pattern';
   severity: 'low' | 'medium' | 'high' | 'critical';
   details: {
     ip: string;
@@ -62,7 +67,11 @@ export class SuspiciousActivityLogger {
   private events: SuspiciousEvent[] = [];
   private threatLevels: Map<string, ThreatLevel> = new Map();
   private blockedIPs: Set<string> = new Set();
-  private whitelistedIPs: Set<string> = new Set(['127.0.0.1', 'localhost', '::1']);
+  private whitelistedIPs: Set<string> = new Set([
+    '127.0.0.1',
+    'localhost',
+    '::1',
+  ]);
   private eventId = 0;
 
   constructor() {
@@ -70,7 +79,7 @@ export class SuspiciousActivityLogger {
     setInterval(() => {
       this.cleanupOldEvents();
     }, 3600000);
-    
+
     console.log('🛡️  Suspicious Activity Logger initialized');
   }
 
@@ -84,18 +93,20 @@ export class SuspiciousActivityLogger {
   /**
    * Log di un evento sospetto
    */
-  logSuspiciousEvent(event: Omit<SuspiciousEvent, 'id' | 'timestamp' | 'resolved'>): void {
+  logSuspiciousEvent(
+    event: Omit<SuspiciousEvent, 'id' | 'timestamp' | 'resolved'>
+  ): void {
     const suspiciousEvent: SuspiciousEvent = {
       id: this.generateEventId(),
       timestamp: new Date(),
       resolved: false,
-      ...event
+      ...event,
     };
 
     this.events.push(suspiciousEvent);
     this.updateThreatLevel(event.details.ip, suspiciousEvent);
     this.logToConsole(suspiciousEvent);
-    
+
     // Auto-azione per eventi critici
     if (event.severity === 'critical') {
       this.takeAutomaticAction(suspiciousEvent);
@@ -116,7 +127,7 @@ export class SuspiciousActivityLogger {
     }
 
     let threat = this.threatLevels.get(ip);
-    
+
     if (!threat) {
       threat = {
         ip,
@@ -125,7 +136,7 @@ export class SuspiciousActivityLogger {
         firstSeen: new Date(),
         lastSeen: new Date(),
         blocked: false,
-        whitelist: false
+        whitelist: false,
       };
     }
 
@@ -137,14 +148,15 @@ export class SuspiciousActivityLogger {
       low: 5,
       medium: 15,
       high: 30,
-      critical: 50
+      critical: 50,
     };
 
     threat.level += severityWeights[event.severity];
     threat.level = Math.min(threat.level, 100); // Cap a 100
 
     // Decay nel tempo - riduci il livello di minaccia
-    const hoursSinceFirst = (Date.now() - threat.firstSeen.getTime()) / (1000 * 60 * 60);
+    const hoursSinceFirst =
+      (Date.now() - threat.firstSeen.getTime()) / (1000 * 60 * 60);
     if (hoursSinceFirst > 24) {
       threat.level *= 0.9; // 10% decay dopo 24 ore
     }
@@ -173,7 +185,7 @@ export class SuspiciousActivityLogger {
     }
 
     console.warn(`🚫 IP blocked: ${ip} - Reason: ${reason}`);
-    
+
     this.logSuspiciousEvent({
       type: 'unusual_pattern',
       severity: 'critical',
@@ -182,9 +194,9 @@ export class SuspiciousActivityLogger {
         userAgent: 'system',
         endpoint: 'security-system',
         description: `IP auto-blocked: ${reason}`,
-        metadata: { action: 'ip_blocked', reason }
+        metadata: { action: 'ip_blocked', reason },
       },
-      actionTaken: `IP ${ip} blocked automatically`
+      actionTaken: `IP ${ip} blocked automatically`,
     });
   }
 
@@ -222,7 +234,7 @@ export class SuspiciousActivityLogger {
    */
   private takeAutomaticAction(event: SuspiciousEvent): void {
     const { ip, endpoint } = event.details;
-    
+
     switch (event.type) {
       case 'rate_limit_abuse': {
         // Blocco temporaneo per rate limit abuse
@@ -231,7 +243,7 @@ export class SuspiciousActivityLogger {
         }, 1000);
         break;
       }
-        
+
       case 'repeated_failures': {
         // Incrementa threat level per fallimenti ripetuti
         const threat = this.threatLevels.get(ip);
@@ -240,7 +252,7 @@ export class SuspiciousActivityLogger {
         }
         break;
       }
-        
+
       case 'invalid_api_key':
         // Log per tentativi di API key non valide
         console.error(`🔑 Invalid API key attempt from ${ip} on ${endpoint}`);
@@ -254,14 +266,14 @@ export class SuspiciousActivityLogger {
   private logToConsole(event: SuspiciousEvent): void {
     const severityEmojis = {
       low: '🟡',
-      medium: '🟠', 
+      medium: '🟠',
       high: '🔴',
-      critical: '🚨'
+      critical: '🚨',
     };
 
     const emoji = severityEmojis[event.severity];
     const { ip, endpoint, description } = event.details;
-    
+
     console.warn(
       `${emoji} [${event.severity.toUpperCase()}] ${event.type} from ${ip} on ${endpoint}: ${description}`
     );
@@ -271,11 +283,11 @@ export class SuspiciousActivityLogger {
    * Cleanup di eventi vecchi
    */
   private cleanupOldEvents(): void {
-    const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
     // Rimuovi eventi vecchi
-    this.events = this.events.filter(event => 
-      event.timestamp.getTime() > oneWeekAgo
+    this.events = this.events.filter(
+      event => event.timestamp.getTime() > oneWeekAgo
     );
 
     // Cleanup threat levels inattivi
@@ -293,12 +305,16 @@ export class SuspiciousActivityLogger {
    */
   getSecurityStats(): SecurityStats {
     const now = Date.now();
-    const last24h = now - (24 * 60 * 60 * 1000);
-    const last1h = now - (60 * 60 * 1000);
+    const last24h = now - 24 * 60 * 60 * 1000;
+    const last1h = now - 60 * 60 * 1000;
 
-    const recentEvents = this.events.filter(e => e.timestamp.getTime() > last24h);
+    const recentEvents = this.events.filter(
+      e => e.timestamp.getTime() > last24h
+    );
     const recentCritical = recentEvents.filter(e => e.severity === 'critical');
-    const hourlyEvents = this.events.filter(e => e.timestamp.getTime() > last1h);
+    const hourlyEvents = this.events.filter(
+      e => e.timestamp.getTime() > last1h
+    );
 
     return {
       totalEvents: this.events.length,
@@ -310,9 +326,13 @@ export class SuspiciousActivityLogger {
       activeTreats: this.threatLevels.size,
       highThreatIPs: Array.from(this.threatLevels.entries())
         .filter(([_, threat]) => threat.level > 60)
-        .map(([ip, threat]) => ({ ip, level: threat.level, lastSeen: threat.lastSeen })),
+        .map(([ip, threat]) => ({
+          ip,
+          level: threat.level,
+          lastSeen: threat.lastSeen,
+        })),
       eventsByType: this.getEventsByType(recentEvents),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -321,11 +341,11 @@ export class SuspiciousActivityLogger {
    */
   private getEventsByType(events: SuspiciousEvent[]): EventsByType {
     const byType: EventsByType = {};
-    
+
     events.forEach(event => {
       byType[event.type] = (byType[event.type] || 0) + 1;
     });
-    
+
     return byType;
   }
 
@@ -348,7 +368,7 @@ export class SuspiciousActivityLogger {
    */
   addToWhitelist(ip: string, reason: string): void {
     this.whitelistedIPs.add(ip);
-    
+
     // Rimuovi da blocked se presente
     if (this.blockedIPs.has(ip)) {
       this.unblockIP(ip, `Added to whitelist: ${reason}`);
@@ -370,24 +390,31 @@ export class SuspiciousActivityLogger {
    */
   exportLogs(format: 'json' | 'csv' = 'json'): string {
     if (format === 'json') {
-      return JSON.stringify({
-        exportTimestamp: new Date().toISOString(),
-        events: this.events,
-        threatLevels: Array.from(this.threatLevels.entries()),
-        blockedIPs: Array.from(this.blockedIPs),
-        stats: this.getSecurityStats()
-      }, null, 2);
+      return JSON.stringify(
+        {
+          exportTimestamp: new Date().toISOString(),
+          events: this.events,
+          threatLevels: Array.from(this.threatLevels.entries()),
+          blockedIPs: Array.from(this.blockedIPs),
+          stats: this.getSecurityStats(),
+        },
+        null,
+        2
+      );
     }
-    
+
     // CSV format
     const headers = 'Timestamp,Type,Severity,IP,Endpoint,Description\n';
-    const rows = this.events.map(event => 
-      `${event.timestamp.toISOString()},${event.type},${event.severity},${event.details.ip},${event.details.endpoint},"${event.details.description}"`
-    ).join('\n');
-    
+    const rows = this.events
+      .map(
+        event =>
+          `${event.timestamp.toISOString()},${event.type},${event.severity},${event.details.ip},${event.details.endpoint},"${event.details.description}"`
+      )
+      .join('\n');
+
     return headers + rows;
   }
 }
 
 // Istanza singleton
-export const suspiciousActivityLogger = new SuspiciousActivityLogger(); 
+export const suspiciousActivityLogger = new SuspiciousActivityLogger();

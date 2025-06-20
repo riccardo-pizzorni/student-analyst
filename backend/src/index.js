@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
     message: 'Hello World from Student Analyst Backend! 🚀',
     version: '1.0.0',
     status: 'running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -22,7 +22,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'Backend is healthy',
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });
 
@@ -32,8 +32,8 @@ app.get('/api/test', (req, res) => {
     data: {
       server: 'Student Analyst Backend',
       environment: 'development',
-      features: ['Express', 'CORS', 'JSON parsing']
-    }
+      features: ['Express', 'CORS', 'JSON parsing'],
+    },
   });
 });
 
@@ -42,4 +42,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Student Analyst Backend running on port ${PORT}`);
   console.log(`📍 Health check: http://localhost:${PORT}/health`);
   console.log(`⚡ API test: http://localhost:${PORT}/api/test`);
-}); 
+});

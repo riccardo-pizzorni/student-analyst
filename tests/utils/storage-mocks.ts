@@ -63,7 +63,9 @@ export interface MockIndexedDB {
 /**
  * Crea mock per localStorage con gestione quota
  */
-export function createMockLocalStorage(quota: number = 5 * 1024 * 1024): MockStorage {
+export function createMockLocalStorage(
+  quota: number = 5 * 1024 * 1024
+): MockStorage {
   let storage: Record<string, string> = {};
   let usage = 0;
 
@@ -81,12 +83,12 @@ export function createMockLocalStorage(quota: number = 5 * 1024 * 1024): MockSto
       if (mock._simulateQuotaExceeded) {
         throw new Error('QuotaExceededError');
       }
-      
+
       const newSize = new Blob([value]).size;
       if (usage + newSize > quota) {
         throw new Error('QuotaExceededError');
       }
-      
+
       const oldSize = storage[key] ? new Blob([storage[key]]).size : 0;
       storage[key] = value;
       usage = usage - oldSize + newSize;
@@ -114,7 +116,7 @@ export function createMockLocalStorage(quota: number = 5 * 1024 * 1024): MockSto
     key: jest.fn((index: number) => {
       const keys = Object.keys(storage);
       return keys[index] || null;
-    })
+    }),
   };
 
   return mock;
@@ -123,7 +125,9 @@ export function createMockLocalStorage(quota: number = 5 * 1024 * 1024): MockSto
 /**
  * Crea mock per sessionStorage
  */
-export function createMockSessionStorage(quota: number = 5 * 1024 * 1024): MockStorage {
+export function createMockSessionStorage(
+  quota: number = 5 * 1024 * 1024
+): MockStorage {
   return createMockLocalStorage(quota); // Stessa implementazione
 }
 
@@ -131,14 +135,17 @@ export function createMockSessionStorage(quota: number = 5 * 1024 * 1024): MockS
  * Crea mock per IndexedDB
  */
 export function createMockIndexedDB(estimatedUsage: number = 0): MockIndexedDB {
-  const mockRequest = (result: unknown = null, error: Error | null = null): MockIDBRequest => ({
+  const mockRequest = (
+    result: unknown = null,
+    error: Error | null = null
+  ): MockIDBRequest => ({
     result,
     error,
     readyState: error ? 'done' : 'done',
     onsuccess: null,
     onerror: null,
     addEventListener: jest.fn(),
-    removeEventListener: jest.fn()
+    removeEventListener: jest.fn(),
   });
 
   const mockDatabase: MockIDBDatabase = {
@@ -148,7 +155,7 @@ export function createMockIndexedDB(estimatedUsage: number = 0): MockIndexedDB {
     createObjectStore: jest.fn(),
     deleteObjectStore: jest.fn(),
     transaction: jest.fn(),
-    close: jest.fn()
+    close: jest.fn(),
   };
 
   return {
@@ -175,12 +182,12 @@ export function createMockIndexedDB(estimatedUsage: number = 0): MockIndexedDB {
       return request;
     }),
 
-    databases: jest.fn(() => 
+    databases: jest.fn(() =>
       Promise.resolve([
         { name: 'test-db', version: 1 },
-        { name: 'cache-db', version: 2 }
+        { name: 'cache-db', version: 2 },
       ])
-    )
+    ),
   };
 }
 
@@ -194,19 +201,19 @@ export function createMockNavigatorStorage(
 ): MockNavigator {
   return {
     storage: {
-      estimate: jest.fn(() => 
+      estimate: jest.fn(() =>
         Promise.resolve({
           quota,
           usage: indexedDBUsage + localStorageUsage,
           usageDetails: {
             indexedDB: indexedDBUsage,
             localStorage: localStorageUsage,
-            sessionStorage: 0
-          }
+            sessionStorage: 0,
+          },
         })
       ),
-      persist: jest.fn(() => Promise.resolve(true))
-    }
+      persist: jest.fn(() => Promise.resolve(true)),
+    },
   };
 }
 
@@ -222,29 +229,29 @@ export function setupStorageMocks() {
   // Mock globali
   Object.defineProperty(global, 'localStorage', {
     value: mockLocalStorage,
-    writable: true
+    writable: true,
   });
 
   Object.defineProperty(global, 'sessionStorage', {
     value: mockSessionStorage,
-    writable: true
+    writable: true,
   });
 
   Object.defineProperty(global, 'indexedDB', {
     value: mockIndexedDB,
-    writable: true
+    writable: true,
   });
 
   Object.defineProperty(global, 'navigator', {
     value: mockNavigator,
-    writable: true
+    writable: true,
   });
 
   return {
     mockLocalStorage,
     mockSessionStorage,
     mockIndexedDB,
-    mockNavigator
+    mockNavigator,
   };
 }
 
@@ -253,4 +260,4 @@ export function setupStorageMocks() {
  */
 export function resetStorageMocks() {
   jest.clearAllMocks();
-} 
+}

@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - Sanitization Middleware
  * =========================================
- * 
+ *
  * Middleware Express per applicare automaticamente la sanitizzazione
  * a tutte le richieste in ingresso
  */
@@ -41,13 +41,15 @@ const defaultConfig: SanitizationConfig = {
   logSuspiciousActivity: true,
   blockOnDangerousPatterns: true,
   maxRequestSize: 1024 * 1024, // 1MB
-  trustedIPs: ['127.0.0.1', '::1', 'localhost']
+  trustedIPs: ['127.0.0.1', '::1', 'localhost'],
 };
 
 /**
  * Middleware principale per la sanitizzazione
  */
-export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {}) {
+export function sanitizationMiddleware(
+  config: Partial<SanitizationConfig> = {}
+) {
   const finalConfig = { ...defaultConfig, ...config };
 
   return (req: SanitizedRequest, res: Response, next: NextFunction) => {
@@ -57,9 +59,10 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
     const isTrustedIP = finalConfig.trustedIPs.includes(clientIP);
 
     // Controlla dimensione richiesta
-    const requestSize = JSON.stringify(req.body || {}).length + 
-                       JSON.stringify(req.params || {}).length + 
-                       JSON.stringify(req.query || {}).length;
+    const requestSize =
+      JSON.stringify(req.body || {}).length +
+      JSON.stringify(req.params || {}).length +
+      JSON.stringify(req.query || {}).length;
 
     if (requestSize > finalConfig.maxRequestSize) {
       if (finalConfig.logSuspiciousActivity && !isTrustedIP) {
@@ -71,8 +74,8 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
             userAgent,
             endpoint: req.originalUrl,
             description: `Request size too large: ${requestSize} bytes`,
-            metadata: { requestSize, maxAllowed: finalConfig.maxRequestSize }
-          }
+            metadata: { requestSize, maxAllowed: finalConfig.maxRequestSize },
+          },
         });
       }
 
@@ -81,8 +84,8 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
         message: 'Request payload exceeds maximum allowed size',
         details: {
           maxSize: finalConfig.maxRequestSize,
-          receivedSize: requestSize
-        }
+          receivedSize: requestSize,
+        },
       });
     }
 
@@ -94,18 +97,24 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
       if (finalConfig.enableBodySanitization && req.body) {
         const bodyValidation = DataSanitizer.sanitizeRequestData(req.body);
         req.validationResults.body = bodyValidation;
-        
+
         if (!bodyValidation.isValid) {
           if (finalConfig.blockOnDangerousPatterns) {
-            logSuspiciousRequest('body', bodyValidation, req, clientIP, userAgent);
+            logSuspiciousRequest(
+              'body',
+              bodyValidation,
+              req,
+              clientIP,
+              userAgent
+            );
             return res.status(400).json({
               error: 'Invalid Request Body',
               message: 'Request body contains invalid or dangerous content',
-              details: bodyValidation.errors
+              details: bodyValidation.errors,
             });
           }
         }
-        
+
         req.sanitizedBody = bodyValidation.sanitizedValue;
       }
 
@@ -113,18 +122,24 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
       if (finalConfig.enableParamsSanitization && req.params) {
         const paramsValidation = DataSanitizer.sanitizeRequestData(req.params);
         req.validationResults.params = paramsValidation;
-        
+
         if (!paramsValidation.isValid) {
           if (finalConfig.blockOnDangerousPatterns) {
-            logSuspiciousRequest('params', paramsValidation, req, clientIP, userAgent);
+            logSuspiciousRequest(
+              'params',
+              paramsValidation,
+              req,
+              clientIP,
+              userAgent
+            );
             return res.status(400).json({
               error: 'Invalid URL Parameters',
               message: 'URL parameters contain invalid or dangerous content',
-              details: paramsValidation.errors
+              details: paramsValidation.errors,
             });
           }
         }
-        
+
         req.sanitizedParams = paramsValidation.sanitizedValue;
       }
 
@@ -132,18 +147,24 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
       if (finalConfig.enableQuerySanitization && req.query) {
         const queryValidation = DataSanitizer.sanitizeRequestData(req.query);
         req.validationResults.query = queryValidation;
-        
+
         if (!queryValidation.isValid) {
           if (finalConfig.blockOnDangerousPatterns) {
-            logSuspiciousRequest('query', queryValidation, req, clientIP, userAgent);
+            logSuspiciousRequest(
+              'query',
+              queryValidation,
+              req,
+              clientIP,
+              userAgent
+            );
             return res.status(400).json({
               error: 'Invalid Query Parameters',
               message: 'Query parameters contain invalid or dangerous content',
-              details: queryValidation.errors
+              details: queryValidation.errors,
             });
           }
         }
-        
+
         req.sanitizedQuery = queryValidation.sanitizedValue;
       }
 
@@ -152,7 +173,7 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
         const allWarnings = [
           ...(req.validationResults.body?.warnings || []),
           ...(req.validationResults.params?.warnings || []),
-          ...(req.validationResults.query?.warnings || [])
+          ...(req.validationResults.query?.warnings || []),
         ];
 
         if (allWarnings.length > 0) {
@@ -164,8 +185,8 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
               userAgent,
               endpoint: req.originalUrl,
               description: `Sanitization warnings: ${allWarnings.join(', ')}`,
-              metadata: { warnings: allWarnings }
-            }
+              metadata: { warnings: allWarnings },
+            },
           });
         }
       }
@@ -175,10 +196,9 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
       res.setHeader('X-Sanitization-Time', `${Date.now() - startTime}ms`);
 
       next();
-
     } catch (error) {
       console.error('Sanitization middleware error:', error);
-      
+
       if (finalConfig.logSuspiciousActivity) {
         suspiciousActivityLogger.logSuspiciousEvent({
           type: 'repeated_failures',
@@ -188,14 +208,14 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
             userAgent,
             endpoint: req.originalUrl,
             description: `Sanitization middleware error: ${error}`,
-            metadata: { error: String(error) }
-          }
+            metadata: { error: String(error) },
+          },
         });
       }
 
       return res.status(500).json({
         error: 'Request Processing Error',
-        message: 'Unable to process request safely'
+        message: 'Unable to process request safely',
       });
     }
   };
@@ -212,11 +232,14 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
   ) {
     if (!finalConfig.logSuspiciousActivity) return;
 
-    const severity = validation.errors.some(error => 
-      error.toLowerCase().includes('injection') || 
-      error.toLowerCase().includes('xss') ||
-      error.toLowerCase().includes('dangerous')
-    ) ? 'critical' : 'high';
+    const severity = validation.errors.some(
+      error =>
+        error.toLowerCase().includes('injection') ||
+        error.toLowerCase().includes('xss') ||
+        error.toLowerCase().includes('dangerous')
+    )
+      ? 'critical'
+      : 'high';
 
     suspiciousActivityLogger.logSuspiciousEvent({
       type: 'rate_limit_abuse', // Tipo generico per attacchi
@@ -229,9 +252,9 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
         metadata: {
           section,
           errors: validation.errors,
-          originalData: validation.metadata?.originalValue
-        }
-      }
+          originalData: validation.metadata?.originalValue,
+        },
+      },
     });
   }
 }
@@ -239,13 +262,17 @@ export function sanitizationMiddleware(config: Partial<SanitizationConfig> = {})
 /**
  * Middleware specifico per validazione ticker symbols
  */
-export function tickerValidationMiddleware(req: SanitizedRequest, res: Response, next: NextFunction) {
+export function tickerValidationMiddleware(
+  req: SanitizedRequest,
+  res: Response,
+  next: NextFunction
+) {
   const { symbol } = req.params;
-  
+
   if (!symbol) {
     return res.status(400).json({
       error: 'Missing Symbol',
-      message: 'Ticker symbol is required'
+      message: 'Ticker symbol is required',
     });
   }
 
@@ -253,12 +280,12 @@ export function tickerValidationMiddleware(req: SanitizedRequest, res: Response,
     maxLength: 10,
     enforceUppercase: true,
     allowCrypto: true,
-    allowFutures: false
+    allowFutures: false,
   });
 
   if (!validation.isValid) {
     const clientIP = req.ip || 'unknown';
-    
+
     suspiciousActivityLogger.logSuspiciousEvent({
       type: 'suspicious_user_agent',
       severity: 'medium',
@@ -267,21 +294,24 @@ export function tickerValidationMiddleware(req: SanitizedRequest, res: Response,
         userAgent: req.get('user-agent') || '',
         endpoint: req.originalUrl,
         description: `Invalid ticker symbol: ${symbol}`,
-        metadata: { originalSymbol: symbol, errors: validation.errors }
-      }
+        metadata: { originalSymbol: symbol, errors: validation.errors },
+      },
     });
 
     return res.status(400).json({
       error: 'Invalid Ticker Symbol',
       message: 'The provided ticker symbol is not valid',
       details: validation.errors,
-      suggestions: 'Use valid stock symbols like AAPL, MSFT, GOOGL'
+      suggestions: 'Use valid stock symbols like AAPL, MSFT, GOOGL',
     });
   }
 
   // Sostituisci il simbolo con la versione sanitizzata
   req.params.symbol = validation.sanitizedValue as string;
-  req.sanitizedParams = { ...req.sanitizedParams, symbol: validation.sanitizedValue };
+  req.sanitizedParams = {
+    ...req.sanitizedParams,
+    symbol: validation.sanitizedValue,
+  };
 
   if (validation.warnings.length > 0) {
     res.setHeader('X-Ticker-Warnings', validation.warnings.join('; '));
@@ -293,36 +323,47 @@ export function tickerValidationMiddleware(req: SanitizedRequest, res: Response,
 /**
  * Middleware per validazione date ranges
  */
-export function dateRangeValidationMiddleware(req: SanitizedRequest, res: Response, next: NextFunction) {
+export function dateRangeValidationMiddleware(
+  req: SanitizedRequest,
+  res: Response,
+  next: NextFunction
+) {
   const { startDate, endDate, from, to } = req.query;
-  
+
   // Supporta diverse convenzioni di naming
   const start = startDate || from;
   const end = endDate || to;
 
   if (start && end) {
-    const validation = DataSanitizer.validateDateRange(start as string, end as string, {
-      maxRangeDays: 365 * 5, // 5 anni max
-      allowFutureDates: false
-    });
+    const validation = DataSanitizer.validateDateRange(
+      start as string,
+      end as string,
+      {
+        maxRangeDays: 365 * 5, // 5 anni max
+        allowFutureDates: false,
+      }
+    );
 
     if (!validation.isValid) {
       return res.status(400).json({
         error: 'Invalid Date Range',
         message: 'The provided date range is not valid',
         details: validation.errors,
-        format: 'Use YYYY-MM-DD format'
+        format: 'Use YYYY-MM-DD format',
       });
     }
 
     // Sostituisci con date sanitizzate
-    const sanitizedDates = validation.sanitizedValue as { startDate: string; endDate: string };
+    const sanitizedDates = validation.sanitizedValue as {
+      startDate: string;
+      endDate: string;
+    };
     req.query.startDate = sanitizedDates.startDate;
     req.query.endDate = sanitizedDates.endDate;
-    req.sanitizedQuery = { 
-      ...req.sanitizedQuery, 
+    req.sanitizedQuery = {
+      ...req.sanitizedQuery,
       startDate: sanitizedDates.startDate,
-      endDate: sanitizedDates.endDate
+      endDate: sanitizedDates.endDate,
     };
 
     if (validation.warnings.length > 0) {
@@ -342,33 +383,33 @@ export function numericValidationMiddleware(
 ) {
   return (req: SanitizedRequest, res: Response, next: NextFunction) => {
     const value = req.query[fieldName] || req.body?.[fieldName];
-    
+
     if (value !== undefined && value !== null && value !== '') {
       const validation = DataSanitizer.validateNumericInput(value, type, {
-        allowNegative: type === 'percentage'
+        allowNegative: type === 'percentage',
       });
 
       if (!validation.isValid) {
         return res.status(400).json({
           error: 'Invalid Numeric Value',
           message: `Invalid ${type} value for ${fieldName}`,
-          details: validation.errors
+          details: validation.errors,
         });
       }
 
       // Sostituisci con valore sanitizzato
       if (req.query[fieldName] !== undefined) {
         req.query[fieldName] = validation.sanitizedValue as string;
-        req.sanitizedQuery = { 
-          ...req.sanitizedQuery, 
-          [fieldName]: validation.sanitizedValue 
+        req.sanitizedQuery = {
+          ...req.sanitizedQuery,
+          [fieldName]: validation.sanitizedValue,
         };
       }
       if (req.body?.[fieldName] !== undefined) {
         req.body[fieldName] = validation.sanitizedValue;
-        req.sanitizedBody = { 
-          ...req.sanitizedBody, 
-          [fieldName]: validation.sanitizedValue 
+        req.sanitizedBody = {
+          ...req.sanitizedBody,
+          [fieldName]: validation.sanitizedValue,
         };
       }
     }
@@ -377,4 +418,4 @@ export function numericValidationMiddleware(
   };
 }
 
-export default sanitizationMiddleware; 
+export default sanitizationMiddleware;

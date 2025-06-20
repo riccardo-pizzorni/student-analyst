@@ -1,21 +1,25 @@
 /**
  * STUDENT ANALYST - Network Resilience Service
  * =============================================
- * 
+ *
  * Sistema di resilienza di rete che gestisce timeout, circuit breaker,
  * fallback automatico e recovery intelligente per le API finanziarie.
  */
 
 import { EventEmitter } from 'events';
-import { ClassifiedError, ErrorCodeHandler, ErrorContext } from './errorCodeHandler';
+import {
+  ClassifiedError,
+  ErrorCodeHandler,
+  ErrorContext,
+} from './errorCodeHandler';
 
 /**
  * Stato del Circuit Breaker
  */
 export enum CircuitBreakerState {
-  CLOSED = 'closed',     // Normale operazione
-  OPEN = 'open',         // Circuit aperto, blocca richieste
-  HALF_OPEN = 'half_open' // Stato di test per recovery
+  CLOSED = 'closed', // Normale operazione
+  OPEN = 'open', // Circuit aperto, blocca richieste
+  HALF_OPEN = 'half_open', // Stato di test per recovery
 }
 
 /**
@@ -111,12 +115,19 @@ class CircuitBreaker extends EventEmitter {
         this.halfOpenCalls = 0;
         this.emit('half-open', this.serviceName);
       } else {
-        throw new Error(`Circuit breaker is OPEN for ${this.serviceName}. Next retry in ${this.getTimeToNextRetry()}ms`);
+        throw new Error(
+          `Circuit breaker is OPEN for ${this.serviceName}. Next retry in ${this.getTimeToNextRetry()}ms`
+        );
       }
     }
 
-    if (this.state === CircuitBreakerState.HALF_OPEN && this.halfOpenCalls >= this.config.halfOpenMaxCalls) {
-      throw new Error(`Circuit breaker HALF_OPEN limit exceeded for ${this.serviceName}`);
+    if (
+      this.state === CircuitBreakerState.HALF_OPEN &&
+      this.halfOpenCalls >= this.config.halfOpenMaxCalls
+    ) {
+      throw new Error(
+        `Circuit breaker HALF_OPEN limit exceeded for ${this.serviceName}`
+      );
     }
 
     this.totalRequests++;
@@ -139,7 +150,7 @@ class CircuitBreaker extends EventEmitter {
    */
   private onSuccess(): void {
     this.successCount++;
-    
+
     if (this.state === CircuitBreakerState.HALF_OPEN) {
       if (this.successCount >= this.config.halfOpenSuccessThreshold) {
         this.reset();
@@ -158,7 +169,10 @@ class CircuitBreaker extends EventEmitter {
 
     if (this.state === CircuitBreakerState.HALF_OPEN) {
       this.open();
-    } else if (this.state === CircuitBreakerState.CLOSED && this.failureCount >= this.config.failureThreshold) {
+    } else if (
+      this.state === CircuitBreakerState.CLOSED &&
+      this.failureCount >= this.config.failureThreshold
+    ) {
       this.open();
     }
   }
@@ -208,9 +222,13 @@ class CircuitBreaker extends EventEmitter {
       failureCount: this.failureCount,
       successCount: this.successCount,
       lastFailureTime: this.lastFailureTime,
-      nextRetryTime: this.state === CircuitBreakerState.OPEN ? this.lastFailureTime! + this.config.recoveryTimeout : undefined,
+      nextRetryTime:
+        this.state === CircuitBreakerState.OPEN
+          ? this.lastFailureTime! + this.config.recoveryTimeout
+          : undefined,
       totalRequests: this.totalRequests,
-      successRate: this.totalRequests > 0 ? this.successCount / this.totalRequests : 0
+      successRate:
+        this.totalRequests > 0 ? this.successCount / this.totalRequests : 0,
     };
   }
 
@@ -245,10 +263,14 @@ export class NetworkResilienceService extends EventEmitter {
     this.initializeHealthChecking();
   }
 
-  public static getInstance(config?: NetworkResilienceConfig): NetworkResilienceService {
+  public static getInstance(
+    config?: NetworkResilienceConfig
+  ): NetworkResilienceService {
     if (!NetworkResilienceService.instance) {
       if (!config) {
-        throw new Error('NetworkResilienceService requires configuration on first initialization');
+        throw new Error(
+          'NetworkResilienceService requires configuration on first initialization'
+        );
       }
       NetworkResilienceService.instance = new NetworkResilienceService(config);
     }
@@ -280,7 +302,8 @@ export class NetworkResilienceService extends EventEmitter {
       timeout: options?.timeout || this.config.timeout,
       maxRetries: options?.maxRetries || this.config.maxRetries,
       enableCircuitBreaker: options?.enableCircuitBreaker !== false,
-      enableFallback: options?.enableFallback !== false && this.config.enableFallback
+      enableFallback:
+        options?.enableFallback !== false && this.config.enableFallback,
     };
 
     // Ottieni o crea circuit breaker per il servizio
@@ -301,10 +324,13 @@ export class NetworkResilienceService extends EventEmitter {
             responseTime: Date.now() - startTime,
             retryCount: attempt,
             fromCache: false,
-            fallbackUsed: false
+            fallbackUsed: false,
           };
         } else {
-          const result = await this.executeWithTimeout(operation, opConfig.timeout);
+          const result = await this.executeWithTimeout(
+            operation,
+            opConfig.timeout
+          );
           return {
             success: true,
             data: result,
@@ -312,7 +338,7 @@ export class NetworkResilienceService extends EventEmitter {
             responseTime: Date.now() - startTime,
             retryCount: attempt,
             fromCache: false,
-            fallbackUsed: false
+            fallbackUsed: false,
           };
         }
       } catch (error) {
@@ -320,7 +346,10 @@ export class NetworkResilienceService extends EventEmitter {
         retryCount = attempt;
 
         // Classifica l'errore
-        const classifiedError = this.errorHandler.classifyError(lastError, context);
+        const classifiedError = this.errorHandler.classifyError(
+          lastError,
+          context
+        );
 
         // Se non è retryable o è l'ultimo tentativo, esci dal loop
         if (!classifiedError.retryable || attempt === opConfig.maxRetries) {
@@ -329,8 +358,10 @@ export class NetworkResilienceService extends EventEmitter {
 
         // Calcola delay per il prossimo tentativo
         const delay = this.calculateBackoffDelay(attempt);
-        console.log(`Attempt ${attempt + 1} failed for ${context.operation}, retrying in ${delay}ms`);
-        
+        console.log(
+          `Attempt ${attempt + 1} failed for ${context.operation}, retrying in ${delay}ms`
+        );
+
         await this.delay(delay);
       }
     }
@@ -343,13 +374,16 @@ export class NetworkResilienceService extends EventEmitter {
           ...fallbackResult,
           responseTime: Date.now() - startTime,
           retryCount,
-          fallbackUsed: true
+          fallbackUsed: true,
         };
       }
     }
 
     // Classifica l'errore finale
-    const finalClassifiedError = this.errorHandler.classifyError(lastError!, context);
+    const finalClassifiedError = this.errorHandler.classifyError(
+      lastError!,
+      context
+    );
 
     return {
       success: false,
@@ -358,16 +392,22 @@ export class NetworkResilienceService extends EventEmitter {
       responseTime: Date.now() - startTime,
       retryCount,
       fromCache: false,
-      fallbackUsed
+      fallbackUsed,
     };
   }
 
   /**
    * Esegue operazione con timeout
    */
-  private async executeWithTimeout<T>(operation: () => Promise<T>, timeout: number): Promise<T> {
+  private async executeWithTimeout<T>(
+    operation: () => Promise<T>,
+    timeout: number
+  ): Promise<T> {
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error(`Operation timeout after ${timeout}ms`)), timeout);
+      setTimeout(
+        () => reject(new Error(`Operation timeout after ${timeout}ms`)),
+        timeout
+      );
     });
 
     return Promise.race([operation(), timeoutPromise]);
@@ -377,7 +417,8 @@ export class NetworkResilienceService extends EventEmitter {
    * Calcola delay con backoff esponenziale
    */
   private calculateBackoffDelay(attempt: number): number {
-    let delay = this.config.baseDelay * Math.pow(this.config.backoffMultiplier, attempt);
+    let delay =
+      this.config.baseDelay * Math.pow(this.config.backoffMultiplier, attempt);
     delay = Math.min(delay, this.config.maxDelay);
 
     // Aggiungi jitter se abilitato
@@ -392,15 +433,22 @@ export class NetworkResilienceService extends EventEmitter {
   /**
    * Tenta servizi di fallback
    */
-  private async tryFallbackServices<T>(context: ErrorContext): Promise<ResilientOperationResult<T>> {
-    const fallbackServices = this.fallbackServices.get(context.apiService) || [];
-    
-    for (const service of fallbackServices.sort((a, b) => a.priority - b.priority)) {
+  private async tryFallbackServices<T>(
+    context: ErrorContext
+  ): Promise<ResilientOperationResult<T>> {
+    const fallbackServices =
+      this.fallbackServices.get(context.apiService) || [];
+
+    for (const service of fallbackServices.sort(
+      (a, b) => a.priority - b.priority
+    )) {
       if (service.healthStatus === 'unhealthy') continue;
 
       try {
-        console.log(`Trying fallback service ${service.name} for ${context.operation}`);
-        
+        console.log(
+          `Trying fallback service ${service.name} for ${context.operation}`
+        );
+
         // Qui dovresti implementare la logica specifica per ogni servizio di fallback
         // Per ora restituiamo un placeholder
         return {
@@ -409,7 +457,7 @@ export class NetworkResilienceService extends EventEmitter {
           responseTime: 0,
           retryCount: 0,
           fromCache: false,
-          fallbackUsed: true
+          fallbackUsed: true,
         };
       } catch (error) {
         console.warn(`Fallback service ${service.name} failed:`, error);
@@ -423,7 +471,7 @@ export class NetworkResilienceService extends EventEmitter {
       responseTime: 0,
       retryCount: 0,
       fromCache: false,
-      fallbackUsed: true
+      fallbackUsed: true,
     };
   }
 
@@ -432,20 +480,23 @@ export class NetworkResilienceService extends EventEmitter {
    */
   private getOrCreateCircuitBreaker(serviceName: string): CircuitBreaker {
     if (!this.circuitBreakers.has(serviceName)) {
-      const circuitBreaker = new CircuitBreaker(this.config.circuitBreaker, serviceName);
-      
+      const circuitBreaker = new CircuitBreaker(
+        this.config.circuitBreaker,
+        serviceName
+      );
+
       // Ascolta eventi del circuit breaker
       circuitBreaker.on('open', (service, stats) => {
         console.warn(`Circuit breaker OPENED for ${service}:`, stats);
         this.emit('circuit-breaker-open', service, stats);
       });
 
-      circuitBreaker.on('half-open', (service) => {
+      circuitBreaker.on('half-open', service => {
         console.info(`Circuit breaker HALF-OPEN for ${service}`);
         this.emit('circuit-breaker-half-open', service);
       });
 
-      circuitBreaker.on('reset', (service) => {
+      circuitBreaker.on('reset', service => {
         console.info(`Circuit breaker RESET for ${service}`);
         this.emit('circuit-breaker-reset', service);
       });
@@ -459,13 +510,18 @@ export class NetworkResilienceService extends EventEmitter {
   /**
    * Registra servizio di fallback
    */
-  registerFallbackService(primaryService: string, fallbackService: FallbackService): void {
+  registerFallbackService(
+    primaryService: string,
+    fallbackService: FallbackService
+  ): void {
     if (!this.fallbackServices.has(primaryService)) {
       this.fallbackServices.set(primaryService, []);
     }
 
     this.fallbackServices.get(primaryService)!.push(fallbackService);
-    console.log(`Registered fallback service ${fallbackService.name} for ${primaryService}`);
+    console.log(
+      `Registered fallback service ${fallbackService.name} for ${primaryService}`
+    );
   }
 
   /**
@@ -482,13 +538,16 @@ export class NetworkResilienceService extends EventEmitter {
    * Esegue health check su tutti i servizi di fallback
    */
   private async performHealthChecks(): Promise<void> {
-    for (const [primaryService, fallbackServices] of this.fallbackServices.entries()) {
+    for (const [
+      primaryService,
+      fallbackServices,
+    ] of this.fallbackServices.entries()) {
       for (const service of fallbackServices) {
         try {
           const startTime = Date.now();
           // Qui implementeresti il health check specifico per ogni servizio
           // Per ora simuliamo un check di base
-          
+
           service.healthStatus = 'healthy';
           service.lastChecked = Date.now();
           service.responseTime = Date.now() - startTime;
@@ -505,8 +564,11 @@ export class NetworkResilienceService extends EventEmitter {
    */
   getCircuitBreakerStats(): Record<string, CircuitBreakerStats> {
     const stats: Record<string, CircuitBreakerStats> = {};
-    
-    for (const [serviceName, circuitBreaker] of this.circuitBreakers.entries()) {
+
+    for (const [
+      serviceName,
+      circuitBreaker,
+    ] of this.circuitBreakers.entries()) {
       stats[serviceName] = circuitBreaker.getStats();
     }
 
@@ -518,8 +580,11 @@ export class NetworkResilienceService extends EventEmitter {
    */
   getFallbackServicesStatus(): Record<string, FallbackService[]> {
     const status: Record<string, FallbackService[]> = {};
-    
-    for (const [primaryService, fallbackServices] of this.fallbackServices.entries()) {
+
+    for (const [
+      primaryService,
+      fallbackServices,
+    ] of this.fallbackServices.entries()) {
       status[primaryService] = [...fallbackServices];
     }
 
@@ -571,4 +636,4 @@ export class NetworkResilienceService extends EventEmitter {
     this.circuitBreakers.clear();
     this.fallbackServices.clear();
   }
-} 
+}

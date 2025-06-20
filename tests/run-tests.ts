@@ -17,7 +17,7 @@ beforeAll(async () => {
   await Promise.all([
     memoryCacheL1.initialize(),
     localStorageCacheL2.initialize(),
-    indexedDBCacheL3.initialize()
+    indexedDBCacheL3.initialize(),
   ]);
 });
 
@@ -27,7 +27,7 @@ afterAll(async () => {
   await Promise.all([
     memoryCacheL1.clear(),
     localStorageCacheL2.clear(),
-    indexedDBCacheL3.clear()
+    indexedDBCacheL3.clear(),
   ]);
 });
 
@@ -37,4 +37,4 @@ describe('Cache System Test Suite', () => {
     // This is just a placeholder to ensure the test suite runs
     expect(true).toBe(true);
   });
-}); 
+});

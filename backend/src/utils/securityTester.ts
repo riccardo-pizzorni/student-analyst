@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - Security Tester Utility
  * =========================================
- * 
+ *
  * Utility per testare le funzionalità di sicurezza del backend
  */
 
@@ -37,20 +37,21 @@ export class SecurityTester {
       return {
         test: 'Rate Limiting',
         passed: rateLimitedResponses.length > 0,
-        message: rateLimitedResponses.length > 0 
-          ? `Rate limiting working: ${rateLimitedResponses.length} requests blocked`
-          : 'Rate limiting not working: no requests were blocked',
+        message:
+          rateLimitedResponses.length > 0
+            ? `Rate limiting working: ${rateLimitedResponses.length} requests blocked`
+            : 'Rate limiting not working: no requests were blocked',
         details: {
           totalRequests: 105,
-          blockedRequests: rateLimitedResponses.length
-        }
+          blockedRequests: rateLimitedResponses.length,
+        },
       };
     } catch (error) {
       return {
         test: 'Rate Limiting',
         passed: false,
         message: `Test failed: ${error}`,
-        details: { error }
+        details: { error },
       };
     }
   }
@@ -61,31 +62,39 @@ export class SecurityTester {
   async testCORS(): Promise<SecurityTestResult> {
     try {
       const response = await fetch(`${this.baseUrl}/health`, {
-        method: 'OPTIONS'
+        method: 'OPTIONS',
       });
 
       const corsHeaders = {
-        'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
-        'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
-        'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+        'Access-Control-Allow-Origin': response.headers.get(
+          'Access-Control-Allow-Origin'
+        ),
+        'Access-Control-Allow-Methods': response.headers.get(
+          'Access-Control-Allow-Methods'
+        ),
+        'Access-Control-Allow-Headers': response.headers.get(
+          'Access-Control-Allow-Headers'
+        ),
       };
 
-      const hasCorsHeaders = Object.values(corsHeaders).some(header => header !== null);
+      const hasCorsHeaders = Object.values(corsHeaders).some(
+        header => header !== null
+      );
 
       return {
         test: 'CORS Configuration',
         passed: hasCorsHeaders,
-        message: hasCorsHeaders 
+        message: hasCorsHeaders
           ? 'CORS headers present and configured'
           : 'CORS headers missing or misconfigured',
-        details: corsHeaders
+        details: corsHeaders,
       };
     } catch (error) {
       return {
         test: 'CORS Configuration',
         passed: false,
         message: `Test failed: ${error}`,
-        details: { error }
+        details: { error },
       };
     }
   }
@@ -98,15 +107,22 @@ export class SecurityTester {
       const response = await fetch(`${this.baseUrl}/health`);
 
       const securityHeaders = {
-        'X-Content-Type-Options': response.headers.get('X-Content-Type-Options'),
+        'X-Content-Type-Options': response.headers.get(
+          'X-Content-Type-Options'
+        ),
         'X-Frame-Options': response.headers.get('X-Frame-Options'),
         'X-XSS-Protection': response.headers.get('X-XSS-Protection'),
-        'Strict-Transport-Security': response.headers.get('Strict-Transport-Security'),
-        'Content-Security-Policy': response.headers.get('Content-Security-Policy')
+        'Strict-Transport-Security': response.headers.get(
+          'Strict-Transport-Security'
+        ),
+        'Content-Security-Policy': response.headers.get(
+          'Content-Security-Policy'
+        ),
       };
 
-      const presentHeaders = Object.entries(securityHeaders)
-        .filter(([_, value]) => value !== null);
+      const presentHeaders = Object.entries(securityHeaders).filter(
+        ([_, value]) => value !== null
+      );
 
       return {
         test: 'Security Headers (Helmet)',
@@ -116,15 +132,15 @@ export class SecurityTester {
           presentHeaders: Object.fromEntries(presentHeaders),
           missingHeaders: Object.keys(securityHeaders).filter(
             key => securityHeaders[key as keyof typeof securityHeaders] === null
-          )
-        }
+          ),
+        },
       };
     } catch (error) {
       return {
         test: 'Security Headers (Helmet)',
         passed: false,
         message: `Test failed: ${error}`,
-        details: { error }
+        details: { error },
       };
     }
   }
@@ -147,20 +163,21 @@ export class SecurityTester {
       return {
         test: 'API Rate Limiting',
         passed: rateLimitedResponses.length > 0,
-        message: rateLimitedResponses.length > 0 
-          ? `API rate limiting working: ${rateLimitedResponses.length} requests blocked`
-          : 'API rate limiting not working: no requests were blocked',
+        message:
+          rateLimitedResponses.length > 0
+            ? `API rate limiting working: ${rateLimitedResponses.length} requests blocked`
+            : 'API rate limiting not working: no requests were blocked',
         details: {
           totalRequests: 55,
-          blockedRequests: rateLimitedResponses.length
-        }
+          blockedRequests: rateLimitedResponses.length,
+        },
       };
     } catch (error) {
       return {
         test: 'API Rate Limiting',
         passed: false,
         message: `Test failed: ${error}`,
-        details: { error }
+        details: { error },
       };
     }
   }
@@ -170,16 +187,16 @@ export class SecurityTester {
    */
   async runAllTests(): Promise<SecurityTestResult[]> {
     console.log('🔍 Running security tests...');
-    
+
     const tests = [
       this.testCORS(),
       this.testSecurityHeaders(),
       this.testRateLimit(),
-      this.testAPIRateLimit()
+      this.testAPIRateLimit(),
     ];
 
     const results = await Promise.all(tests);
-    
+
     console.log('🔍 Security test results:');
     results.forEach(result => {
       const icon = result.passed ? '✅' : '❌';
@@ -204,37 +221,40 @@ export async function quickSecurityTest(baseUrl?: string): Promise<void> {
 /**
  * Test payload size limit
  */
-export async function testPayloadLimit(baseUrl: string = 'http://localhost:10000'): Promise<SecurityTestResult> {
+export async function testPayloadLimit(
+  baseUrl: string = 'http://localhost:10000'
+): Promise<SecurityTestResult> {
   try {
     // Crea un payload di 11MB (sopra il limite di 10MB)
     const largePayload = 'x'.repeat(11 * 1024 * 1024);
-    
+
     const response = await fetch(`${baseUrl}/api/v1/test`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ data: largePayload })
+      body: JSON.stringify({ data: largePayload }),
     });
 
     return {
       test: 'Payload Size Limit',
       passed: response.status === 413,
-      message: response.status === 413 
-        ? 'Payload size limit working: large request blocked'
-        : `Payload size limit not working: got status ${response.status}`,
+      message:
+        response.status === 413
+          ? 'Payload size limit working: large request blocked'
+          : `Payload size limit not working: got status ${response.status}`,
       details: {
         requestSize: '11MB',
         responseStatus: response.status,
-        expectedStatus: 413
-      }
+        expectedStatus: 413,
+      },
     };
   } catch (error) {
     return {
       test: 'Payload Size Limit',
       passed: false,
       message: `Test failed: ${error}`,
-      details: { error }
+      details: { error },
     };
   }
-} 
+}

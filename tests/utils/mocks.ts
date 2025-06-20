@@ -32,7 +32,9 @@ interface IMockIDBDatabase {
   version: number;
   onclose: ((this: IDBDatabase, ev: Event) => unknown) | null;
   onerror: ((this: IDBDatabase, ev: Event) => unknown) | null;
-  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => unknown) | null;
+  onversionchange:
+    | ((this: IDBDatabase, ev: IDBVersionChangeEvent) => unknown)
+    | null;
 }
 
 interface IMockIDBOpenDBRequest extends IDBRequest<IDBDatabase> {
@@ -43,10 +45,20 @@ interface IMockIDBOpenDBRequest extends IDBRequest<IDBDatabase> {
   readyState: string;
   onsuccess: ((this: IDBRequest<IDBDatabase>, ev: Event) => unknown) | null;
   onerror: ((this: IDBRequest<IDBDatabase>, ev: Event) => unknown) | null;
-  onupgradeneeded: ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => unknown) | null;
+  onupgradeneeded:
+    | ((this: IDBOpenDBRequest, ev: IDBVersionChangeEvent) => unknown)
+    | null;
   onblocked: ((this: IDBOpenDBRequest, ev: Event) => unknown) | null;
-  addEventListener: (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => void;
-  removeEventListener: (type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions) => void;
+  addEventListener: (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ) => void;
+  removeEventListener: (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ) => void;
   dispatchEvent: (event: Event) => boolean;
 }
 
@@ -103,7 +115,7 @@ const mockIDBDatabase: IMockIDBDatabase = {
 // Creazione del mock IDBOpenDBRequest con proprietà read-only
 const createMockIDBOpenDBRequest = (): IMockIDBOpenDBRequest => {
   const request = {} as IMockIDBOpenDBRequest;
-  
+
   // Proprietà read-only
   Object.defineProperties(request, {
     result: {
@@ -196,15 +208,19 @@ const mockWindow = {
   indexedDB: mockIndexedDB,
   localStorage: mockLocalStorage,
   sessionStorage: mockSessionStorage,
-  setTimeout: jest.fn().mockImplementation((callback: () => void, delay: number) => {
-    return setTimeout(callback, delay);
-  }),
+  setTimeout: jest
+    .fn()
+    .mockImplementation((callback: () => void, delay: number) => {
+      return setTimeout(callback, delay);
+    }),
   clearTimeout: jest.fn().mockImplementation((id: number) => {
     clearTimeout(id);
   }),
-  setInterval: jest.fn().mockImplementation((callback: () => void, delay: number) => {
-    return setInterval(callback, delay);
-  }),
+  setInterval: jest
+    .fn()
+    .mockImplementation((callback: () => void, delay: number) => {
+      return setInterval(callback, delay);
+    }),
   clearInterval: jest.fn().mockImplementation((id: number) => {
     clearInterval(id);
   }),
@@ -253,12 +269,14 @@ const mockTextEncoder: IMockTextEncoder = {
   encode: jest.fn().mockImplementation((text: string) => {
     return new Uint8Array(Array.from(text).map(char => char.charCodeAt(0)));
   }),
-  encodeInto: jest.fn().mockImplementation((text: string, buffer: Uint8Array) => {
-    const bytes = Array.from(text).map(char => char.charCodeAt(0));
-    const length = Math.min(bytes.length, buffer.length);
-    buffer.set(bytes.slice(0, length));
-    return { read: length, written: length };
-  }),
+  encodeInto: jest
+    .fn()
+    .mockImplementation((text: string, buffer: Uint8Array) => {
+      const bytes = Array.from(text).map(char => char.charCodeAt(0));
+      const length = Math.min(bytes.length, buffer.length);
+      buffer.set(bytes.slice(0, length));
+      return { read: length, written: length };
+    }),
 };
 
 const mockTextDecoder: IMockTextDecoder = {
@@ -280,42 +298,130 @@ const mockCrypto = {
   }),
   randomUUID: jest.fn().mockReturnValue('mock-uuid'),
   subtle: {
-    digest: jest.fn().mockImplementation(async (algorithm: string, data: ArrayBuffer) => {
-      return new ArrayBuffer(32);
-    }),
-    encrypt: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
-      return new ArrayBuffer(data.byteLength);
-    }),
-    decrypt: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
-      return new ArrayBuffer(data.byteLength);
-    }),
-    sign: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
-      return new ArrayBuffer(64);
-    }),
-    verify: jest.fn().mockImplementation(async (algorithm: unknown, key: CryptoKey, signature: ArrayBuffer, data: ArrayBuffer) => {
-      return true;
-    }),
-    generateKey: jest.fn().mockImplementation(async (algorithm: unknown, extractable: boolean, keyUsages: string[]) => {
-      return { type: 'secret', extractable, algorithm, usages: keyUsages };
-    }),
-    deriveKey: jest.fn().mockImplementation(async (algorithm: unknown, baseKey: CryptoKey, derivedKeyAlgorithm: unknown, extractable: boolean, keyUsages: string[]) => {
-      return { type: 'secret', extractable, algorithm: derivedKeyAlgorithm, usages: keyUsages };
-    }),
-    deriveBits: jest.fn().mockImplementation(async (algorithm: unknown, baseKey: CryptoKey, length: number) => {
-      return new ArrayBuffer(length / 8);
-    }),
-    importKey: jest.fn().mockImplementation(async (format: string, keyData: unknown, algorithm: unknown, extractable: boolean, keyUsages: string[]) => {
-      return { type: 'secret', extractable, algorithm, usages: keyUsages };
-    }),
-    exportKey: jest.fn().mockImplementation(async (format: string, key: CryptoKey) => {
-      return new ArrayBuffer(32);
-    }),
-    wrapKey: jest.fn().mockImplementation(async (format: string, key: CryptoKey, wrappingKey: CryptoKey, wrapAlgorithm: unknown) => {
-      return new ArrayBuffer(32);
-    }),
-    unwrapKey: jest.fn().mockImplementation(async (format: string, wrappedKey: ArrayBuffer, unwrappingKey: CryptoKey, unwrapAlgorithm: unknown, unwrappedKeyAlgorithm: unknown, extractable: boolean, keyUsages: string[]) => {
-      return { type: 'secret', extractable, algorithm: unwrappedKeyAlgorithm, usages: keyUsages };
-    }),
+    digest: jest
+      .fn()
+      .mockImplementation(async (algorithm: string, data: ArrayBuffer) => {
+        return new ArrayBuffer(32);
+      }),
+    encrypt: jest
+      .fn()
+      .mockImplementation(
+        async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
+          return new ArrayBuffer(data.byteLength);
+        }
+      ),
+    decrypt: jest
+      .fn()
+      .mockImplementation(
+        async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
+          return new ArrayBuffer(data.byteLength);
+        }
+      ),
+    sign: jest
+      .fn()
+      .mockImplementation(
+        async (algorithm: unknown, key: CryptoKey, data: ArrayBuffer) => {
+          return new ArrayBuffer(64);
+        }
+      ),
+    verify: jest
+      .fn()
+      .mockImplementation(
+        async (
+          algorithm: unknown,
+          key: CryptoKey,
+          signature: ArrayBuffer,
+          data: ArrayBuffer
+        ) => {
+          return true;
+        }
+      ),
+    generateKey: jest
+      .fn()
+      .mockImplementation(
+        async (
+          algorithm: unknown,
+          extractable: boolean,
+          keyUsages: string[]
+        ) => {
+          return { type: 'secret', extractable, algorithm, usages: keyUsages };
+        }
+      ),
+    deriveKey: jest
+      .fn()
+      .mockImplementation(
+        async (
+          algorithm: unknown,
+          baseKey: CryptoKey,
+          derivedKeyAlgorithm: unknown,
+          extractable: boolean,
+          keyUsages: string[]
+        ) => {
+          return {
+            type: 'secret',
+            extractable,
+            algorithm: derivedKeyAlgorithm,
+            usages: keyUsages,
+          };
+        }
+      ),
+    deriveBits: jest
+      .fn()
+      .mockImplementation(
+        async (algorithm: unknown, baseKey: CryptoKey, length: number) => {
+          return new ArrayBuffer(length / 8);
+        }
+      ),
+    importKey: jest
+      .fn()
+      .mockImplementation(
+        async (
+          format: string,
+          keyData: unknown,
+          algorithm: unknown,
+          extractable: boolean,
+          keyUsages: string[]
+        ) => {
+          return { type: 'secret', extractable, algorithm, usages: keyUsages };
+        }
+      ),
+    exportKey: jest
+      .fn()
+      .mockImplementation(async (format: string, key: CryptoKey) => {
+        return new ArrayBuffer(32);
+      }),
+    wrapKey: jest
+      .fn()
+      .mockImplementation(
+        async (
+          format: string,
+          key: CryptoKey,
+          wrappingKey: CryptoKey,
+          wrapAlgorithm: unknown
+        ) => {
+          return new ArrayBuffer(32);
+        }
+      ),
+    unwrapKey: jest
+      .fn()
+      .mockImplementation(
+        async (
+          format: string,
+          wrappedKey: ArrayBuffer,
+          unwrappingKey: CryptoKey,
+          unwrapAlgorithm: unknown,
+          unwrappedKeyAlgorithm: unknown,
+          extractable: boolean,
+          keyUsages: string[]
+        ) => {
+          return {
+            type: 'secret',
+            extractable,
+            algorithm: unwrappedKeyAlgorithm,
+            usages: keyUsages,
+          };
+        }
+      ),
   },
 };
 
@@ -324,8 +430,12 @@ Object.assign(mockWindow, {
   TextEncoder: jest.fn().mockImplementation(() => mockTextEncoder),
   TextDecoder: jest.fn().mockImplementation(() => mockTextDecoder),
   crypto: mockCrypto,
-  btoa: jest.fn().mockImplementation((str: string) => Buffer.from(str).toString('base64')),
-  atob: jest.fn().mockImplementation((str: string) => Buffer.from(str, 'base64').toString()),
+  btoa: jest
+    .fn()
+    .mockImplementation((str: string) => Buffer.from(str).toString('base64')),
+  atob: jest
+    .fn()
+    .mockImplementation((str: string) => Buffer.from(str, 'base64').toString()),
   Blob: jest.fn().mockImplementation((parts: unknown[], options?: unknown) => ({
     size: parts.reduce((acc, part) => acc + (part.length || 0), 0),
     type: options?.type || '',
@@ -333,15 +443,19 @@ Object.assign(mockWindow, {
     text: jest.fn().mockResolvedValue(''),
     slice: jest.fn().mockReturnThis(),
   })),
-  File: jest.fn().mockImplementation((parts: unknown[], name: string, options?: unknown) => ({
-    name,
-    size: parts.reduce((acc, part) => acc + (part.length || 0), 0),
-    type: options?.type || '',
-    lastModified: options?.lastModified || Date.now(),
-    arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
-    text: jest.fn().mockResolvedValue(''),
-    slice: jest.fn().mockReturnThis(),
-  })),
+  File: jest
+    .fn()
+    .mockImplementation(
+      (parts: unknown[], name: string, options?: unknown) => ({
+        name,
+        size: parts.reduce((acc, part) => acc + (part.length || 0), 0),
+        type: options?.type || '',
+        lastModified: options?.lastModified || Date.now(),
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
+        text: jest.fn().mockResolvedValue(''),
+        slice: jest.fn().mockReturnThis(),
+      })
+    ),
   FormData: jest.fn().mockImplementation(() => ({
     append: jest.fn(),
     delete: jest.fn(),
@@ -369,26 +483,30 @@ Object.assign(mockWindow, {
     hash: '',
     toString: jest.fn().mockReturnValue(url),
   })),
-  URLSearchParams: jest.fn().mockImplementation((init?: string | URLSearchParams | Record<string, string>) => ({
-    append: jest.fn(),
-    delete: jest.fn(),
-    get: jest.fn(),
-    getAll: jest.fn().mockReturnValue([]),
-    has: jest.fn().mockReturnValue(false),
-    set: jest.fn(),
-    sort: jest.fn(),
-    toString: jest.fn().mockReturnValue(''),
-    forEach: jest.fn(),
-    entries: jest.fn().mockReturnValue([]),
-    keys: jest.fn().mockReturnValue([]),
-    values: jest.fn().mockReturnValue([]),
-  })),
+  URLSearchParams: jest
+    .fn()
+    .mockImplementation(
+      (init?: string | URLSearchParams | Record<string, string>) => ({
+        append: jest.fn(),
+        delete: jest.fn(),
+        get: jest.fn(),
+        getAll: jest.fn().mockReturnValue([]),
+        has: jest.fn().mockReturnValue(false),
+        set: jest.fn(),
+        sort: jest.fn(),
+        toString: jest.fn().mockReturnValue(''),
+        forEach: jest.fn(),
+        entries: jest.fn().mockReturnValue([]),
+        keys: jest.fn().mockReturnValue([]),
+        values: jest.fn().mockReturnValue([]),
+      })
+    ),
 });
 
 // Funzione per resettare tutti i mock
 export const resetAllMocks = () => {
   jest.clearAllMocks();
-  
+
   // Reset IndexedDB mocks
   Object.values(mockIDBObjectStore).forEach(mock => {
     if (typeof mock === 'function') mock.mockClear();
@@ -479,7 +597,7 @@ export const setupGlobalMocks = () => {
 // Funzione per cleanup globale dei mock
 export const cleanupGlobalMocks = () => {
   resetAllMocks();
-  
+
   // Rimuovi tutti i mock dal window object
   Object.keys(mockWindow).forEach(key => {
     delete (window as { [key: string]: unknown })[key];
@@ -488,7 +606,13 @@ export const cleanupGlobalMocks = () => {
 
 // Esporta tutti i mock
 export {
-  mockIDBDatabase, mockIDBObjectStore, mockIDBTransaction, mockIndexedDB, mockLocalStorage,
-  mockSessionStorage, mockTextDecoder, mockTextEncoder, mockWindow
+  mockIDBDatabase,
+  mockIDBObjectStore,
+  mockIDBTransaction,
+  mockIndexedDB,
+  mockLocalStorage,
+  mockSessionStorage,
+  mockTextDecoder,
+  mockTextEncoder,
+  mockWindow,
 };
-

@@ -1,7 +1,7 @@
 /**
  * STUDENT ANALYST - Rate Limiting Test Suite
  * ==========================================
- * 
+ *
  * Test semplificato per il sistema di rate limiting e batch processing
  */
 
@@ -19,13 +19,13 @@ export class RateLimitingTestSuite {
     this.rateLimiter = new ApiRateLimiter({
       requestsPerMinute: 5,
       requestsPerDay: 25,
-      enableLogging: true
+      enableLogging: true,
     });
 
     this.batchProcessor = new BatchProcessor(null, {
       maxConcurrentBatches: 2,
       defaultBatchSize: 5,
-      enableProgressTracking: true
+      enableProgressTracking: true,
     });
   }
 
@@ -39,15 +39,14 @@ export class RateLimitingTestSuite {
     try {
       // Test 1: Rate Limiter Base
       await this.testRateLimiterBasics();
-      
+
       // Test 2: Batch Processing
       await this.testBatchProcessing();
-      
+
       // Test 3: Rate Limit Stats
       await this.testRateLimitStats();
 
       console.log('\n✅ All basic tests completed successfully!');
-
     } catch (error) {
       console.error('❌ Test suite failed:', error);
     }
@@ -62,7 +61,7 @@ export class RateLimitingTestSuite {
     try {
       // Test singola richiesta
       const result = await this.rateLimiter.queueRequest('AAPL', 'daily', 1);
-      
+
       if (result && result.success) {
         console.log('✅ Single request successful');
       } else {
@@ -71,8 +70,9 @@ export class RateLimitingTestSuite {
 
       // Test statistiche
       const stats = this.rateLimiter.getRateLimitStats();
-      console.log(`📊 Stats: ${stats.requestsInLastMinute} requests in last minute`);
-
+      console.log(
+        `📊 Stats: ${stats.requestsInLastMinute} requests in last minute`
+      );
     } catch (error) {
       console.error('❌ Rate Limiter Basics failed:', error);
     }
@@ -88,18 +88,19 @@ export class RateLimitingTestSuite {
       const batchRequest: BatchRequest = {
         symbols: ['AAPL', 'MSFT', 'GOOGL'],
         timeframe: 'daily',
-        options: { useCache: true }
+        options: { useCache: true },
       };
 
       const batchResult = await this.batchProcessor.processBatch(batchRequest);
-      
+
       if (batchResult && batchResult.success) {
-        console.log(`✅ Batch processing successful: ${batchResult.successfulSymbols}/${batchResult.totalSymbols} symbols`);
+        console.log(
+          `✅ Batch processing successful: ${batchResult.successfulSymbols}/${batchResult.totalSymbols} symbols`
+        );
         console.log(`⏱️  Execution time: ${batchResult.executionTimeMs}ms`);
       } else {
         console.log('⚠️  Batch processing returned unexpected result');
       }
-
     } catch (error) {
       console.error('❌ Batch Processing failed:', error);
     }
@@ -113,7 +114,7 @@ export class RateLimitingTestSuite {
 
     try {
       const stats = this.rateLimiter.getRateLimitStats();
-      
+
       console.log('📊 Rate Limit Statistics:');
       console.log(`  - Requests in last minute: ${stats.requestsInLastMinute}`);
       console.log(`  - Requests in last day: ${stats.requestsInLastDay}`);
@@ -123,7 +124,6 @@ export class RateLimitingTestSuite {
       console.log(`  - Queue length: ${stats.queueLength}`);
 
       console.log('✅ Rate limit stats retrieved successfully');
-
     } catch (error) {
       console.error('❌ Rate Limit Stats failed:', error);
     }
@@ -143,7 +143,7 @@ export class RateLimitingTestSuite {
       const batchRequest: BatchRequest = {
         symbols,
         timeframe: 'daily',
-        options: { useCache: true }
+        options: { useCache: true },
       };
 
       const result = await this.batchProcessor.processBatch(batchRequest);
@@ -154,15 +154,19 @@ export class RateLimitingTestSuite {
       console.log(`  - Successful: ${result.successfulSymbols}`);
       console.log(`  - Failed: ${result.failedSymbols}`);
       console.log(`  - Total time: ${totalTime}ms`);
-      console.log(`  - Avg time per symbol: ${Math.round(totalTime / symbols.length)}ms`);
-      console.log(`  - Throughput: ${(symbols.length / totalTime * 1000).toFixed(2)} symbols/sec`);
+      console.log(
+        `  - Avg time per symbol: ${Math.round(totalTime / symbols.length)}ms`
+      );
+      console.log(
+        `  - Throughput: ${((symbols.length / totalTime) * 1000).toFixed(2)} symbols/sec`
+      );
 
-      if (totalTime < 60000) { // Meno di 1 minuto
+      if (totalTime < 60000) {
+        // Meno di 1 minuto
         console.log('✅ Performance test completed within acceptable time');
       } else {
         console.log('⚠️  Performance test took longer than expected');
       }
-
     } catch (error) {
       console.error('❌ Performance test failed:', error);
     }
@@ -187,13 +191,12 @@ export async function runRateLimitingTests(): Promise<void> {
   try {
     await testSuite.runBasicTests();
     await testSuite.runPerformanceTest();
-    
+
     console.log('\n🎯 SUMMARY:');
     console.log('  ✅ Rate limiting system is functional');
     console.log('  ✅ Batch processing is working');
     console.log('  ✅ Performance is acceptable');
     console.log('\n📈 Ready for production use!');
-
   } catch (error) {
     console.error('\n❌ Test suite failed:', error);
   } finally {
@@ -204,4 +207,4 @@ export async function runRateLimitingTests(): Promise<void> {
 // Esegui test se chiamato direttamente
 if (require.main === module) {
   runRateLimitingTests().catch(console.error);
-} 
+}

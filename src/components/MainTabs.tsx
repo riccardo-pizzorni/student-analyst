@@ -1,74 +1,74 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    BarChart3,
-    Calculator,
-    Info,
-    PieChart,
-    Table,
-    TrendingUp
-} from "lucide-react";
-import React from "react";
-import CorrelationMatrix from "./charts/CorrelationMatrix";
-import HistoricalChart from "./charts/HistoricalChart";
-import PerformanceMetrics from "./charts/PerformanceMetrics";
-import VolatilityChart from "./charts/VolatilityChart";
-import UnifiedInputSection from "./input/UnifiedInputSection";
+  BarChart3,
+  Calculator,
+  Info,
+  PieChart,
+  Table,
+  TrendingUp,
+} from 'lucide-react';
+import React from 'react';
+import CorrelationMatrix from './charts/CorrelationMatrix';
+import HistoricalChart from './charts/HistoricalChart';
+import PerformanceMetrics from './charts/PerformanceMetrics';
+import VolatilityChart from './charts/VolatilityChart';
+import UnifiedInputSection from './input/UnifiedInputSection';
 
-export default function MainTabs({ 
+export default function MainTabs({
   activeStep,
-  onShowGlossary 
-}: { 
+  onShowGlossary,
+}: {
   activeStep: string;
   onShowGlossary?: () => void;
 }) {
   const getTabsForStep = (step: string) => {
     switch (step) {
-      case "input":
+      case 'input':
         return []; // No tabs for input step, unified interface
-      case "storica":
+      case 'storica':
         return [
-          { key: "grafici", label: "Grafici", icon: BarChart3 },
-          { key: "tabella", label: "Dati", icon: Table },
+          { key: 'grafici', label: 'Grafici', icon: BarChart3 },
+          { key: 'tabella', label: 'Dati', icon: Table },
         ];
-      case "performance":
+      case 'performance':
         return [
-          { key: "metriche", label: "Metriche", icon: TrendingUp },
-          { key: "confronto", label: "Confronto", icon: BarChart3 },
+          { key: 'metriche', label: 'Metriche', icon: TrendingUp },
+          { key: 'confronto', label: 'Confronto', icon: BarChart3 },
         ];
-      case "rischio":
+      case 'rischio':
         return [
-          { key: "volatilita", label: "Volatilità", icon: TrendingUp },
-          { key: "var", label: "VaR & CVaR", icon: Calculator },
+          { key: 'volatilita', label: 'Volatilità', icon: TrendingUp },
+          { key: 'var', label: 'VaR & CVaR', icon: Calculator },
         ];
-      case "diversificazione":
+      case 'diversificazione':
         return [
-          { key: "correlazioni", label: "Correlazioni", icon: BarChart3 },
-          { key: "cluster", label: "Cluster", icon: PieChart },
+          { key: 'correlazioni', label: 'Correlazioni', icon: BarChart3 },
+          { key: 'cluster', label: 'Cluster', icon: PieChart },
         ];
-      case "fondamentale":
+      case 'fondamentale':
         return [
-          { key: "multipli", label: "Multipli", icon: Calculator },
-          { key: "crescita", label: "Crescita", icon: TrendingUp },
+          { key: 'multipli', label: 'Multipli', icon: Calculator },
+          { key: 'crescita', label: 'Crescita', icon: TrendingUp },
         ];
-      case "ottimizzazione":
+      case 'ottimizzazione':
         return [
-          { key: "frontiera", label: "Frontiera", icon: TrendingUp },
-          { key: "pesi", label: "Pesi Ottimali", icon: PieChart },
+          { key: 'frontiera', label: 'Frontiera', icon: TrendingUp },
+          { key: 'pesi', label: 'Pesi Ottimali', icon: PieChart },
         ];
-      case "strategie":
+      case 'strategie':
         return [
-          { key: "backtest", label: "Backtest", icon: BarChart3 },
-          { key: "confronto", label: "Confronto", icon: Table },
+          { key: 'backtest', label: 'Backtest', icon: BarChart3 },
+          { key: 'confronto', label: 'Confronto', icon: Table },
         ];
-      case "regressiva":
+      case 'regressiva':
         return [
-          { key: "capm", label: "CAPM", icon: TrendingUp },
-          { key: "fattori", label: "Fattori", icon: BarChart3 },
+          { key: 'capm', label: 'CAPM', icon: TrendingUp },
+          { key: 'fattori', label: 'Fattori', icon: BarChart3 },
         ];
       default:
         return [
-          { key: "grafici", label: "Grafici", icon: BarChart3 },
-          { key: "tabella", label: "Dati", icon: Table },
+          { key: 'grafici', label: 'Grafici', icon: BarChart3 },
+          { key: 'tabella', label: 'Dati', icon: Table },
         ];
     }
   };
@@ -76,7 +76,7 @@ export default function MainTabs({
   const tabs = getTabsForStep(activeStep);
 
   // Special case for input step - no tabs, just unified content
-  if (activeStep === "input") {
+  if (activeStep === 'input') {
     return (
       <div className="w-full h-full">
         <div className="h-full">
@@ -89,8 +89,11 @@ export default function MainTabs({
   return (
     <div className="w-full">
       <Tabs defaultValue={tabs[0]?.key} className="w-full">
-        <TabsList className="grid w-full bg-slate-800/50 rounded-xl p-1 border border-slate-700" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
-          {tabs.map((tab) => {
+        <TabsList
+          className="grid w-full bg-slate-800/50 rounded-xl p-1 border border-slate-700"
+          style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+        >
+          {tabs.map(tab => {
             const TabIcon = tab.icon;
             return (
               <TabsTrigger
@@ -106,7 +109,7 @@ export default function MainTabs({
         </TabsList>
 
         {/* Performance Step */}
-        {activeStep === "performance" && (
+        {activeStep === 'performance' && (
           <>
             <TabsContent value="metriche" className="mt-6">
               <PerformanceMetrics />
@@ -126,10 +129,17 @@ export default function MainTabs({
                 </div>
                 <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
                   <div className="text-center space-y-4">
-                    <BarChart3 size={64} className="mx-auto text-blue-400 animate-pulse" />
+                    <BarChart3
+                      size={64}
+                      className="mx-auto text-blue-400 animate-pulse"
+                    />
                     <div>
-                      <p className="text-xl font-bold text-blue-300">Benchmark Comparison</p>
-                      <p className="text-slate-400">Performance vs indici di mercato</p>
+                      <p className="text-xl font-bold text-blue-300">
+                        Benchmark Comparison
+                      </p>
+                      <p className="text-slate-400">
+                        Performance vs indici di mercato
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -139,7 +149,7 @@ export default function MainTabs({
         )}
 
         {/* Risk Step */}
-        {activeStep === "rischio" && (
+        {activeStep === 'rischio' && (
           <>
             <TabsContent value="volatilita" className="mt-6">
               <VolatilityChart />
@@ -157,18 +167,30 @@ export default function MainTabs({
                     Teoria
                   </button>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-gradient-to-br from-red-950/30 to-orange-950/30 border border-red-500/30 rounded-xl p-6">
-                    <h4 className="font-semibold text-red-300 mb-4">VaR (95%)</h4>
-                    <div className="text-3xl font-bold text-red-400 mb-2">-4.2%</div>
-                    <p className="text-sm text-red-200">Perdita massima attesa in 5% dei casi</p>
+                    <h4 className="font-semibold text-red-300 mb-4">
+                      VaR (95%)
+                    </h4>
+                    <div className="text-3xl font-bold text-red-400 mb-2">
+                      -4.2%
+                    </div>
+                    <p className="text-sm text-red-200">
+                      Perdita massima attesa in 5% dei casi
+                    </p>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-purple-950/30 to-pink-950/30 border border-purple-500/30 rounded-xl p-6">
-                    <h4 className="font-semibold text-purple-300 mb-4">CVaR (95%)</h4>
-                    <div className="text-3xl font-bold text-purple-400 mb-2">-6.8%</div>
-                    <p className="text-sm text-purple-200">Perdita media oltre il VaR</p>
+                    <h4 className="font-semibold text-purple-300 mb-4">
+                      CVaR (95%)
+                    </h4>
+                    <div className="text-3xl font-bold text-purple-400 mb-2">
+                      -6.8%
+                    </div>
+                    <p className="text-sm text-purple-200">
+                      Perdita media oltre il VaR
+                    </p>
                   </div>
                 </div>
               </div>
@@ -177,7 +199,7 @@ export default function MainTabs({
         )}
 
         {/* Diversification Step */}
-        {activeStep === "diversificazione" && (
+        {activeStep === 'diversificazione' && (
           <>
             <TabsContent value="correlazioni" className="mt-6">
               <CorrelationMatrix />
@@ -197,10 +219,17 @@ export default function MainTabs({
                 </div>
                 <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
                   <div className="text-center space-y-4">
-                    <PieChart size={64} className="mx-auto text-blue-400 animate-pulse" />
+                    <PieChart
+                      size={64}
+                      className="mx-auto text-blue-400 animate-pulse"
+                    />
                     <div>
-                      <p className="text-xl font-bold text-blue-300">Dendrogramma Clustering</p>
-                      <p className="text-slate-400">Raggruppamento per similarità</p>
+                      <p className="text-xl font-bold text-blue-300">
+                        Dendrogramma Clustering
+                      </p>
+                      <p className="text-slate-400">
+                        Raggruppamento per similarità
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -210,7 +239,7 @@ export default function MainTabs({
         )}
 
         {/* Historical Step */}
-        {activeStep === "storica" && (
+        {activeStep === 'storica' && (
           <>
             <TabsContent value="grafici" className="mt-6">
               <HistoricalChart />
@@ -230,10 +259,17 @@ export default function MainTabs({
                 </div>
                 <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
                   <div className="text-center space-y-4">
-                    <Table size={64} className="mx-auto text-blue-400 animate-pulse" />
+                    <Table
+                      size={64}
+                      className="mx-auto text-blue-400 animate-pulse"
+                    />
                     <div>
-                      <p className="text-xl font-bold text-blue-300">Tabella Dati</p>
-                      <p className="text-slate-400">Visualizzazione tabulare dei prezzi storici</p>
+                      <p className="text-xl font-bold text-blue-300">
+                        Tabella Dati
+                      </p>
+                      <p className="text-slate-400">
+                        Visualizzazione tabulare dei prezzi storici
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -243,7 +279,9 @@ export default function MainTabs({
         )}
 
         {/* Default content for other steps */}
-        {!["performance", "rischio", "diversificazione"].includes(activeStep) && (
+        {!['performance', 'rischio', 'diversificazione'].includes(
+          activeStep
+        ) && (
           <>
             <TabsContent value={tabs[0]?.key} className="mt-6">
               <div className="dark-card rounded-xl p-8">
@@ -259,10 +297,17 @@ export default function MainTabs({
                 </div>
                 <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
                   <div className="text-center space-y-4">
-                    <BarChart3 size={64} className="mx-auto text-blue-400 animate-pulse" />
+                    <BarChart3
+                      size={64}
+                      className="mx-auto text-blue-400 animate-pulse"
+                    />
                     <div>
-                      <p className="text-xl font-bold text-blue-300">Interactive Charts</p>
-                      <p className="text-slate-400">Real-time data visualization</p>
+                      <p className="text-xl font-bold text-blue-300">
+                        Interactive Charts
+                      </p>
+                      <p className="text-slate-400">
+                        Real-time data visualization
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -286,23 +331,43 @@ export default function MainTabs({
                     <table className="w-full">
                       <thead className="bg-slate-800/50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Symbol</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Price</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Change</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">Volume</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                            Symbol
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                            Price
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                            Change
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                            Volume
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {["AAPL", "MSFT", "GOOGL", "AMZN"].map((ticker, i) => (
-                          <tr key={ticker} className="border-t border-slate-700 hover:bg-slate-800/30">
-                            <td className="px-4 py-3 font-medium text-blue-300">{ticker}</td>
-                            <td className="px-4 py-3 text-slate-300">${(150 + i * 25).toFixed(2)}</td>
+                        {['AAPL', 'MSFT', 'GOOGL', 'AMZN'].map((ticker, i) => (
+                          <tr
+                            key={ticker}
+                            className="border-t border-slate-700 hover:bg-slate-800/30"
+                          >
+                            <td className="px-4 py-3 font-medium text-blue-300">
+                              {ticker}
+                            </td>
+                            <td className="px-4 py-3 text-slate-300">
+                              ${(150 + i * 25).toFixed(2)}
+                            </td>
                             <td className="px-4 py-3">
-                              <span className={`text-sm ${i % 2 === 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {i % 2 === 0 ? '+' : '-'}{(Math.random() * 5).toFixed(2)}%
+                              <span
+                                className={`text-sm ${i % 2 === 0 ? 'text-green-400' : 'text-red-400'}`}
+                              >
+                                {i % 2 === 0 ? '+' : '-'}
+                                {(Math.random() * 5).toFixed(2)}%
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-slate-400">{(Math.random() * 1000000).toFixed(0)}</td>
+                            <td className="px-4 py-3 text-slate-400">
+                              {(Math.random() * 1000000).toFixed(0)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

@@ -7,6 +7,7 @@ This document defines the conventions and standards for writing, organizing, and
 ## File Organization
 
 ### Directory Structure
+
 ```
 tests/
 ├── unit/                 # Unit tests
@@ -24,6 +25,7 @@ tests/
 ```
 
 ### File Naming
+
 - Unit tests: `[component].test.ts`
 - Integration tests: `[feature].integration.test.ts`
 - E2E tests: `[flow].e2e.test.ts`
@@ -32,6 +34,7 @@ tests/
 ## Code Style
 
 ### Test Structure
+
 ```typescript
 // Imports
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
@@ -53,10 +56,10 @@ describe('ComponentName', () => {
   it('should perform expected behavior', () => {
     // Arrange
     const input = 'test';
-    
+
     // Act
     const result = component.process(input);
-    
+
     // Assert
     expect(result).toBe(expected);
   });
@@ -66,11 +69,13 @@ describe('ComponentName', () => {
 ### Naming Conventions
 
 1. **Test Suites**
+
    - Use PascalCase for suite names
    - Include component/feature name
    - Example: `describe('StockPriceChart', () => {`
 
 2. **Test Cases**
+
    - Use descriptive names
    - Follow pattern: `should [expected behavior] when [condition]`
    - Example: `it('should update price when new data arrives', () => {`
@@ -83,10 +88,12 @@ describe('ComponentName', () => {
 ## Test Categories
 
 ### Unit Tests
+
 - Test individual components/functions
 - Mock all dependencies
 - Focus on specific behavior
 - Example:
+
 ```typescript
 describe('FinancialCalculator', () => {
   it('should calculate correct ROI', () => {
@@ -98,10 +105,12 @@ describe('FinancialCalculator', () => {
 ```
 
 ### Integration Tests
+
 - Test component interactions
 - Use real dependencies where appropriate
 - Focus on data flow
 - Example:
+
 ```typescript
 describe('CacheSystem', () => {
   it('should maintain consistency across levels', async () => {
@@ -114,10 +123,12 @@ describe('CacheSystem', () => {
 ```
 
 ### E2E Tests
+
 - Test complete user flows
 - Use real browser environment
 - Focus on user experience
 - Example:
+
 ```typescript
 describe('Portfolio Creation', () => {
   it('should create portfolio with selected stocks', async () => {
@@ -132,6 +143,7 @@ describe('Portfolio Creation', () => {
 ## Assertions
 
 ### Basic Assertions
+
 ```typescript
 // Equality
 expect(value).toBe(expected);
@@ -159,6 +171,7 @@ expect(object).toMatchObject(expected);
 ```
 
 ### Async Assertions
+
 ```typescript
 // Promises
 await expect(promise).resolves.toBe(expected);
@@ -172,10 +185,11 @@ await expect(asyncFunction()).rejects.toThrow(error);
 ## Mocking
 
 ### Function Mocks
+
 ```typescript
 // Mock implementation
 jest.mock('../api', () => ({
-  fetchData: jest.fn().mockResolvedValue(mockData)
+  fetchData: jest.fn().mockResolvedValue(mockData),
 }));
 
 // Mock return value
@@ -190,6 +204,7 @@ mockFunction.mockRejectedValue(error);
 ```
 
 ### Module Mocks
+
 ```typescript
 // Mock entire module
 jest.mock('../module');
@@ -197,26 +212,25 @@ jest.mock('../module');
 // Mock specific exports
 jest.mock('../module', () => ({
   export1: jest.fn(),
-  export2: jest.fn()
+  export2: jest.fn(),
 }));
 ```
 
 ## Test Data
 
 ### Data Generation
+
 ```typescript
 // Use factories
 const stock = createTestStock();
 const portfolio = createTestPortfolio();
 
 // Use builders
-const stock = StockBuilder.create()
-  .withSymbol('AAPL')
-  .withPrice(150)
-  .build();
+const stock = StockBuilder.create().withSymbol('AAPL').withPrice(150).build();
 ```
 
 ### Data Cleanup
+
 ```typescript
 // Cleanup after each test
 afterEach(() => {
@@ -232,10 +246,12 @@ beforeEach(() => {
 ## Performance
 
 ### Test Optimization
+
 - Minimize setup/teardown overhead
 - Use appropriate test types
 - Optimize test data size
 - Example:
+
 ```typescript
 describe('Performance', () => {
   it('should process data within time limit', async () => {
@@ -248,10 +264,12 @@ describe('Performance', () => {
 ```
 
 ### Memory Management
+
 - Clean up resources
 - Monitor memory usage
 - Handle large datasets
 - Example:
+
 ```typescript
 describe('Memory Usage', () => {
   it('should not exceed memory limit', () => {
@@ -266,10 +284,12 @@ describe('Memory Usage', () => {
 ## Documentation
 
 ### Test Documentation
+
 - Document test purpose
 - Explain test setup
 - Describe expected behavior
 - Example:
+
 ```typescript
 /**
  * Tests the portfolio rebalancing functionality
@@ -284,10 +304,12 @@ describe('Portfolio Rebalancing', () => {
 ```
 
 ### Code Comments
+
 - Comment complex logic
 - Explain test data
 - Document edge cases
 - Example:
+
 ```typescript
 it('should handle market hours correctly', () => {
   // Market is closed on weekends
@@ -299,12 +321,15 @@ it('should handle market hours correctly', () => {
 ## Maintenance
 
 ### Regular Tasks
+
 1. **Review**
+
    - Review test coverage
    - Check test effectiveness
    - Update documentation
 
 2. **Cleanup**
+
    - Remove obsolete tests
    - Update test data
    - Optimize performance
@@ -315,7 +340,9 @@ it('should handle market hours correctly', () => {
    - Update conventions
 
 ### Version Control
+
 1. **Commits**
+
    - Test-related commits
    - Documentation updates
    - Configuration changes
@@ -328,18 +355,21 @@ it('should handle market hours correctly', () => {
 ## Best Practices
 
 1. **General**
+
    - Write clear, focused tests
    - Use appropriate assertions
    - Handle edge cases
    - Clean up resources
 
 2. **Organization**
+
    - Group related tests
    - Use descriptive names
    - Follow directory structure
    - Maintain documentation
 
 3. **Performance**
+
    - Optimize test execution
    - Manage memory usage
    - Handle async operations
@@ -349,4 +379,4 @@ it('should handle market hours correctly', () => {
    - Regular reviews
    - Update documentation
    - Remove obsolete tests
-   - Improve test utilities 
+   - Improve test utilities

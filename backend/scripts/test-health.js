@@ -2,7 +2,7 @@
 
 /**
  * 🏥 Backend Health Check Tests
- * 
+ *
  * Validates that the backend server is functioning correctly:
  * - Server starts without errors
  * - Health endpoint responds correctly
@@ -28,25 +28,28 @@ function makeRequest(path, options = {}) {
       reject(new Error(`Request timeout: ${path}`));
     }, CONFIG.TIMEOUT);
 
-    const req = http.get({
-      hostname: CONFIG.HOST,
-      port: CONFIG.PORT,
-      path: path,
-      ...options
-    }, (res) => {
-      clearTimeout(timeout);
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          body: data
+    const req = http.get(
+      {
+        hostname: CONFIG.HOST,
+        port: CONFIG.PORT,
+        path: path,
+        ...options,
+      },
+      res => {
+        clearTimeout(timeout);
+        let data = '';
+        res.on('data', chunk => (data += chunk));
+        res.on('end', () => {
+          resolve({
+            status: res.statusCode,
+            headers: res.headers,
+            body: data,
+          });
         });
-      });
-    });
+      }
+    );
 
-    req.on('error', (error) => {
+    req.on('error', error => {
       clearTimeout(timeout);
       reject(error);
     });
@@ -56,11 +59,11 @@ function makeRequest(path, options = {}) {
 function startServer() {
   return new Promise((resolve, reject) => {
     console.log('🚀 Starting backend server...');
-    
+
     const serverPath = path.join(__dirname, '..', 'src', 'simple-server.js');
     const server = spawn('node', [serverPath], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, NODE_ENV: 'test' }
+      env: { ...process.env, NODE_ENV: 'test' },
     });
 
     let started = false;
@@ -71,11 +74,15 @@ function startServer() {
       }
     }, 15000);
 
-    server.stdout.on('data', (data) => {
+    server.stdout.on('data', data => {
       const output = data.toString();
       console.log('📤 Server:', output.trim());
-      
-      if (output.includes('running on port') || output.includes('listening') || output.includes('Student Analyst Backend')) {
+
+      if (
+        output.includes('running on port') ||
+        output.includes('listening') ||
+        output.includes('Student Analyst Backend')
+      ) {
         if (!started) {
           started = true;
           clearTimeout(timeout);
@@ -84,16 +91,16 @@ function startServer() {
       }
     });
 
-    server.stderr.on('data', (data) => {
+    server.stderr.on('data', data => {
       console.error('❌ Server error:', data.toString());
     });
 
-    server.on('error', (error) => {
+    server.on('error', error => {
       clearTimeout(timeout);
       reject(error);
     });
 
-    server.on('exit', (code) => {
+    server.on('exit', code => {
       clearTimeout(timeout);
       if (!started && code !== 0) {
         reject(new Error(`Server exited with code ${code}`));
@@ -112,14 +119,14 @@ const tests = [
       }
       console.log(`✅ Server started successfully (PID: ${server.pid})`);
       return true;
-    }
+    },
   },
 
   {
     name: 'Health Endpoint',
     async run() {
       const response = await makeRequest('/health');
-      
+
       if (response.status !== 200) {
         throw new Error(`Expected 200, got ${response.status}`);
       }
@@ -135,14 +142,14 @@ const tests = [
 
       console.log(`✅ Health check passed: ${data.message}`);
       return true;
-    }
+    },
   },
 
   {
     name: 'API Status Endpoint',
     async run() {
       const response = await makeRequest('/api/status');
-      
+
       if (response.status !== 200) {
         throw new Error(`Expected 200, got ${response.status}`);
       }
@@ -154,21 +161,21 @@ const tests = [
 
       console.log(`✅ API status: ${data.status}`);
       return true;
-    }
+    },
   },
 
   {
     name: 'CORS Headers',
     async run() {
       const response = await makeRequest('/health');
-      
+
       if (!response.headers['access-control-allow-origin']) {
         throw new Error('CORS headers not present');
       }
 
       console.log(`✅ CORS headers configured`);
       return true;
-    }
+    },
   },
 
   {
@@ -178,13 +185,14 @@ const tests = [
       await makeRequest('/health');
       const responseTime = Date.now() - start;
 
-      if (responseTime > 5000) { // 5 seconds
+      if (responseTime > 5000) {
+        // 5 seconds
         throw new Error(`Response time too slow: ${responseTime}ms`);
       }
 
       console.log(`✅ Response time: ${responseTime}ms`);
       return true;
-    }
+    },
   },
 
   {
@@ -200,7 +208,7 @@ const tests = [
 
       console.log(`✅ Memory usage: ${memoryMB.toFixed(2)}MB`);
       return true;
-    }
+    },
   },
 
   {
@@ -208,15 +216,17 @@ const tests = [
     async run() {
       // Test a non-existent endpoint
       const response = await makeRequest('/non-existent-endpoint');
-      
+
       if (response.status !== 404) {
-        throw new Error(`Expected 404 for non-existent endpoint, got ${response.status}`);
+        throw new Error(
+          `Expected 404 for non-existent endpoint, got ${response.status}`
+        );
       }
 
       console.log(`✅ Error handling works correctly`);
       return true;
-    }
-  }
+    },
+  },
 ];
 
 // Run all tests
@@ -235,7 +245,7 @@ async function runHealthTests() {
     // Run tests
     for (const test of tests) {
       console.log(`🧪 Running: ${test.name}`);
-      
+
       try {
         await test.run(server);
         passed++;
@@ -243,10 +253,9 @@ async function runHealthTests() {
         failed++;
         console.log(`❌ Failed: ${error.message}`);
       }
-      
+
       console.log('');
     }
-
   } catch (error) {
     console.error('❌ Setup failed:', error.message);
     failed++;
@@ -255,7 +264,7 @@ async function runHealthTests() {
     if (server && !server.killed) {
       console.log('🛑 Stopping server...');
       server.kill();
-      
+
       // Wait for server to stop
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
@@ -283,4 +292,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { runHealthTests }; 
+module.exports = { runHealthTests };

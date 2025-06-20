@@ -5,11 +5,18 @@ module.exports = {
     url: 'http://localhost',
     pretendToBeVisual: true,
   },
-  roots: ['<rootDir>/tests/unit', '<rootDir>/src/services/__tests__', '<rootDir>/tests/performance'],
+  roots: [
+    '<rootDir>/tests/unit',
+    '<rootDir>/src/services/__tests__',
+    '<rootDir>/tests/performance',
+  ],
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      useESM: true
-    }],
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   moduleNameMapper: {
@@ -29,4 +36,4 @@ module.exports = {
   verbose: true,
   testTimeout: 10000,
   setupFilesAfterEnv: ['<rootDir>/tests/utils/setup.ts'],
-}; 
+};

@@ -1,5 +1,4 @@
-
-import React from "react";
+import React from 'react';
 
 export default function Logo() {
   return (
@@ -7,13 +6,14 @@ export default function Logo() {
       <div className="relative group flex justify-center w-full logo-level-10-supreme">
         <div className="relative logo-container-supreme">
           {/* Logo PNG con effetti supreme - dimensioni ottimali */}
-          <img 
+          <img
             src="/lovable-uploads/9e03ad61-2209-4d9c-8b8c-209a8a875636.png"
             alt="Student Analyst Logo"
             className="w-16 h-16 relative z-10 transition-all duration-700 group-hover:scale-115 object-contain filter brightness-125 contrast-120 group-hover:brightness-140 logo-hat-supreme"
-            style={{ 
+            style={{
               imageRendering: 'crisp-edges',
-              filter: 'drop-shadow(0 0 20px rgba(0, 191, 255, 0.4)) drop-shadow(0 0 40px rgba(30, 144, 255, 0.3))'
+              filter:
+                'drop-shadow(0 0 20px rgba(0, 191, 255, 0.4)) drop-shadow(0 0 40px rgba(30, 144, 255, 0.3))',
             }}
           />
 
@@ -45,7 +45,7 @@ export default function Logo() {
           </div>
 
           {/* Inner Glow Effect */}
-          <div 
+          <div
             className="absolute inset-0 z-5 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-800"
             style={{
               background: `radial-gradient(
@@ -62,10 +62,12 @@ export default function Logo() {
       </div>
 
       {/* Supreme Level Text con tutti gli effetti luminosi */}
-      <h1 className="text-xl font-bold tracking-tight mt-1 text-center font-sans logo-text-level-10-supreme"
-          style={{ 
-            letterSpacing: "-0.02em",
-          }}>
+      <h1
+        className="text-xl font-bold tracking-tight mt-1 text-center font-sans logo-text-level-10-supreme"
+        style={{
+          letterSpacing: '-0.02em',
+        }}
+      >
         Student Analyst
       </h1>
     </div>

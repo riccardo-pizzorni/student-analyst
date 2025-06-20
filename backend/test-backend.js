@@ -2,7 +2,7 @@
 
 /**
  * 🧪 Backend Test Suite
- * 
+ *
  * Script completo per testare il backend:
  * 1. Avvia il server
  * 2. Esegue health tests
@@ -19,11 +19,11 @@ let server = null;
 async function startServer() {
   return new Promise((resolve, reject) => {
     console.log('🚀 Starting backend server...');
-    
+
     const serverPath = path.join(__dirname, 'src', 'simple-server.js');
     server = spawn('node', [serverPath], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, NODE_ENV: 'test' }
+      env: { ...process.env, NODE_ENV: 'test' },
     });
 
     let started = false;
@@ -34,11 +34,15 @@ async function startServer() {
       }
     }, 15000);
 
-    server.stdout.on('data', (data) => {
+    server.stdout.on('data', data => {
       const output = data.toString();
       console.log('📤 Server:', output.trim());
-      
-      if (output.includes('running on port') || output.includes('listening') || output.includes('Student Analyst Backend')) {
+
+      if (
+        output.includes('running on port') ||
+        output.includes('listening') ||
+        output.includes('Student Analyst Backend')
+      ) {
         if (!started) {
           started = true;
           clearTimeout(timeout);
@@ -47,16 +51,16 @@ async function startServer() {
       }
     });
 
-    server.stderr.on('data', (data) => {
+    server.stderr.on('data', data => {
       console.error('❌ Server error:', data.toString());
     });
 
-    server.on('error', (error) => {
+    server.on('error', error => {
       clearTimeout(timeout);
       reject(error);
     });
 
-    server.on('exit', (code) => {
+    server.on('exit', code => {
       clearTimeout(timeout);
       if (!started && code !== 0) {
         reject(new Error(`Server exited with code ${code}`));
@@ -76,12 +80,12 @@ async function stopServer() {
 async function runTest(scriptName) {
   return new Promise((resolve, reject) => {
     console.log(`\n🧪 Running ${scriptName}...`);
-    
+
     const testScript = spawn('node', [`scripts/${scriptName}`], {
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
 
-    testScript.on('close', (code) => {
+    testScript.on('close', code => {
       if (code === 0) {
         console.log(`✅ ${scriptName} passed`);
         resolve();
@@ -91,7 +95,7 @@ async function runTest(scriptName) {
       }
     });
 
-    testScript.on('error', (error) => {
+    testScript.on('error', error => {
       console.error(`❌ Error running ${scriptName}:`, error);
       reject(error);
     });
@@ -101,22 +105,24 @@ async function runTest(scriptName) {
 async function runMonitoringTest() {
   return new Promise((resolve, reject) => {
     console.log('\n🧪 Running monitoring test...');
-    
+
     const testScript = spawn('node', ['scripts/monitoring-test.js'], {
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
 
-    testScript.on('close', (code) => {
+    testScript.on('close', code => {
       if (code === 0) {
         console.log('✅ Monitoring test passed');
         resolve();
       } else {
-        console.log(`⚠️  Monitoring test failed with code ${code} (this is expected if server is not running externally)`);
+        console.log(
+          `⚠️  Monitoring test failed with code ${code} (this is expected if server is not running externally)`
+        );
         resolve(); // Don't fail the entire suite for monitoring test
       }
     });
 
-    testScript.on('error', (error) => {
+    testScript.on('error', error => {
       console.error('❌ Error running monitoring test:', error);
       resolve(); // Don't fail the entire suite for monitoring test
     });
@@ -138,7 +144,6 @@ async function main() {
     await runMonitoringTest();
 
     console.log('\n🎉 All backend tests completed successfully!');
-    
   } catch (error) {
     console.error('\n❌ Backend test suite failed:', error.message);
     process.exit(1);
@@ -161,4 +166,4 @@ process.on('SIGTERM', async () => {
 });
 
 // Run the test suite
-main(); 
+main();

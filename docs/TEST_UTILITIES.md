@@ -13,13 +13,13 @@ This document provides detailed documentation for all test utilities and helper 
 export const setupTestEnvironment = () => {
   // Reset all mocks
   jest.clearAllMocks();
-  
+
   // Setup fake timers
   jest.useFakeTimers();
-  
+
   // Clear all caches
   clearAllCaches();
-  
+
   // Reset all stores
   resetAllStores();
 };
@@ -27,13 +27,13 @@ export const setupTestEnvironment = () => {
 export const cleanupTestEnvironment = () => {
   // Restore real timers
   jest.useRealTimers();
-  
+
   // Clear all mocks
   jest.clearAllMocks();
-  
+
   // Cleanup all caches
   cleanupAllCaches();
-  
+
   // Reset all stores
   resetAllStores();
 };
@@ -45,7 +45,7 @@ export const cleanupTestEnvironment = () => {
 // test-utils/mock-data.ts
 export const generateMockStockData = (options = {}) => ({
   symbol: options.symbol || 'AAPL',
-  price: options.price || 150.00,
+  price: options.price || 150.0,
   volume: options.volume || 1000000,
   timestamp: options.timestamp || Date.now(),
   // ... other properties
@@ -73,7 +73,7 @@ export const verifyCacheConsistency = async (key, expectedValue) => {
   const l1Value = await MemoryCacheL1.get(key);
   const l2Value = await LocalStorageCacheL2.get(key);
   const l3Value = await IndexedDBCacheL3.get(key);
-  
+
   expect(l1Value).toEqual(expectedValue);
   expect(l2Value).toEqual(expectedValue);
   expect(l3Value).toEqual(expectedValue);
@@ -84,7 +84,11 @@ export const verifyCacheConsistency = async (key, expectedValue) => {
 
 ```typescript
 // test-utils/financial.ts
-export const verifyCalculationPrecision = (actual, expected, precision = 0.0001) => {
+export const verifyCalculationPrecision = (
+  actual,
+  expected,
+  precision = 0.0001
+) => {
   expect(Math.abs(actual - expected)).toBeLessThan(precision);
 };
 
@@ -141,7 +145,7 @@ export const verifyErrorRecovery = async (operation, recoveryOperation) => {
 
 ```typescript
 // test-utils/performance.ts
-export const measureOperationTime = async (operation) => {
+export const measureOperationTime = async operation => {
   const start = performance.now();
   await operation();
   const end = performance.now();
@@ -164,11 +168,11 @@ export const measureMemoryUsage = () => {
     heapUsed: used.heapUsed,
     heapTotal: used.heapTotal,
     external: used.external,
-    rss: used.rss
+    rss: used.rss,
   };
 };
 
-export const verifyMemoryThreshold = (maxHeapUsed) => {
+export const verifyMemoryThreshold = maxHeapUsed => {
   const { heapUsed } = measureMemoryUsage();
   expect(heapUsed).toBeLessThan(maxHeapUsed);
 };
@@ -186,7 +190,7 @@ export const setupBrowser = async () => {
   return { browser, page };
 };
 
-export const cleanupBrowser = async (browser) => {
+export const cleanupBrowser = async browser => {
   await browser.close();
 };
 ```
@@ -246,16 +250,19 @@ export const resetTestState = async () => {
 ## Best Practices
 
 1. **Utility Usage**
+
    - Always use these utilities instead of writing custom test code
    - Keep utilities focused and single-purpose
    - Document any new utilities added
 
 2. **Maintenance**
+
    - Regularly review and update utilities
    - Remove obsolete utilities
    - Add new utilities as needed
 
 3. **Performance**
+
    - Optimize utility functions
    - Cache expensive operations
    - Use appropriate async/await patterns
@@ -268,6 +275,7 @@ export const resetTestState = async () => {
 ## Version Control
 
 1. **Changes**
+
    - Document all changes to utilities
    - Update tests when utilities change
    - Maintain backward compatibility
@@ -280,6 +288,7 @@ export const resetTestState = async () => {
 ## Troubleshooting
 
 1. **Common Issues**
+
    - Utility not working as expected
    - Performance problems
    - Memory leaks
@@ -292,6 +301,7 @@ export const resetTestState = async () => {
 ## Maintenance
 
 1. **Regular Tasks**
+
    - Update utilities
    - Add new utilities
    - Remove obsolete utilities
@@ -299,4 +309,4 @@ export const resetTestState = async () => {
 2. **Documentation**
    - Keep documentation up to date
    - Add examples
-   - Document changes 
+   - Document changes

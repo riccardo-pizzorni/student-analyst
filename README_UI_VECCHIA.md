@@ -1,7 +1,9 @@
 # STUDENT ANALYST – README_UI_VECCHIA
 
 ## 📚 Cos'è questo file?
+
 Questo documento è un **backup completo** della UI originale di Student Analyst (prima dell'integrazione Lovable). Qui trovi:
+
 - Struttura e componenti principali
 - Palette colori, font, spacing, mood
 - Filosofia estetica e UX
@@ -119,4 +121,4 @@ Questo documento è un **backup completo** della UI originale di Student Analyst
 
 ---
 
-**Questo file è il riferimento storico e stilistico della UI originale di Student Analyst.** 
+**Questo file è il riferimento storico e stilistico della UI originale di Student Analyst.**

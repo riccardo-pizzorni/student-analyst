@@ -1,6 +1,6 @@
 /**
  * Volume Handler per STUDENT ANALYST
- * 
+ *
  * Sistema di gestione e normalizzazione del volume di trading
  * Converte unità diverse (K, M, B) e valida coerenza dei dati
  */
@@ -39,7 +39,12 @@ export interface VolumeConversion {
 }
 
 export interface VolumeAnomaly {
-  type: 'ZERO_VOLUME' | 'NEGATIVE_VOLUME' | 'EXTREME_HIGH' | 'EXTREME_LOW' | 'INCONSISTENT_FORMAT';
+  type:
+    | 'ZERO_VOLUME'
+    | 'NEGATIVE_VOLUME'
+    | 'EXTREME_HIGH'
+    | 'EXTREME_LOW'
+    | 'INCONSISTENT_FORMAT';
   record: number;
   originalValue: unknown;
   normalizedValue?: number;
@@ -60,14 +65,34 @@ export interface VolumeHandlerConfig {
 
 export class VolumeHandler {
   private readonly config: VolumeHandlerConfig;
-  
+
   // Pattern per riconoscere unità di volume
   private readonly volumePatterns = [
-    { pattern: /^(\d+(?:\.\d+)?)\s*[kK]$/, unit: 'K', factor: 1000, priority: 5 },
-    { pattern: /^(\d+(?:\.\d+)?)\s*[mM]$/, unit: 'M', factor: 1000000, priority: 4 },
-    { pattern: /^(\d+(?:\.\d+)?)\s*[bB]$/, unit: 'B', factor: 1000000000, priority: 3 },
-    { pattern: /^(\d+(?:\.\d+)?)\s*[tT]$/, unit: 'T', factor: 1000000000000, priority: 2 },
-    { pattern: /^(\d+(?:\.\d+)?)$/, unit: 'UNITS', factor: 1, priority: 1 }
+    {
+      pattern: /^(\d+(?:\.\d+)?)\s*[kK]$/,
+      unit: 'K',
+      factor: 1000,
+      priority: 5,
+    },
+    {
+      pattern: /^(\d+(?:\.\d+)?)\s*[mM]$/,
+      unit: 'M',
+      factor: 1000000,
+      priority: 4,
+    },
+    {
+      pattern: /^(\d+(?:\.\d+)?)\s*[bB]$/,
+      unit: 'B',
+      factor: 1000000000,
+      priority: 3,
+    },
+    {
+      pattern: /^(\d+(?:\.\d+)?)\s*[tT]$/,
+      unit: 'T',
+      factor: 1000000000000,
+      priority: 2,
+    },
+    { pattern: /^(\d+(?:\.\d+)?)$/, unit: 'UNITS', factor: 1, priority: 1 },
   ];
 
   constructor(config?: Partial<VolumeHandlerConfig>) {
@@ -78,7 +103,7 @@ export class VolumeHandler {
       extremeVolumeThreshold: 10, // 10x la mediana
       interpolationMethod: 'MEDIAN',
       preserveOriginalValues: true,
-      ...config
+      ...config,
     };
   }
 
@@ -91,7 +116,7 @@ export class VolumeHandler {
     }
 
     const result = this.processVolumeData(data);
-    
+
     if (!result.success) {
       return data; // Ritorna dati originali in caso di errore
     }
@@ -111,26 +136,26 @@ export class VolumeHandler {
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
       const volumeField = this.findVolumeField(item);
-      
+
       if (!volumeField) {
         anomalies.push({
           type: 'INCONSISTENT_FORMAT',
           record: i,
           originalValue: item,
           severity: 'MEDIUM',
-          description: 'Campo volume non trovato'
+          description: 'Campo volume non trovato',
         });
         continue;
       }
 
       const originalVolume = item[volumeField];
       const normalizationResult = this.normalizeVolumeValue(originalVolume);
-      
+
       if (normalizationResult.success) {
         const normalizedItem: VolumeDataItem = {
           ...item,
           volume: normalizationResult.normalizedValue,
-          volumeNormalized: normalizationResult.normalizedValue
+          volumeNormalized: normalizationResult.normalizedValue,
         };
 
         if (this.config.preserveOriginalValues) {
@@ -139,13 +164,13 @@ export class VolumeHandler {
         }
 
         normalizedData.push(normalizedItem);
-        
+
         conversions.push({
           originalValue: originalVolume,
           normalizedValue: normalizationResult.normalizedValue,
           detectedUnit: normalizationResult.detectedUnit,
           conversionFactor: normalizationResult.conversionFactor,
-          confidence: normalizationResult.confidence
+          confidence: normalizationResult.confidence,
         });
       } else {
         anomalies.push({
@@ -153,7 +178,7 @@ export class VolumeHandler {
           record: i,
           originalValue: originalVolume,
           severity: 'HIGH',
-          description: `Impossibile normalizzare volume: ${originalVolume}`
+          description: `Impossibile normalizzare volume: ${originalVolume}`,
         });
       }
     }
@@ -175,7 +200,7 @@ export class VolumeHandler {
       normalizedData: finalData,
       conversions,
       anomalies,
-      stats
+      stats,
     };
   }
 
@@ -195,27 +220,33 @@ export class VolumeHandler {
         normalizedValue: 0,
         detectedUnit: 'NULL',
         conversionFactor: 1,
-        confidence: 0
+        confidence: 0,
       };
     }
 
     const stringValue = String(value).trim();
-    
+
     // Prova tutti i pattern in ordine di priorità
-    const sortedPatterns = [...this.volumePatterns].sort((a, b) => b.priority - a.priority);
-    
+    const sortedPatterns = [...this.volumePatterns].sort(
+      (a, b) => b.priority - a.priority
+    );
+
     for (const { pattern, unit, factor } of sortedPatterns) {
       const match = stringValue.match(pattern);
       if (match) {
         const numericValue = parseFloat(match[1]);
-        
+
         if (!isNaN(numericValue) && numericValue >= 0) {
           return {
             success: true,
             normalizedValue: Math.round(numericValue * factor),
             detectedUnit: unit,
             conversionFactor: factor,
-            confidence: this.calculateNormalizationConfidence(stringValue, unit, numericValue)
+            confidence: this.calculateNormalizationConfidence(
+              stringValue,
+              unit,
+              numericValue
+            ),
           };
         }
       }
@@ -229,7 +260,7 @@ export class VolumeHandler {
         normalizedValue: Math.round(directNumber),
         detectedUnit: 'DIRECT',
         conversionFactor: 1,
-        confidence: 0.8
+        confidence: 0.8,
       };
     }
 
@@ -238,18 +269,22 @@ export class VolumeHandler {
       normalizedValue: 0,
       detectedUnit: 'UNKNOWN',
       conversionFactor: 1,
-      confidence: 0
+      confidence: 0,
     };
   }
 
   /**
    * Calcola confidence della normalizzazione
    */
-  private calculateNormalizationConfidence(value: string, unit: string, numericValue: number): number {
+  private calculateNormalizationConfidence(
+    value: string,
+    unit: string,
+    numericValue: number
+  ): number {
     let confidence = 0.5;
 
     // Fattori che aumentano confidence:
-    
+
     // 1. Formato pulito e chiaro
     if (value.match(/^\d+(\.\d+)?[KMBTkmbt]?$/)) {
       confidence += 0.3;
@@ -261,12 +296,14 @@ export class VolumeHandler {
     }
 
     // 3. Valore ragionevole
-    if (numericValue > 0 && numericValue < 1000000) { // Valore base ragionevole
+    if (numericValue > 0 && numericValue < 1000000) {
+      // Valore base ragionevole
       confidence += 0.2;
     }
 
     // 4. Formato standard
-    if (value.match(/^\d+[KMB]$/)) { // Formato molto comune
+    if (value.match(/^\d+[KMB]$/)) {
+      // Formato molto comune
       confidence += 0.1;
     }
 
@@ -278,7 +315,7 @@ export class VolumeHandler {
    */
   private detectVolumeAnomalies(data: VolumeDataItem[]): VolumeAnomaly[] {
     const anomalies: VolumeAnomaly[] = [];
-    
+
     if (data.length === 0) return anomalies;
 
     // Calcola statistiche per rilevamento anomalie
@@ -286,7 +323,7 @@ export class VolumeHandler {
     const sortedVolumes = [...volumes].sort((a, b) => a - b);
     const median = this.calculateMedian(sortedVolumes);
     const mean = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
-    
+
     const extremeThreshold = median * this.config.extremeVolumeThreshold;
 
     for (let i = 0; i < data.length; i++) {
@@ -301,7 +338,7 @@ export class VolumeHandler {
           originalValue: item.originalVolume || volume,
           normalizedValue: volume,
           severity: 'LOW',
-          description: 'Volume zero rilevato'
+          description: 'Volume zero rilevato',
         });
       }
 
@@ -313,7 +350,7 @@ export class VolumeHandler {
           originalValue: item.originalVolume || volume,
           normalizedValue: volume,
           severity: 'HIGH',
-          description: 'Volume negativo rilevato'
+          description: 'Volume negativo rilevato',
         });
       }
 
@@ -325,19 +362,22 @@ export class VolumeHandler {
           originalValue: item.originalVolume || volume,
           normalizedValue: volume,
           severity: 'MEDIUM',
-          description: `Volume estremamente alto: ${volume} (soglia: ${extremeThreshold})`
+          description: `Volume estremamente alto: ${volume} (soglia: ${extremeThreshold})`,
         });
       }
 
       // Volume estremamente basso (ma non zero)
-      else if (volume > 0 && volume < (median / this.config.extremeVolumeThreshold)) {
+      else if (
+        volume > 0 &&
+        volume < median / this.config.extremeVolumeThreshold
+      ) {
         anomalies.push({
           type: 'EXTREME_LOW',
           record: i,
           originalValue: item.originalVolume || volume,
           normalizedValue: volume,
           severity: 'LOW',
-          description: `Volume estremamente basso: ${volume}`
+          description: `Volume estremamente basso: ${volume}`,
         });
       }
     }
@@ -348,7 +388,10 @@ export class VolumeHandler {
   /**
    * Gestisce valori speciali di volume (zero, negativi)
    */
-  private handleSpecialVolumeValues(data: VolumeDataItem[], anomalies: VolumeAnomaly[]): VolumeDataItem[] {
+  private handleSpecialVolumeValues(
+    data: VolumeDataItem[],
+    anomalies: VolumeAnomaly[]
+  ): VolumeDataItem[] {
     if (this.config.zeroVolumeHandling === 'KEEP') {
       return data;
     }
@@ -372,7 +415,7 @@ export class VolumeHandler {
             ...result[index],
             volume: interpolatedValue,
             volumeNormalized: interpolatedValue,
-            volumeInterpolated: true
+            volumeInterpolated: true,
           };
         }
       }
@@ -386,24 +429,27 @@ export class VolumeHandler {
    */
   private interpolateVolume(data: VolumeDataItem[], index: number): number {
     const volumes = data.map(item => item.volumeNormalized || item.volume || 0);
-    
+
     switch (this.config.interpolationMethod) {
       case 'LINEAR': {
         return this.linearInterpolation(volumes, index);
       }
-      
+
       case 'MEDIAN': {
         const nonZeroVolumes = volumes.filter(v => v > 0);
-        return nonZeroVolumes.length > 0 ? this.calculateMedian(nonZeroVolumes) : 0;
-      }
-      
-      case 'AVERAGE': {
-        const nonZeroVolumesAvg = volumes.filter(v => v > 0);
-        return nonZeroVolumesAvg.length > 0 
-          ? nonZeroVolumesAvg.reduce((sum, v) => sum + v, 0) / nonZeroVolumesAvg.length 
+        return nonZeroVolumes.length > 0
+          ? this.calculateMedian(nonZeroVolumes)
           : 0;
       }
-      
+
+      case 'AVERAGE': {
+        const nonZeroVolumesAvg = volumes.filter(v => v > 0);
+        return nonZeroVolumesAvg.length > 0
+          ? nonZeroVolumesAvg.reduce((sum, v) => sum + v, 0) /
+              nonZeroVolumesAvg.length
+          : 0;
+      }
+
       default:
         return 0;
     }
@@ -440,7 +486,7 @@ export class VolumeHandler {
 
     if (prevIndex >= 0) return values[prevIndex];
     if (nextIndex >= 0) return values[nextIndex];
-    
+
     return 0;
   }
 
@@ -460,19 +506,21 @@ export class VolumeHandler {
         recordsNormalized: 0,
         averageVolume: 0,
         medianVolume: 0,
-        volumeRange: { min: 0, max: 0 }
+        volumeRange: { min: 0, max: 0 },
       };
     }
 
     const volumes = data.map(item => item.volumeNormalized || item.volume || 0);
     const validVolumes = volumes.filter(v => v >= 0);
-    
-    const average = validVolumes.length > 0 
-      ? validVolumes.reduce((sum, v) => sum + v, 0) / validVolumes.length 
-      : 0;
-    
-    const median = validVolumes.length > 0 ? this.calculateMedian(validVolumes) : 0;
-    
+
+    const average =
+      validVolumes.length > 0
+        ? validVolumes.reduce((sum, v) => sum + v, 0) / validVolumes.length
+        : 0;
+
+    const median =
+      validVolumes.length > 0 ? this.calculateMedian(validVolumes) : 0;
+
     const min = validVolumes.length > 0 ? Math.min(...validVolumes) : 0;
     const max = validVolumes.length > 0 ? Math.max(...validVolumes) : 0;
 
@@ -481,7 +529,7 @@ export class VolumeHandler {
       recordsNormalized: validVolumes.length,
       averageVolume: Math.round(average),
       medianVolume: Math.round(median),
-      volumeRange: { min, max }
+      volumeRange: { min, max },
     };
   }
 
@@ -491,7 +539,7 @@ export class VolumeHandler {
   private calculateMedian(values: number[]): number {
     const sorted = [...values].sort((a, b) => a - b);
     const mid = Math.floor(sorted.length / 2);
-    
+
     return sorted.length % 2 === 0
       ? (sorted[mid - 1] + sorted[mid]) / 2
       : sorted[mid];
@@ -502,13 +550,21 @@ export class VolumeHandler {
    */
   private findVolumeField(item: VolumeDataItem): string | null {
     const volumeFields = [
-      'volume', 'Volume', 'VOLUME',
-      'vol', 'Vol', 'VOL',
-      'v', 'V'
+      'volume',
+      'Volume',
+      'VOLUME',
+      'vol',
+      'Vol',
+      'VOL',
+      'v',
+      'V',
     ];
 
     for (const field of volumeFields) {
-      if (Object.prototype.hasOwnProperty.call(item, field) && item[field] != null) {
+      if (
+        Object.prototype.hasOwnProperty.call(item, field) &&
+        item[field] != null
+      ) {
         return field;
       }
     }
@@ -537,27 +593,27 @@ export class VolumeHandler {
   } {
     try {
       const result = this.normalizeVolumeValue(value);
-      
+
       if (result.success) {
         return {
           canNormalize: true,
           result: {
             normalizedValue: result.normalizedValue,
             detectedUnit: result.detectedUnit,
-            confidence: result.confidence
-          }
+            confidence: result.confidence,
+          },
         };
       } else {
         return {
           canNormalize: false,
-          error: `Impossibile normalizzare valore: ${value}`
+          error: `Impossibile normalizzare valore: ${value}`,
         };
       }
     } catch (error) {
       return {
         canNormalize: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       };
     }
   }
-} 
+}

@@ -1,6 +1,7 @@
 # Testing Guide for Financial Analysis Platform
 
 ## Table of Contents
+
 1. [Introduction](#introduction)
 2. [Getting Started](#getting-started)
 3. [Test Types and Structure](#test-types-and-structure)
@@ -17,6 +18,7 @@
 This guide provides comprehensive documentation for the testing system of our mission-critical financial analysis platform. The testing system is designed to ensure zero risk of errors, complete automation, and full auditability.
 
 ### Key Principles
+
 - Zero risk of errors
 - Total automation
 - Complete audit trail
@@ -27,11 +29,13 @@ This guide provides comprehensive documentation for the testing system of our mi
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js >= 18.x
 - npm >= 9.x
 - Git
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone [repository-url]
@@ -44,6 +48,7 @@ npm run test:verify
 ```
 
 ### Environment Setup
+
 1. Copy `.env.example` to `.env`
 2. Set required environment variables:
    - `API_KEY_ALPHA_VANTAGE`
@@ -53,6 +58,7 @@ npm run test:verify
 ## Test Types and Structure
 
 ### Directory Structure
+
 ```
 tests/
 ├── unit/           # Unit tests
@@ -63,17 +69,21 @@ tests/
 ```
 
 ### Test Categories
+
 1. **Unit Tests**
+
    - Individual components
    - Pure functions
    - Isolated business logic
 
 2. **Integration Tests**
+
    - Component interactions
    - Service integrations
    - Data flow validation
 
 3. **E2E Tests**
+
    - User flows
    - Critical paths
    - System-wide functionality
@@ -86,6 +96,7 @@ tests/
 ## Running Tests
 
 ### Basic Commands
+
 ```bash
 # Run all tests
 npm test
@@ -103,12 +114,14 @@ npm test -- path/to/test.test.ts
 ```
 
 ### Watch Mode
+
 ```bash
 # Run tests in watch mode
 npm run test:watch
 ```
 
 ### Debug Mode
+
 ```bash
 # Run tests with debug logging
 npm run test:debug
@@ -117,6 +130,7 @@ npm run test:debug
 ## Writing Tests
 
 ### Test File Structure
+
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { setupTestEnvironment, cleanupTestEnvironment } from '../test-utils';
@@ -137,11 +151,13 @@ describe('ComponentName', () => {
 ```
 
 ### Test Naming Conventions
+
 - Use descriptive names
 - Follow pattern: `should [expected behavior] when [condition]`
 - Group related tests in describe blocks
 
 ### Assertions
+
 ```typescript
 // Basic assertions
 expect(value).toBe(expected);
@@ -156,22 +172,24 @@ await expect(asyncFunction()).rejects.toThrow(error);
 ## Mocking and Test Data
 
 ### Mocking External Dependencies
+
 ```typescript
 // Mock API calls
 jest.mock('../api', () => ({
-  fetchData: jest.fn().mockResolvedValue(mockData)
+  fetchData: jest.fn().mockResolvedValue(mockData),
 }));
 
 // Mock browser APIs
 Object.defineProperty(window, 'localStorage', {
   value: {
     getItem: jest.fn(),
-    setItem: jest.fn()
-  }
+    setItem: jest.fn(),
+  },
 });
 ```
 
 ### Test Data Management
+
 1. Use `test-data/` directory for fixtures
 2. Create data factories for complex objects
 3. Reset data between tests
@@ -180,17 +198,21 @@ Object.defineProperty(window, 'localStorage', {
 ## Best Practices
 
 ### General Guidelines
+
 1. **Isolation**
+
    - Each test should be independent
    - Clean up after each test
    - Don't rely on test order
 
 2. **Readability**
+
    - Clear test descriptions
    - Organized test structure
    - Meaningful assertions
 
 3. **Maintainability**
+
    - DRY (Don't Repeat Yourself)
    - Use helper functions
    - Keep tests focused
@@ -201,12 +223,15 @@ Object.defineProperty(window, 'localStorage', {
    - Optimize test data
 
 ### Critical Components
+
 1. **Cache System**
+
    - Test all cache levels
    - Verify eviction policies
    - Check data consistency
 
 2. **Financial Calculations**
+
    - Validate all formulas
    - Test edge cases
    - Verify precision
@@ -219,12 +244,15 @@ Object.defineProperty(window, 'localStorage', {
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Test Failures**
+
    - Check test environment
    - Verify mock data
    - Review error messages
 
 2. **Performance Issues**
+
    - Check test data size
    - Review async operations
    - Monitor memory usage
@@ -235,6 +263,7 @@ Object.defineProperty(window, 'localStorage', {
    - Verify test effectiveness
 
 ### Debug Tools
+
 ```bash
 # Run specific test with debug logging
 npm test -- path/to/test.test.ts --verbose
@@ -246,12 +275,15 @@ npm run test:coverage -- --coverageReporters='text-summary'
 ## CI/CD Integration
 
 ### Pipeline Configuration
+
 1. **Pre-commit Hooks**
+
    - Run unit tests
    - Check code style
    - Verify types
 
 2. **Pull Request Checks**
+
    - Run all tests
    - Generate coverage
    - Check performance
@@ -262,7 +294,9 @@ npm run test:coverage -- --coverageReporters='text-summary'
    - Check security
 
 ### Artifact Management
+
 1. **Test Reports**
+
    - Coverage reports
    - Test results
    - Performance metrics
@@ -275,13 +309,16 @@ npm run test:coverage -- --coverageReporters='text-summary'
 ## Coverage and Metrics
 
 ### Coverage Requirements
+
 - Statements: 80%
 - Branches: 75%
 - Functions: 90%
 - Lines: 80%
 
 ### Monitoring
+
 1. **Coverage Trends**
+
    - Track coverage over time
    - Identify gaps
    - Plan improvements
@@ -292,7 +329,9 @@ npm run test:coverage -- --coverageReporters='text-summary'
    - CPU utilization
 
 ### Reporting
+
 1. **Coverage Reports**
+
    - HTML reports
    - LCOV format
    - Text summary
@@ -305,12 +344,15 @@ npm run test:coverage -- --coverageReporters='text-summary'
 ## Maintenance
 
 ### Regular Tasks
+
 1. **Review and Update**
+
    - Test coverage
    - Test effectiveness
    - Documentation
 
 2. **Cleanup**
+
    - Remove obsolete tests
    - Update test data
    - Optimize performance
@@ -321,7 +363,9 @@ npm run test:coverage -- --coverageReporters='text-summary'
    - Update best practices
 
 ### Version Control
+
 1. **Branch Strategy**
+
    - Feature branches
    - Test branches
    - Release branches
@@ -329,4 +373,4 @@ npm run test:coverage -- --coverageReporters='text-summary'
 2. **Commit Guidelines**
    - Test-related commits
    - Documentation updates
-   - Configuration changes 
+   - Configuration changes

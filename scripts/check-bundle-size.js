@@ -2,7 +2,7 @@
 
 /**
  * 📦 Bundle Size Checker for Student Analyst
- * 
+ *
  * Ensures the application stays within performance limits:
  * - Main bundle < 1MB (for fast loading)
  * - Total assets < 5MB (for reasonable bandwidth usage)
@@ -25,9 +25,9 @@ function formatBytes(bytes) {
 function analyzeBundleSize() {
   const distPath = path.join(process.cwd(), 'dist');
   const assetsPath = path.join(distPath, 'assets');
-  
+
   console.log('📦 Analyzing bundle size...\n');
-  
+
   if (!fs.existsSync(distPath)) {
     console.error('❌ Build directory not found. Run npm run build first.');
     process.exit(1);
@@ -41,21 +41,21 @@ function analyzeBundleSize() {
   // Analyze assets directory
   if (fs.existsSync(assetsPath)) {
     const files = fs.readdirSync(assetsPath);
-    
+
     console.log('📁 Assets analysis:');
     files.forEach(file => {
       const filePath = path.join(assetsPath, file);
       const stats = fs.statSync(filePath);
       const size = stats.size;
       totalSize += size;
-      
+
       console.log(`  ${file}: ${formatBytes(size)}`);
-      
+
       // Check if this is the main bundle (largest JS file)
       if (file.endsWith('.js') && size > mainBundleSize) {
         mainBundleSize = size;
       }
-      
+
       // Check individual chunk size
       if (size > LIMITS.INDIVIDUAL_CHUNK_MAX) {
         warnings.push(`⚠️  Large chunk: ${file} (${formatBytes(size)})`);
@@ -74,14 +74,18 @@ function analyzeBundleSize() {
   console.log(`\n📊 Bundle Summary:`);
   console.log(`  Main bundle: ${formatBytes(mainBundleSize)}`);
   console.log(`  Total size: ${formatBytes(totalSize)}`);
-  
+
   // Check limits
   if (mainBundleSize > LIMITS.MAIN_BUNDLE_MAX) {
-    errors.push(`❌ Main bundle too large: ${formatBytes(mainBundleSize)} > ${formatBytes(LIMITS.MAIN_BUNDLE_MAX)}`);
+    errors.push(
+      `❌ Main bundle too large: ${formatBytes(mainBundleSize)} > ${formatBytes(LIMITS.MAIN_BUNDLE_MAX)}`
+    );
   }
-  
+
   if (totalSize > LIMITS.TOTAL_ASSETS_MAX) {
-    errors.push(`❌ Total assets too large: ${formatBytes(totalSize)} > ${formatBytes(LIMITS.TOTAL_ASSETS_MAX)}`);
+    errors.push(
+      `❌ Total assets too large: ${formatBytes(totalSize)} > ${formatBytes(LIMITS.TOTAL_ASSETS_MAX)}`
+    );
   }
 
   // Report results
@@ -102,14 +106,18 @@ function analyzeBundleSize() {
   }
 
   console.log('\n✅ Bundle size check passed!');
-  
+
   // Performance recommendations
   if (mainBundleSize > LIMITS.MAIN_BUNDLE_MAX * 0.8) {
-    console.log('\n💡 Recommendation: Main bundle is getting large, consider code splitting.');
+    console.log(
+      '\n💡 Recommendation: Main bundle is getting large, consider code splitting.'
+    );
   }
-  
+
   if (totalSize > LIMITS.TOTAL_ASSETS_MAX * 0.8) {
-    console.log('\n💡 Recommendation: Total assets approaching limit, consider optimization.');
+    console.log(
+      '\n💡 Recommendation: Total assets approaching limit, consider optimization.'
+    );
   }
 }
 
@@ -119,4 +127,4 @@ try {
 } catch (error) {
   console.error('❌ Bundle size check failed:', error.message);
   process.exit(1);
-} 
+}

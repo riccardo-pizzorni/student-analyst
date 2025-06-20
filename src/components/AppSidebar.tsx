@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -8,7 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 import {
   BookOpen,
   FolderKanban,
@@ -16,25 +15,25 @@ import {
   Zap,
   Info,
   Smile,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const items = [
   {
-    title: "Input & Dati",
+    title: 'Input & Dati',
     icon: FolderKanban,
     active: true,
   },
   {
-    title: "Storico",
+    title: 'Storico',
     icon: BarChart3,
   },
   {
-    title: "Performance",
+    title: 'Performance',
     icon: Zap,
   },
   {
-    title: "Fondamentale",
+    title: 'Fondamentale',
     icon: BookOpen,
   },
 ];
@@ -61,9 +60,7 @@ export function AppSidebar() {
                       className={`bg-blue-100 text-blue-700 rounded-full p-1`}
                       size={22}
                     />
-                    <span className="text-md font-semibold">
-                      {item.title}
-                    </span>
+                    <span className="text-md font-semibold">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -74,10 +71,15 @@ export function AppSidebar() {
           <SidebarGroupLabel>Roadmap</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="flex flex-col gap-2 px-2">
-              <Badge variant="secondary" className="w-fit px-3 py-1">🎓 Step 1 di 8</Badge>
+              <Badge variant="secondary" className="w-fit px-3 py-1">
+                🎓 Step 1 di 8
+              </Badge>
               <div className="w-full pt-2">
                 <div className="h-2 w-full bg-gray-200 rounded-full relative overflow-hidden">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: "18%" }} />
+                  <div
+                    className="bg-blue-500 h-2 rounded-full"
+                    style={{ width: '18%' }}
+                  />
                 </div>
                 <span className="text-xs text-muted-foreground mt-1 block text-right">
                   Quasi fatto!

@@ -11,12 +11,12 @@ on:
         options:
           - production
           - staging
-      
+
       rollback_reason:
         description: 'Reason for rollback'
         required: true
         type: string
-      
+
       confirm_rollback:
         description: 'Type "CONFIRM" to proceed with rollback'
         required: true
@@ -43,7 +43,7 @@ jobs:
             echo "proceed=false" >> $GITHUB_OUTPUT
             exit 1
           fi
-          
+
           echo "✅ Rollback confirmed by: ${{ github.actor }}"
           echo "📍 Target environment: ${{ github.event.inputs.target_environment }}"
           echo "📝 Reason: ${{ github.event.inputs.rollback_reason }}"
@@ -78,7 +78,7 @@ jobs:
         id: health-check
         run: |
           echo "🔍 Checking current deployment health..."
-          
+
           # Check frontend
           if curl -f https://student-analyst-b21w.vercel.app --max-time 30; then
             echo "frontend-status=healthy" >> $GITHUB_OUTPUT
@@ -87,7 +87,7 @@ jobs:
             echo "frontend-status=unhealthy" >> $GITHUB_OUTPUT
             echo "❌ Frontend currently unhealthy"
           fi
-          
+
           # Check backend
           if curl -f https://student-analyst.onrender.com/health --max-time 30; then
             echo "backend-status=healthy" >> $GITHUB_OUTPUT
@@ -118,7 +118,7 @@ jobs:
       - name: 💾 Create backup snapshot
         run: |
           echo "💾 Creating backup of current state..."
-          
+
           # Create backup info
           cat > backup-info.json << EOF
           {
@@ -131,7 +131,7 @@ jobs:
             "backend_status": "${{ needs.pre-rollback-check.outputs.backend-status }}"
           }
           EOF
-          
+
           echo "📄 Backup created:"
           cat backup-info.json
 
@@ -165,19 +165,19 @@ jobs:
         id: find-target
         run: |
           echo "🔍 Searching for last stable deployment..."
-          
+
           # Look for the previous commit (before current)
           CURRENT_COMMIT="${{ github.sha }}"
           PREVIOUS_COMMIT=$(git log --oneline -n 2 | tail -n 1 | cut -d' ' -f1)
-          
+
           echo "📍 Current commit: $CURRENT_COMMIT"
           echo "📍 Previous commit: $PREVIOUS_COMMIT"
-          
+
           # For simplicity, rollback to previous commit
           # In production, you'd have more sophisticated logic here
           echo "commit=$PREVIOUS_COMMIT" >> $GITHUB_OUTPUT
           echo "tag=rollback-${{ github.run_id }}" >> $GITHUB_OUTPUT
-          
+
           echo "🎯 Rollback target: $PREVIOUS_COMMIT"
 
   # =====================================
@@ -213,7 +213,7 @@ jobs:
           echo "🔄 Deploying rollback version to Vercel..."
           echo "📍 Target commit: ${{ needs.identify-rollback-target.outputs.target-commit }}"
           echo "✅ Frontend rollback deployment completed"
-          
+
           # Note: In a real scenario, you'd integrate with Vercel CLI or API
           # vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
 
@@ -236,7 +236,7 @@ jobs:
           echo "🔄 Deploying rollback version to Render..."
           echo "📍 Target commit: ${{ needs.identify-rollback-target.outputs.target-commit }}"
           echo "✅ Backend rollback deployment completed"
-          
+
           # Note: In a real scenario, you'd integrate with Render API
           # or trigger a redeploy from a specific commit
 
@@ -251,10 +251,10 @@ jobs:
       - name: 🔍 Verify rollback health
         run: |
           echo "🔍 Verifying rollback deployment health..."
-          
+
           # Wait for deployments to settle
           sleep 60
-          
+
           # Check frontend
           for i in {1..5}; do
             if curl -f https://student-analyst-b21w.vercel.app --max-time 30; then
@@ -264,7 +264,7 @@ jobs:
             echo "⏳ Waiting for frontend rollback... (attempt $i/5)"
             sleep 30
           done
-          
+
           # Check backend
           for i in {1..5}; do
             if curl -f https://student-analyst.onrender.com/health --max-time 30; then
@@ -311,4 +311,4 @@ jobs:
           echo "1. Check individual job logs for specific errors"
           echo "2. Verify current deployment status"
           echo "3. Consider manual rollback procedures"
-          echo "4. Contact DevOps team if needed" 
+          echo "4. Contact DevOps team if needed"

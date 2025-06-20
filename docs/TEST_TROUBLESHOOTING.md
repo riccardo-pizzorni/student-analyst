@@ -9,29 +9,34 @@ This guide provides solutions for common issues encountered during testing of ou
 ### 1. Test Environment Issues
 
 #### Problem: Inconsistent Test Environment
+
 **Symptoms:**
+
 - Tests pass locally but fail in CI
 - Inconsistent behavior between runs
 - Environment-specific failures
 
 **Solutions:**
+
 1. **Environment Reset**
+
    ```bash
    # Clean environment
    npm run test:clean
-   
+
    # Reset test database
    npm run test:reset-db
-   
+
    # Clear all caches
    npm run test:clear-cache
    ```
 
 2. **Environment Variables**
+
    ```bash
    # Check environment variables
    npm run test:check-env
-   
+
    # Set required variables
    export TEST_MODE=true
    export API_KEY_ALPHA_VANTAGE=your_key
@@ -39,11 +44,12 @@ This guide provides solutions for common issues encountered during testing of ou
    ```
 
 3. **Dependencies**
+
    ```bash
    # Clean install dependencies
    rm -rf node_modules
    npm install
-   
+
    # Verify versions
    npm run test:verify-deps
    ```
@@ -51,19 +57,23 @@ This guide provides solutions for common issues encountered during testing of ou
 ### 2. Test Execution Issues
 
 #### Problem: Flaky Tests
+
 **Symptoms:**
+
 - Tests pass/fail randomly
 - Timing-dependent failures
 - Race conditions
 
 **Solutions:**
+
 1. **Async Operations**
+
    ```typescript
    // Use proper async/await
    it('should handle async operation', async () => {
      await expect(asyncOperation()).resolves.toBe(expected);
    });
-   
+
    // Handle timeouts
    it('should complete within timeout', async () => {
      await expect(asyncOperation()).resolves.toBe(expected);
@@ -71,24 +81,23 @@ This guide provides solutions for common issues encountered during testing of ou
    ```
 
 2. **Race Conditions**
+
    ```typescript
    // Use proper synchronization
    it('should handle concurrent operations', async () => {
-     const results = await Promise.all([
-       operation1(),
-       operation2()
-     ]);
+     const results = await Promise.all([operation1(), operation2()]);
      expect(results).toEqual([expected1, expected2]);
    });
    ```
 
 3. **Timing Issues**
+
    ```typescript
    // Use fake timers
    beforeEach(() => {
      jest.useFakeTimers();
    });
-   
+
    afterEach(() => {
      jest.useRealTimers();
    });
@@ -97,13 +106,17 @@ This guide provides solutions for common issues encountered during testing of ou
 ### 3. Mock Issues
 
 #### Problem: Incorrect Mock Behavior
+
 **Symptoms:**
+
 - Mocks not returning expected values
 - Mock implementations not being called
 - Mock cleanup issues
 
 **Solutions:**
+
 1. **Mock Setup**
+
    ```typescript
    // Proper mock setup
    beforeEach(() => {
@@ -114,6 +127,7 @@ This guide provides solutions for common issues encountered during testing of ou
    ```
 
 2. **Mock Verification**
+
    ```typescript
    // Verify mock calls
    expect(mockFunction).toHaveBeenCalledWith(expectedArgs);
@@ -131,13 +145,17 @@ This guide provides solutions for common issues encountered during testing of ou
 ### 4. Performance Issues
 
 #### Problem: Slow Tests
+
 **Symptoms:**
+
 - Long test execution times
 - High memory usage
 - CPU spikes
 
 **Solutions:**
+
 1. **Test Optimization**
+
    ```typescript
    // Use appropriate test types
    describe('Performance', () => {
@@ -151,6 +169,7 @@ This guide provides solutions for common issues encountered during testing of ou
    ```
 
 2. **Memory Management**
+
    ```typescript
    // Monitor memory usage
    it('should not exceed memory limit', () => {
@@ -173,22 +192,27 @@ This guide provides solutions for common issues encountered during testing of ou
 ### 5. Coverage Issues
 
 #### Problem: Low Test Coverage
+
 **Symptoms:**
+
 - Coverage below thresholds
 - Untested code paths
 - Missing edge cases
 
 **Solutions:**
+
 1. **Coverage Analysis**
+
    ```bash
    # Generate coverage report
    npm run test:coverage
-   
+
    # Analyze uncovered code
    npm run test:analyze-coverage
    ```
 
 2. **Add Missing Tests**
+
    ```typescript
    // Test edge cases
    it('should handle edge case', () => {
@@ -206,22 +230,26 @@ This guide provides solutions for common issues encountered during testing of ou
          statements: 80,
          branches: 75,
          functions: 90,
-         lines: 80
-       }
-     }
+         lines: 80,
+       },
+     },
    };
    ```
 
 ### 6. CI/CD Issues
 
 #### Problem: CI Pipeline Failures
+
 **Symptoms:**
+
 - Build failures
 - Test timeouts
 - Resource exhaustion
 
 **Solutions:**
+
 1. **Pipeline Configuration**
+
    ```yaml
    # .github/workflows/test.yml
    jobs:
@@ -235,6 +263,7 @@ This guide provides solutions for common issues encountered during testing of ou
    ```
 
 2. **Resource Management**
+
    ```yaml
    # Increase resources
    jobs:
@@ -256,27 +285,32 @@ This guide provides solutions for common issues encountered during testing of ou
 ### 7. Debugging Tools
 
 #### Problem: Difficult to Debug Issues
+
 **Symptoms:**
+
 - Complex failures
 - Intermittent issues
 - Hard to reproduce problems
 
 **Solutions:**
+
 1. **Debug Logging**
+
    ```typescript
    // Enable debug logging
    process.env.DEBUG = 'test:*';
-   
+
    // Add debug statements
    debug('Test state:', state);
    debug('Operation result:', result);
    ```
 
 2. **Test Isolation**
+
    ```typescript
    // Run specific test
    npm test -- -t "test name"
-   
+
    // Run with verbose output
    npm test -- --verbose
    ```
@@ -295,24 +329,28 @@ This guide provides solutions for common issues encountered during testing of ou
 ## Preventive Measures
 
 ### 1. Regular Maintenance
+
 - Review test coverage
 - Update test data
 - Clean up obsolete tests
 - Optimize test performance
 
 ### 2. Documentation
+
 - Keep troubleshooting guide updated
 - Document common issues
 - Maintain test documentation
 - Update best practices
 
 ### 3. Monitoring
+
 - Track test execution times
 - Monitor memory usage
 - Analyze failure patterns
 - Review error logs
 
 ### 4. Training
+
 - Train team on testing practices
 - Share troubleshooting knowledge
 - Review common issues
@@ -321,24 +359,28 @@ This guide provides solutions for common issues encountered during testing of ou
 ## Best Practices
 
 ### 1. Test Writing
+
 - Write clear, focused tests
 - Use appropriate assertions
 - Handle edge cases
 - Clean up resources
 
 ### 2. Environment Management
+
 - Maintain clean environment
 - Use consistent configurations
 - Document requirements
 - Automate setup
 
 ### 3. Error Handling
+
 - Proper error catching
 - Clear error messages
 - Recovery mechanisms
 - Error logging
 
 ### 4. Performance
+
 - Optimize test execution
 - Manage resources
 - Monitor performance
@@ -347,18 +389,21 @@ This guide provides solutions for common issues encountered during testing of ou
 ## Support
 
 ### 1. Resources
+
 - Test documentation
 - Troubleshooting guide
 - Team knowledge base
 - External resources
 
 ### 2. Team Support
+
 - Test team contact
 - Escalation process
 - Support hours
 - Response times
 
 ### 3. Tools
+
 - Debug tools
 - Monitoring tools
 - Analysis tools
@@ -366,4 +411,4 @@ This guide provides solutions for common issues encountered during testing of ou
 
 ## Conclusion
 
-This troubleshooting guide provides solutions for common test-related issues. Regular maintenance, proper documentation, and following best practices will help prevent and quickly resolve problems. Always keep this guide updated with new issues and solutions as they are discovered. 
+This troubleshooting guide provides solutions for common test-related issues. Regular maintenance, proper documentation, and following best practices will help prevent and quickly resolve problems. Always keep this guide updated with new issues and solutions as they are discovered.

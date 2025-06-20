@@ -1,33 +1,40 @@
 /**
  * STUDENT ANALYST - Error Handling Routes
  * ========================================
- * 
+ *
  * Routes per la gestione avanzata degli errori, classificazione automatica,
  * strategie di recovery e monitoraggio dello stato del sistema.
  */
 
 import express, { Request, Response, Router } from 'express';
 import { sanitizationMiddleware } from '../middleware/sanitizationMiddleware';
-import { ClassifiedError, ErrorCodeHandler, ErrorContext, SystemErrorType } from '../services/errorCodeHandler';
 import {
-    CircuitBreakerState,
-    FallbackService,
-    NetworkResilienceConfig,
-    NetworkResilienceService
+  ClassifiedError,
+  ErrorCodeHandler,
+  ErrorContext,
+  SystemErrorType,
+} from '../services/errorCodeHandler';
+import {
+  CircuitBreakerState,
+  FallbackService,
+  NetworkResilienceConfig,
+  NetworkResilienceService,
 } from '../services/networkResilienceService';
 
 const router = Router();
 
 // Applica sanitizzazione globale
-router.use(sanitizationMiddleware({
-  enableBodySanitization: true,
-  enableParamsSanitization: true,
-  enableQuerySanitization: true,
-  logSuspiciousActivity: true,
-  blockOnDangerousPatterns: false, // Più permissivo per route di debug
-  maxRequestSize: 1024 * 1024, // 1MB per report errori
-  trustedIPs: ['127.0.0.1', '::1', 'localhost']
-}) as express.RequestHandler);
+router.use(
+  sanitizationMiddleware({
+    enableBodySanitization: true,
+    enableParamsSanitization: true,
+    enableQuerySanitization: true,
+    logSuspiciousActivity: true,
+    blockOnDangerousPatterns: false, // Più permissivo per route di debug
+    maxRequestSize: 1024 * 1024, // 1MB per report errori
+    trustedIPs: ['127.0.0.1', '::1', 'localhost'],
+  }) as express.RequestHandler
+);
 
 // Inizializza servizi
 const errorHandler = ErrorCodeHandler.getInstance();
@@ -45,13 +52,14 @@ const resilienceConfig: NetworkResilienceConfig = {
     recoveryTimeout: 60000,
     monitoringPeriod: 300000,
     halfOpenMaxCalls: 3,
-    halfOpenSuccessThreshold: 2
+    halfOpenSuccessThreshold: 2,
   },
   healthCheckInterval: 30000,
-  enableFallback: true
+  enableFallback: true,
 };
 
-const resilienceService = NetworkResilienceService.getInstance(resilienceConfig);
+const resilienceService =
+  NetworkResilienceService.getInstance(resilienceConfig);
 
 /**
  * ENDPOINT DI CLASSIFICAZIONE ERRORI
@@ -72,13 +80,13 @@ router.post('/classify', async (req: Request, res: Response) => {
         message: 'Fields "error" and "context" are required',
         required: {
           error: { message: 'string', stack: 'string (optional)' },
-          context: { 
-            operation: 'string', 
+          context: {
+            operation: 'string',
             apiService: 'string',
             symbol: 'string (optional)',
-            timeframe: 'string (optional)'
-          }
-        }
+            timeframe: 'string (optional)',
+          },
+        },
       });
     }
 
@@ -87,7 +95,10 @@ router.post('/classify', async (req: Request, res: Response) => {
     if (error.stack) errorObj.stack = error.stack;
 
     // Classifica l'errore
-    const classified = errorHandler.classifyError(errorObj, context as ErrorContext);
+    const classified = errorHandler.classifyError(
+      errorObj,
+      context as ErrorContext
+    );
 
     res.json({
       success: true,
@@ -98,17 +109,16 @@ router.post('/classify', async (req: Request, res: Response) => {
         retryable: classified.retryable,
         userMessage: classified.userMessage,
         recovery: classified.recovery,
-        timestamp: classified.timestamp
+        timestamp: classified.timestamp,
       },
       recommendations: generateRecommendations(classified),
-      nextSteps: generateNextSteps(classified)
+      nextSteps: generateNextSteps(classified),
     });
-
   } catch (error) {
     console.error('Error classification failed:', error);
     res.status(500).json({
       error: 'Classification Error',
-      message: 'Failed to classify error'
+      message: 'Failed to classify error',
     });
   }
 });
@@ -121,7 +131,7 @@ router.post('/simulate', async (req: Request, res: Response) => {
   if (process.env.NODE_ENV === 'production') {
     return res.status(403).json({
       error: 'Forbidden',
-      message: 'Error simulation is not available in production'
+      message: 'Error simulation is not available in production',
     });
   }
 
@@ -132,7 +142,7 @@ router.post('/simulate', async (req: Request, res: Response) => {
       return res.status(400).json({
         error: 'Bad Request',
         message: 'Field "errorType" is required',
-        availableTypes: Object.values(SystemErrorType)
+        availableTypes: Object.values(SystemErrorType),
       });
     }
 
@@ -142,7 +152,7 @@ router.post('/simulate', async (req: Request, res: Response) => {
       operation: 'error_simulation',
       apiService: 'test_service',
       symbol: symbol || 'TEST',
-      timeframe: timeframe || 'daily'
+      timeframe: timeframe || 'daily',
     };
 
     const classified = errorHandler.classifyError(simulatedError, context);
@@ -153,23 +163,22 @@ router.post('/simulate', async (req: Request, res: Response) => {
         requestedType: errorType,
         generatedError: {
           message: simulatedError.message,
-          name: simulatedError.name
+          name: simulatedError.name,
         },
         classification: classified,
         userExperience: {
           title: classified.userMessage.title,
           message: classified.userMessage.message,
           suggestion: classified.userMessage.suggestion,
-          estimatedResolution: classified.userMessage.estimatedResolution
-        }
-      }
+          estimatedResolution: classified.userMessage.estimatedResolution,
+        },
+      },
     });
-
   } catch (error) {
     console.error('Error simulation failed:', error);
     res.status(500).json({
       error: 'Simulation Error',
-      message: 'Failed to simulate error'
+      message: 'Failed to simulate error',
     });
   }
 });
@@ -190,14 +199,16 @@ router.post('/execute-resilient', async (req: Request, res: Response) => {
     if (!operation || !context) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Fields "operation" and "context" are required'
+        message: 'Fields "operation" and "context" are required',
       });
     }
 
     // Simula operazione (in un caso reale, questa sarebbe l'operazione effettiva)
     const mockOperation = async () => {
       if (operation.shouldFail) {
-        throw new Error(operation.errorMessage || 'Simulated operation failure');
+        throw new Error(
+          operation.errorMessage || 'Simulated operation failure'
+        );
       }
       return { result: 'Success', data: operation.mockData || 'Mock response' };
     };
@@ -216,20 +227,21 @@ router.post('/execute-resilient', async (req: Request, res: Response) => {
         responseTime: result.responseTime,
         retryCount: result.retryCount,
         fromCache: result.fromCache,
-        fallbackUsed: result.fallbackUsed
+        fallbackUsed: result.fallbackUsed,
       },
-      error: result.error ? {
-        type: result.error.type,
-        severity: result.error.severity,
-        userMessage: result.error.userMessage
-      } : undefined
+      error: result.error
+        ? {
+            type: result.error.type,
+            severity: result.error.severity,
+            userMessage: result.error.userMessage,
+          }
+        : undefined,
     });
-
   } catch (error) {
     console.error('Resilient execution failed:', error);
     res.status(500).json({
       error: 'Execution Error',
-      message: 'Failed to execute resilient operation'
+      message: 'Failed to execute resilient operation',
     });
   }
 });
@@ -258,19 +270,19 @@ router.get('/statistics', async (req: Request, res: Response) => {
       systemHealth: {
         totalErrors: stats.totalErrors,
         criticalErrors: stats.errorsBySeverity['critical'] || 0,
-        openCircuitBreakers: Object.values(circuitBreakerStats)
-          .filter(cb => cb.state === CircuitBreakerState.OPEN).length,
+        openCircuitBreakers: Object.values(circuitBreakerStats).filter(
+          cb => cb.state === CircuitBreakerState.OPEN
+        ).length,
         degradedServices: Object.values(fallbackStatus)
           .flat()
-          .filter(service => service.healthStatus === 'degraded').length
-      }
+          .filter(service => service.healthStatus === 'degraded').length,
+      },
     });
-
   } catch (error) {
     console.error('Statistics retrieval failed:', error);
     res.status(500).json({
       error: 'Statistics Error',
-      message: 'Failed to retrieve error statistics'
+      message: 'Failed to retrieve error statistics',
     });
   }
 });
@@ -282,7 +294,7 @@ router.get('/statistics', async (req: Request, res: Response) => {
 router.get('/circuit-breakers', async (req: Request, res: Response) => {
   try {
     const stats = resilienceService.getCircuitBreakerStats();
-    
+
     res.json({
       success: true,
       timestamp: new Date().toISOString(),
@@ -295,15 +307,14 @@ router.get('/circuit-breakers', async (req: Request, res: Response) => {
         successRate: Math.round(stat.successRate * 100),
         lastFailureTime: stat.lastFailureTime,
         nextRetryTime: stat.nextRetryTime,
-        healthStatus: getHealthStatus(stat.state, stat.successRate)
-      }))
+        healthStatus: getHealthStatus(stat.state, stat.successRate),
+      })),
     });
-
   } catch (error) {
     console.error('Circuit breaker status retrieval failed:', error);
     res.status(500).json({
       error: 'Circuit Breaker Error',
-      message: 'Failed to retrieve circuit breaker status'
+      message: 'Failed to retrieve circuit breaker status',
     });
   }
 });
@@ -312,103 +323,112 @@ router.get('/circuit-breakers', async (req: Request, res: Response) => {
  * POST /api/v1/errors/circuit-breakers/:service/reset
  * Resetta un circuit breaker specifico
  */
-router.post('/circuit-breakers/:service/reset', async (req: Request, res: Response) => {
-  try {
-    const { service } = req.params;
-    const success = resilienceService.resetCircuitBreaker(service);
+router.post(
+  '/circuit-breakers/:service/reset',
+  async (req: Request, res: Response) => {
+    try {
+      const { service } = req.params;
+      const success = resilienceService.resetCircuitBreaker(service);
 
-    if (success) {
-      res.json({
-        success: true,
-        message: `Circuit breaker for ${service} has been reset`,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      res.status(404).json({
-        error: 'Not Found',
-        message: `Circuit breaker for service "${service}" not found`
+      if (success) {
+        res.json({
+          success: true,
+          message: `Circuit breaker for ${service} has been reset`,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        res.status(404).json({
+          error: 'Not Found',
+          message: `Circuit breaker for service "${service}" not found`,
+        });
+      }
+    } catch (error) {
+      console.error('Circuit breaker reset failed:', error);
+      res.status(500).json({
+        error: 'Reset Error',
+        message: 'Failed to reset circuit breaker',
       });
     }
-
-  } catch (error) {
-    console.error('Circuit breaker reset failed:', error);
-    res.status(500).json({
-      error: 'Reset Error',
-      message: 'Failed to reset circuit breaker'
-    });
   }
-});
+);
 
 /**
  * POST /api/v1/errors/circuit-breakers/:service/open
  * Apre forzatamente un circuit breaker
  */
-router.post('/circuit-breakers/:service/open', async (req: Request, res: Response) => {
-  try {
-    const { service } = req.params;
-    const success = resilienceService.openCircuitBreaker(service);
+router.post(
+  '/circuit-breakers/:service/open',
+  async (req: Request, res: Response) => {
+    try {
+      const { service } = req.params;
+      const success = resilienceService.openCircuitBreaker(service);
 
-    if (success) {
-      res.json({
-        success: true,
-        message: `Circuit breaker for ${service} has been opened`,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      res.status(404).json({
-        error: 'Not Found',
-        message: `Circuit breaker for service "${service}" not found`
+      if (success) {
+        res.json({
+          success: true,
+          message: `Circuit breaker for ${service} has been opened`,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        res.status(404).json({
+          error: 'Not Found',
+          message: `Circuit breaker for service "${service}" not found`,
+        });
+      }
+    } catch (error) {
+      console.error('Circuit breaker open failed:', error);
+      res.status(500).json({
+        error: 'Open Error',
+        message: 'Failed to open circuit breaker',
       });
     }
-
-  } catch (error) {
-    console.error('Circuit breaker open failed:', error);
-    res.status(500).json({
-      error: 'Open Error',
-      message: 'Failed to open circuit breaker'
-    });
   }
-});
+);
 
 /**
  * POST /api/v1/errors/fallback-services/register
  * Registra un nuovo servizio di fallback
  */
-router.post('/fallback-services/register', async (req: Request, res: Response) => {
-  try {
-    const { primaryService, fallbackService } = req.body;
+router.post(
+  '/fallback-services/register',
+  async (req: Request, res: Response) => {
+    try {
+      const { primaryService, fallbackService } = req.body;
 
-    if (!primaryService || !fallbackService) {
-      return res.status(400).json({
-        error: 'Bad Request',
-        message: 'Fields "primaryService" and "fallbackService" are required',
-        fallbackServiceSchema: {
-          name: 'string',
-          endpoint: 'string',
-          priority: 'number',
-          healthStatus: 'healthy | degraded | unhealthy',
-          lastChecked: 'number',
-          responseTime: 'number'
-        }
+      if (!primaryService || !fallbackService) {
+        return res.status(400).json({
+          error: 'Bad Request',
+          message: 'Fields "primaryService" and "fallbackService" are required',
+          fallbackServiceSchema: {
+            name: 'string',
+            endpoint: 'string',
+            priority: 'number',
+            healthStatus: 'healthy | degraded | unhealthy',
+            lastChecked: 'number',
+            responseTime: 'number',
+          },
+        });
+      }
+
+      resilienceService.registerFallbackService(
+        primaryService,
+        fallbackService as FallbackService
+      );
+
+      res.json({
+        success: true,
+        message: `Fallback service ${fallbackService.name} registered for ${primaryService}`,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Fallback service registration failed:', error);
+      res.status(500).json({
+        error: 'Registration Error',
+        message: 'Failed to register fallback service',
       });
     }
-
-    resilienceService.registerFallbackService(primaryService, fallbackService as FallbackService);
-
-    res.json({
-      success: true,
-      message: `Fallback service ${fallbackService.name} registered for ${primaryService}`,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('Fallback service registration failed:', error);
-    res.status(500).json({
-      error: 'Registration Error',
-      message: 'Failed to register fallback service'
-    });
   }
-});
+);
 
 /**
  * GET /api/v1/errors/health
@@ -418,10 +438,11 @@ router.get('/health', async (req: Request, res: Response) => {
   try {
     const stats = errorHandler.getErrorStatistics();
     const circuitBreakers = resilienceService.getCircuitBreakerStats();
-    
+
     const criticalErrors = stats.errorsBySeverity['critical'] || 0;
-    const openCircuitBreakers = Object.values(circuitBreakers)
-      .filter(cb => cb.state === CircuitBreakerState.OPEN).length;
+    const openCircuitBreakers = Object.values(circuitBreakers).filter(
+      cb => cb.state === CircuitBreakerState.OPEN
+    ).length;
 
     const isHealthy = criticalErrors === 0 && openCircuitBreakers === 0;
 
@@ -434,17 +455,18 @@ router.get('/health', async (req: Request, res: Response) => {
         totalErrors: stats.totalErrors,
         criticalErrors,
         openCircuitBreakers,
-        recentErrorsCount: stats.recentErrors.length
+        recentErrorsCount: stats.recentErrors.length,
       },
-      actions: isHealthy ? [] : generateHealthActions(criticalErrors, openCircuitBreakers)
+      actions: isHealthy
+        ? []
+        : generateHealthActions(criticalErrors, openCircuitBreakers),
     });
-
   } catch (error) {
     console.error('Error handling health check failed:', error);
     res.status(503).json({
       status: 'unhealthy',
       error: 'Health check failed',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -456,18 +478,17 @@ router.get('/health', async (req: Request, res: Response) => {
 router.delete('/history', async (req: Request, res: Response) => {
   try {
     errorHandler.clearErrorHistory();
-    
+
     res.json({
       success: true,
       message: 'Error history cleared successfully',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error('Error history clearing failed:', error);
     res.status(500).json({
       error: 'Clear Error',
-      message: 'Failed to clear error history'
+      message: 'Failed to clear error history',
     });
   }
 });
@@ -487,7 +508,9 @@ function generateRecommendations(error: ClassifiedError): string[] {
     case SystemErrorType.RATE_LIMIT_EXCEEDED:
       recommendations.push('Implementare cache più aggressiva');
       recommendations.push('Considerare rate limiting client-side');
-      recommendations.push('Utilizzare batch processing per richieste multiple');
+      recommendations.push(
+        'Utilizzare batch processing per richieste multiple'
+      );
       break;
 
     case SystemErrorType.DAILY_LIMIT_EXCEEDED:
@@ -505,7 +528,9 @@ function generateRecommendations(error: ClassifiedError): string[] {
     case SystemErrorType.SYMBOL_NOT_FOUND:
       recommendations.push('Implementare validazione simboli client-side');
       recommendations.push('Aggiungere database di simboli supportati');
-      recommendations.push('Fornire suggerimenti automatici per simboli simili');
+      recommendations.push(
+        'Fornire suggerimenti automatici per simboli simili'
+      );
       break;
 
     case SystemErrorType.CONNECTION_TIMEOUT:
@@ -515,7 +540,9 @@ function generateRecommendations(error: ClassifiedError): string[] {
       break;
 
     default:
-      recommendations.push('Monitorare pattern di errori per identificare cause');
+      recommendations.push(
+        'Monitorare pattern di errori per identificare cause'
+      );
       recommendations.push('Implementare logging dettagliato per debugging');
       break;
   }
@@ -532,12 +559,16 @@ function generateNextSteps(error: ClassifiedError): string[] {
   if (error.retryable) {
     steps.push('Il sistema riproverà automaticamente');
     if (error.recovery.estimatedRecoveryTime) {
-      steps.push(`Tempo stimato di recovery: ${Math.round(error.recovery.estimatedRecoveryTime / 1000)} secondi`);
+      steps.push(
+        `Tempo stimato di recovery: ${Math.round(error.recovery.estimatedRecoveryTime / 1000)} secondi`
+      );
     }
   }
 
   if (error.recovery.fallbackOptions?.length) {
-    steps.push(`Fallback disponibili: ${error.recovery.fallbackOptions.join(', ')}`);
+    steps.push(
+      `Fallback disponibili: ${error.recovery.fallbackOptions.join(', ')}`
+    );
   }
 
   if (error.recovery.requiredUserAction) {
@@ -550,21 +581,33 @@ function generateNextSteps(error: ClassifiedError): string[] {
 /**
  * Simula errori per testing
  */
-function simulateError(errorType: string, symbol?: string, timeframe?: string): Error {
+function simulateError(
+  errorType: string,
+  symbol?: string,
+  timeframe?: string
+): Error {
   let timeoutError: Error;
   let networkError: Error;
   switch (errorType) {
     case SystemErrorType.RATE_LIMIT_EXCEEDED:
-      return new Error('Thank you for using Alpha Vantage! You have made 5 API calls within the last minute.');
+      return new Error(
+        'Thank you for using Alpha Vantage! You have made 5 API calls within the last minute.'
+      );
 
     case SystemErrorType.DAILY_LIMIT_EXCEEDED:
-      return new Error('Thank you for using Alpha Vantage! Our standard API call frequency is 25 requests per day.');
+      return new Error(
+        'Thank you for using Alpha Vantage! Our standard API call frequency is 25 requests per day.'
+      );
 
     case SystemErrorType.INVALID_API_KEY:
-      return new Error('Invalid API key. Please try again or visit https://www.alphavantage.co/support/#api-key for more information.');
+      return new Error(
+        'Invalid API key. Please try again or visit https://www.alphavantage.co/support/#api-key for more information.'
+      );
 
     case SystemErrorType.SYMBOL_NOT_FOUND:
-      return new Error(`Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY. Symbol=${symbol || 'INVALID123'} not found.`);
+      return new Error(
+        `Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for TIME_SERIES_DAILY. Symbol=${symbol || 'INVALID123'} not found.`
+      );
 
     case SystemErrorType.CONNECTION_TIMEOUT:
       timeoutError = new Error('Operation timeout after 30000ms');
@@ -584,7 +627,10 @@ function simulateError(errorType: string, symbol?: string, timeframe?: string): 
 /**
  * Determina lo stato di salute di un circuit breaker
  */
-function getHealthStatus(state: CircuitBreakerState, successRate: number): string {
+function getHealthStatus(
+  state: CircuitBreakerState,
+  successRate: number
+): string {
   if (state === CircuitBreakerState.OPEN) return 'unhealthy';
   if (state === CircuitBreakerState.HALF_OPEN) return 'degraded';
   if (successRate < 0.8) return 'degraded';
@@ -594,7 +640,10 @@ function getHealthStatus(state: CircuitBreakerState, successRate: number): strin
 /**
  * Genera azioni per migliorare la salute del sistema
  */
-function generateHealthActions(criticalErrors: number, openCircuitBreakers: number): string[] {
+function generateHealthActions(
+  criticalErrors: number,
+  openCircuitBreakers: number
+): string[] {
   const actions: string[] = [];
 
   if (criticalErrors > 0) {
@@ -604,7 +653,9 @@ function generateHealthActions(criticalErrors: number, openCircuitBreakers: numb
 
   if (openCircuitBreakers > 0) {
     actions.push('Check status of services with open circuit breakers');
-    actions.push('Consider manual circuit breaker reset if services are healthy');
+    actions.push(
+      'Consider manual circuit breaker reset if services are healthy'
+    );
   }
 
   return actions;

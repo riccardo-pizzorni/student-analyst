@@ -21,7 +21,7 @@ export function useHistoricalData(): UseHistoricalDataReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
       // TODO: Sostituire con chiamata API reale
       // Per ora usiamo dati di esempio
       const mockData: HistoricalDataPoint[] = [
@@ -41,7 +41,9 @@ export function useHistoricalData(): UseHistoricalDataReturn {
 
       setData(mockData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Errore nel caricamento dei dati');
+      setError(
+        err instanceof Error ? err.message : 'Errore nel caricamento dei dati'
+      );
     } finally {
       setLoading(false);
     }
@@ -55,6 +57,6 @@ export function useHistoricalData(): UseHistoricalDataReturn {
     data,
     loading,
     error,
-    refresh: fetchData
+    refresh: fetchData,
   };
-} 
+}

@@ -4,16 +4,32 @@ const path = require('path');
 const chalk = require('chalk');
 const fs = require('fs');
 
-fs.appendFileSync('../../auto-deploy-log.txt', `[${new Date().toISOString()}] Avvio auto-deploy\n`);
+fs.appendFileSync(
+  '../../auto-deploy-log.txt',
+  `[${new Date().toISOString()}] Avvio auto-deploy\n`
+);
 
 // Configurazione
 const CONFIG = {
-  watchDir: path.join(__dirname, '../..'),  // Monitora tutto il progetto
-  excludeDirs: ['node_modules', 'dist', '.git', '.vscode', 'coverage', 'playwright-report', 'test-results', 'artifacts', 'logs', 'evidence', 'public', 'templates'],  // Escludi solo cartelle tecniche
-  commitMessage: 'Auto-commit: Aggiornamento automatico',  // Messaggio di commit predefinito
-  branch: 'main',  // Branch su cui fare push
-  buildCommand: 'npm run build',  // Comando per build
-  deployCommand: 'vercel --prod'  // Comando per deploy
+  watchDir: path.join(__dirname, '../..'), // Monitora tutto il progetto
+  excludeDirs: [
+    'node_modules',
+    'dist',
+    '.git',
+    '.vscode',
+    'coverage',
+    'playwright-report',
+    'test-results',
+    'artifacts',
+    'logs',
+    'evidence',
+    'public',
+    'templates',
+  ], // Escludi solo cartelle tecniche
+  commitMessage: 'Auto-commit: Aggiornamento automatico', // Messaggio di commit predefinito
+  branch: 'main', // Branch su cui fare push
+  buildCommand: 'npm run build', // Comando per build
+  deployCommand: 'vercel --prod', // Comando per deploy
 };
 
 // Colori per i log
@@ -21,7 +37,7 @@ const colors = {
   info: chalk.blue,
   success: chalk.green,
   error: chalk.red,
-  warning: chalk.yellow
+  warning: chalk.yellow,
 };
 
 // Funzione per eseguire comandi
@@ -29,7 +45,9 @@ function executeCommand(command, options = {}) {
   return new Promise((resolve, reject) => {
     exec(command, options, (error, stdout, stderr) => {
       if (error) {
-        console.error(colors.error(`Errore nell'esecuzione del comando: ${command}`));
+        console.error(
+          colors.error(`Errore nell'esecuzione del comando: ${command}`)
+        );
         console.error(colors.error(error));
         reject(error);
         return;
@@ -50,7 +68,9 @@ async function deploy() {
 
     // Build dalla root
     console.log(colors.info('📦 Esecuzione build...'));
-    await executeCommand('npm run build', { cwd: path.join(__dirname, '../../') });
+    await executeCommand('npm run build', {
+      cwd: path.join(__dirname, '../../'),
+    });
 
     // Git add
     console.log(colors.info('📝 Aggiunta file modificati...'));
@@ -58,15 +78,21 @@ async function deploy() {
 
     // Git commit
     console.log(colors.info('💾 Commit delle modifiche...'));
-    await executeCommand(`git commit -m "${CONFIG.commitMessage}"`, { cwd: path.join(__dirname, '../../') });
+    await executeCommand(`git commit -m "${CONFIG.commitMessage}"`, {
+      cwd: path.join(__dirname, '../../'),
+    });
 
     // Git push
     console.log(colors.info('⬆️ Push delle modifiche...'));
-    await executeCommand(`git push origin ${CONFIG.branch}`, { cwd: path.join(__dirname, '../../') });
+    await executeCommand(`git push origin ${CONFIG.branch}`, {
+      cwd: path.join(__dirname, '../../'),
+    });
 
     // Deploy
     console.log(colors.info('🚀 Deploy su Vercel...'));
-    await executeCommand(CONFIG.deployCommand, { cwd: path.join(__dirname, '../../') });
+    await executeCommand(CONFIG.deployCommand, {
+      cwd: path.join(__dirname, '../../'),
+    });
 
     console.log(colors.success('✅ Deploy completato con successo!'));
   } catch (error) {
@@ -95,8 +121,10 @@ function debounce(func, wait) {
 
 // Funzione principale di watch
 function startWatching() {
-  console.log(colors.info(`👀 Monitoraggio della directory: ${CONFIG.watchDir}`));
-  
+  console.log(
+    colors.info(`👀 Monitoraggio della directory: ${CONFIG.watchDir}`)
+  );
+
   const debouncedDeploy = debounce(deploy, 2000); // Debounce di 2 secondi
 
   watch(CONFIG.watchDir, { recursive: true }, (eventType, filename) => {
@@ -108,4 +136,4 @@ function startWatching() {
 }
 
 // Avvio del monitoraggio
-startWatching(); 
+startWatching();

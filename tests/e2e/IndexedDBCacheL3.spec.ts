@@ -19,7 +19,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Naviga alla pagina di test
     await page.goto('/');
-    
+
     // Inietta il codice necessario per i test
     await page.addInitScript(() => {
       // Mock window se non esiste
@@ -31,21 +31,21 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
             getItem: () => null,
             setItem: () => {},
             removeItem: () => {},
-            clear: () => {}
-          }
+            clear: () => {},
+          },
         } as unknown as Window;
       }
 
       window.testData = {
         key: 'test-key',
-        value: { data: 'test-value', timestamp: Date.now() }
+        value: { data: 'test-value', timestamp: Date.now() },
       };
     });
   });
 
   test('should initialize IndexedDB database', async ({ page }) => {
     const dbExists = await page.evaluate(async () => {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const request = indexedDB.open('student-analyst-l3-cache', 1);
         request.onsuccess = () => {
           const db = request.result;
@@ -67,14 +67,16 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
       const retrieved = await cache.get(window.testData.key);
       return {
         set: retrieved !== null,
-        value: retrieved
+        value: retrieved,
       };
     });
 
     expect(result.set).toBe(true);
-    expect(result.value).toEqual(expect.objectContaining({
-      data: 'test-value'
-    }));
+    expect(result.value).toEqual(
+      expect.objectContaining({
+        data: 'test-value',
+      })
+    );
   });
 
   test('should handle large data sets', async ({ page }) => {
@@ -82,7 +84,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
       const cache = new IndexedDBCacheL3();
       const largeData = Array.from({ length: 1000 }, (_, i) => ({
         id: i,
-        data: `data-${i}`.repeat(100)
+        data: `data-${i}`.repeat(100),
       }));
 
       // Set all items
@@ -92,19 +94,20 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
 
       // Get stats
       const stats = await cache.getStats();
-      
+
       // Get some random items
-      const randomKeys = Array.from({ length: 10 }, () => 
-        `key-${Math.floor(Math.random() * 1000)}`
+      const randomKeys = Array.from(
+        { length: 10 },
+        () => `key-${Math.floor(Math.random() * 1000)}`
       );
-      
+
       const retrievedItems = await Promise.all(
         randomKeys.map(key => cache.get(key))
       );
 
       return {
         stats,
-        retrievedCount: retrievedItems.filter(Boolean).length
+        retrievedCount: retrievedItems.filter(Boolean).length,
       };
     });
 
@@ -115,11 +118,11 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
   test('should handle concurrent operations', async ({ page }) => {
     const result = await page.evaluate(async () => {
       const cache = new IndexedDBCacheL3();
-      
+
       // Create multiple concurrent operations
       const operations = Array.from({ length: 50 }, (_, i) => ({
         key: `concurrent-${i}`,
-        value: { data: `value-${i}` }
+        value: { data: `value-${i}` },
       }));
 
       // Execute all operations concurrently
@@ -127,18 +130,16 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
         ...operations.map(op => cache.set(op.key, op.value)),
         ...operations.map(op => cache.get(op.key)),
         cache.getStats(),
-        cache.getAllKeys()
+        cache.getAllKeys(),
       ]);
 
       // Verify results
       const keys = await cache.getAllKeys();
-      const values = await Promise.all(
-        keys.map(key => cache.get(key))
-      );
+      const values = await Promise.all(keys.map(key => cache.get(key)));
 
       return {
         keysCount: keys.length,
-        valuesCount: values.filter(Boolean).length
+        valuesCount: values.filter(Boolean).length,
       };
     });
 
@@ -149,7 +150,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
   test('should handle eviction correctly', async ({ page }) => {
     const result = await page.evaluate(async () => {
       const cache = new IndexedDBCacheL3();
-      
+
       // Configure small cache size
       cache.updateConfig({ maxEntries: 5 });
 
@@ -167,7 +168,7 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
 
       return {
         remainingKeys: keys,
-        stats
+        stats,
       };
     });
 
@@ -178,27 +179,27 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
   test('should handle errors gracefully', async ({ page }) => {
     const result = await page.evaluate(async () => {
       const cache = new IndexedDBCacheL3();
-      
+
       try {
         // Try to get non-existent key
         const missing = await cache.get('non-existent');
-        
+
         // Try to set invalid data
         await cache.set('invalid', undefined as unknown);
-        
+
         // Try to delete non-existent key
         await cache.delete('non-existent');
-        
+
         const stats = await cache.getStats();
-        
+
         return {
           missing,
-          stats: stats || { errorCount: 0 }
+          stats: stats || { errorCount: 0 },
         };
       } catch (error) {
         return {
           error: error.message,
-          stats: { errorCount: 1 }
+          stats: { errorCount: 1 },
         };
       }
     });
@@ -206,4 +207,4 @@ test.describe('IndexedDBCacheL3 E2E Tests', () => {
     expect(result.missing).toBeNull();
     expect(result.stats.errorCount).toBeGreaterThanOrEqual(0);
   });
-}); 
+});

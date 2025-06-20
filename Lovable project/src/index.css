@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,7 +62,12 @@
 
   body {
     @apply bg-background text-foreground;
-    background: linear-gradient(135deg, hsl(220, 40%, 2%) 0%, hsl(220, 40%, 4%) 50%, hsl(220, 40%, 3%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(220, 40%, 2%) 0%,
+      hsl(220, 40%, 4%) 50%,
+      hsl(220, 40%, 3%) 100%
+    );
     min-height: 100vh;
   }
 }
@@ -73,25 +77,29 @@
     border: 1px solid hsl(var(--electric-blue));
     box-shadow: 0 0 15px hsl(var(--electric-blue) / 0.4);
   }
-  
+
   .neon-glow {
     box-shadow: 0 0 25px hsl(var(--electric-blue) / 0.5);
   }
-  
+
   .neon-text {
     color: hsl(var(--electric-blue));
     text-shadow: 0 0 15px hsl(var(--electric-blue) / 0.7);
   }
-  
+
   .dark-card {
-    background: linear-gradient(135deg, hsl(220, 40%, 8%) 0%, hsl(220, 40%, 6%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(220, 40%, 8%) 0%,
+      hsl(220, 40%, 6%) 100%
+    );
     border: 1px solid hsl(220, 30%, 20%);
   }
-  
+
   .dark-card-hover {
     transition: all 0.3s ease;
   }
-  
+
   .dark-card-hover:hover {
     border-color: hsl(var(--electric-blue));
     box-shadow: 0 0 20px hsl(var(--electric-blue) / 0.3);
@@ -110,22 +118,23 @@
   }
 
   @keyframes electric-glow-shake {
-    0%, 100% { 
-      transform: rotate(0deg) scale(1.1); 
+    0%,
+    100% {
+      transform: rotate(0deg) scale(1.1);
       filter: drop-shadow(0 0 8px hsl(var(--electric-blue) / 0.6));
     }
-    25% { 
-      transform: rotate(1deg) scale(1.15); 
+    25% {
+      transform: rotate(1deg) scale(1.15);
       filter: drop-shadow(0 0 12px hsl(var(--electric-blue) / 0.8));
     }
-    75% { 
-      transform: rotate(-1deg) scale(1.15); 
+    75% {
+      transform: rotate(-1deg) scale(1.15);
       filter: drop-shadow(0 0 12px hsl(var(--electric-blue) / 0.8));
     }
   }
 
   /* ===== LOGO EFFECTS LEVEL 10 SUPREME ===== */
-  
+
   .logo-level-10-supreme {
     position: relative;
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -145,14 +154,14 @@
       from 0deg,
       transparent 0deg,
       rgba(0, 191, 255, 0.06) 30deg,
-      rgba(30, 144, 255, 0.10) 60deg,
+      rgba(30, 144, 255, 0.1) 60deg,
       rgba(0, 206, 209, 0.08) 90deg,
       rgba(30, 144, 255, 0.12) 120deg,
-      rgba(0, 191, 255, 0.10) 150deg,
+      rgba(0, 191, 255, 0.1) 150deg,
       rgba(30, 144, 255, 0.08) 180deg,
       rgba(0, 206, 209, 0.06) 210deg,
       rgba(30, 144, 255, 0.08) 240deg,
-      rgba(0, 191, 255, 0.10) 270deg,
+      rgba(0, 191, 255, 0.1) 270deg,
       rgba(30, 144, 255, 0.06) 300deg,
       rgba(0, 206, 209, 0.04) 330deg,
       transparent 360deg
@@ -177,7 +186,7 @@
       circle at center,
       rgba(0, 191, 255, 0.08) 0%,
       rgba(30, 144, 255, 0.12) 20%,
-      rgba(0, 206, 209, 0.10) 35%,
+      rgba(0, 206, 209, 0.1) 35%,
       rgba(30, 144, 255, 0.08) 50%,
       rgba(0, 191, 255, 0.06) 65%,
       rgba(30, 144, 255, 0.04) 80%,
@@ -196,10 +205,7 @@
 
   /* Supreme hat effects */
   .logo-hat-supreme {
-    filter: 
-      brightness(130%) 
-      contrast(125%) 
-      saturate(115%) 
+    filter: brightness(130%) contrast(125%) saturate(115%)
       drop-shadow(0 0 15px rgba(0, 191, 255, 0.4))
       drop-shadow(0 0 30px rgba(30, 144, 255, 0.3))
       drop-shadow(0 0 45px rgba(0, 206, 209, 0.2))
@@ -208,10 +214,7 @@
   }
 
   .logo-level-10-supreme:hover .logo-hat-supreme {
-    filter: 
-      brightness(145%) 
-      contrast(135%) 
-      saturate(125%) 
+    filter: brightness(145%) contrast(135%) saturate(125%)
       drop-shadow(0 0 25px rgba(0, 191, 255, 0.6))
       drop-shadow(0 0 50px rgba(30, 144, 255, 0.5))
       drop-shadow(0 0 75px rgba(0, 206, 209, 0.4))
@@ -226,7 +229,11 @@
     position: absolute;
     width: 3px;
     height: 3px;
-    background: radial-gradient(circle, rgba(0, 191, 255, 0.8) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(0, 191, 255, 0.8) 0%,
+      transparent 70%
+    );
     border-radius: 50%;
     opacity: 0;
     animation: particle-float 4s ease-in-out infinite;
@@ -290,15 +297,13 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 
+    text-shadow:
       0 0 30px rgba(0, 191, 255, 0.45),
       0 0 55px rgba(30, 144, 255, 0.4),
       0 0 80px rgba(0, 206, 209, 0.35),
       0 0 105px rgba(30, 144, 255, 0.3),
       0 3px 10px rgba(0, 0, 0, 0.45);
-    filter: 
-      brightness(140%) 
-      drop-shadow(0 0 25px rgba(0, 191, 255, 0.35)) 
+    filter: brightness(140%) drop-shadow(0 0 25px rgba(0, 191, 255, 0.35))
       drop-shadow(0 0 40px rgba(30, 144, 255, 0.3))
       drop-shadow(0 0 55px rgba(0, 206, 209, 0.25));
     font-weight: 800;
@@ -371,7 +376,7 @@
 
   /* Wave animation that triggers randomly */
   .logo-text-level-10-supreme {
-    animation: 
+    animation:
       logo-text-teeth-sparkle 8s ease-in-out infinite,
       wave-trigger 1s linear infinite;
   }
@@ -403,7 +408,7 @@
     border-radius: 50%;
     filter: blur(1px);
     animation: neon-fish-large-swim-level3 12s ease-in-out infinite;
-    box-shadow: 
+    box-shadow:
       0 0 18px rgba(0, 191, 255, 0.85),
       0 0 35px rgba(30, 144, 255, 0.65),
       0 0 50px rgba(0, 206, 209, 0.45);
@@ -444,7 +449,7 @@
     border-radius: 50%;
     filter: blur(1px);
     animation: neon-fish-medium-swim-level3 16s ease-in-out infinite;
-    box-shadow: 
+    box-shadow:
       0 0 15px rgba(30, 144, 255, 0.75),
       0 0 30px rgba(0, 206, 209, 0.55),
       0 0 45px rgba(0, 191, 255, 0.35);
@@ -484,7 +489,7 @@
     border-radius: 50%;
     filter: blur(0.5px);
     animation: neon-fish-small-swim-level3 10s ease-in-out infinite;
-    box-shadow: 
+    box-shadow:
       0 0 12px rgba(0, 206, 255, 0.65),
       0 0 25px rgba(0, 191, 255, 0.45),
       0 0 40px rgba(30, 144, 255, 0.25);
@@ -879,22 +884,27 @@
 
   /* Keyframe animations */
   @keyframes logo-supreme-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes logo-supreme-pulse {
-    0%, 100% { 
+    0%,
+    100% {
       transform: scale(1);
       filter: blur(18px);
       opacity: 0.6;
     }
-    33% { 
+    33% {
       transform: scale(1.05);
       filter: blur(12px);
       opacity: 0.8;
     }
-    66% { 
+    66% {
       transform: scale(1.1);
       filter: blur(8px);
       opacity: 1;
@@ -902,51 +912,53 @@
   }
 
   @keyframes logo-hat-float {
-    0%, 100% { 
+    0%,
+    100% {
       transform: scale(1.15) rotateY(5deg) translateY(0px);
     }
-    50% { 
+    50% {
       transform: scale(1.18) rotateY(-2deg) translateY(-2px);
     }
   }
 
   @keyframes particle-float {
-    0% { 
+    0% {
       opacity: 0;
       transform: translateY(0px) scale(0.5);
     }
-    20% { 
+    20% {
       opacity: 1;
       transform: translateY(-10px) scale(1);
     }
-    80% { 
+    80% {
       opacity: 1;
       transform: translateY(-30px) scale(1.2);
     }
-    100% { 
+    100% {
       opacity: 0;
       transform: translateY(-50px) scale(0.8);
     }
   }
 
   @keyframes logo-text-supreme-shimmer {
-    0%, 100% { 
-      background-position: 0% 50%; 
+    0%,
+    100% {
+      background-position: 0% 50%;
     }
-    50% { 
-      background-position: 100% 50%; 
+    50% {
+      background-position: 100% 50%;
     }
   }
 
   @keyframes text-shine {
-    0% { 
+    0% {
       transform: translateX(-100%);
       opacity: 0;
     }
-    50% { 
+    50% {
       opacity: 1;
     }
-    100% { 
+    100% {
       transform: translateX(100%);
       opacity: 0;
     }
@@ -954,39 +966,40 @@
 
   /* Animazioni per gli effetti di brillantezza */
   @keyframes logo-text-teeth-sparkle {
-    0%, 100% { 
-      background-position: 0% 50%; 
+    0%,
+    100% {
+      background-position: 0% 50%;
       filter: brightness(100%) saturate(100%);
     }
-    25% { 
-      background-position: 50% 25%; 
+    25% {
+      background-position: 50% 25%;
       filter: brightness(105%) saturate(105%);
     }
-    50% { 
-      background-position: 100% 50%; 
+    50% {
+      background-position: 100% 50%;
       filter: brightness(110%) saturate(110%);
     }
-    75% { 
-      background-position: 50% 75%; 
+    75% {
+      background-position: 50% 75%;
       filter: brightness(105%) saturate(105%);
     }
   }
 
   @keyframes teeth-shine-sweep {
-    0% { 
+    0% {
       transform: translateX(-150%);
       opacity: 0;
     }
-    20% { 
+    20% {
       opacity: 0.6;
     }
-    50% { 
+    50% {
       opacity: 0.8;
     }
-    80% { 
+    80% {
       opacity: 0.6;
     }
-    100% { 
+    100% {
       transform: translateX(150%);
       opacity: 0;
     }
@@ -995,13 +1008,15 @@
   /* Level 3 Cool Sidebar Toggle Button */
   .sidebar-toggle-level-3 {
     @apply w-7 h-7 rounded-xl transition-all duration-300 ease-out;
-    background: linear-gradient(135deg, 
-      rgba(51, 65, 85, 0.95) 0%, 
-      rgba(71, 85, 105, 0.9) 50%, 
-      rgba(51, 65, 85, 0.95) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(51, 65, 85, 0.95) 0%,
+      rgba(71, 85, 105, 0.9) 50%,
+      rgba(51, 65, 85, 0.95) 100%
+    );
     border: 1px solid rgba(148, 163, 184, 0.3);
     color: rgba(203, 213, 225, 0.9);
-    box-shadow: 
+    box-shadow:
       0 4px 15px rgba(0, 0, 0, 0.3),
       0 2px 8px rgba(0, 0, 0, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -1014,10 +1029,12 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(45deg, 
-      transparent 30%, 
-      rgba(0, 191, 255, 0.1) 50%, 
-      transparent 70%);
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(0, 191, 255, 0.1) 50%,
+      transparent 70%
+    );
     opacity: 0;
     transition: opacity 0.3s ease;
   }
@@ -1025,15 +1042,17 @@
   .sidebar-toggle-level-3:hover {
     color: white;
     border-color: rgba(0, 191, 255, 0.4);
-    box-shadow: 
+    box-shadow:
       0 6px 25px rgba(0, 0, 0, 0.4),
       0 0 20px rgba(0, 191, 255, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-1px) scale(1.05);
-    background: linear-gradient(135deg, 
-      rgba(71, 85, 105, 0.95) 0%, 
-      rgba(100, 116, 139, 0.9) 50%, 
-      rgba(71, 85, 105, 0.95) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(71, 85, 105, 0.95) 0%,
+      rgba(100, 116, 139, 0.9) 50%,
+      rgba(71, 85, 105, 0.95) 100%
+    );
   }
 
   .sidebar-toggle-level-3:hover::before {
@@ -1043,28 +1062,34 @@
 
   .sidebar-toggle-level-3:active {
     transform: translateY(0) scale(0.98);
-    box-shadow: 
+    box-shadow:
       0 2px 10px rgba(0, 0, 0, 0.3),
       0 0 15px rgba(0, 191, 255, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   @keyframes toggle-sweep {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 
   /* Level 3 Premium Volumetric Glow Effects - Ridotta luminosità */
   .glow-active {
-    background: radial-gradient(ellipse at center, 
+    background: radial-gradient(
+      ellipse at center,
       rgba(0, 191, 255, 0.04) 0%,
       rgba(30, 144, 255, 0.06) 15%,
       rgba(0, 206, 209, 0.08) 30%,
       rgba(30, 144, 255, 0.09) 45%,
       rgba(0, 191, 255, 0.06) 60%,
       rgba(30, 144, 255, 0.04) 75%,
-      transparent 90%);
-    box-shadow: 
+      transparent 90%
+    );
+    box-shadow:
       0 0 25px rgba(0, 191, 255, 0.1),
       0 0 50px rgba(30, 144, 255, 0.08),
       inset 0 0 30px rgba(0, 191, 255, 0.05),
@@ -1079,7 +1104,8 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(45deg,
+    background: linear-gradient(
+      45deg,
       rgba(0, 191, 255, 0.05) 0%,
       transparent 20%,
       rgba(30, 144, 255, 0.04) 40%,
@@ -1113,23 +1139,28 @@
   }
 
   @keyframes premium-sweep {
-    0%, 100% { 
+    0%,
+    100% {
       background-position: -100% 0;
       opacity: 0.2;
     }
-    50% { 
+    50% {
       background-position: 200% 0;
       opacity: 0.6;
     }
   }
 
   @keyframes premium-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .glow-icon {
-    box-shadow: 
+    box-shadow:
       0 0 20px rgba(0, 191, 255, 0.6),
       0 0 40px rgba(30, 144, 255, 0.4);
     color: hsl(var(--electric-blue));
@@ -1137,18 +1168,20 @@
   }
 
   .glow-indicator {
-    background: linear-gradient(to bottom, 
-      rgba(0, 191, 255, 1) 0%, 
-      rgba(30, 144, 255, 0.9) 50%, 
-      rgba(0, 191, 255, 1) 100%);
-    box-shadow: 
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 191, 255, 1) 0%,
+      rgba(30, 144, 255, 0.9) 50%,
+      rgba(0, 191, 255, 1) 100%
+    );
+    box-shadow:
       0 0 15px rgba(0, 191, 255, 0.8),
       0 0 30px rgba(30, 144, 255, 0.6),
       0 0 45px rgba(0, 191, 255, 0.4);
   }
 
   .glow-status {
-    box-shadow: 
+    box-shadow:
       0 0 15px rgba(52, 211, 153, 0.6),
       0 0 30px rgba(16, 185, 129, 0.4);
   }
@@ -1156,16 +1189,18 @@
   /* Enhanced Premium Hover Effects */
   .premium-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
       0 15px 35px rgba(0, 0, 0, 0.3),
       0 0 30px rgba(0, 191, 255, 0.2);
   }
 
   .premium-status {
-    background: linear-gradient(135deg, 
-      rgba(6, 78, 59, 0.5) 0%, 
-      rgba(5, 150, 105, 0.4) 50%, 
-      rgba(6, 78, 59, 0.5) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(6, 78, 59, 0.5) 0%,
+      rgba(5, 150, 105, 0.4) 50%,
+      rgba(6, 78, 59, 0.5) 100%
+    );
   }
 
   /* Enhanced Menu Item Animations */
@@ -1217,30 +1252,30 @@
 
   /* Wave foam animations - intermittent waves with foam-like effects */
   @keyframes wave-foam-sweep {
-    0% { 
+    0% {
       background-position: -150% 0;
       opacity: 0;
       transform: scaleY(0.8);
     }
-    20% { 
+    20% {
       opacity: 0.6;
       transform: scaleY(1);
     }
-    40% { 
+    40% {
       background-position: 0% 0;
       opacity: 0.8;
       transform: scaleY(1.1);
     }
-    60% { 
+    60% {
       background-position: 50% 0;
       opacity: 0.9;
       transform: scaleY(1);
     }
-    80% { 
+    80% {
       opacity: 0.6;
       transform: scaleY(0.9);
     }
-    100% { 
+    100% {
       background-position: 200% 0;
       opacity: 0;
       transform: scaleY(0.8);
@@ -1248,30 +1283,30 @@
   }
 
   @keyframes wave-foam-sweep-secondary {
-    0% { 
+    0% {
       background-position: -200% 0;
       opacity: 0;
       transform: scaleY(0.7) skewX(-2deg);
     }
-    15% { 
+    15% {
       opacity: 0.4;
       transform: scaleY(0.9) skewX(-1deg);
     }
-    35% { 
+    35% {
       background-position: -50% 0;
       opacity: 0.7;
       transform: scaleY(1.05) skewX(0deg);
     }
-    55% { 
+    55% {
       background-position: 50% 0;
       opacity: 0.8;
       transform: scaleY(1.1) skewX(1deg);
     }
-    75% { 
+    75% {
       opacity: 0.5;
       transform: scaleY(0.95) skewX(0deg);
     }
-    100% { 
+    100% {
       background-position: 250% 0;
       opacity: 0;
       transform: scaleY(0.7) skewX(-1deg);
@@ -1279,25 +1314,25 @@
   }
 
   @keyframes wave-foam-intermittent {
-    0% { 
+    0% {
       background-position: -150% 0;
       opacity: 0;
       transform: scaleY(0.8);
     }
-    25% { 
+    25% {
       opacity: 0.7;
       transform: scaleY(1.05);
     }
-    50% { 
+    50% {
       background-position: 50% 0;
       opacity: 0.9;
       transform: scaleY(1.1);
     }
-    75% { 
+    75% {
       opacity: 0.6;
       transform: scaleY(0.95);
     }
-    100% { 
+    100% {
       background-position: 200% 0;
       opacity: 0;
       transform: scaleY(0.8);
@@ -1305,25 +1340,25 @@
   }
 
   @keyframes wave-foam-intermittent-secondary {
-    0% { 
+    0% {
       background-position: -200% 0;
       opacity: 0;
       transform: scaleY(0.7) skewX(-3deg);
     }
-    30% { 
+    30% {
       opacity: 0.6;
       transform: scaleY(1) skewX(-1deg);
     }
-    60% { 
+    60% {
       background-position: 100% 0;
       opacity: 0.8;
       transform: scaleY(1.15) skewX(1deg);
     }
-    85% { 
+    85% {
       opacity: 0.4;
       transform: scaleY(0.9) skewX(0deg);
     }
-    100% { 
+    100% {
       background-position: 250% 0;
       opacity: 0;
       transform: scaleY(0.7) skewX(-2deg);
@@ -1332,13 +1367,37 @@
 
   /* Random trigger animation for waves */
   @keyframes wave-trigger {
-    0% { --wave-delay: 5s; --wave-delay-secondary: 8s; }
-    14.28% { --wave-delay: 7s; --wave-delay-secondary: 6s; }
-    28.56% { --wave-delay: 6s; --wave-delay-secondary: 9s; }
-    42.84% { --wave-delay: 8s; --wave-delay-secondary: 5s; }
-    57.12% { --wave-delay: 5s; --wave-delay-secondary: 7s; }
-    71.4% { --wave-delay: 9s; --wave-delay-secondary: 6s; }
-    85.68% { --wave-delay: 6s; --wave-delay-secondary: 8s; }
-    100% { --wave-delay: 7s; --wave-delay-secondary: 5s; }
+    0% {
+      --wave-delay: 5s;
+      --wave-delay-secondary: 8s;
+    }
+    14.28% {
+      --wave-delay: 7s;
+      --wave-delay-secondary: 6s;
+    }
+    28.56% {
+      --wave-delay: 6s;
+      --wave-delay-secondary: 9s;
+    }
+    42.84% {
+      --wave-delay: 8s;
+      --wave-delay-secondary: 5s;
+    }
+    57.12% {
+      --wave-delay: 5s;
+      --wave-delay-secondary: 7s;
+    }
+    71.4% {
+      --wave-delay: 9s;
+      --wave-delay-secondary: 6s;
+    }
+    85.68% {
+      --wave-delay: 6s;
+      --wave-delay-secondary: 8s;
+    }
+    100% {
+      --wave-delay: 7s;
+      --wave-delay-secondary: 5s;
+    }
   }
 }

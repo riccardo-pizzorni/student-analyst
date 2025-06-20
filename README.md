@@ -55,6 +55,7 @@
 ## 🗃️ Automazioni e script
 
 Tutti gli script batch sono nella cartella `/scripts`:
+
 - **Auto commit/push**: commit e push automatici ogni 2 minuti
 - **Avvio Cursor + automazioni**: batch unico per avviare tutto
 - **Backup chat Cursor**: backup automatico ogni 5 minuti
@@ -65,6 +66,7 @@ Vedi `scripts/README.md` per dettagli e uso.
 ## 🔑 Variabili d'ambiente
 
 Vedi `.env.example` per tutte le variabili richieste e opzionali. Le principali:
+
 - `VITE_APIkey_ALPHA_VANTAGE` — API key Alpha Vantage
 - `VITE_BACKEND_URL` — URL backend (es. Render)
 - `VITE_DEBUG` — Abilita modalità debug (opzionale)
@@ -87,17 +89,20 @@ Vedi `.env.example` per tutte le variabili richieste e opzionali. Le principali:
 Questo progetto mantiene la **massima type safety** con zero utilizzo di `any` esplicito:
 
 ### ✅ Regole Fondamentali
+
 - **Mai usare `any` esplicito** - sostituire con `unknown` o tipi specifici
 - **Preferire interfacce tipizzate** per mock e strutture dati
 - **Usare `Record<string, unknown>`** per oggetti dinamici
 - **Type guards** per validazione runtime di `unknown`
 
 ### 🧪 Testing Type-Safe
+
 - **jest-mock-extended** per mock tipizzati
 - **Mock functions con generics** specifici
 - **Interfacce per tutti i servizi** mockati
 
 ### 📋 Verifica Continua
+
 ```bash
 # Verifica ESLint (zero errori "no-explicit-any")
 npm run lint
@@ -116,12 +121,14 @@ npm run test:all
 Il backend include una suite completa di test per garantire la stabilità e le performance:
 
 ### ✅ Test Disponibili
+
 - **Health Tests**: Verifica avvio server, endpoint health, CORS, performance
 - **Endpoint Tests**: Test di tutti gli endpoint API con validazione response
 - **Monitoring Tests**: Test di monitoraggio e performance con Alpha Vantage API
 - **Complete Suite**: Script unificato per tutti i test in sequenza
 
 ### 🚀 Esecuzione Test
+
 ```bash
 # Test completo (raccomandato)
 cd backend && node test-backend.js
@@ -133,6 +140,7 @@ cd backend && npm run test:monitoring
 ```
 
 ### 📊 Risultati Attesi
+
 - **Porta**: 10000 (configurata correttamente)
 - **Response Time**: 1-7ms (eccellente)
 - **Success Rate**: 100%
@@ -158,12 +166,12 @@ Per domande o problemi, consulta la documentazione o apri una issue.
 
 ## 📊 Test Coverage
 
-| Service | Statements | Branches | Functions | Lines | Status |
-|---------|-----------|----------|-----------|-------|--------|
-| **MemoryCacheL1** | ✅ 95.52% | ✅ 89.28% | ✅ 100% | ✅ 95.5% | **Excellent** |
-| **AutomaticCleanupService** | ⚠️ 40.99% | ⚠️ 21.42% | ⚠️ 61.97% | ⚠️ 41.36% | **In Progress** |
-| **CacheAnalyticsEngine** | 📊 Coverage data available | | | | **Under Test** |
-| **StorageMonitoringService** | 📊 Coverage data available | | | | **Under Test** |
+| Service                      | Statements                 | Branches  | Functions | Lines     | Status          |
+| ---------------------------- | -------------------------- | --------- | --------- | --------- | --------------- |
+| **MemoryCacheL1**            | ✅ 95.52%                  | ✅ 89.28% | ✅ 100%   | ✅ 95.5%  | **Excellent**   |
+| **AutomaticCleanupService**  | ⚠️ 40.99%                  | ⚠️ 21.42% | ⚠️ 61.97% | ⚠️ 41.36% | **In Progress** |
+| **CacheAnalyticsEngine**     | 📊 Coverage data available |           |           |           | **Under Test**  |
+| **StorageMonitoringService** | 📊 Coverage data available |           |           |           | **Under Test**  |
 
 > **Target Goal**: 80%+ coverage per tutti i servizi core
 
@@ -224,6 +232,7 @@ After running tests, reports are available in:
 ### Continuous Integration
 
 Tests are automatically run on GitHub Actions for:
+
 - Every push to `main` and `develop` branches
 - Every pull request to these branches
 
@@ -256,3 +265,5 @@ test('should work in browser', async ({ page }) => {
 
 1. Unit Tests:
    ```bash
+
+   ```

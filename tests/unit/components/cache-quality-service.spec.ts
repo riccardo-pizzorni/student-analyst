@@ -20,14 +20,18 @@ describe('CacheQualityService', () => {
     service.updateMetrics(TEST_METRICS.badHitRate);
     const result = await service.validateCache();
     expect(result.isValid).toBe(false);
-    expect(result.issues?.some(i => i.type === 'HIT_RATE_BELOW_THRESHOLD')).toBe(true);
+    expect(
+      result.issues?.some(i => i.type === 'HIT_RATE_BELOW_THRESHOLD')
+    ).toBe(true);
   });
 
   it('should detect high memory usage', async () => {
     service.updateMetrics(TEST_METRICS.badMemory);
     const result = await service.validateCache();
     expect(result.isValid).toBe(false);
-    expect(result.issues?.some(i => i.type === 'MEMORY_USAGE_ABOVE_THRESHOLD')).toBe(true);
+    expect(
+      result.issues?.some(i => i.type === 'MEMORY_USAGE_ABOVE_THRESHOLD')
+    ).toBe(true);
   });
 
   it('should detect cache too old', async () => {
@@ -44,7 +48,7 @@ describe('CacheQualityService', () => {
 
     // Aggiorna le metriche con valori cattivi
     service.updateMetrics(TEST_METRICS.badHitRate);
-    
+
     // La seconda validazione dovrebbe essere saltata perché l'intervallo non è passato
     const secondResult = await service.validateCache();
     expect(secondResult.isValid).toBe(true);
@@ -60,4 +64,4 @@ describe('CacheQualityService', () => {
     expect(updatedMetrics.hitRate).toBe(TEST_METRICS.good.hitRate);
     expect(updatedMetrics.memoryUsage).toBe(TEST_METRICS.good.memoryUsage);
   });
-}); 
+});
