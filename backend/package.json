@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "build-production": "echo 'Production ready'",
-    "start": "node dist/index.js",
+    "start": "ts-node src/index.ts",
     "start-simple": "node src/simple-server.js",
     "dev": "nodemon src/index.ts",
     "dev-ts": "nodemon src/index.ts",
