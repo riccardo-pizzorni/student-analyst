@@ -29,11 +29,11 @@ export interface DateValidationRules {
 // ========== CLASSE PRINCIPALE ==========
 
 export class DateNormalizer {
-  private readonly timezone: string;
-  private readonly validationRules: DateValidationRules;
+  private readonly _timezone: string;
+  private readonly _validationRules: DateValidationRules;
 
   // Pattern regex per diversi formati di date
-  private readonly datePatterns = [
+  private readonly _datePatterns = [
     // Formati ISO
     {
       pattern: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/,
@@ -86,7 +86,7 @@ export class DateNormalizer {
   ];
 
   // Mapping dei fusi orari comuni
-  private readonly timezoneMap = new Map([
+  private readonly _timezoneMap = new Map([
     ['EST', 'America/New_York'],
     ['EDT', 'America/New_York'],
     ['PST', 'America/Los_Angeles'],
@@ -101,8 +101,8 @@ export class DateNormalizer {
     timezone: string = 'America/New_York',
     validationRules?: Partial<DateValidationRules>
   ) {
-    this.timezone = this.normalizeTimezone(timezone);
-    this.validationRules = {
+    this._timezone = this.normalizeTimezone(timezone);
+    this._validationRules = {
       allowFutureDates: false,
       allowWeekendsForDaily: true,
       allowHolidaysForDaily: true,
@@ -193,14 +193,14 @@ export class DateNormalizer {
         timestamp: '',
         originalValue,
         detectedFormat: 'EMPTY',
-        timezone: this.timezone,
+        timezone: this._timezone,
         confidence: 0,
         errors: ['Valore data vuoto'],
       };
     }
 
     // Prova tutti i pattern in ordine di priorità
-    const sortedPatterns = [...this.datePatterns].sort(
+    const sortedPatterns = [...this._datePatterns].sort(
       (a, b) => b.priority - a.priority
     );
 
@@ -228,7 +228,7 @@ export class DateNormalizer {
           timestamp: jsDate.toISOString(),
           originalValue,
           detectedFormat: 'JAVASCRIPT_NATIVE',
-          timezone: this.timezone,
+          timezone: this._timezone,
           confidence: 0.5,
           errors: [],
         };
@@ -243,7 +243,7 @@ export class DateNormalizer {
       timestamp: '',
       originalValue,
       detectedFormat: 'UNKNOWN',
-      timezone: this.timezone,
+      timezone: this._timezone,
       confidence: 0,
       errors: [`Formato data non riconosciuto: ${originalValue}`],
     };
@@ -339,7 +339,7 @@ export class DateNormalizer {
       timestamp: date.toISOString(),
       originalValue,
       detectedFormat: format,
-      timezone: this.timezone,
+      timezone: this._timezone,
       confidence,
       errors: [],
     };
@@ -357,7 +357,7 @@ export class DateNormalizer {
     const now = new Date();
 
     // Controllo date future
-    if (!this.validationRules.allowFutureDates && date > now) {
+    if (!this._validationRules.allowFutureDates && date > now) {
       return {
         isValid: false,
         reason: 'Data futura non ammessa',
@@ -369,7 +369,7 @@ export class DateNormalizer {
     const daysDiff = Math.abs(
       (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
     );
-    if (daysDiff > this.validationRules.maxDateRange) {
+    if (daysDiff > this._validationRules.maxDateRange) {
       return {
         isValid: false,
         reason: `Data troppo lontana (${Math.round(daysDiff)} giorni)`,
@@ -377,7 +377,7 @@ export class DateNormalizer {
       };
     }
 
-    if (daysDiff < this.validationRules.minDateRange) {
+    if (daysDiff < this._validationRules.minDateRange) {
       return {
         isValid: false,
         reason: 'Data troppo recente',
@@ -386,7 +386,7 @@ export class DateNormalizer {
     }
 
     // Controllo weekend per dati daily
-    if (!this.validationRules.allowWeekendsForDaily) {
+    if (!this._validationRules.allowWeekendsForDaily) {
       const dayOfWeek = date.getDay();
       if (dayOfWeek === 0 || dayOfWeek === 6) {
         // Domenica o Sabato
@@ -473,7 +473,7 @@ export class DateNormalizer {
    * Normalizza timezone
    */
   private normalizeTimezone(timezone: string): string {
-    return this.timezoneMap.get(timezone) || timezone;
+    return this._timezoneMap.get(timezone) || timezone;
   }
 
   /**
@@ -485,9 +485,9 @@ export class DateNormalizer {
     validationRules: DateValidationRules;
   } {
     return {
-      supportedFormats: this.datePatterns.map(p => p.format),
-      timezone: this.timezone,
-      validationRules: this.validationRules,
+      supportedFormats: this._datePatterns.map(p => p.format),
+      timezone: this._timezone,
+      validationRules: this._validationRules,
     };
   }
 

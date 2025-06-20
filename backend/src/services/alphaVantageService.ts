@@ -438,7 +438,8 @@ export class AlphaVantageService {
 
     // Output size
     if (options?.outputSize) {
-      params.outputsize = typeof options.outputSize === 'string' ? options.outputSize : 'compact';
+      params.outputsize =
+        typeof options.outputSize === 'string' ? options.outputSize : 'compact';
     }
 
     return params;
