@@ -116,5 +116,13 @@ NavigationMenuIndicator.displayName =
   NavigationMenuPrimitive.Indicator.displayName;
 
 export {
-  NavigationMenu, NavigationMenuContent, NavigationMenuIndicator, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, navigationMenuTriggerStyle
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+  navigationMenuTriggerStyle,
 };
