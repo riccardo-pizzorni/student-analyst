@@ -2,17 +2,17 @@
   "name": "student-analyst-backend",
   "runtime": "nodejs",
   "build": {
-    "command": "npm run build",
-    "output": "dist"
+    "command": "echo 'Using simple server - no build needed'",
+    "output": "."
   },
   "start": {
-    "command": "npm start"
+    "command": "npm run start-simple"
   },
   "environment": {
     "NODE_ENV": "production"
   },
   "healthcheck": {
-    "path": "/health",
+    "path": "/api/health",
     "timeout": 30,
     "interval": 60
   },
