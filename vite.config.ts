@@ -8,6 +8,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: '::',
     port: 8080,
+    proxy: {
+      // Proxy per tutte le richieste /api al nostro server backend
+      '/api': {
+        target: 'http://localhost:3001', // L'indirizzo del server backend
+        changeOrigin: true, // Necessario per i virtual host
+        secure: false, // Non verificare il certificato SSL (per sviluppo)
+      },
+    },
   },
   plugins: [react(), mode === 'development' && componentTagger()].filter(
     Boolean

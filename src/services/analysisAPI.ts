@@ -1,13 +1,7 @@
 // src/services/analysisAPI.ts
+import { AnalysisApiResponse } from './analysisAPI'; // Manteniamo la definizione dei tipi
 
-interface AnalysisParams {
-  tickers: string[];
-  startDate: string;
-  endDate: string;
-  frequency: 'daily' | 'weekly' | 'monthly';
-}
-
-// Definiamo una struttura di tipi per la risposta dell'API
+// La definizione dei tipi rimane qui, perché è il "contratto" tra frontend e backend
 export interface AnalysisApiResponse {
   historicalData: {
     labels: string[];
@@ -22,123 +16,67 @@ export interface AnalysisApiResponse {
     value: string;
   }[];
   volatility: {
-    annualizedVolatility: {
-      value: number;
-      benchmark: number;
-      description: string;
-    };
-    sharpeRatio: {
-      value: number;
-      max: number;
-      description: string;
-    };
-  };
+    annualizedVolatility: number;
+    sharpeRatio: number;
+  } | null;
   correlation: {
-    matrix: {
-      symbol: string;
-      values: number[];
-    }[];
-    diversificationIndex: {
-      value: number;
-      label: string;
+    correlationMatrix: {
+      symbols: string[];
+      matrix: number[][];
     };
-    averageCorrelation: {
-      value: number;
-      label: string;
-    };
-    riskReduction: {
-      value: number;
-      label: string;
-    };
-    highCorrelationAlert: {
-      pair: string;
-      value: number;
-    };
-  };
+    diversificationIndex: number;
+    averageCorrelation: number;
+  } | null;
 }
 
-// Simula una struttura di dati di risposta dall'API
-const mockApiResponse: AnalysisApiResponse = {
-  historicalData: {
-    labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu'],
-    datasets: [
-      {
-        label: 'Portfolio',
-        data: [100, 105, 102, 108, 112, 110],
-        borderColor: 'rgb(59, 130, 246)',
-      },
-      {
-        label: 'Benchmark',
-        data: [100, 102, 101, 104, 105, 106],
-        borderColor: 'rgb(107, 114, 128)',
-      },
-    ],
-  },
-  performanceMetrics: [
-    { label: 'CAGR', value: '15.2%' },
-    { label: 'Sharpe Ratio', value: '1.58' },
-    { label: 'Sortino Ratio', value: '2.1' },
-    { label: 'Calmar Ratio', value: '0.89' },
-  ],
-  volatility: {
-    annualizedVolatility: {
-      value: 0.237, // 23.7%
-      benchmark: 0.152,
-      description: 'Rischio elevato vs benchmark',
-    },
-    sharpeRatio: {
-      value: 1.42,
-      max: 2,
-      description: 'Buona performance risk-adjusted',
-    },
-    // Potremmo aggiungere in futuro la rolling volatility per un grafico
-  },
-  correlation: {
-    matrix: [
-      { symbol: 'AAPL', values: [1.0, 0.71, 0.48, 0.35, 0.3] },
-      { symbol: 'MSFT', values: [0.71, 1.0, 0.75, 0.43, 0.38] },
-      { symbol: 'GOOGL', values: [0.48, 0.75, 1.0, 0.4, 0.31] },
-      { symbol: 'AMZN', values: [0.35, 0.43, 0.4, 1.0, 0.46] },
-      { symbol: 'TSLA', values: [0.3, 0.38, 0.31, 0.46, 1.0] },
-    ],
-    diversificationIndex: {
-      value: 0.78,
-      label: 'Buona diversificazione',
-    },
-    averageCorrelation: {
-      value: 0.48,
-      label: 'Livello accettabile',
-    },
-    riskReduction: {
-      value: 0.214, // 21.4%
-      label: 'Beneficio diversificazione',
-    },
-    highCorrelationAlert: {
-      pair: 'MSFT & GOOGL',
-      value: 0.75,
-    },
-  },
-  // Aggiungeremo altre sezioni di dati (correlazione, etc.) in seguito
-};
+interface AnalysisParams {
+  tickers: string[];
+  startDate: string;
+  endDate: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+}
 
 /**
- * Simula una chiamata API al backend per ottenere i dati dell'analisi.
- * In futuro, questa funzione conterrà una vera richiesta `fetch` a un endpoint
- * del nostro server (es. POST /api/analysis).
+ * Esegue una chiamata REALE al backend per ottenere i dati dell'analisi.
  *
  * @param params I parametri dell'analisi inseriti dall'utente.
- * @returns Una Promise che risolve con i dati dell'analisi.
+ * @returns Una Promise che risolve con i dati dell'analisi dal backend.
  */
-export const fetchAnalysisData = (
+export const fetchAnalysisData = async (
   params: AnalysisParams
 ): Promise<AnalysisApiResponse> => {
-  console.log('Chiamata API simulata con i parametri:', params);
+  console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
 
-  return new Promise(resolve => {
-    // Simula un ritardo di rete di 1.5 secondi
-    setTimeout(() => {
-      console.log('Dati simulati ricevuti:', mockApiResponse);
-      resolve(mockApiResponse);
-    }, 1500);
-  });
+  // Questo URL verrà reindirizzato dal proxy di Vite in sviluppo al nostro backend
+  const API_URL = '/api/analysis';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({
+        error: 'La risposta del server non è un JSON valido.',
+      }));
+      console.error('Errore API dal backend:', response.status, errorData);
+      throw new Error(
+        errorData.error || `Errore del server: ${response.status}`
+      );
+    }
+
+    const results: AnalysisApiResponse = await response.json();
+    console.log(
+      'Frontend: Dati REALI ricevuti con successo dal backend:',
+      results
+    );
+    return results;
+  } catch (error) {
+    console.error('Errore catastrofico durante la chiamata fetch:', error);
+    throw error; // Rilanciamo l'errore per farlo gestire dal contesto
+  }
 };
