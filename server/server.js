@@ -3,21 +3,21 @@
  * Professional proxy server for Yahoo Finance API with caching and error handling
  */
 
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-import NodeCache from 'node-cache';
 import axios from 'axios';
+import compression from 'compression';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import express from 'express';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import NodeCache from 'node-cache';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Initialize cache with intelligent TTL settings
