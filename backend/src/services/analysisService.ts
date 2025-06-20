@@ -25,14 +25,14 @@ export interface AnalysisApiResponse {
     annualizedVolatility: number;
     sharpeRatio: number;
     // ... altre metriche di volatilità
-  };
+  } | null;
   correlation: {
     matrix: {
       symbol: string;
       values: number[];
     }[];
     // ... altre metriche di correlazione
-  };
+  } | null;
 }
 
 interface AnalysisParams {
