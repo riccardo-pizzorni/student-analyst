@@ -289,7 +289,7 @@ export class ResponseParser {
       if (
         rawData.chart &&
         typeof rawData.chart === 'object' &&
-        rawData.chart.result &&
+        typeof rawData.chart === 'object' && rawData.chart !== null && 'result' in rawData.chart && rawData.chart.result &&
         Array.isArray(rawData.chart.result) &&
         rawData.chart.result[0]
       ) {
@@ -338,11 +338,11 @@ export class ResponseParser {
       else if (
         rawData.response &&
         typeof rawData.response === 'object' &&
-        rawData.response.data
+        typeof rawData.response === 'object' && rawData.response !== null && 'data' in rawData.response ? rawData.response.data
       ) {
-        dataArray = Array.isArray(rawData.response.data)
-          ? rawData.response.data
-          : ([rawData.response.data] as Record<string, unknown>[]);
+        dataArray = Array.isArray(typeof rawData.response === 'object' && rawData.response !== null && 'data' in rawData.response ? rawData.response.data)
+          ? typeof rawData.response === 'object' && rawData.response !== null && 'data' in rawData.response ? rawData.response.data
+          : ([typeof rawData.response === 'object' && rawData.response !== null && 'data' in rawData.response ? rawData.response.data] as Record<string, unknown>[]);
       }
 
       // Processa array diretto se disponibile
@@ -537,8 +537,8 @@ export class ResponseParser {
     const errors: ParsingError[] = [];
 
     try {
-      const data = rawData.dataset?.data || rawData.data || [];
-      const columns = rawData.dataset?.column_names || [
+      const data = typeof rawData.dataset === 'object' && rawData.dataset !== null && 'data' in rawData.dataset ? rawData.dataset.data : (typeof rawData.data === 'object' && rawData.data !== null ? rawData.data : []);
+      const columns = typeof rawData.dataset === 'object' && rawData.dataset !== null && 'column_names' in rawData.dataset ? rawData.dataset.column_names : [
         'Date',
         'Open',
         'High',

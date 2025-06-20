@@ -606,10 +606,10 @@ export class ApiProxyService {
       });
 
       // Verifica dati
-      const keys = Object.keys(result.data);
+      const keys = typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? Object.keys((result as any).data) : [];
       const dataKey = keys.find(key => key.includes('Time Series'));
 
-      if (!dataKey || !result.data[dataKey]) {
+      if (!dataKey || !(typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null && (result as any).data[dataKey])) {
         res.status(404).json({
           error: 'No Data Available',
           message: `No historical data available for symbol: ${symbol}`,
@@ -624,8 +624,8 @@ export class ApiProxyService {
         symbol: symbol.toUpperCase(),
         interval,
         outputsize,
-        data: result.data[dataKey],
-        metadata: result.data['Meta Data'] || {},
+        data: typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? (result as any).data[dataKey] : {},
+        metadata: typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? (result as any).data['Meta Data'] || {} : {},
         source: typeof result === 'object' && result !== null && 'source' in result ? (result as any).source : 'unknown',
         timestamp: new Date().toISOString(),
       };
