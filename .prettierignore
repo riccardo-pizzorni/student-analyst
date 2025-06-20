@@ -1,0 +1,50 @@
+# Build and distribution
+/dist
+/build
+/out
+
+# Dependencies
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Test and coverage reports
+/coverage
+/test-results/
+/playwright-report/
+*.webm
+*.zip
+
+# Artifacts and cache
+/artifacts
+.vercel
+.cache
+.eslintcache
+
+# IDE and environment specific
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+
+# Generated documentation
+/docs/dist
+
+# Backup files
+*.bak
+*.backup
+
+# Railway / Render / Vercel configs (often auto-managed)
+railway.json
+render.json
+vercel.json 
