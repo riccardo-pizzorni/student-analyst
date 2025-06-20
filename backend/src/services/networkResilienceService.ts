@@ -371,7 +371,7 @@ export class NetworkResilienceService extends EventEmitter {
       const fallbackResult = await this.tryFallbackServices(context);
       if (fallbackResult.success) {
         return {
-          ...fallbackResult,
+          success: fallbackResult.success, source: fallbackResult.source, fromCache: fallbackResult.fromCache, error: fallbackResult.error,
           responseTime: Date.now() - startTime,
           retryCount,
           fallbackUsed: true,
