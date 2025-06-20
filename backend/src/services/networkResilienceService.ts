@@ -458,6 +458,7 @@ export class NetworkResilienceService extends EventEmitter {
           retryCount: 0,
           fromCache: false,
           fallbackUsed: true,
+          data: undefined as T,
         };
       } catch (error) {
         console.warn(`Fallback service ${service.name} failed:`, error);
@@ -472,6 +473,7 @@ export class NetworkResilienceService extends EventEmitter {
       retryCount: 0,
       fromCache: false,
       fallbackUsed: true,
+      data: undefined as T,
     };
   }
 
