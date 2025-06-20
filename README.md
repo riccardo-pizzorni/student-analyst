@@ -111,6 +111,35 @@ npm run test:all
 
 📖 **Documentazione completa**: [`docs/TYPE_SAFETY_BEST_PRACTICES.md`](docs/TYPE_SAFETY_BEST_PRACTICES.md)
 
+## 🧪 Backend Testing
+
+Il backend include una suite completa di test per garantire la stabilità e le performance:
+
+### ✅ Test Disponibili
+- **Health Tests**: Verifica avvio server, endpoint health, CORS, performance
+- **Endpoint Tests**: Test di tutti gli endpoint API con validazione response
+- **Monitoring Tests**: Test di monitoraggio e performance con Alpha Vantage API
+- **Complete Suite**: Script unificato per tutti i test in sequenza
+
+### 🚀 Esecuzione Test
+```bash
+# Test completo (raccomandato)
+cd backend && node test-backend.js
+
+# Test individuali
+cd backend && npm run test:health
+cd backend && npm run test:endpoints
+cd backend && npm run test:monitoring
+```
+
+### 📊 Risultati Attesi
+- **Porta**: 10000 (configurata correttamente)
+- **Response Time**: 1-7ms (eccellente)
+- **Success Rate**: 100%
+- **Coverage**: Tutti gli endpoint testati
+
+📖 **Documentazione backend**: [`docs/BACKEND_TEST_FIXES.md`](docs/BACKEND_TEST_FIXES.md)
+
 ## 🧹 Pulizia e manutenzione
 
 - Nessuna dipendenza non usata (Dexie rimossa)

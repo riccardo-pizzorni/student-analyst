@@ -1,4 +1,5 @@
- M backend/scripts/monitoring-test.js
- M backend/scripts/test-endpoints.js
- M backend/scripts/test-health.js
+ M README.md
+ M backend/package.json
  M scripts/temp_git_status.txt
+?? backend/test-backend.js
+?? docs/BACKEND_TEST_FIXES.md

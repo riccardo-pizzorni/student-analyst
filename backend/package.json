@@ -15,6 +15,7 @@
     "railway:build": "echo 'Railway build complete'",
     "railway:start": "npm run start",
     "test": "npm run test:health && npm run test:endpoints && npm run test:monitoring",
+    "test:complete": "node test-backend.js",
     "test:health": "node scripts/test-health.js",
     "test:endpoints": "node scripts/test-endpoints.js",
     "test:integration": "node scripts/test-integration.js",
