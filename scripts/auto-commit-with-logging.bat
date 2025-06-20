@@ -1,6 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
+rem Ottiene il carattere Carriage Return (CR) per sovrascrivere la riga
+for /f %%a in ('copy /z "%~f0" nul') do set "cr=%%a"
+
 echo { CICLO AUTO-COMMIT AVVIATO - %date% %time%
 echo =================================================================
 echo.
@@ -48,8 +51,8 @@ if %errorlevel% equ 0 (
 echo.
 echo Attendo 120 secondi prima del prossimo controllo...
 for /l %%i in (120,-1,1) do (
-    <nul set /p "=Countdown: %%i secondi rimanenti...  \r"
-    timeout /t 1 /nobreak >nul
+    set /p "=Countdown: %%i secondi rimanenti... !cr!" <nul
+    timeout /t 1 >nul
 )
 echo.
 echo Countdown completato. Procedo con il controllo...
