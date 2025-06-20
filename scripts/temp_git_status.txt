@@ -1,3 +1,2 @@
- M backend/src/services/suspiciousActivityLogger.ts
- M backend/src/utils/dataSanitizer.ts
+ M backend/src/utils/testAlphaVantageService.ts
  M scripts/temp_git_status.txt

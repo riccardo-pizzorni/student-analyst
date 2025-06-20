@@ -6,7 +6,7 @@
  * Include test per tutti i timeframe, error handling, cache, e validazione
  */
 
-import { AlphaVantageService, AlphaVantageTimeframe, AlphaVantageError, AlphaVantageErrorType } from '../services/alphaVantageService';
+import { AlphaVantageError, AlphaVantageService, AlphaVantageTimeframe } from '../services/alphaVantageService';
 
 /**
  * Configurazione test
@@ -39,7 +39,7 @@ export class AlphaVantageServiceTester {
     status: 'PASS' | 'FAIL' | 'SKIP';
     duration: number;
     error?: string;
-    details?: any;
+    details?: unknown;
   }> = [];
 
   constructor() {
@@ -406,7 +406,25 @@ export class AlphaVantageServiceTester {
    * Valida la risposta dei dati azionari
    */
   private validateStockDataResponse(
-    response: any,
+    response: {
+      success: boolean;
+      data: Array<{
+        date: string;
+        open: number;
+        high: number;
+        low: number;
+        close: number;
+        volume: number;
+      }>;
+      metadata: {
+        symbol: string;
+        timeframe: string;
+        lastRefreshed: string;
+        outputSize: string;
+      };
+      source: 'alpha_vantage' | 'cache';
+      cacheHit: boolean;
+    },
     symbol: string,
     timeframe: AlphaVantageTimeframe
   ): void {
@@ -470,7 +488,7 @@ export class AlphaVantageServiceTester {
   /**
    * Esegue un singolo test
    */
-  private async runTest(testName: string, testFunction: () => Promise<any>): Promise<void> {
+  private async runTest(testName: string, testFunction: () => Promise<unknown>): Promise<void> {
     const startTime = Date.now();
     
     try {
