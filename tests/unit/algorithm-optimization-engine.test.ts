@@ -102,8 +102,8 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should memoize function results', () => {
       const mockFn = jest.fn((x: number, y: number) => x + y);
 
-      const result1 = engine.memoize(mockFn as any, 5, 3);
-      const result2 = engine.memoize(mockFn as any, 5, 3);
+      const result1 = engine.memoize(mockFn as unknown, 5, 3);
+      const result2 = engine.memoize(mockFn as unknown, 5, 3);
 
       expect(result1).toBe(8);
       expect(result2).toBe(8);
@@ -113,9 +113,9 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should call function again with different arguments', () => {
       const mockFn = jest.fn((x: number) => x * 2);
 
-      const result1 = engine.memoize(mockFn as any, 10);
-      const result2 = engine.memoize(mockFn as any, 20);
-      const result3 = engine.memoize(mockFn as any, 10);
+      const result1 = engine.memoize(mockFn as unknown, 10);
+      const result2 = engine.memoize(mockFn as unknown, 20);
+      const result3 = engine.memoize(mockFn as unknown, 10);
 
       expect(result1).toBe(20);
       expect(result2).toBe(40);
@@ -126,8 +126,8 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should handle functions with no arguments', () => {
       const mockFn = jest.fn(() => 'constant');
 
-      const result1 = engine.memoize(mockFn as any);
-      const result2 = engine.memoize(mockFn as any);
+      const result1 = engine.memoize(mockFn as unknown);
+      const result2 = engine.memoize(mockFn as unknown);
 
       expect(result1).toBe('constant');
       expect(result2).toBe('constant');
@@ -137,11 +137,11 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should update cache hit rate with memoization', () => {
       const mockFn = jest.fn((x: number) => x);
 
-      engine.memoize(mockFn as any, 1); // Miss
+      engine.memoize(mockFn as unknown, 1); // Miss
       let metrics = engine.getMetrics();
       expect(metrics.cacheHitRate).toBe(0);
 
-      engine.memoize(mockFn as any, 1); // Hit
+      engine.memoize(mockFn as unknown, 1); // Hit
       metrics = engine.getMetrics();
       expect(metrics.cacheHitRate).toBe(0.5);
     });
@@ -151,15 +151,15 @@ describe('AlgorithmOptimizationEngine', () => {
     it('should clear all caches', () => {
       const mockFn = jest.fn((x: number) => x);
 
-      engine.memoize(mockFn as any, 1);
-      engine.memoize(mockFn as any, 2);
+      engine.memoize(mockFn as unknown, 1);
+      engine.memoize(mockFn as unknown, 2);
 
       const metrics = engine.getMetrics();
       expect(metrics.totalOperations).toBe(2);
 
       engine.clearCaches();
 
-      engine.memoize(mockFn as any, 1);
+      engine.memoize(mockFn as unknown, 1);
       expect(mockFn).toHaveBeenCalledTimes(3);
     });
 

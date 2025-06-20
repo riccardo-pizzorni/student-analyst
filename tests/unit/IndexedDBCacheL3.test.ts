@@ -354,7 +354,7 @@ class MockObjectStore implements IDBObjectStore {
     return request;
   }
 
-  getKey(query: IDBValidKey | IDBKeyRange): IDBRequest<IDBValidKey | undefined> {
+  getKey(query: IDBValidKey | IDBKeyRange): IDBRequest<unknown> {
     const request = new MockIDBRequest();
     const item = this.data.find(item => this.getKeyValue(item) === query);
     request.setResult(item ? this.getKeyValue(item) : undefined);
@@ -413,9 +413,9 @@ class MockTransaction implements IDBTransaction {
   readonly db: IDBDatabase;
   readonly error: DOMException | null;
   readonly durability: IDBTransactionDurability;
-  onabort: ((this: IDBTransaction, ev: Event) => void) | null;
-  oncomplete: ((this: IDBTransaction, ev: Event) => void) | null;
-  onerror: ((this: IDBTransaction, ev: Event) => void) | null;
+  onabort: ((this: IDBTransaction, ev: Event) => unknown) | null;
+  oncomplete: ((this: IDBTransaction, ev: Event) => unknown) | null;
+  onerror: ((this: IDBTransaction, ev: Event) => unknown) | null;
   private objectStores: Map<string, MockObjectStore<T>>;
 
   constructor(storeNames: string | string[] | Iterable<string>, mode: IDBTransactionMode, db: IDBDatabase) {
@@ -476,10 +476,10 @@ class MockDatabase implements IDBDatabase {
   readonly name: string;
   readonly version: number;
   objectStoreNames: DOMStringList;
-  onabort: ((this: IDBDatabase, ev: Event) => void) | null;
-  onclose: ((this: IDBDatabase, ev: Event) => void) | null;
-  onerror: ((this: IDBDatabase, ev: Event) => void) | null;
-  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => void) | null;
+  onabort: ((this: IDBDatabase, ev: Event) => unknown) | null;
+  onclose: ((this: IDBDatabase, ev: Event) => unknown) | null;
+  onerror: ((this: IDBDatabase, ev: Event) => unknown) | null;
+  onversionchange: ((this: IDBDatabase, ev: IDBVersionChangeEvent) => unknown) | null;
   objectStores: Map<string, MockObjectStore<T>>;
 
   constructor(name: string, version: number) {

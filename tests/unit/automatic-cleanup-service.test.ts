@@ -52,8 +52,8 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 // Setup setTimeout/clearTimeout mocks  
-const mockSetTimeout = jest.fn<unknown>();
-const mockClearTimeout = jest.fn<unknown>();
+const mockSetTimeout = jest.fn<any>();
+const mockClearTimeout = jest.fn<any>();
 Object.defineProperty(global, 'setTimeout', {
   value: mockSetTimeout,
   writable: true
@@ -66,7 +66,7 @@ Object.defineProperty(global, 'clearTimeout', {
 // Mock window.confirm
 Object.defineProperty(global, 'window', {
   value: {
-    confirm: jest.fn<unknown>()
+    confirm: jest.fn<any>()
   },
   writable: true
 });
@@ -75,7 +75,7 @@ Object.defineProperty(global, 'window', {
 Object.defineProperty(global, 'navigator', {
   value: {
     storage: {
-      estimate: jest.fn<unknown>()
+      estimate: jest.fn<any>()
     }
   },
   writable: true
@@ -92,7 +92,7 @@ describe('AutomaticCleanupService', () => {
     jest.clearAllMocks();
     
     // Reset delle istanze singleton
-    (AutomaticCleanupService as any).instance = undefined;
+    (AutomaticCleanupService as unknown).instance = undefined;
     
     // Mock console methods
     jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -125,9 +125,9 @@ describe('AutomaticCleanupService', () => {
     
     // Crea istanza del servizio
     service = new AutomaticCleanupService(
-      mockMemoryCache as any,
-      mockLocalStorageCache as any,
-      mockIndexedDBCache as any
+      mockMemoryCache as unknown,
+      mockLocalStorageCache as unknown,
+      mockIndexedDBCache as unknown
     );
   });
 
