@@ -1,2 +1,11 @@
+ M coverage/base.css
+ M coverage/block-navigation.js
+ M coverage/index.html
+ M coverage/lcov-report/index.html
+ M coverage/prettify.css
+ M coverage/prettify.js
+ M coverage/sorter.js
+ M package-lock.json
+ M package.json
  M scripts/temp_git_status.txt
- M tests/unit/App.test.tsx
+ M tests/utils/setup.ts

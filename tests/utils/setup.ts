@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { TextEncoder } from 'util';
 
 // Enhanced IndexedDB mock for async operations and callbacks
