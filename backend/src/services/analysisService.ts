@@ -42,11 +42,6 @@ interface AnalysisParams {
   frequency: 'daily' | 'weekly' | 'monthly';
 }
 
-interface PerformanceMetrics {
-  label: string;
-  value: string;
-}
-
 interface VolatilityMetrics {
   annualizedVolatility: number;
   sharpeRatio: number;
