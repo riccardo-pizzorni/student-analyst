@@ -1,15 +1,1 @@
-A  .husky/pre-commit
-A  .vscode/extensions.json
-M  README.md
-M  docs/AI_ASSISTANT_GUIDE.md
-M  docs/CHANGELOG_DETAILED.md
-M  docs/CRITICAL_FIXES_SUMMARY.md
-M  docs/DEVELOPMENT_WORKFLOW.md
-M  docs/PRETTIER_INTEGRATION_AND_TYPE_SAFETY_FIXES.md
-M  eslint.config.js
-MM package.json
-MM scripts/temp_git_status.txt
-M  src/App.tsx
-M  src/components/input/UnifiedInputSection.tsx
-A  src/context/AnalysisContext.tsx
-M  tsconfig.app.json
+ M scripts/temp_git_status.txt
