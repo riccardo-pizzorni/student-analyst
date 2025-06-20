@@ -1,1 +1,3 @@
+ M backend/package-lock.json
+ M backend/src/routes/analysisRoutes.ts
  M temp_git_status.txt

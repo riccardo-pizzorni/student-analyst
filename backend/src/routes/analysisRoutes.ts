@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import * as analysisService from '../services/analysisService';
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
  * Endpoint per eseguire un'analisi finanziaria completa.
  * Riceve i parametri dell'analisi e restituisce un set di dati completo.
  */
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', (req, res) => {
   const { tickers, startDate, endDate, frequency } = req.body;
 
   // Validazione di base dell'input
@@ -25,24 +25,18 @@ router.post('/', async (req: Request, res: Response) => {
     });
   }
 
-  try {
-    const results = await analysisService.performAnalysis({
-      tickers,
-      startDate,
-      endDate,
-      frequency,
+  analysisService
+    .performAnalysis({ tickers, startDate, endDate, frequency })
+    .then(results => res.json(results))
+    .catch(error => {
+      console.error('Errore durante l_esecuzione dell_analisi:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Errore sconosciuto';
+      res.status(500).json({
+        error: 'Si è verificato un errore interno durante l_analisi.',
+        details: errorMessage,
+      });
     });
-    res.json(results);
-  } catch (error) {
-    console.error('Errore durante l_esecuzione dell_analisi:', error);
-    const errorMessage =
-      error instanceof Error ? error.message : 'Errore sconosciuto';
-    res.status(500).json({
-      error: 'Si è verificato un errore interno durante l_analisi.',
-      details: errorMessage,
-    });
-    return;
-  }
 });
 
 export { router as analysisRoutes };
