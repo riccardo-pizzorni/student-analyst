@@ -1,3 +1,1 @@
  M scripts/temp_git_status.txt
- M scripts/test-auto-commit.bat
-?? docs/AUTO_COMMIT_FIXES.md
