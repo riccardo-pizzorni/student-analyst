@@ -159,7 +159,12 @@ export class VolumeHandler {
         };
 
         if (this.config.preserveOriginalValues) {
-          normalizedItem.originalVolume = originalVolume;
+          if (
+            typeof originalVolume === 'string' ||
+            typeof originalVolume === 'number'
+          ) {
+            normalizedItem.originalVolume = originalVolume;
+          }
           normalizedItem.volumeUnit = normalizationResult.detectedUnit;
         }
 
