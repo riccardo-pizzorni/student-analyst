@@ -31,7 +31,7 @@ export interface DateRangeValidationOptions {
   maxDate?: Date;
   maxRangeDays?: number;
   allowFutureDates?: boolean;
-  requiredFormat?: string;
+  _requiredFormat?: string;
 }
 
 export interface SanitizedRequestData {
@@ -275,7 +275,7 @@ export class DataSanitizer {
       maxDate,
       maxRangeDays = 365,
       allowFutureDates = false,
-      requiredFormat,
+      _requiredFormat,
     } = options;
 
     const errors: string[] = [];

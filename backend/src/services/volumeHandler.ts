@@ -20,7 +20,7 @@ export interface VolumeNormalizationResult {
   success: boolean;
   normalizedData: VolumeDataItem[];
   conversions: VolumeConversion[];
-  anomalies: VolumeAnomaly[];
+  anomalies: Volu_meanomaly[];
   stats: {
     recordsProcessed: number;
     recordsNormalized: number;
@@ -38,7 +38,7 @@ export interface VolumeConversion {
   confidence: number;
 }
 
-export interface VolumeAnomaly {
+export interface Volu_meanomaly {
   type:
     | 'ZERO_VOLUME'
     | 'NEGATIVE_VOLUME'
@@ -129,7 +129,7 @@ export class VolumeHandler {
    */
   public processVolumeData(data: VolumeDataItem[]): VolumeNormalizationResult {
     const conversions: VolumeConversion[] = [];
-    const anomalies: VolumeAnomaly[] = [];
+    const anomalies: Volu_meanomaly[] = [];
     const normalizedData: VolumeDataItem[] = [];
 
     // 1. Prima passata: normalizzazione base
@@ -190,8 +190,8 @@ export class VolumeHandler {
 
     // 2. Seconda passata: rilevamento anomalie
     if (this.config.enableAnomalyDetection && normalizedData.length > 0) {
-      const volumeAnomalies = this.detectVolumeAnomalies(normalizedData);
-      anomalies.push(...volumeAnomalies);
+      const volu_meanomalies = this.detectVolu_meanomalies(normalizedData);
+      anomalies.push(...volu_meanomalies);
     }
 
     // 3. Terza passata: gestione valori zero/negativi
@@ -318,8 +318,8 @@ export class VolumeHandler {
   /**
    * Rileva anomalie nel volume
    */
-  private detectVolumeAnomalies(data: VolumeDataItem[]): VolumeAnomaly[] {
-    const anomalies: VolumeAnomaly[] = [];
+  private detectVolu_meanomalies(data: VolumeDataItem[]): Volu_meanomaly[] {
+    const anomalies: Volu_meanomaly[] = [];
 
     if (data.length === 0) return anomalies;
 
@@ -330,7 +330,7 @@ export class VolumeHandler {
     });
     const sortedVolumes = [...volumes].sort((a, b) => a - b);
     const median = this.calculateMedian(sortedVolumes);
-    const mean = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
+    const _mean = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
 
     const extremeThreshold = median * this.config.extremeVolumeThreshold;
 
@@ -400,7 +400,7 @@ export class VolumeHandler {
    */
   private handleSpecialVolumeValues(
     data: VolumeDataItem[],
-    anomalies: VolumeAnomaly[]
+    anomalies: Volu_meanomaly[]
   ): VolumeDataItem[] {
     if (this.config.zeroVolumeHandling === 'KEEP') {
       return data;
