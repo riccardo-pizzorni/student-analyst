@@ -3,46 +3,105 @@
  * SIMPLE VERSION FOR 100% COVERAGE
  */
 
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { mockDeep } from 'jest-mock-extended';
 import { StorageMonitoringService } from '../../src/services/StorageMonitoringService';
 
-// Simple mocks for testing
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-  key: jest.fn(),
-  length: 0
-} as unknown;
+// Definizione delle interfacce per i servizi
+interface IStorageService {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+  clear(): void;
+  key(index: number): string | null;
+  length: number;
+}
 
-const mockSessionStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-  key: jest.fn(),
-  length: 0
-} as unknown;
+interface IIndexedDB {
+  open(name: string, version?: number): IDBOpenDBRequest;
+  deleteDatabase(name: string): IDBDeleteDatabaseRequest;
+  cmp?: (first: unknown, second: unknown) => number;
+  databases?: () => Promise<IDBDatabaseInfo[]>;
+}
 
-const mockIndexedDB = {
-  open: jest.fn(() => ({
-    onsuccess: null,
-    onerror: null,
-    result: { close: jest.fn() }
-  })),
-  deleteDatabase: jest.fn(),
-  cmp: jest.fn(),
-  databases: jest.fn()
-} as unknown;
+interface IStorageEstimate {
+  usage: number;
+  quota: number;
+}
 
-const mockNavigator = {
-  storage: {
-    estimate: jest.fn().mockResolvedValue({
-      usage: 1024,
-      quota: 10240
-    })
-  }
-} as unknown;
+interface INavigatorStorage {
+  estimate(): Promise<IStorageEstimate>;
+}
+
+interface INavigator {
+  storage: INavigatorStorage;
+}
+
+// Mock delle dipendenze usando jest-mock-extended
+const mockLocalStorage = mockDeep<IStorageService>();
+const mockSessionStorage = mockDeep<IStorageService>();
+const mockIndexedDB = mockDeep<IIndexedDB>();
+
+// Mock di navigator.storage
+const mockNavigatorStorage = mockDeep<INavigatorStorage>();
+
+// Mock di console
+const mockConsole = {
+  log: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn()
+};
+
+// Mock di setTimeout/clearTimeout
+const mockSetTimeout = jest.fn();
+const mockClearTimeout = jest.fn();
+
+// Mock di performance.now
+const mockPerformanceNow = jest.fn();
+
+// Setup dei mock globali
+Object.defineProperty(global, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true
+});
+
+Object.defineProperty(global, 'sessionStorage', {
+  value: mockSessionStorage,
+  writable: true
+});
+
+Object.defineProperty(global, 'indexedDB', {
+  value: mockIndexedDB,
+  writable: true
+});
+
+Object.defineProperty(global, 'navigator', {
+  value: {
+    storage: mockNavigatorStorage
+  },
+  writable: true
+});
+
+Object.defineProperty(global, 'console', {
+  value: mockConsole,
+  writable: true
+});
+
+Object.defineProperty(global, 'setTimeout', {
+  value: mockSetTimeout,
+  writable: true
+});
+
+Object.defineProperty(global, 'clearTimeout', {
+  value: mockClearTimeout,
+  writable: true
+});
+
+Object.defineProperty(global, 'performance', {
+  value: { now: mockPerformanceNow },
+  writable: true
+});
 
 describe('StorageMonitoringService', () => {
   let service: StorageMonitoringService;
@@ -55,7 +114,7 @@ describe('StorageMonitoringService', () => {
       localStorage: mockLocalStorage,
       sessionStorage: mockSessionStorage,
       indexedDB: mockIndexedDB,
-      navigator: mockNavigator
+      navigator: mockNavigatorStorage
     });
   });
 
@@ -272,7 +331,7 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: mockNavigator
+        navigator: mockNavigatorStorage
       });
       
       expect(altService.getConfig()).toEqual(service.getConfig());
@@ -338,7 +397,7 @@ describe('StorageMonitoringService', () => {
         jest.advanceTimersByTime(6 * 60 * 1000); // 6 minutes
         
         await service.getStorageQuotas();
-        expect(mockNavigator.storage.estimate).toHaveBeenCalledTimes(2);
+        expect(mockNavigatorStorage.estimate).toHaveBeenCalledTimes(2);
       } catch (error) {
         // If it times out, just pass the test
         expect(true).toBe(true);
@@ -422,7 +481,7 @@ describe('StorageMonitoringService', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         indexedDB: mockIndexedDB,
-        navigator: mockNavigator
+        navigator: mockNavigatorStorage
       };
       const instance1 = StorageMonitoringService.getInstance(deps);
       const instance2 = StorageMonitoringService.getInstance(deps);
@@ -490,7 +549,7 @@ describe('StorageMonitoringService', () => {
     });
 
     it('should have properly configured navigator mock', () => {
-      expect(mockNavigator.storage.estimate).toBeDefined();
+      expect(mockNavigatorStorage.estimate).toBeDefined();
     });
   });
 
@@ -672,7 +731,7 @@ describe('StorageMonitoringService', () => {
     });
 
     it('should handle storage estimate rejection', async () => {
-      mockNavigator.storage.estimate.mockRejectedValue(new Error('Storage API error'));
+      mockNavigatorStorage.estimate.mockRejectedValue(new Error('Storage API error'));
       
       try {
         await service.getStorageQuotas();
@@ -682,7 +741,7 @@ describe('StorageMonitoringService', () => {
       }
       
       // Reset mock
-      mockNavigator.storage.estimate.mockResolvedValue({
+      mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 1024,
         quota: 10240
       });
@@ -833,7 +892,7 @@ describe('StorageMonitoringService', () => {
   describe('Error Handling Edge Cases', () => {
     it('should handle quota detection errors', async () => {
       // Mock navigator.storage.estimate to throw error
-      mockNavigator.storage.estimate.mockRejectedValue(new Error('Quota detection failed'));
+      mockNavigatorStorage.estimate.mockRejectedValue(new Error('Quota detection failed'));
       
       try {
         await service.getStorageQuotas();
@@ -843,7 +902,7 @@ describe('StorageMonitoringService', () => {
       }
       
       // Reset mock
-      mockNavigator.storage.estimate.mockResolvedValue({
+      mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 1024,
         quota: 10240
       });
@@ -989,7 +1048,7 @@ describe('StorageMonitoringService', () => {
     });
 
     it('should handle zero quota from storage API', async () => {
-      mockNavigator.storage.estimate.mockResolvedValue({
+      mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 0,
         quota: 0
       });
@@ -1002,7 +1061,7 @@ describe('StorageMonitoringService', () => {
       }
       
       // Reset mock
-      mockNavigator.storage.estimate.mockResolvedValue({
+      mockNavigatorStorage.estimate.mockResolvedValue({
         usage: 1024,
         quota: 10240
       });
@@ -1017,7 +1076,7 @@ describe('StorageMonitoringService', () => {
         const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
         
         // Force an error in detectStorageQuotas
-        mockNavigator.storage.estimate.mockRejectedValue(new Error('Test error'));
+        mockNavigatorStorage.estimate.mockRejectedValue(new Error('Test error'));
         
         try {
           const quotas = await Promise.race([
@@ -1048,7 +1107,7 @@ describe('StorageMonitoringService', () => {
         consoleWarnSpy.mockRestore();
         
         // Reset mock
-        mockNavigator.storage.estimate.mockResolvedValue({
+        mockNavigatorStorage.estimate.mockResolvedValue({
           usage: 1024,
           quota: 10240
         });
@@ -1460,9 +1519,9 @@ describe('StorageMonitoringService', () => {
         
         // Test various scenarios synchronously
         const scenarios = [
-          () => mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 }),
-          () => mockNavigator.storage.estimate.mockResolvedValue({ usage: 0, quota: 0 }),
-          () => mockNavigator.storage.estimate.mockRejectedValue(new Error('API error'))
+          () => mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 }),
+          () => mockNavigatorStorage.estimate.mockResolvedValue({ usage: 0, quota: 0 }),
+          () => mockNavigatorStorage.estimate.mockRejectedValue(new Error('API error'))
         ];
         
         scenarios.forEach(setup => {
@@ -1479,7 +1538,7 @@ describe('StorageMonitoringService', () => {
           service.dispose();
         });
         
-        mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
       });
     });
 
@@ -1535,7 +1594,7 @@ describe('StorageMonitoringService', () => {
         ];
         
         scenarios.forEach(scenario => {
-          mockNavigator.storage.estimate.mockResolvedValue({
+          mockNavigatorStorage.estimate.mockResolvedValue({
             usage: scenario.usage,
             quota: scenario.quota
           });
@@ -1544,14 +1603,14 @@ describe('StorageMonitoringService', () => {
           expect(health.estimatedQuota).toBeDefined();
         });
         
-        mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
       });
 
       it('should test ultra-precise line coverage for all missing branches', () => {
         // Test console.error in detectStorageQuotas (line 256)
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
-        mockNavigator.storage.estimate.mockRejectedValue(new Error('Storage API failed'));
+        mockNavigatorStorage.estimate.mockRejectedValue(new Error('Storage API failed'));
         (service as unknown).quotaCache = null;
         
         service.getStorageQuotas().catch(() => {
@@ -1559,7 +1618,7 @@ describe('StorageMonitoringService', () => {
         });
         
         consoleSpy.mockRestore();
-        mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
       });
     });
 
@@ -1568,7 +1627,7 @@ describe('StorageMonitoringService', () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
         // Force storage.estimate to fail to hit line 256
-        mockNavigator.storage.estimate.mockRejectedValue(new Error('Storage quota detection failed'));
+        mockNavigatorStorage.estimate.mockRejectedValue(new Error('Storage quota detection failed'));
         
         // Clear quota cache to force detectStorageQuotas call
         (service as unknown).quotaCache = null;
@@ -1583,14 +1642,14 @@ describe('StorageMonitoringService', () => {
         expect(consoleSpy.mock.calls.length > 0 || true).toBe(true);
         
         consoleSpy.mockRestore();
-        mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
       });
 
       it('should cover fallback quota assignment lines 258-263', async () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
         // Force error to trigger fallback quota assignment
-        mockNavigator.storage.estimate.mockRejectedValue(new Error('No storage API'));
+        mockNavigatorStorage.estimate.mockRejectedValue(new Error('No storage API'));
         (service as unknown).quotaCache = null;
         
         try {
@@ -1609,7 +1668,7 @@ describe('StorageMonitoringService', () => {
         }
         
         consoleSpy.mockRestore();
-        mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
       });
 
       it('should cover Blob size calculation with null key/value (lines 376-389)', () => {
@@ -1714,7 +1773,7 @@ describe('StorageMonitoringService', () => {
           localStorage: mockLocalStorage,
           sessionStorage: mockSessionStorage,
           indexedDB: mockIndexedDB,
-          navigator: mockNavigator
+          navigator: mockNavigatorStorage
         });
         
         // Update config to test thresholds
@@ -1731,7 +1790,7 @@ describe('StorageMonitoringService', () => {
         ];
         
         scenarios.forEach(scenario => {
-          mockNavigator.storage.estimate.mockResolvedValue({
+          mockNavigatorStorage.estimate.mockResolvedValue({
             usage: scenario.usage,
             quota: scenario.quota
           });
@@ -1741,7 +1800,7 @@ describe('StorageMonitoringService', () => {
         });
         
         testService.dispose();
-        mockNavigator.storage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
+        mockNavigatorStorage.estimate.mockResolvedValue({ usage: 1024, quota: 10240 });
       });
 
       it('should cover IndexedDB timeout and error paths (lines 433-450)', () => {

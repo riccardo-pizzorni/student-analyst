@@ -732,7 +732,7 @@ describe('CacheService', () => {
       const hashParameters = (service as unknown).hashParameters.bind(service);
       
       // Create circular reference
-      const circular: any = { a: 1 };
+      const circular: Record<string, unknown> = { a: 1 };
       circular.self = circular;
       
       expect(hashParameters(circular)).toBe('hash-error');
@@ -744,8 +744,8 @@ describe('CacheService', () => {
       const obj = { b: { d: 4, c: 3 }, a: [{ z: 26, y: 25 }] };
       const sorted = sortObjectKeys(obj);
       
-      expect(Object.keys(sorted as any)).toEqual(['a', 'b']);
-      expect(Object.keys((sorted as any).b)).toEqual(['c', 'd']);
+      expect(Object.keys(sorted as Record<string, unknown>)).toEqual(['a', 'b']);
+      expect(Object.keys((sorted as Record<string, unknown>).b as Record<string, unknown>)).toEqual(['c', 'd']);
     });
 
     it('should handle non-object values in sortObjectKeys', () => {
@@ -869,8 +869,8 @@ describe('CacheService', () => {
       const keys = Object.keys(sorted);
       
       expect(keys).toEqual(['a', 'b']);
-      expect(Object.keys((sorted as any).a)).toEqual(['x', 'z']);
-      expect(Object.keys((sorted as any).a.x)).toEqual(['a', 'c']);
+      expect(Object.keys((sorted as Record<string, unknown>).a as Record<string, unknown>)).toEqual(['x', 'z']);
+      expect(Object.keys(((sorted as Record<string, unknown>).a as Record<string, unknown>).x as Record<string, unknown>)).toEqual(['a', 'c']);
     });
 
     it('should generate simple hash from string', () => {
