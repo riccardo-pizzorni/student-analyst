@@ -5,65 +5,115 @@
 
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
+// Definizione delle interfacce per i mock
+interface MockCacheService {
+  get: jest.Mock;
+  set: jest.Mock;
+  remove?: jest.Mock;
+  delete?: jest.Mock;
+  clear: jest.Mock;
+  has: jest.Mock;
+  keys: jest.Mock;
+  getStats: jest.Mock;
+  getConfig?: jest.Mock;
+  updateConfig?: jest.Mock;
+  size: jest.Mock;
+}
+
+interface MockAnalyticsEngine {
+  trackCacheHit: jest.Mock;
+  trackCacheMiss: jest.Mock;
+  getMetrics: jest.Mock;
+  reset: jest.Mock;
+}
+
+interface MockQualityService {
+  checkDataQuality: jest.Mock;
+}
+
+interface MockStorageMonitoring {
+  getStorageHealth: jest.Mock;
+  initialize: jest.Mock;
+  forceHealthCheck: jest.Mock;
+}
+
+interface MockAutomaticCleanup {
+  initialize: jest.Mock;
+  getConfig: jest.Mock;
+  updateConfig: jest.Mock;
+  getCleanupHistory: jest.Mock;
+  getCurrentOperations: jest.Mock;
+  forceCleanup: jest.Mock;
+  trackDataAccess: jest.Mock;
+  onProgress: jest.Mock;
+  onCompletion: jest.Mock;
+  shutdown: jest.Mock;
+}
+
 // Mock delle dipendenze dei servizi cache
-const mockMemoryCacheL1 = {
-  get: jest.fn<any>(),
-  set: jest.fn<any>(),
-  remove: jest.fn<any>(),
-  clear: jest.fn<any>(),
-  has: jest.fn<any>(),
-  keys: jest.fn<any>(),
-  getStats: jest.fn<any>(),
-  getConfig: jest.fn<any>(),
-  updateConfig: jest.fn<any>(),
-  size: jest.fn<any>()
+const mockMemoryCacheL1: MockCacheService = {
+  get: jest.fn(),
+  set: jest.fn(),
+  remove: jest.fn(),
+  clear: jest.fn(),
+  has: jest.fn(),
+  keys: jest.fn(),
+  getStats: jest.fn(),
+  getConfig: jest.fn(),
+  updateConfig: jest.fn(),
+  size: jest.fn()
 };
 
-const mockLocalStorageCacheL2 = {
-  get: jest.fn<any>(),
-  set: jest.fn<any>(),
-  delete: jest.fn<any>(),
-  clear: jest.fn<any>(),
-  keys: jest.fn<any>(),
-  getStats: jest.fn<any>()
+const mockLocalStorageCacheL2: MockCacheService = {
+  get: jest.fn(),
+  set: jest.fn(),
+  delete: jest.fn(),
+  clear: jest.fn(),
+  has: jest.fn(),
+  keys: jest.fn(),
+  getStats: jest.fn(),
+  size: jest.fn()
 };
 
-const mockIndexedDBCacheL3 = {
-  get: jest.fn<any>(),
-  set: jest.fn<any>(),
-  delete: jest.fn<any>(),
-  clear: jest.fn<any>(),
-  getStats: jest.fn<any>()
+const mockIndexedDBCacheL3: MockCacheService = {
+  get: jest.fn(),
+  set: jest.fn(),
+  delete: jest.fn(),
+  clear: jest.fn(),
+  has: jest.fn(),
+  keys: jest.fn(),
+  getStats: jest.fn(),
+  size: jest.fn()
 };
 
-const mockCacheAnalyticsEngine = {
-  trackCacheHit: jest.fn<any>(),
-  trackCacheMiss: jest.fn<any>(),
-  getMetrics: jest.fn<any>(),
-  reset: jest.fn<any>()
+const mockCacheAnalyticsEngine: MockAnalyticsEngine = {
+  trackCacheHit: jest.fn(),
+  trackCacheMiss: jest.fn(),
+  getMetrics: jest.fn(),
+  reset: jest.fn()
 };
 
-const mockCacheQualityService = {
-  checkDataQuality: jest.fn<any>()
+const mockCacheQualityService: MockQualityService = {
+  checkDataQuality: jest.fn()
 };
 
-const mockStorageMonitoring = {
-  getStorageHealth: jest.fn<any>(),
-  initialize: jest.fn<any>(),
-  forceHealthCheck: jest.fn<any>()
+const mockStorageMonitoring: MockStorageMonitoring = {
+  getStorageHealth: jest.fn(),
+  initialize: jest.fn(),
+  forceHealthCheck: jest.fn()
 };
 
-const mockAutomaticCleanup = {
-  initialize: jest.fn<any>(),
-  getConfig: jest.fn<any>(),
-  updateConfig: jest.fn<any>(),
-  getCleanupHistory: jest.fn<any>(),
-  getCurrentOperations: jest.fn<any>(),
-  forceCleanup: jest.fn<any>(),
-  trackDataAccess: jest.fn<any>(),
-  onProgress: jest.fn<any>(),
-  onCompletion: jest.fn<any>(),
-  shutdown: jest.fn<any>()
+const mockAutomaticCleanup: MockAutomaticCleanup = {
+  initialize: jest.fn(),
+  getConfig: jest.fn(),
+  updateConfig: jest.fn(),
+  getCleanupHistory: jest.fn(),
+  getCurrentOperations: jest.fn(),
+  forceCleanup: jest.fn(),
+  trackDataAccess: jest.fn(),
+  onProgress: jest.fn(),
+  onCompletion: jest.fn(),
+  shutdown: jest.fn()
 };
 
 // Mock dei moduli
@@ -96,7 +146,7 @@ jest.mock('../../src/services/AutomaticCleanupService', () => ({
 }));
 
 // Mock di performance.now()
-const mockPerformanceNow = jest.fn<any>();
+const mockPerformanceNow = jest.fn();
 Object.defineProperty(global, 'performance', {
   value: { now: mockPerformanceNow },
   writable: true
