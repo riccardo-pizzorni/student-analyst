@@ -7,9 +7,18 @@
 
 // ========== INTERFACCE ==========
 
+export interface VolumeDataItem {
+  [key: string]: unknown;
+  volume?: number | string;
+  volumeNormalized?: number;
+  originalVolume?: number | string;
+  volumeUnit?: string;
+  volumeInterpolated?: boolean;
+}
+
 export interface VolumeNormalizationResult {
   success: boolean;
-  normalizedData: any[];
+  normalizedData: VolumeDataItem[];
   conversions: VolumeConversion[];
   anomalies: VolumeAnomaly[];
   stats: {
@@ -22,7 +31,7 @@ export interface VolumeNormalizationResult {
 }
 
 export interface VolumeConversion {
-  originalValue: any;
+  originalValue: unknown;
   normalizedValue: number;
   detectedUnit: string;
   conversionFactor: number;
@@ -32,7 +41,7 @@ export interface VolumeConversion {
 export interface VolumeAnomaly {
   type: 'ZERO_VOLUME' | 'NEGATIVE_VOLUME' | 'EXTREME_HIGH' | 'EXTREME_LOW' | 'INCONSISTENT_FORMAT';
   record: number;
-  originalValue: any;
+  originalValue: unknown;
   normalizedValue?: number;
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
   description: string;
@@ -76,7 +85,7 @@ export class VolumeHandler {
   /**
    * Normalizza volume in un array di dati
    */
-  public normalizeVolume(data: any[]): any[] {
+  public normalizeVolume(data: VolumeDataItem[]): VolumeDataItem[] {
     if (!this.config.enableNormalization || data.length === 0) {
       return data;
     }
@@ -93,10 +102,10 @@ export class VolumeHandler {
   /**
    * Processa dati di volume completi con statistiche
    */
-  public processVolumeData(data: any[]): VolumeNormalizationResult {
+  public processVolumeData(data: VolumeDataItem[]): VolumeNormalizationResult {
     const conversions: VolumeConversion[] = [];
     const anomalies: VolumeAnomaly[] = [];
-    const normalizedData: any[] = [];
+    const normalizedData: VolumeDataItem[] = [];
 
     // 1. Prima passata: normalizzazione base
     for (let i = 0; i < data.length; i++) {
@@ -118,7 +127,7 @@ export class VolumeHandler {
       const normalizationResult = this.normalizeVolumeValue(originalVolume);
       
       if (normalizationResult.success) {
-        const normalizedItem = {
+        const normalizedItem: VolumeDataItem = {
           ...item,
           volume: normalizationResult.normalizedValue,
           volumeNormalized: normalizationResult.normalizedValue
@@ -173,7 +182,7 @@ export class VolumeHandler {
   /**
    * Normalizza un singolo valore di volume
    */
-  private normalizeVolumeValue(value: any): {
+  private normalizeVolumeValue(value: unknown): {
     success: boolean;
     normalizedValue: number;
     detectedUnit: string;
@@ -267,7 +276,7 @@ export class VolumeHandler {
   /**
    * Rileva anomalie nel volume
    */
-  private detectVolumeAnomalies(data: any[]): VolumeAnomaly[] {
+  private detectVolumeAnomalies(data: VolumeDataItem[]): VolumeAnomaly[] {
     const anomalies: VolumeAnomaly[] = [];
     
     if (data.length === 0) return anomalies;
@@ -339,7 +348,7 @@ export class VolumeHandler {
   /**
    * Gestisce valori speciali di volume (zero, negativi)
    */
-  private handleSpecialVolumeValues(data: any[], anomalies: VolumeAnomaly[]): any[] {
+  private handleSpecialVolumeValues(data: VolumeDataItem[], anomalies: VolumeAnomaly[]): VolumeDataItem[] {
     if (this.config.zeroVolumeHandling === 'KEEP') {
       return data;
     }
@@ -375,22 +384,25 @@ export class VolumeHandler {
   /**
    * Interpola volume per un record specifico
    */
-  private interpolateVolume(data: any[], index: number): number {
+  private interpolateVolume(data: VolumeDataItem[], index: number): number {
     const volumes = data.map(item => item.volumeNormalized || item.volume || 0);
     
     switch (this.config.interpolationMethod) {
-      case 'LINEAR':
+      case 'LINEAR': {
         return this.linearInterpolation(volumes, index);
+      }
       
-      case 'MEDIAN':
+      case 'MEDIAN': {
         const nonZeroVolumes = volumes.filter(v => v > 0);
         return nonZeroVolumes.length > 0 ? this.calculateMedian(nonZeroVolumes) : 0;
+      }
       
-      case 'AVERAGE':
+      case 'AVERAGE': {
         const nonZeroVolumesAvg = volumes.filter(v => v > 0);
         return nonZeroVolumesAvg.length > 0 
           ? nonZeroVolumesAvg.reduce((sum, v) => sum + v, 0) / nonZeroVolumesAvg.length 
           : 0;
+      }
       
       default:
         return 0;
@@ -435,7 +447,7 @@ export class VolumeHandler {
   /**
    * Calcola statistiche volume
    */
-  private calculateVolumeStats(data: any[]): {
+  private calculateVolumeStats(data: VolumeDataItem[]): {
     recordsProcessed: number;
     recordsNormalized: number;
     averageVolume: number;
@@ -488,7 +500,7 @@ export class VolumeHandler {
   /**
    * Trova campo volume nell'oggetto
    */
-  private findVolumeField(item: any): string | null {
+  private findVolumeField(item: VolumeDataItem): string | null {
     const volumeFields = [
       'volume', 'Volume', 'VOLUME',
       'vol', 'Vol', 'VOL',
@@ -514,7 +526,7 @@ export class VolumeHandler {
   /**
    * Test normalizzazione su valore singolo
    */
-  public testNormalization(value: any): {
+  public testNormalization(value: unknown): {
     canNormalize: boolean;
     result?: {
       normalizedValue: number;
