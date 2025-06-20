@@ -1,5 +1,5 @@
 import express from 'express';
-import * as analysisService from '../services/analysisService';
+import { performAnalysis } from '../services/analysisService';
 
 const router = express.Router();
 
@@ -21,10 +21,9 @@ router.post('/', (req, res) => {
   }
 
   try {
-    analysisService
-      .performAnalysis({ tickers, startDate, endDate, frequency })
-      .then(results => res.json(results))
-      .catch(error => {
+    performAnalysis({ tickers, startDate, endDate, frequency })
+      .then((results: any) => res.json(results))
+      .catch((error: any) => {
         console.error('Errore durante l_esecuzione dell_analisi:', error);
         const errorMessage =
           error instanceof Error ? error.message : 'Errore sconosciuto';
