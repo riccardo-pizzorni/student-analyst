@@ -1,1 +1,3 @@
+ M backend/package.json
  M scripts/temp_git_status.txt
+ M vite.config.ts

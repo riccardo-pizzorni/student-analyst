@@ -6,9 +6,9 @@
   "scripts": {
     "build": "echo 'No build needed for simple server'",
     "build-production": "echo 'Production ready'",
-    "start": "node src/simple-server.js",
+    "start": "ts-node src/index.ts",
     "start-simple": "node src/simple-server.js",
-    "dev": "nodemon src/simple-server.js",
+    "dev": "nodemon src/index.ts",
     "dev-ts": "nodemon src/index.ts",
     "clean": "rimraf dist",
     "postinstall": "echo 'Ready for deployment'",
