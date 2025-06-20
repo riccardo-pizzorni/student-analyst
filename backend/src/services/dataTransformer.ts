@@ -183,14 +183,14 @@ export class DataTransformer {
       let adjustedData = normalizedData;
       if (this.config.enableSplitAdjustment) {
         adjustedData = await this.priceAdjuster.adjustForSplits(
-          adjustedData,
+          normalizedData as PriceDataRecord[],
           symbol
         );
       }
 
       // 4. Gestione volume
       const volumeProcessedData = this.config.enableVolumeNormalization
-        ? this.volumeHandler.normalizeVolume(adjustedData)
+        ? this.volumeHandler.normalizeVolume(adjustedData as VolumeDataItem[])
         : adjustedData;
 
       // 5. Validazione qualità dati
@@ -380,6 +380,8 @@ import { DateNormalizer } from './dateNormalizer';
 import { PriceAdjuster } from './priceAdjuster';
 import { ResponseParser } from './responseParser';
 import { VolumeHandler } from './volumeHandler';
+import { PriceDataRecord } from './priceAdjuster';
+import { VolumeDataItem } from './volumeHandler';
 
 // ========== CLASSE DI SUPPORTO SEMPLIFICATA ==========
 
