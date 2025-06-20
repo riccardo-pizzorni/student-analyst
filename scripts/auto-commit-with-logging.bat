@@ -20,7 +20,7 @@ if %errorlevel% neq 0 (
 rem Controlla se ci sono modifiche reali (escludendo il file temp_git_status.txt stesso)
 findstr /v "^ M scripts\\temp_git_status.txt" scripts\temp_git_status.txt >nul
 if %errorlevel% equ 0 (
-    echo [INFO] Modifiche trovate.
+    echo [INFO] Modifiche trovate. Procedo con il commit...
     echo.
     echo =================================================================
     echo [2/5] Eseguo 'git add -A'... (Output del comando qui sotto)
@@ -38,6 +38,7 @@ if %errorlevel% equ 0 (
     git commit -m "Auto-commit: %date% %time%" --no-verify
     if %errorlevel% neq 0 (
         echo [ERRORE] Il commit e' fallito. Controlla l'output qui sopra.
+        echo [INFO] Potrebbe essere che non ci siano modifiche reali da committare.
         goto wait
     )
     echo -----------------------------------------------------------------
@@ -57,7 +58,8 @@ if %errorlevel% equ 0 (
     )
     echo =================================================================
 ) else (
-    echo [INFO] Nessuna modifica da committare.
+    echo [INFO] Nessuna modifica da committare. Repository pulito.
+    echo [INFO] Salto il commit e attendo il prossimo ciclo.
 )
 
 :wait
