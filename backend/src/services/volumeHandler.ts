@@ -159,7 +159,7 @@ export class VolumeHandler {
         };
 
         if (this.config.preserveOriginalValues) {
-          normalizedItem.originalVolume = originalVolume;
+          normalizedItem.originalVolume = typeof originalVolume === 'string' || typeof originalVolume === 'number' ? originalVolume : String(originalVolume);
           normalizedItem.volumeUnit = normalizationResult.detectedUnit;
         }
 
@@ -319,22 +319,21 @@ export class VolumeHandler {
     if (data.length === 0) return anomalies;
 
     // Calcola statistiche per rilevamento anomalie
-    const volumes = data.map(item =>
-      toNumber(item.volumeNormalized ?? item.volume ?? 0)
-    );
-    const sortedVolumes = [...volumes].sort(
-      (a, b) => toNumber(a) - toNumber(b)
-    );
-    const median = this.calculateMedian(sortedVolumes.map(toNumber));
-    const mean =
-      volumes.reduce((sum, vol) => sum + toNumber(vol), 0) / volumes.length;
+    const volumes = data.map(item => {
+      const vol = item.volumeNormalized || item.volume || 0;
+      return typeof vol === 'string' ? parseFloat(vol) || 0 : vol;
+    });
+    const sortedVolumes = [...volumes].sort((a, b) => a - b);
+    const median = this.calculateMedian(sortedVolumes);
+    const mean = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
 
     const extremeThreshold = median * this.config.extremeVolumeThreshold;
 
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
-      const volumeRaw = item.volumeNormalized ?? item.volume ?? 0;
-      const volume = toNumber(volumeRaw);
+      const volumeRaw = item.volumeNormalized || item.volume || 0;
+      const volume =
+        typeof volumeRaw === 'string' ? parseFloat(volumeRaw) || 0 : volumeRaw;
 
       // Volume zero
       if (volume === 0) {
