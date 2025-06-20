@@ -1,1 +1,4 @@
  M scripts/temp_git_status.txt
+?? docs/CRITICAL_FIXES_SUMMARY.md
+?? docs/DEVELOPMENT_WORKFLOW.md
+?? docs/PRETTIER_INTEGRATION_AND_TYPE_SAFETY_FIXES.md
