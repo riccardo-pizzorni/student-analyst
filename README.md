@@ -17,6 +17,9 @@
 # Installazione
 npm install
 
+# Setup Husky (solo la prima volta)
+npx husky install
+
 # Verifica stato progetto
 npm run lint          # TypeScript safety
 npm run format:check  # Formattazione
@@ -243,10 +246,11 @@ npm run build
 ## 🤝 Contributing
 
 1. **Leggi la documentazione** dei fix critici
-2. **Segui il workflow** di sviluppo
-3. **Rispetta le regole** TypeScript
-4. **Mantieni la formattazione** Prettier
-5. **Testa tutto** prima del commit
+2. **Esegui `npx husky install`** dopo l'installazione per attivare i pre-commit hooks
+3. **Segui il workflow** di sviluppo
+4. **Rispetta le regole** TypeScript
+5. **Mantieni la formattazione** Prettier
+6. **Testa tutto** prima del commit
 
 ### **Branch Naming**
 
