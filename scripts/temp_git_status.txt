@@ -1,3 +1,10 @@
- M backend/src/index.js
- M scripts/integration-tests.js
+ M .github/workflows/ci-cd.yml
+ M backend/src/routes/apiRoutes.ts
+ M backend/src/routes/batchRoutes.ts
+ M backend/src/services/alphaVantageService.ts
+ M backend/src/utils/securityTester.ts
+ M backend/src/utils/testAlphaVantageService.ts
+ M scripts/start-server.bat
+ M scripts/start-server.sh
  M scripts/temp_git_status.txt
+ M server/package.json

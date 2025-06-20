@@ -33,8 +33,8 @@ if not exist "node_modules" (
 
 echo [4/4] Starting CORS Proxy Server...
 echo.
-echo Server will start on: http://localhost:3001
-echo Health check: http://localhost:3001/health
+echo Server will start on: http://localhost:10000
+echo Health check: http://localhost:10000/health
 echo.
 echo Press Ctrl+C to stop the server
 echo.

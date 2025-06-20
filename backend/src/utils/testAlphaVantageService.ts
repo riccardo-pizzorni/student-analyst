@@ -21,7 +21,7 @@ const TEST_CONFIG = {
   
   // Configurazione servizio per test
   serviceConfig: {
-    baseUrl: process.env.BACKEND_URL || 'http://localhost:3001',
+    baseUrl: process.env.BACKEND_URL || 'http://localhost:10000',
     timeout: 10000, // Timeout ridotto per test
     retryAttempts: 2,
     cacheEnabled: true,

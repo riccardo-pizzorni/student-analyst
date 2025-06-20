@@ -15,7 +15,7 @@ export interface SecurityTestResult {
 export class SecurityTester {
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'http://localhost:3001') {
+  constructor(baseUrl: string = 'http://localhost:10000') {
     this.baseUrl = baseUrl;
   }
 
@@ -204,7 +204,7 @@ export async function quickSecurityTest(baseUrl?: string): Promise<void> {
 /**
  * Test payload size limit
  */
-export async function testPayloadLimit(baseUrl: string = 'http://localhost:3001'): Promise<SecurityTestResult> {
+export async function testPayloadLimit(baseUrl: string = 'http://localhost:10000'): Promise<SecurityTestResult> {
   try {
     // Crea un payload di 11MB (sopra il limite di 10MB)
     const largePayload = 'x'.repeat(11 * 1024 * 1024);

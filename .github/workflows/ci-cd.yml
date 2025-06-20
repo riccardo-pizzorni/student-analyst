@@ -83,7 +83,7 @@ jobs:
         run: |
           timeout 30s npm start &
           sleep 10
-          curl -f http://localhost:3001/health || exit 1
+          curl -f http://localhost:10000/health || exit 1
           echo "✅ Backend health check passed"
 
       - name: 🔍 Run monitoring tests
@@ -154,7 +154,7 @@ jobs:
       - name: 🧪 Integration tests
         run: |
           echo "🔗 Testing API connectivity..."
-          curl -f http://localhost:3001/health
+          curl -f http://localhost:10000/health
           
           echo "🔗 Testing frontend serve..."
           curl -f http://localhost:3000

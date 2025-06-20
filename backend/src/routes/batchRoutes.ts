@@ -17,7 +17,7 @@ const router = Router();
 
 // Inizializza servizi
 const alphaVantageService = new AlphaVantageService({
-  baseUrl: process.env.BACKEND_URL || 'http://localhost:3001',
+  baseUrl: process.env.BACKEND_URL || 'http://localhost:10000',
   timeout: 30000,
   retryAttempts: 3,
   cacheEnabled: true,

@@ -145,7 +145,7 @@ export class AlphaVantageService {
 
   constructor(config?: Partial<AlphaVantageConfig>) {
     this.config = {
-      baseUrl: process.env.BACKEND_URL || 'http://localhost:3001',
+      baseUrl: process.env.BACKEND_URL || 'http://localhost:10000',
       timeout: 30000, // 30 secondi
       retryAttempts: 3,
       retryDelay: 1000, // 1 secondo
