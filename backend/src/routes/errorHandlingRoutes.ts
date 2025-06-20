@@ -147,7 +147,7 @@ router.post('/simulate', async (req: Request, res: Response) => {
     }
 
     // Simula l'errore richiesto
-    const simulatedError = simulateError(errorType, symbol, ____timeframe);
+    const simulatedError = simulateError(errorType, symbol, timeframe);
     const context: ErrorContext = {
       operation: 'error_simulation',
       apiService: 'test_service',
@@ -584,7 +584,7 @@ function generateNextSteps(error: ClassifiedError): string[] {
 function simulateError(
   errorType: string,
   symbol?: string,
-  _timeframe?: string
+  timeframe?: string
 ): Error {
   let timeoutError: Error;
   let networkError: Error;
