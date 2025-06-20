@@ -562,15 +562,17 @@ export class ErrorHandlingTestSuite {
       case SystemErrorType.SYMBOL_NOT_FOUND:
         return new Error('Invalid API call. Symbol=INVALID123 not found.');
       
-      case SystemErrorType.CONNECTION_TIMEOUT:
+      case SystemErrorType.CONNECTION_TIMEOUT: {
         const timeoutError = new Error('Operation timeout after 30000ms');
         timeoutError.name = 'TimeoutError';
         return timeoutError;
+      }
       
-      case SystemErrorType.NETWORK_UNAVAILABLE:
+      case SystemErrorType.NETWORK_UNAVAILABLE: {
         const networkError = new Error('ENOTFOUND api.alphavantage.co');
         networkError.name = 'NetworkError';
         return networkError;
+      }
       
       default:
         return new Error(`Mock error for type: ${errorType}`);
@@ -599,7 +601,7 @@ export class ErrorHandlingTestSuite {
       this.results
         .filter(r => !r.success)
         .forEach(r => {
-          console.log(`  - ${r.testName}: ${r.details?.error || 'Unknown error'}`);
+          console.log(`  - ${r.testName}: ${(r.details as { error?: string })?.error || 'Unknown error'}`);
         });
       console.log('');
     }
