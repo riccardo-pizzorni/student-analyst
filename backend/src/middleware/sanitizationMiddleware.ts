@@ -52,7 +52,7 @@ export function sanitizationMiddleware(
 ) {
   const finalConfig = { ...defaultConfig, ...config };
 
-  return (req: SanitizedRequest, res: Response, next: NextFunction) => {
+  return (req: SanitizedRequest, res: Response, next: NextFunction): void => {
     const startTime = Date.now();
     const clientIP = req.ip || 'unknown';
     const userAgent = req.get('user-agent') || '';
@@ -79,7 +79,7 @@ export function sanitizationMiddleware(
         });
       }
 
-      return res.status(413).json({
+      res.status(413).json({
         error: 'Request Too Large',
         message: 'Request payload exceeds maximum allowed size',
         details: {
@@ -87,6 +87,7 @@ export function sanitizationMiddleware(
           receivedSize: requestSize,
         },
       });
+      return;
     }
 
     // Inizializza risultati di validazione
@@ -107,15 +108,19 @@ export function sanitizationMiddleware(
               clientIP,
               userAgent
             );
-            return res.status(400).json({
+            res.status(400).json({
               error: 'Invalid Request Body',
               message: 'Request body contains invalid or dangerous content',
               details: bodyValidation.errors,
             });
+            return;
           }
         }
 
-        req.sanitizedBody = bodyValidation.sanitizedValue;
+        req.sanitizedBody = bodyValidation.sanitizedValue as Record<
+          string,
+          unknown
+        >;
       }
 
       // Sanitizza parametri URL
@@ -132,15 +137,19 @@ export function sanitizationMiddleware(
               clientIP,
               userAgent
             );
-            return res.status(400).json({
+            res.status(400).json({
               error: 'Invalid URL Parameters',
               message: 'URL parameters contain invalid or dangerous content',
               details: paramsValidation.errors,
             });
+            return;
           }
         }
 
-        req.sanitizedParams = paramsValidation.sanitizedValue;
+        req.sanitizedParams = paramsValidation.sanitizedValue as Record<
+          string,
+          string
+        >;
       }
 
       // Sanitizza query string
@@ -157,15 +166,19 @@ export function sanitizationMiddleware(
               clientIP,
               userAgent
             );
-            return res.status(400).json({
+            res.status(400).json({
               error: 'Invalid Query Parameters',
               message: 'Query parameters contain invalid or dangerous content',
               details: queryValidation.errors,
             });
+            return;
           }
         }
 
-        req.sanitizedQuery = queryValidation.sanitizedValue;
+        req.sanitizedQuery = queryValidation.sanitizedValue as Record<
+          string,
+          string | string[]
+        >;
       }
 
       // Log warnings per IP non fidati
@@ -213,7 +226,7 @@ export function sanitizationMiddleware(
         });
       }
 
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Request Processing Error',
         message: 'Unable to process request safely',
       });
@@ -229,7 +242,7 @@ export function sanitizationMiddleware(
     req: SanitizedRequest,
     clientIP: string,
     userAgent: string
-  ) {
+  ): void {
     if (!finalConfig.logSuspiciousActivity) return;
 
     const severity = validation.errors.some(
@@ -266,14 +279,15 @@ export function tickerValidationMiddleware(
   req: SanitizedRequest,
   res: Response,
   next: NextFunction
-) {
+): void {
   const { symbol } = req.params;
 
   if (!symbol) {
-    return res.status(400).json({
+    res.status(400).json({
       error: 'Missing Symbol',
       message: 'Ticker symbol is required',
     });
+    return;
   }
 
   const validation = DataSanitizer.validateTicker(symbol, {
@@ -298,19 +312,20 @@ export function tickerValidationMiddleware(
       },
     });
 
-    return res.status(400).json({
+    res.status(400).json({
       error: 'Invalid Ticker Symbol',
       message: 'The provided ticker symbol is not valid',
       details: validation.errors,
       suggestions: 'Use valid stock symbols like AAPL, MSFT, GOOGL',
     });
+    return;
   }
 
   // Sostituisci il simbolo con la versione sanitizzata
   req.params.symbol = validation.sanitizedValue as string;
   req.sanitizedParams = {
     ...req.sanitizedParams,
-    symbol: validation.sanitizedValue,
+    symbol: validation.sanitizedValue as string,
   };
 
   if (validation.warnings.length > 0) {
@@ -327,7 +342,7 @@ export function dateRangeValidationMiddleware(
   req: SanitizedRequest,
   res: Response,
   next: NextFunction
-) {
+): void {
   const { startDate, endDate, from, to } = req.query;
 
   // Supporta diverse convenzioni di naming
@@ -345,12 +360,13 @@ export function dateRangeValidationMiddleware(
     );
 
     if (!validation.isValid) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid Date Range',
         message: 'The provided date range is not valid',
         details: validation.errors,
         format: 'Use YYYY-MM-DD format',
       });
+      return;
     }
 
     // Sostituisci con date sanitizzate
@@ -381,7 +397,7 @@ export function numericValidationMiddleware(
   fieldName: string,
   type: 'price' | 'quantity' | 'percentage' | 'generic' = 'generic'
 ) {
-  return (req: SanitizedRequest, res: Response, next: NextFunction) => {
+  return (req: SanitizedRequest, res: Response, next: NextFunction): void => {
     const value = req.query[fieldName] || req.body?.[fieldName];
 
     if (value !== undefined && value !== null && value !== '') {
@@ -390,11 +406,12 @@ export function numericValidationMiddleware(
       });
 
       if (!validation.isValid) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Invalid Numeric Value',
           message: `Invalid ${type} value for ${fieldName}`,
           details: validation.errors,
         });
+        return;
       }
 
       // Sostituisci con valore sanitizzato
@@ -402,7 +419,7 @@ export function numericValidationMiddleware(
         req.query[fieldName] = validation.sanitizedValue as string;
         req.sanitizedQuery = {
           ...req.sanitizedQuery,
-          [fieldName]: validation.sanitizedValue,
+          [fieldName]: validation.sanitizedValue as string | string[],
         };
       }
       if (req.body?.[fieldName] !== undefined) {

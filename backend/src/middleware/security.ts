@@ -197,7 +197,7 @@ export const securityLogger = (
 
   // Override del res.end per loggare la risposta
   const originalEnd = res.end;
-  res.end = function (...args: unknown[]) {
+  res.end = function (...args: unknown[]): Response {
     const duration = Date.now() - startTime;
     const statusColor = res.statusCode >= 400 ? '🔴' : '🟢';
 
@@ -217,7 +217,10 @@ export const securityLogger = (
       );
     }
 
-    originalEnd.apply(this, args);
+    return originalEnd.apply(
+      this,
+      args as [any, BufferEncoding?, (() => void)?]
+    );
   };
 
   next();
@@ -230,16 +233,17 @@ export const requestValidator = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   // Controlla dimensione del payload
   const contentLength = req.get('content-length');
   if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
     // 10MB limit
-    return res.status(413).json({
+    res.status(413).json({
       error: 'Payload Too Large',
       message: 'Request payload exceeds maximum size limit',
       maxSize: '10MB',
     });
+    return;
   }
 
   // Controlla User-Agent sospetti

@@ -17,10 +17,11 @@ router.post('/', (req: Request, res: Response) => {
     !endDate ||
     !frequency
   ) {
-    return res.status(400).json({
+    res.status(400).json({
       error:
         'Parametri mancanti o non validi. Sono richiesti tickers, startDate, endDate e frequency.',
     });
+    return;
   }
 
   performAnalysis({ tickers, startDate, endDate, frequency })
