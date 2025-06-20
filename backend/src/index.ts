@@ -14,13 +14,22 @@ import { analysisRoutes } from './routes/analysisRoutes_fixed';
 import { apiRoutes } from './routes/apiRoutes';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 
 // Middleware essenziali
 app.use(cors()); // Abilita CORS per le richieste dal frontend
 app.use(helmet()); // Aggiunge header di sicurezza
 app.use(morgan('dev'));
 app.use(express.json()); // Per il parsing del body JSON delle richieste
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+  });
+});
 
 // Rotte API
 app.use('/api', apiRoutes);
@@ -48,6 +57,9 @@ app.listen(PORT, () => {
   console.log(`✅ Server minimale avviato e in ascolto sulla porta ${PORT}`);
   console.log(
     `🚀 Endpoint di analisi disponibile a POST http://localhost:${PORT}/api/analysis`
+  );
+  console.log(
+    `🏥 Health check disponibile a GET http://localhost:${PORT}/health`
   );
 });
 
