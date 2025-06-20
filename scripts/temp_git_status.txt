@@ -1,2 +1,2 @@
  M scripts/temp_git_status.txt
-?? test-auto-commit.txt
+?? test-file.txt
