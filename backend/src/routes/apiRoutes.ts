@@ -35,11 +35,11 @@ const alphaVantageService = new AlphaVantageService({
 // Applica sanitizzazione globale a tutte le route
 router.use(
   sanitizationMiddleware({
-    enableBodySanitization: true,
-    enableParamsSanitization: true,
-    enableQuerySanitization: true,
+    enableBodySanitization: false,
+    enableParamsSanitization: false,
+    enableQuerySanitization: false,
     logSuspiciousActivity: true,
-    blockOnDangerousPatterns: true,
+    blockOnDangerousPatterns: false,
     maxRequestSize: 512 * 1024, // 512KB per API finanziarie
     trustedIPs: ['127.0.0.1', '::1', 'localhost'],
   })
