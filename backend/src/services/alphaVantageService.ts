@@ -432,13 +432,13 @@ export class AlphaVantageService {
       params.extended_hours = 'true';
 
       if (options?.month) {
-        params.month = options.month;
+        params.month = typeof options.month === 'string' ? options.month : '';
       }
     }
 
     // Output size
     if (options?.outputSize) {
-      params.outputsize = options.outputSize;
+      params.outputsize = typeof options.outputSize === 'string' ? options.outputSize : 'compact';
     }
 
     return params;

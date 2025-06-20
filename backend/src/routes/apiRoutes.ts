@@ -341,12 +341,12 @@ router.post('/stock/batch', async (req: Request, res: Response) => {
     const successfulResults = results
       .filter(result => result.status === 'fulfilled')
       .map(result => (result as PromiseFulfilledResult<unknown>).value)
-      .filter(result => result.success);
+      .filter(result => typeof result === 'object' && result !== null && 'success' in result && (result as any).success);
 
     const failedResults = results
       .filter(result => result.status === 'fulfilled')
       .map(result => (result as PromiseFulfilledResult<unknown>).value)
-      .filter(result => !result.success);
+      .filter(result => typeof result === 'object' && result !== null && 'success' in result && !(result as any).success);
 
     const rejectedResults = results
       .filter(result => result.status === 'rejected')
@@ -570,7 +570,7 @@ router.get('/admin/cache-status', async (req: Request, res: Response) => {
     res.json({
       success: true,
       cache: {
-        size: stats.cacheSize,
+        size: typeof stats === 'object' && stats !== null && 'cacheSize' in stats ? (stats as any).cacheSize : 0,
         lastCleanup: new Date().toISOString(),
         systemMemory: process.memoryUsage(),
         uptime: process.uptime(),

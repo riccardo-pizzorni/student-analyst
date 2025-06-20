@@ -463,7 +463,7 @@ export class ApiProxyService {
 
     try {
       if (!symbol) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Missing Symbol',
           message: 'Symbol parameter is required',
         });
@@ -486,9 +486,9 @@ export class ApiProxyService {
       });
 
       // Verifica se ci sono dati validi
-      const globalQuote = result.data['Global Quote'];
+      const globalQuote = typeof result === 'object' && result !== null && 'data' in result && typeof (result as any).data === 'object' && (result as any).data !== null ? (result as any).data['Global Quote'] : null;
       if (!globalQuote || Object.keys(globalQuote).length === 0) {
-        return res.status(404).json({
+        res.status(404).json({
           error: 'Symbol Not Found',
           message: `No data available for symbol: ${symbol}`,
           symbol: symbol.toUpperCase(),
@@ -508,7 +508,7 @@ export class ApiProxyService {
         low: parseFloat(globalQuote['04. low'] || '0'),
         volume: parseInt(globalQuote['06. volume'] || '0'),
         latestTradingDay: globalQuote['07. latest trading day'] || '',
-        source: result.source,
+        source: typeof result === 'object' && result !== null && 'source' in result ? (result as any).source : 'unknown',
         timestamp: new Date().toISOString(),
       };
 
@@ -548,7 +548,7 @@ export class ApiProxyService {
 
     try {
       if (!symbol) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Missing Symbol',
           message: 'Symbol parameter is required',
         });
@@ -610,7 +610,7 @@ export class ApiProxyService {
       const dataKey = keys.find(key => key.includes('Time Series'));
 
       if (!dataKey || !result.data[dataKey]) {
-        return res.status(404).json({
+        res.status(404).json({
           error: 'No Data Available',
           message: `No historical data available for symbol: ${symbol}`,
           symbol: symbol.toUpperCase(),
@@ -626,7 +626,7 @@ export class ApiProxyService {
         outputsize,
         data: result.data[dataKey],
         metadata: result.data['Meta Data'] || {},
-        source: result.source,
+        source: typeof result === 'object' && result !== null && 'source' in result ? (result as any).source : 'unknown',
         timestamp: new Date().toISOString(),
       };
 
