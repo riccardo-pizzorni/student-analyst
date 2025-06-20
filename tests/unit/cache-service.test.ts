@@ -154,8 +154,8 @@ describe('CacheService', () => {
     });
 
     it('should have correct default configuration', () => {
-      const defaultTTL = (service as any).defaultTTL;
-      const keyPrefix = (service as any).keyPrefix;
+      const defaultTTL = (service as unknown).defaultTTL;
+      const keyPrefix = (service as unknown).keyPrefix;
       
       expect(defaultTTL).toBe(60 * 60 * 1000); // 1 hour
       expect(keyPrefix).toBe('student-analyst');
@@ -164,14 +164,14 @@ describe('CacheService', () => {
 
   describe('Cache Key Generation', () => {
     it('should generate correct cache keys with default prefix', () => {
-      const generateCacheKey = (service as any).generateCacheKey.bind(service);
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
       const key = generateCacheKey('test-key');
       
       expect(key).toBe('student-analyst:test-key');
     });
 
     it('should generate cache keys with custom options', () => {
-      const generateCacheKey = (service as any).generateCacheKey.bind(service);
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
       const key = generateCacheKey('test-key', {
         prefix: 'custom',
         includeTimestamp: true,
@@ -185,7 +185,7 @@ describe('CacheService', () => {
   describe('get() - Three Layer Caching', () => {
     const testKey = 'test-key';
     const testData = { message: 'test data' };
-    const fetchFunction = jest.fn<() => Promise<any>>().mockResolvedValue(testData);
+    const fetchFunction = jest.fn<() => Promise<unknown>>().mockResolvedValue(testData);
 
     it('should return data from L1 cache when available', async () => {
       mockMemoryCacheL1.get.mockReturnValue(testData);
@@ -262,7 +262,7 @@ describe('CacheService', () => {
     it('should handle API errors and return stale data from L2 cache', async () => {
       const apiError = new Error('API Error');
       const staleData = { message: 'stale data' };
-      const failingFetch = jest.fn<() => Promise<any>>().mockRejectedValue(apiError);
+      const failingFetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(apiError);
       
       mockMemoryCacheL1.get.mockReturnValue(null);
       mockLocalStorageCacheL2.get
@@ -292,7 +292,7 @@ describe('CacheService', () => {
     it('should handle API errors and return stale data from L3 cache when L2 unavailable', async () => {
       const apiError = new Error('API Error');
       const staleData = { message: 'stale data from L3' };
-      const failingFetch = jest.fn<() => Promise<any>>().mockRejectedValue(apiError);
+      const failingFetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(apiError);
       
       mockMemoryCacheL1.get.mockReturnValue(null);
       mockLocalStorageCacheL2.get.mockReturnValue(null);
@@ -321,7 +321,7 @@ describe('CacheService', () => {
 
     it('should handle API errors and throw when no stale data available', async () => {
       const apiError = new Error('API Error');
-      const failingFetch = jest.fn<() => Promise<any>>().mockRejectedValue(apiError);
+      const failingFetch = jest.fn<() => Promise<unknown>>().mockRejectedValue(apiError);
       
       mockMemoryCacheL1.get.mockReturnValue(null);
       mockLocalStorageCacheL2.get.mockReturnValue(null);
@@ -396,7 +396,7 @@ describe('CacheService', () => {
   });
 
   describe('Specialized Cache Methods', () => {
-    const fetchFunction = jest.fn<() => Promise<any>>().mockResolvedValue({ data: 'test' });
+    const fetchFunction = jest.fn<() => Promise<unknown>>().mockResolvedValue({ data: 'test' });
 
     beforeEach(() => {
       mockMemoryCacheL1.get.mockReturnValue(null);
