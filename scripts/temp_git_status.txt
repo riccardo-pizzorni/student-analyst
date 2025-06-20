@@ -1,3 +1,2 @@
+ M README.md
  M scripts/temp_git_status.txt
- M tests/unit/automatic-cleanup-service.test.ts
-?? docs/TYPE_SAFETY_BEST_PRACTICES.md

@@ -82,6 +82,35 @@ Vedi `.env.example` per tutte le variabili richieste e opzionali. Le principali:
 - Manifest PWA incluso
 - Codebase pulita: nessun codice temporaneo, debug, `any`, `var`, `@ts-ignore` inutili
 
+## 🛡️ Type Safety Best Practices
+
+Questo progetto mantiene la **massima type safety** con zero utilizzo di `any` esplicito:
+
+### ✅ Regole Fondamentali
+- **Mai usare `any` esplicito** - sostituire con `unknown` o tipi specifici
+- **Preferire interfacce tipizzate** per mock e strutture dati
+- **Usare `Record<string, unknown>`** per oggetti dinamici
+- **Type guards** per validazione runtime di `unknown`
+
+### 🧪 Testing Type-Safe
+- **jest-mock-extended** per mock tipizzati
+- **Mock functions con generics** specifici
+- **Interfacce per tutti i servizi** mockati
+
+### 📋 Verifica Continua
+```bash
+# Verifica ESLint (zero errori "no-explicit-any")
+npm run lint
+
+# Verifica TypeScript
+npx tsc --noEmit
+
+# Verifica completa
+npm run test:all
+```
+
+📖 **Documentazione completa**: [`docs/TYPE_SAFETY_BEST_PRACTICES.md`](docs/TYPE_SAFETY_BEST_PRACTICES.md)
+
 ## 🧹 Pulizia e manutenzione
 
 - Nessuna dipendenza non usata (Dexie rimossa)
