@@ -6,14 +6,13 @@
  * tutte le funzionalità di sicurezza implementate
  */
 
-import { ApiProxyService } from '../services/apiProxy';
 import { suspiciousActivityLogger } from '../services/suspiciousActivityLogger';
 
 export interface TestResult {
   test: string;
   passed: boolean;
   message: string;
-  details?: any;
+  details?: unknown;
   responseTime?: number;
 }
 
@@ -76,8 +75,8 @@ export class ApiProxyTester {
           get: (header: string) => header === 'user-agent' ? 'test-agent' : '',
         };
         const mockRes = {
-          json: (data: any) => data,
-          status: (code: number) => ({ json: (data: any) => data })
+          json: (data: unknown) => data,
+          status: (code: number) => ({ json: (data: unknown) => data })
         };
         
         // Simuliamo una chiamata (in realtà non farà chiamate API reali)
@@ -353,7 +352,7 @@ export class ApiProxyTester {
     testName: string,
     testFunction: () => Promise<boolean>,
     description: string,
-    details?: any,
+    details?: unknown,
     measureTime: boolean = false
   ): Promise<void> {
     const startTime = Date.now();

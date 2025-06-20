@@ -6,9 +6,9 @@
  * di errori API, network failures, e strategie di recovery.
  */
 
-import { ErrorCodeHandler, SystemErrorType, ErrorContext } from '../services/errorCodeHandler';
-import { NetworkResilienceService, NetworkResilienceConfig } from '../services/networkResilienceService';
 import { AlphaVantageService, AlphaVantageTimeframe } from '../services/alphaVantageService';
+import { ErrorCodeHandler, ErrorContext, SystemErrorType } from '../services/errorCodeHandler';
+import { NetworkResilienceConfig, NetworkResilienceService } from '../services/networkResilienceService';
 
 /**
  * Risultato di un test
@@ -17,10 +17,10 @@ interface TestResult {
   testName: string;
   success: boolean;
   duration: number;
-  errorClassification?: any;
+  errorClassification?: unknown;
   userMessage?: string;
-  recovery?: any;
-  details?: any;
+  recovery?: unknown;
+  details?: unknown;
 }
 
 /**
