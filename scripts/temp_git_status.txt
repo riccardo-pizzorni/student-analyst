@@ -1,3 +1,1 @@
-MM scripts/temp_git_status.txt
-MM src/services/analysisAPI.ts
-M  vite.config.ts
+ M scripts/temp_git_status.txt
