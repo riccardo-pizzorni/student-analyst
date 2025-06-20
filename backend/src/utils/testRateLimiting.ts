@@ -44,7 +44,7 @@ export class RateLimitingTestSuite {
       await this.testBatchProcessing();
 
       // Test 3: Rate Limit Stats
-      await this.testRateLimitStats();
+      await this.test_RateLimitStats();
 
       console.log('\n✅ All basic tests completed successfully!');
     } catch (error) {
@@ -69,7 +69,7 @@ export class RateLimitingTestSuite {
       }
 
       // Test statistiche
-      const stats = this._rateLimiter.getRateLimitStats();
+      const stats = this._rateLimiter.get_RateLimitStats();
       console.log(
         `📊 Stats: ${stats.requestsInLastMinute} requests in last minute`
       );
@@ -109,11 +109,11 @@ export class RateLimitingTestSuite {
   /**
    * Test 3: Rate Limit Stats
    */
-  private async testRateLimitStats(): Promise<void> {
+  private async test_RateLimitStats(): Promise<void> {
     console.log('\n📋 Test: Rate Limit Stats');
 
     try {
-      const stats = this._rateLimiter.getRateLimitStats();
+      const stats = this._rateLimiter.get_RateLimitStats();
 
       console.log('📊 Rate Limit Statistics:');
       console.log(`  - Requests in last minute: ${stats.requestsInLastMinute}`);

@@ -1,4 +1,5 @@
- M backend/src/services/volumeHandler.ts
- M backend/src/utils/dataSanitizer.ts
  M backend/src/utils/testAlphaVantageService.ts
+ M backend/src/utils/testApiProxy.ts
+ M backend/src/utils/testErrorHandling.ts
+ M backend/src/utils/testRateLimiting.ts
  M scripts/temp_git_status.txt

@@ -69,13 +69,13 @@ export class ApiProxyTester {
     await this.runTest(
       'Mock Quote Request',
       async () => {
-        const mockReq = {
+        const _mockReq = {
           params: { symbol: 'AAPL' },
           ip: '127.0.0.1',
           get: (header: string) =>
             header === 'user-agent' ? 'test-agent' : '',
         };
-        const mockRes = {
+        const _mockRes = {
           json: (data: unknown) => data,
           status: (code: number) => ({ json: (data: unknown) => data }),
         };

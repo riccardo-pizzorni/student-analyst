@@ -193,7 +193,7 @@ export class ErrorHandlingTestSuite {
         console.log(
           `  ${success ? '✅' : '❌'} ${testCase.name}: ${classified.type}`
         );
-      } catch (error) {
+      } catch (_error) {
         this._results.push({
           testName: testCase.name,
           success: false,
@@ -268,7 +268,7 @@ export class ErrorHandlingTestSuite {
         });
 
         console.log(`  ${success ? '✅' : '❌'} ${testCase.name}`);
-      } catch (error) {
+      } catch (_error) {
         this._results.push({
           testName: testCase.name,
           success: false,
@@ -350,7 +350,7 @@ export class ErrorHandlingTestSuite {
         });
 
         console.log(`  ${success ? '✅' : '❌'} ${testCase.name}`);
-      } catch (error) {
+      } catch (_error) {
         this._results.push({
           testName: testCase.name,
           success: false,
@@ -436,7 +436,7 @@ export class ErrorHandlingTestSuite {
         console.log(
           `  ${success ? '✅' : '❌'} ${testCase.name} (${result.retryCount} retries)`
         );
-      } catch (error) {
+      } catch (_error) {
         this._results.push({
           testName: testCase.name,
           success: false,
@@ -479,7 +479,7 @@ export class ErrorHandlingTestSuite {
             context,
             { maxRetries: 0 }
           );
-        } catch (error) {
+        } catch (_error) {
           // Ignora errori, stiamo testando il circuit breaker
         }
       }
@@ -503,7 +503,7 @@ export class ErrorHandlingTestSuite {
       console.log(
         `  ${circuitBreakerExists ? '✅' : '❌'} Circuit Breaker Functionality`
       );
-    } catch (error) {
+    } catch (_error) {
       this._results.push({
         testName: 'Circuit Breaker Functionality',
         success: false,
@@ -562,7 +562,7 @@ export class ErrorHandlingTestSuite {
         });
 
         console.log(`  ${success ? '✅' : '❌'} ${testCase.name}`);
-      } catch (error) {
+      } catch (_error) {
         this._results.push({
           testName: testCase.name,
           success: false,
