@@ -1,7 +1,17 @@
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import AlgorithmOptimizationEngine from '../../src/services/AlgorithmOptimizationEngine';
 
+// Definizione delle interfacce per i mock
+interface IMockFunction<TArgs extends unknown[], TReturn> {
+  (...args: TArgs): TReturn;
+  mockReturnValue?: (value: TReturn) => void;
+  mockReturnValueOnce?: (value: TReturn) => void;
+  mockImplementation?: (fn: (...args: TArgs) => TReturn) => void;
+  toHaveBeenCalledTimes?: (times: number) => void;
+}
+
 // Mock performance.now
-const mockPerformanceNow = jest.fn();
+const mockPerformanceNow = jest.fn<number, []>();
 Object.defineProperty(global, 'performance', {
   value: { now: mockPerformanceNow },
   writable: true
@@ -100,10 +110,10 @@ describe('AlgorithmOptimizationEngine', () => {
 
   describe('Memoization', () => {
     it('should memoize function results', () => {
-      const mockFn = jest.fn((x: number, y: number) => x + y);
+      const mockFn = jest.fn<number, [number, number]>((x: number, y: number) => x + y);
 
-      const result1 = engine.memoize(mockFn as unknown, 5, 3);
-      const result2 = engine.memoize(mockFn as unknown, 5, 3);
+      const result1 = engine.memoize(mockFn, 5, 3);
+      const result2 = engine.memoize(mockFn, 5, 3);
 
       expect(result1).toBe(8);
       expect(result2).toBe(8);
@@ -111,11 +121,11 @@ describe('AlgorithmOptimizationEngine', () => {
     });
 
     it('should call function again with different arguments', () => {
-      const mockFn = jest.fn((x: number) => x * 2);
+      const mockFn = jest.fn<number, [number]>((x: number) => x * 2);
 
-      const result1 = engine.memoize(mockFn as unknown, 10);
-      const result2 = engine.memoize(mockFn as unknown, 20);
-      const result3 = engine.memoize(mockFn as unknown, 10);
+      const result1 = engine.memoize(mockFn, 10);
+      const result2 = engine.memoize(mockFn, 20);
+      const result3 = engine.memoize(mockFn, 10);
 
       expect(result1).toBe(20);
       expect(result2).toBe(40);
@@ -124,10 +134,10 @@ describe('AlgorithmOptimizationEngine', () => {
     });
 
     it('should handle functions with no arguments', () => {
-      const mockFn = jest.fn(() => 'constant');
+      const mockFn = jest.fn<string, []>(() => 'constant');
 
-      const result1 = engine.memoize(mockFn as unknown);
-      const result2 = engine.memoize(mockFn as unknown);
+      const result1 = engine.memoize(mockFn);
+      const result2 = engine.memoize(mockFn);
 
       expect(result1).toBe('constant');
       expect(result2).toBe('constant');
@@ -135,13 +145,13 @@ describe('AlgorithmOptimizationEngine', () => {
     });
 
     it('should update cache hit rate with memoization', () => {
-      const mockFn = jest.fn((x: number) => x);
+      const mockFn = jest.fn<number, [number]>((x: number) => x);
 
-      engine.memoize(mockFn as unknown, 1); // Miss
+      engine.memoize(mockFn, 1); // Miss
       let metrics = engine.getMetrics();
       expect(metrics.cacheHitRate).toBe(0);
 
-      engine.memoize(mockFn as unknown, 1); // Hit
+      engine.memoize(mockFn, 1); // Hit
       metrics = engine.getMetrics();
       expect(metrics.cacheHitRate).toBe(0.5);
     });
@@ -149,17 +159,17 @@ describe('AlgorithmOptimizationEngine', () => {
 
   describe('Cache Management', () => {
     it('should clear all caches', () => {
-      const mockFn = jest.fn((x: number) => x);
+      const mockFn = jest.fn<number, [number]>((x: number) => x);
 
-      engine.memoize(mockFn as unknown, 1);
-      engine.memoize(mockFn as unknown, 2);
+      engine.memoize(mockFn, 1);
+      engine.memoize(mockFn, 2);
 
       const metrics = engine.getMetrics();
       expect(metrics.totalOperations).toBe(2);
 
       engine.clearCaches();
 
-      engine.memoize(mockFn as unknown, 1);
+      engine.memoize(mockFn, 1);
       expect(mockFn).toHaveBeenCalledTimes(3);
     });
 
@@ -168,7 +178,7 @@ describe('AlgorithmOptimizationEngine', () => {
       
       // Mock Date.now for TTL testing
       const originalDateNow = Date.now;
-      Date.now = jest.fn()
+      Date.now = jest.fn<number, []>()
         .mockReturnValueOnce(1000) // First cache set
         .mockReturnValueOnce(301001); // Beyond TTL (300000ms + 1)
 
