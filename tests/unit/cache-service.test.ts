@@ -372,7 +372,7 @@ describe('CacheService', () => {
 
   describe('Error Handling in getStaleData()', () => {
     it('should handle errors in getStaleData and return null', async () => {
-      const getStaleData = (service as any).getStaleData.bind(service);
+      const getStaleData = (service as unknown).getStaleData.bind(service);
       
       mockLocalStorageCacheL2.get.mockImplementation(() => {
         throw new Error('Storage error');
@@ -384,7 +384,7 @@ describe('CacheService', () => {
     });
 
     it('should handle errors in IndexedDB access during stale data retrieval', async () => {
-      const getStaleData = (service as any).getStaleData.bind(service);
+      const getStaleData = (service as unknown).getStaleData.bind(service);
       
       mockLocalStorageCacheL2.get.mockReturnValue(null);
       mockIndexedDBCacheL3.get.mockRejectedValue(new Error('IndexedDB error'));
@@ -684,7 +684,7 @@ describe('CacheService', () => {
 
   describe('Helper Methods', () => {
     it('should calculate correct L2 TTL based on L1 TTL', () => {
-      const getL2TTL = (service as any).getL2TTL.bind(service);
+      const getL2TTL = (service as unknown).getL2TTL.bind(service);
       
       expect(getL2TTL(10 * 60 * 1000)).toBe(50 * 60 * 1000); // 5x for ≤15 min
       expect(getL2TTL(30 * 60 * 1000)).toBe(24 * 60 * 60 * 1000); // 24 hours for ≤1 hour
@@ -692,12 +692,12 @@ describe('CacheService', () => {
     });
 
     it('should return correct L3 TTL', () => {
-      const getL3TTL = (service as any).getL3TTL.bind(service);
+      const getL3TTL = (service as unknown).getL3TTL.bind(service);
       expect(getL3TTL(100)).toBe(7 * 24 * 60 * 60 * 1000); // Always 7 days
     });
 
     it('should determine correct data type from cache key', () => {
-      const getDataType = (service as any).getDataType.bind(service);
+      const getDataType = (service as unknown).getDataType.bind(service);
       
       expect(getDataType('student-analyst:stock-data:AAPL')).toBe('stock');
       expect(getDataType('student-analyst:fundamentals:AAPL')).toBe('fundamentals');
@@ -707,7 +707,7 @@ describe('CacheService', () => {
     });
 
     it('should hash parameters correctly', () => {
-      const hashParameters = (service as any).hashParameters.bind(service);
+      const hashParameters = (service as unknown).hashParameters.bind(service);
       
       const params1 = { b: 2, a: 1 };
       const params2 = { a: 1, b: 2 };
@@ -716,7 +716,7 @@ describe('CacheService', () => {
     });
 
     it('should handle hash parameters errors', () => {
-      const hashParameters = (service as any).hashParameters.bind(service);
+      const hashParameters = (service as unknown).hashParameters.bind(service);
       
       // Create circular reference
       const circular: any = { a: 1 };
@@ -726,7 +726,7 @@ describe('CacheService', () => {
     });
 
     it('should sort object keys recursively', () => {
-      const sortObjectKeys = (service as any).sortObjectKeys.bind(service);
+      const sortObjectKeys = (service as unknown).sortObjectKeys.bind(service);
       
       const obj = { b: { d: 4, c: 3 }, a: [{ z: 26, y: 25 }] };
       const sorted = sortObjectKeys(obj);
@@ -736,7 +736,7 @@ describe('CacheService', () => {
     });
 
     it('should handle non-object values in sortObjectKeys', () => {
-      const sortObjectKeys = (service as any).sortObjectKeys.bind(service);
+      const sortObjectKeys = (service as unknown).sortObjectKeys.bind(service);
       
       expect(sortObjectKeys(null)).toBe(null);
       expect(sortObjectKeys('string')).toBe('string');
@@ -744,7 +744,7 @@ describe('CacheService', () => {
     });
 
     it('should generate simple hash for strings', () => {
-      const simpleHash = (service as any).simpleHash.bind(service);
+      const simpleHash = (service as unknown).simpleHash.bind(service);
       
       const hash1 = simpleHash('test');
       const hash2 = simpleHash('test');
@@ -756,7 +756,7 @@ describe('CacheService', () => {
     });
 
     it('should test stale data recovery', async () => {
-      const getStaleData = (service as any).getStaleData.bind(service);
+      const getStaleData = (service as unknown).getStaleData.bind(service);
       const staleData = { message: 'stale' };
       
       mockLocalStorageCacheL2.get.mockReturnValue(staleData);
@@ -768,7 +768,7 @@ describe('CacheService', () => {
     });
 
     it('should test stale data from L3 when L2 empty', async () => {
-      const getStaleData = (service as any).getStaleData.bind(service);
+      const getStaleData = (service as unknown).getStaleData.bind(service);
       const staleData = { message: 'stale from L3' };
       
       mockLocalStorageCacheL2.get.mockReturnValue(null);
@@ -781,7 +781,7 @@ describe('CacheService', () => {
     });
 
     it('should handle stale data errors gracefully', async () => {
-      const getStaleData = (service as any).getStaleData.bind(service);
+      const getStaleData = (service as unknown).getStaleData.bind(service);
       
       mockLocalStorageCacheL2.get.mockImplementation(() => {
         throw new Error('L2 error');
@@ -795,7 +795,7 @@ describe('CacheService', () => {
 
   describe('Private Helper Methods', () => {
     it('should calculate L2 TTL based on L1 TTL', () => {
-      const getL2TTL = (service as any).getL2TTL.bind(service);
+      const getL2TTL = (service as unknown).getL2TTL.bind(service);
       
       // For L1 TTL <= 15 minutes, L2 TTL should be 5x L1 TTL
       const shortTTL = 10 * 60 * 1000; // 10 minutes
@@ -811,7 +811,7 @@ describe('CacheService', () => {
     });
 
     it('should calculate L3 TTL as fixed 7 days', () => {
-      const getL3TTL = (service as any).getL3TTL.bind(service);
+      const getL3TTL = (service as unknown).getL3TTL.bind(service);
       const l1TTL = 60 * 60 * 1000; // 1 hour
       const l3TTL = getL3TTL(l1TTL);
       
@@ -819,7 +819,7 @@ describe('CacheService', () => {
     });
 
     it('should identify data type from cache key - stock data', () => {
-      const getDataType = (service as any).getDataType.bind(service);
+      const getDataType = (service as unknown).getDataType.bind(service);
       
       expect(getDataType('stock-data:AAPL:1D')).toBe('stock');
       expect(getDataType('fundamentals:MSFT:overview')).toBe('fundamentals');
@@ -829,7 +829,7 @@ describe('CacheService', () => {
     });
 
     it('should hash parameters correctly for consistent cache keys', () => {
-      const hashParameters = (service as any).hashParameters.bind(service);
+      const hashParameters = (service as unknown).hashParameters.bind(service);
       const params = { symbol: 'AAPL', period: '1y', type: 'price' };
       
       const hash1 = hashParameters(params);
@@ -843,7 +843,7 @@ describe('CacheService', () => {
     });
 
     it('should sort object keys recursively', () => {
-      const sortObjectKeys = (service as any).sortObjectKeys.bind(service);
+      const sortObjectKeys = (service as unknown).sortObjectKeys.bind(service);
       const complexObj = {
         b: 2,
         a: {
@@ -861,7 +861,7 @@ describe('CacheService', () => {
     });
 
     it('should generate simple hash from string', () => {
-      const simpleHash = (service as any).simpleHash.bind(service);
+      const simpleHash = (service as unknown).simpleHash.bind(service);
       
       const hash1 = simpleHash('test string');
       const hash2 = simpleHash('test string');
@@ -873,7 +873,7 @@ describe('CacheService', () => {
     });
 
     it('should invalidate cache entries by pattern', () => {
-      const invalidateByPattern = (service as any).invalidateByPattern.bind(service);
+      const invalidateByPattern = (service as unknown).invalidateByPattern.bind(service);
       
       mockMemoryCacheL1.keys.mockReturnValue([
         'student-analyst:stock-data:AAPL:1D',
@@ -893,7 +893,7 @@ describe('CacheService', () => {
 
   describe('Additional Edge Cases and Error Handling', () => {
     it('should handle cache key generation with all options', () => {
-      const generateCacheKey = (service as any).generateCacheKey.bind(service);
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
       
       const key = generateCacheKey('test-key', {
         prefix: 'custom-prefix',
@@ -922,7 +922,7 @@ describe('CacheService', () => {
     });
 
     it('should handle complex parameter hashing with nested objects', () => {
-      const hashParameters = (service as any).hashParameters.bind(service);
+      const hashParameters = (service as unknown).hashParameters.bind(service);
       
       const complexParams = {
         config: {
@@ -942,7 +942,7 @@ describe('CacheService', () => {
     });
 
     it('should handle cache key generation with timestamp', () => {
-      const generateCacheKey = (service as any).generateCacheKey.bind(service);
+      const generateCacheKey = (service as unknown).generateCacheKey.bind(service);
       
       const originalDateNow = Date.now;
       Date.now = jest.fn(() => 123456789) as jest.MockedFunction<typeof Date.now>;

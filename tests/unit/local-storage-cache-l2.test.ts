@@ -321,7 +321,7 @@ describe('LocalStorageCacheL2', () => {
         })
       };
       
-      const errorCache = new LocalStorageCacheL2(mockErrorStorage as any);
+      const errorCache = new LocalStorageCacheL2(mockErrorStorage as unknown);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
       expect(errorCache.get('test')).toBeNull();
@@ -335,8 +335,8 @@ describe('LocalStorageCacheL2', () => {
         ...mockStorage,
         setItem: jest.fn()
           .mockImplementationOnce(() => {
-            const error = new Error('QuotaExceededError') as any;
-            error.name = 'QuotaExceededError';
+            const error = new Error('QuotaExceededError');
+            Object.defineProperty(error, 'name', { value: 'QuotaExceededError' });
             throw error;
           })
           .mockImplementation((key: string, value: string) => {
@@ -344,7 +344,7 @@ describe('LocalStorageCacheL2', () => {
           })
       };
       
-      const errorCache = new LocalStorageCacheL2(mockErrorStorage as any);
+      const errorCache = new LocalStorageCacheL2(mockErrorStorage as unknown);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
       expect(() => errorCache.set('test', 'value')).not.toThrow();
@@ -360,7 +360,7 @@ describe('LocalStorageCacheL2', () => {
         })
       };
       
-      const errorCache = new LocalStorageCacheL2(mockErrorStorage as any);
+      const errorCache = new LocalStorageCacheL2(mockErrorStorage as unknown);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
       expect(() => errorCache.set('test', 'value')).not.toThrow();
@@ -435,7 +435,7 @@ describe('LocalStorageCacheL2', () => {
     it('should handle storage key prefixing', () => {
       cache.set('test', 'value');
       
-      const storageKeys = Object.keys((mockStorage as any).store);
+      const storageKeys = Object.keys((mockStorage as { store: Record<string, string> }).store);
       expect(storageKeys.some(key => key.includes('student-analyst-l2'))).toBe(true);
     });
 
@@ -520,7 +520,7 @@ describe('LocalStorageCacheL2', () => {
         })
       };
       
-      const errorCache = new LocalStorageCacheL2(mockErrorStorage as any);
+      const errorCache = new LocalStorageCacheL2(mockErrorStorage as unknown);
       expect(() => errorCache.set('test', 'value')).not.toThrow();
     });
 
@@ -612,8 +612,8 @@ describe('LocalStorageCacheL2', () => {
           callCount++;
           if (callCount === 1) {
             // First call throws QuotaExceededError
-            const error = new DOMException('Quota exceeded') as any;
-            error.name = 'QuotaExceededError';
+            const error = new DOMException('Quota exceeded');
+            Object.defineProperty(error, 'name', { value: 'QuotaExceededError' });
             throw error;
           } else {
             // Second call succeeds (retry)
@@ -622,7 +622,7 @@ describe('LocalStorageCacheL2', () => {
         })
       };
       
-      const errorCache = new LocalStorageCacheL2(mockErrorStorage as any);
+      const errorCache = new LocalStorageCacheL2(mockErrorStorage as unknown);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
       // This should trigger the retry mechanism
@@ -659,7 +659,7 @@ describe('LocalStorageCacheL2', () => {
       });
       
       // Try to set circular reference object that can't be JSON.stringified
-      const circularObj: any = { name: 'test' };
+      const circularObj: Record<string, unknown> = { name: 'test' };
       circularObj.self = circularObj;
       
       // This should handle compression error gracefully

@@ -9,11 +9,11 @@ import { memoryCacheL1 } from '../../src/services/MemoryCacheL1';
 
 // Mock IDBRequest for testing
 class MockIDBRequest {
-  onsuccess: ((event: any) => void) | null = null;
-  onerror: ((event: any) => void) | null = null;
-  onupgradeneeded: ((event: any) => void) | null = null;
-  result: any = undefined;
-  constructor(result: any) {
+  onsuccess: ((event: unknown) => void) | null = null;
+  onerror: ((event: unknown) => void) | null = null;
+  onupgradeneeded: ((event: unknown) => void) | null = null;
+  result: unknown = undefined;
+  constructor(result: unknown) {
     setTimeout(() => {
       this.result = result;
       if (typeof this.onsuccess === 'function') this.onsuccess({ target: this });
@@ -68,7 +68,7 @@ describe('Cache System Tests', () => {
 
     it('should handle complex objects with circular references', async () => {
       const key = 'test-key';
-      const obj: any = { data: 'test' };
+      const obj: Record<string, unknown> = { data: 'test' };
       obj.self = obj;
 
       // Test L1
