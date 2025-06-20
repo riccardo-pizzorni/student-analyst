@@ -185,7 +185,7 @@ export class DataTransformer {
         adjustedData =
           Array.isArray(normalizedData) &&
           normalizedData.length > 0 &&
-          'date' in normalizedData[0]
+          typeof normalizedData[0] === 'object' && normalizedData[0] !== null && 'date' in (normalizedData[0] as object)
             ? await this.priceAdjuster.adjustForSplits(
                 normalizedData as PriceDataRecord[],
                 symbol
@@ -197,7 +197,7 @@ export class DataTransformer {
       const volumeProcessedData = this.config.enableVolumeNormalization
         ? Array.isArray(adjustedData) &&
           adjustedData.length > 0 &&
-          'volume' in adjustedData[0]
+          typeof adjustedData[0] === 'object' && adjustedData[0] !== null && 'volume' in (adjustedData[0] as object)
           ? this.volumeHandler.normalizeVolume(adjustedData as VolumeDataItem[])
           : adjustedData
         : adjustedData;
@@ -384,7 +384,6 @@ export class DataTransformer {
 }
 
 // ========== IMPORT COMPONENTI REALI ==========
-import { DateNormalizer } from './dateNormalizer';
 import { DateNormalizer } from './dateNormalizer';
 import { PriceAdjuster, PriceDataRecord } from './priceAdjuster';
 import { ResponseParser } from './responseParser';
