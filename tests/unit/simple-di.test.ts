@@ -10,7 +10,7 @@ describe('Dependency Injection Test', () => {
     const mockDependency = { test: 'value' };
     
     // Simula l'utilizzo di dependency injection
-    function createServiceWithDI(dependencies: any = {}) {
+    function createServiceWithDI(dependencies: Record<string, unknown> = {}) {
       return {
         deps: dependencies,
         isReady: true
@@ -25,7 +25,7 @@ describe('Dependency Injection Test', () => {
   });
 
   it('should handle empty dependencies', () => {
-    function createServiceWithDI(dependencies: any = {}) {
+    function createServiceWithDI(dependencies: Record<string, unknown> = {}) {
       return {
         deps: dependencies,
         isReady: true
@@ -54,15 +54,15 @@ describe('Dependency Injection Test', () => {
     };
     
     // Simula servizio con dependency injection
-    function createServiceWithStorageDI(dependencies: any = {}) {
+    function createServiceWithStorageDI(dependencies: Record<string, unknown> = {}) {
       const storage = dependencies.localStorage || {};
       const indexedDB = dependencies.indexedDB || {};
       
       return {
         storage,
         indexedDB,
-        getData: (key: string) => storage.getItem?.(key),
-        setData: (key: string, value: string) => storage.setItem?.(key, value),
+        getData: (key: string) => (storage as { getItem?: (key: string) => unknown }).getItem?.(key),
+        setData: (key: string, value: string) => (storage as { setItem?: (key: string, value: string) => void }).setItem?.(key, value),
         isReady: true
       };
     }
@@ -82,7 +82,7 @@ describe('Dependency Injection Test', () => {
   });
 
   it('should work with optional dependencies', () => {
-    function createServiceWithOptionalDI(dependencies: unknown = {}) {
+    function createServiceWithOptionalDI(dependencies: Record<string, unknown> = {}) {
       return {
         localStorage: dependencies.localStorage || null,
         sessionStorage: dependencies.sessionStorage || null,

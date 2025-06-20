@@ -13,7 +13,7 @@ const mockLocalStorage = {
   clear: jest.fn(),
   key: jest.fn(),
   length: 0
-} as any;
+} as unknown;
 
 const mockSessionStorage = {
   getItem: jest.fn(),
@@ -22,7 +22,7 @@ const mockSessionStorage = {
   clear: jest.fn(),
   key: jest.fn(),
   length: 0
-} as any;
+} as unknown;
 
 const mockIndexedDB = {
   open: jest.fn(() => ({
@@ -33,7 +33,7 @@ const mockIndexedDB = {
   deleteDatabase: jest.fn(),
   cmp: jest.fn(),
   databases: jest.fn()
-} as any;
+} as unknown;
 
 const mockNavigator = {
   storage: {
@@ -42,7 +42,7 @@ const mockNavigator = {
       quota: 10240
     })
   }
-} as any;
+} as unknown;
 
 describe('StorageMonitoringService', () => {
   let service: StorageMonitoringService;
@@ -918,14 +918,13 @@ describe('StorageMonitoringService', () => {
 
     it('should handle IndexedDB request success scenario', () => {
       const mockRequest = {
-        onsuccess: null as any,
-        onerror: null as any,
+        onsuccess: null as unknown,
+        onerror: null as unknown,
         result: {
           close: jest.fn()
         }
       };
-      
-      mockIndexedDB.open.mockReturnValue(mockRequest as any);
+      mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
       
       // Simulate success callback
       if (mockRequest.onsuccess) {
@@ -937,12 +936,11 @@ describe('StorageMonitoringService', () => {
 
     it('should handle IndexedDB request error scenario', () => {
       const mockRequest = {
-        onsuccess: null as any,
-        onerror: null as any,
+        onsuccess: null as unknown,
+        onerror: null as unknown,
         result: null
       };
-      
-      mockIndexedDB.open.mockReturnValue(mockRequest as any);
+      mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
       
       // Simulate error callback
       if (mockRequest.onerror) {
@@ -1029,10 +1027,10 @@ describe('StorageMonitoringService', () => {
           
           // Should use fallback quotas
           if (quotas && typeof quotas === 'object' && 'localStorage' in quotas) {
-            expect((quotas as any).localStorage).toBe(1024 * 1024); // 1MB
-            expect((quotas as any).sessionStorage).toBe(1024 * 1024); // 1MB
-            expect((quotas as any).indexedDB).toBe(10 * 1024 * 1024); // 10MB
-            expect((quotas as any).total).toBe(12 * 1024 * 1024); // 12MB
+            expect((quotas as unknown).localStorage).toBe(1024 * 1024); // 1MB
+            expect((quotas as unknown).sessionStorage).toBe(1024 * 1024); // 1MB
+            expect((quotas as unknown).indexedDB).toBe(10 * 1024 * 1024); // 10MB
+            expect((quotas as unknown).total).toBe(12 * 1024 * 1024); // 12MB
           }
           
           // Either console.error or console.warn should be called
@@ -1244,12 +1242,12 @@ describe('StorageMonitoringService', () => {
     describe('checkIndexedDBHealth - Complete Coverage', () => {
       it('should handle IndexedDB request.onerror callback', () => {
         const mockRequest = {
-          onsuccess: null as any,
-          onerror: null as any,
+          onsuccess: null as unknown,
+          onerror: null as unknown,
           result: null
         };
         
-        mockIndexedDB.open.mockReturnValue(mockRequest as any);
+        mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
         
         // Test the onerror callback manually
         const errorResult = { 
@@ -1265,20 +1263,20 @@ describe('StorageMonitoringService', () => {
 
       it('should handle IndexedDB request.onsuccess with deleteRequest.onsuccess', () => {
         const mockRequest = {
-          onsuccess: null as any,
-          onerror: null as any,
+          onsuccess: null as unknown,
+          onerror: null as unknown,
           result: {
             close: jest.fn()
           }
         };
         
         const mockDeleteRequest = {
-          onsuccess: null as any,
-          onerror: null as any
+          onsuccess: null as unknown,
+          onerror: null as unknown
         };
         
-        mockIndexedDB.open.mockReturnValue(mockRequest as any);
-        mockIndexedDB.deleteDatabase.mockReturnValue(mockDeleteRequest as any);
+        mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
+        mockIndexedDB.deleteDatabase.mockReturnValue(mockDeleteRequest as unknown);
         
         // Test the success flow manually
         const successResult = { status: 'healthy', usage: 0 };
@@ -1288,20 +1286,20 @@ describe('StorageMonitoringService', () => {
 
       it('should handle IndexedDB deleteRequest.onerror callback', () => {
         const mockRequest = {
-          onsuccess: null as any,
-          onerror: null as any,
+          onsuccess: null as unknown,
+          onerror: null as unknown,
           result: {
             close: jest.fn()
           }
         };
         
         const mockDeleteRequest = {
-          onsuccess: null as any,
-          onerror: null as any
+          onsuccess: null as unknown,
+          onerror: null as unknown
         };
         
-        mockIndexedDB.open.mockReturnValue(mockRequest as any);
-        mockIndexedDB.deleteDatabase.mockReturnValue(mockDeleteRequest as any);
+        mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
+        mockIndexedDB.deleteDatabase.mockReturnValue(mockDeleteRequest as unknown);
         
         // Test the deleteRequest.onerror flow
         const errorResult = { status: 'healthy', usage: 0 };
@@ -1313,12 +1311,12 @@ describe('StorageMonitoringService', () => {
         jest.useFakeTimers();
         
         const mockRequest = {
-          onsuccess: null as any,
-          onerror: null as any,
+          onsuccess: null as unknown,
+          onerror: null as unknown,
           result: null
         };
         
-        mockIndexedDB.open.mockReturnValue(mockRequest as any);
+        mockIndexedDB.open.mockReturnValue(mockRequest as unknown);
         
         // Test timeout result
         const timeoutResult = { 

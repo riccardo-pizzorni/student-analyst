@@ -3,11 +3,11 @@ import { TextDecoder, TextEncoder } from 'util';
 async function globalSetup() {
   // Mock TextEncoder/TextDecoder
   global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder as unknown;
+  global.TextDecoder = TextDecoder as typeof TextDecoder;
 
   // Setup global window object if not exists
   if (typeof global.window === 'undefined') {
-    global.window = {} as unknown;
+    global.window = {} as Window & typeof globalThis;
   }
 
   // Mock localStorage
@@ -98,7 +98,7 @@ async function globalSetup() {
 
   // Mock window.setInterval
   Object.defineProperty(global.window, 'setInterval', {
-    value: (callback: (...args: any[]) => void, delay: number): NodeJS.Timeout => {
+    value: (callback: (...args: unknown[]) => void, delay: number): NodeJS.Timeout => {
       return setInterval(callback, delay);
     },
     writable: true,

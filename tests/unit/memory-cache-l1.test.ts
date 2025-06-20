@@ -35,7 +35,7 @@ describe('MemoryCacheL1', () => {
     jest.useFakeTimers();
     mockPerformanceNow.mockReturnValue(100);
     mockSetInterval.mockImplementation((fn, delay) => {
-      return jest.fn() as any; // Return mock timer ID
+      return jest.fn() as unknown; // Return mock timer ID
     });
     mockClearInterval.mockImplementation(() => {});
     
@@ -724,7 +724,7 @@ describe('MemoryCacheL1', () => {
 
     it('should handle non-serializable data', () => {
       const nonSerializable = {
-        circular: null as any,
+        circular: null as unknown,
         func: () => 'test'
       };
       nonSerializable.circular = nonSerializable;
