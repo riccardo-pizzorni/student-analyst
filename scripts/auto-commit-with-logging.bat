@@ -11,13 +11,14 @@ echo.
 :loop
 echo.
 echo [1/4] Controllo modifiche con 'git status'
-git status --porcelain > scripts\temp_git_status.txt
+git status --porcelain > scripts\temp_git_status.txt 2>nul
 if %errorlevel% neq 0 (
     echo [ERRORE] Impossibile controllare lo stato Git
     goto wait
 )
 
-findstr /r "^" scripts\temp_git_status.txt >nul
+rem Controlla se ci sono modifiche reali (escludendo il file temp_git_status.txt stesso)
+findstr /v "^ M scripts\\temp_git_status.txt" scripts\temp_git_status.txt >nul
 if %errorlevel% equ 0 (
     echo [INFO] Modifiche trovate.
     echo.
@@ -36,7 +37,7 @@ if %errorlevel% equ 0 (
     echo -----------------------------------------------------------------
     git commit -m "Auto-commit: %date% %time%" --no-verify
     if %errorlevel% neq 0 (
-        echo [ERRORE] Il commit e' fallito. Controlla l'output qui sopra.}
+        echo [ERRORE] Il commit e' fallito. Controlla l'output qui sopra.
         goto wait
     )
     echo -----------------------------------------------------------------
