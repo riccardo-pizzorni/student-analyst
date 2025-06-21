@@ -1,6 +1,6 @@
 // src/services/analysisAPI.ts
-import { AnalysisApiResponse } from './analysisAPI';
 
+// La definizione dei tipi rimane qui, perché è il "contratto" tra frontend e backend
 export interface AnalysisApiResponse {
   historicalData: {
     labels: string[];
@@ -56,11 +56,11 @@ export const fetchAnalysisData = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
-        error: 'La risposta del server non � un JSON valido.',
+        error: 'La risposta del server non è un JSON valido.',
       }));
       console.error('Errore API dal backend:', response.status, errorData);
       throw new Error(
-        errorData.error || Errore del server: 
+        errorData.error || `Errore del server: ${response.status}`
       );
     }
 
