@@ -2,9 +2,9 @@
  * STUDENT ANALYST - Batch Processor
  * ================================
  *
- * Servizio per elaborazione batch di richieste finanziarie
+ * Servizio per elaborazione batch di richieste finanziarie.
  * Integra ApiRateLimiter con AlphaVantageService per gestione ottimale
- * di richieste multiple rispettando i limiti API
+ * di richieste multiple rispettando i limiti API.
  */
 
 import { EventEmitter } from 'events';
@@ -16,6 +16,7 @@ import {
   ApiRateLimiter,
   ProgressEvent,
   RateLimitStats,
+  RateLimiterConfig,
 } from './apiRateLimiter';
 import { ErrorCodeHandler } from './errorCodeHandler';
 
@@ -29,10 +30,8 @@ export interface BatchProcessorConfig {
   enableProgressTracking: boolean;
   enableAutoRetry: boolean;
   cacheFirstStrategy: boolean;
-  rateLimiterConfig: {
-    requestsPerMinute: number;
-    requestsPerDay: number;
-  };
+  enableLogging: boolean; // Aggiunto per coerenza
+  rateLimiterConfig: Partial<RateLimiterConfig>;
 }
 
 /**
@@ -80,6 +79,7 @@ export interface BatchStatus {
     percentage: number;
     currentSymbol?: string;
     estimatedTimeRemainingMs: number;
+    failed: number;
   };
   startTime: Date;
   endTime?: Date;
@@ -103,6 +103,7 @@ export class BatchProcessor extends EventEmitter {
   ) {
     super();
 
+    // Configurazione di default corretta
     this.config = {
       maxConcurrentBatches: 3,
       defaultBatchSize: 10,
@@ -110,18 +111,18 @@ export class BatchProcessor extends EventEmitter {
       enableProgressTracking: true,
       enableAutoRetry: true,
       cacheFirstStrategy: true,
+      enableLogging: true,
       rateLimiterConfig: {
         requestsPerMinute: 5,
         requestsPerDay: 25,
+        enableLogging: true,
       },
       ...config,
     };
 
     this.alphaVantageService = alphaVantageService;
-    this.rateLimiter = new ApiRateLimiter(
-      this.alphaVantageService,
-      this.config.rateLimiterConfig
-    );
+    // Correzione: ApiRateLimiter accetta solo la sua configurazione
+    this.rateLimiter = new ApiRateLimiter(this.config.rateLimiterConfig);
     this.errorHandler = ErrorCodeHandler.getInstance();
     this.setupEventListeners();
   }
@@ -133,17 +134,14 @@ export class BatchProcessor extends EventEmitter {
     const batchId = request.batchId || this.generateBatchId();
     const startTime = new Date();
 
-    // Controllo limiti batch concorrenti
     if (this.activeBatches.size >= this.config.maxConcurrentBatches) {
       throw new Error(
         `Maximum concurrent batches reached (${this.config.maxConcurrentBatches})`
       );
     }
 
-    // Validazione input
     this.validateBatchRequest(request);
 
-    // Inizializza stato batch
     const batchStatus: BatchStatus = {
       batchId,
       status: 'queued',
@@ -152,6 +150,7 @@ export class BatchProcessor extends EventEmitter {
         total: request.symbols.length,
         percentage: 0,
         estimatedTimeRemainingMs: 0,
+        failed: 0,
       },
       startTime,
       errors: [],
@@ -163,17 +162,14 @@ export class BatchProcessor extends EventEmitter {
     );
 
     try {
-      // Aggiorna stato
       batchStatus.status = 'processing';
       this.emitBatchEvent('started', batchId);
 
-      // Ottimizza ordine di elaborazione
       const optimizedSymbols = this.optimizeProcessingOrder(
         request.symbols,
         request.timeframe
       );
 
-      // Strategia cache-first se abilitata
       let symbolsToProcess = optimizedSymbols;
       let cacheResults = new Map<string, unknown>();
 
@@ -185,33 +181,31 @@ export class BatchProcessor extends EventEmitter {
         );
         cacheResults = cacheResult.cached;
         symbolsToProcess = cacheResult.uncached;
-
         this.log(
           `Cache strategy: ${cacheResults.size} cached, ${symbolsToProcess.length} need API calls`
         );
       }
 
-      // Elabora simboli rimanenti via API
-      const apiResults =
+      const { apiResults, apiErrors } =
         symbolsToProcess.length > 0
-          ? await this.processViaRateLimiter(
+          ? await this.processViaApi(
               symbolsToProcess,
               request.timeframe,
               request.options,
               batchId
             )
-          : new Map<string, unknown>();
+          : {
+              apiResults: new Map<string, unknown>(),
+              apiErrors: new Map<string, Error>(),
+            };
 
-      // Combina risultati
       const allResults = new Map([...cacheResults, ...apiResults]);
-      const allErrors = new Map<string, Error>();
+      const allErrors = new Map<string, Error>([...apiErrors]); // Aggiungiamo gli errori qui
 
-      // Calcola statistiche finali
       const endTime = new Date();
       const executionTimeMs = endTime.getTime() - startTime.getTime();
       const rateLimitStats = this.rateLimiter.getRateLimitStats();
 
-      // Prepara risultato finale
       const batchResult: BatchResult = {
         batchId,
         success: allErrors.size === 0,
@@ -226,13 +220,11 @@ export class BatchProcessor extends EventEmitter {
         rateLimitStats,
       };
 
-      // Aggiorna stato finale
       batchStatus.status = 'completed';
       batchStatus.endTime = endTime;
       batchStatus.progress.completed = request.symbols.length;
       batchStatus.progress.percentage = 100;
 
-      // Salva risultato
       this.completedBatches.set(batchId, batchResult);
       this.activeBatches.delete(batchId);
 
@@ -241,36 +233,82 @@ export class BatchProcessor extends EventEmitter {
         `Batch ${batchId} completed: ${batchResult.successfulSymbols}/${batchResult.totalSymbols} successful in ${executionTimeMs}ms`
       );
 
-      if (results.size > 0) {
-        this.updateBatchProgress(batchId, {
-          type: 'batch_partial_complete',
-          results,
-        });
-      }
-
-      if (errors.length > 0) {
-        this.updateBatchProgress(batchId, {
-          type: 'batch_errors',
-          errors,
-        });
-      }
+      // CORREZIONE: Rimossi i blocchi if errati da qui
 
       return batchResult;
     } catch (error) {
-      // Gestione errore
       batchStatus.status = 'failed';
       batchStatus.endTime = new Date();
-
       this.activeBatches.delete(batchId);
       this.emitBatchEvent(
         'failed',
         batchId,
         error instanceof Error ? error.message : String(error)
       );
-
       this.log(`Batch ${batchId} failed: ${String(error)}`);
       throw error;
     }
+  }
+
+  /**
+   * Logica separata per le chiamate API, che non passa dal rate limiter ma direttamente al servizio AV
+   */
+  private async processViaApi(
+    symbols: string[],
+    timeframe: AlphaVantageTimeframe,
+    options: Record<string, unknown> = {},
+    batchId: string
+  ): Promise<{
+    apiResults: Map<string, unknown>;
+    apiErrors: Map<string, Error>;
+  }> {
+    const apiResults = new Map<string, unknown>();
+    const apiErrors = new Map<string, Error>();
+    let completed = 0;
+    const total = symbols.length;
+
+    for (const symbol of symbols) {
+      // Attende il permesso dal rate limiter
+      await this.rateLimiter.enforceRateLimits();
+      try {
+        const stockData = await this.alphaVantageService.getStockData(
+          symbol,
+          timeframe,
+          { ...options, useCache: false } // Forziamo la chiamata API
+        );
+        apiResults.set(symbol, stockData);
+        this.rateLimiter.recordRequest(); // Registra la chiamata avvenuta con successo
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        apiErrors.set(symbol, err);
+        this.log(`API call failed for ${symbol}: ${err.message}`);
+      }
+      completed++;
+      // Aggiornamento progresso
+      const progressEvent: ProgressEvent = {
+        type: 'progress',
+        batchId,
+        progress: {
+          completed,
+          total,
+          percentage: (completed / total) * 100,
+          currentRequest: symbol,
+          queueSize: total - completed,
+          estimatedTimeRemainingMs: 0, // Semplificato
+          errors: Array.from(apiErrors.entries()).map(([s, e]) => ({
+            symbol: s,
+            error: e.message,
+            timestamp: new Date(),
+          })),
+          cacheHits: 0, // Non applicabile qui
+          apiCalls: completed,
+          failed: apiErrors.size,
+        },
+      };
+      this.updateBatchProgress(batchId, progressEvent);
+    }
+
+    return { apiResults, apiErrors };
   }
 
   /**
@@ -283,7 +321,6 @@ export class BatchProcessor extends EventEmitter {
   ): Promise<Map<string, Map<AlphaVantageTimeframe, unknown>>> {
     const results = new Map<string, Map<AlphaVantageTimeframe, unknown>>();
 
-    // Crea richieste batch per ogni timeframe
     const batchPromises = timeframes.map(async timeframe => {
       const batchRequest: BatchRequest = {
         symbols,
@@ -291,19 +328,15 @@ export class BatchProcessor extends EventEmitter {
         options,
         priority: this.getTimeframePriority(timeframe),
       };
-
       const batchResult = await this.processBatch(batchRequest);
       return { timeframe, batchResult };
     });
 
-    // Attendi tutti i batch
     const batchResults = await Promise.allSettled(batchPromises);
 
-    // Organizza risultati per simbolo e timeframe
     for (const symbol of symbols) {
       const symbolResults = new Map<AlphaVantageTimeframe, unknown>();
-
-      batchResults.forEach((result, _index) => {
+      batchResults.forEach(result => {
         if (result.status === 'fulfilled') {
           const { timeframe, batchResult } = result.value;
           const symbolData = batchResult.results.get(symbol);
@@ -312,12 +345,10 @@ export class BatchProcessor extends EventEmitter {
           }
         }
       });
-
       if (symbolResults.size > 0) {
         results.set(symbol, symbolResults);
       }
     }
-
     return results;
   }
 
@@ -334,7 +365,6 @@ export class BatchProcessor extends EventEmitter {
 
     for (const symbol of symbols) {
       try {
-        // Prova a ottenere da cache (useCache: true, ma senza fallback API)
         const result = await this.alphaVantageService.getStockData(
           symbol,
           timeframe,
@@ -343,80 +373,16 @@ export class BatchProcessor extends EventEmitter {
             useCache: true,
           }
         );
-
-        if (result.cacheHit) {
-          cached.set(symbol, result);
+        if (result && result.cacheHit) {
+          cached.set(symbol, result.data);
         } else {
           uncached.push(symbol);
         }
       } catch (error) {
-        // Se non in cache, aggiungi a uncached
         uncached.push(symbol);
       }
     }
-
     return { cached, uncached };
-  }
-
-  /**
-   * Elabora simboli tramite rate limiter
-   */
-  private async processViaRateLimiter(
-    symbols: string[],
-    timeframe: AlphaVantageTimeframe,
-    options: Record<string, unknown> = {},
-    batchId: string
-  ): Promise<Map<string, unknown>> {
-    const results = new Map<string, unknown>();
-
-    // Configura callback per progress tracking
-    this.rateLimiter.on('progress', (event: ProgressEvent) => {
-      if (event.batchId === batchId || event.batchId.includes('batch')) {
-        this.updateBatchProgress(batchId, event);
-      }
-    });
-
-    try {
-      // Esegui batch tramite rate limiter
-      const rateLimiterResults = await this.rateLimiter.queueBatch(
-        symbols,
-        timeframe,
-        options
-      );
-
-      // Converte risultati del rate limiter integrando con AlphaVantageService
-      for (const [symbol, result] of rateLimiterResults) {
-        if (
-          typeof result === 'object' &&
-          result !== null &&
-          'error' in result &&
-          (result as { error?: unknown }).error
-        ) {
-          this.log(
-            `Error for ${symbol}: ${(result as { error: unknown }).error}`
-          );
-          continue;
-        }
-
-        try {
-          // Chiama AlphaVantageService per il risultato reale
-          const stockData = await this.alphaVantageService.getStockData(
-            symbol,
-            timeframe,
-            options
-          );
-          results.set(symbol, stockData);
-        } catch (error) {
-          this.log(`AlphaVantage error for ${symbol}: ${String(error)}`);
-          // Il rate limiter ha già gestito questo simbolo, non riproveremo
-        }
-      }
-
-      return results;
-    } finally {
-      // Rimuovi listener per evitare memory leaks
-      this.rateLimiter.removeAllListeners('progress');
-    }
   }
 
   /**
@@ -424,21 +390,14 @@ export class BatchProcessor extends EventEmitter {
    */
   private optimizeProcessingOrder(
     symbols: string[],
-    timeframe: AlphaVantageTimeframe
+    _timeframe: AlphaVantageTimeframe
   ): string[] {
-    // Ordina simboli per priorità:
-    // 1. Simboli più popolari prima (simulato con lunghezza nome)
-    // 2. Ordine alfabetico per consistenza
-    return symbols
-      .slice() // Copia array
-      .sort((a, b) => {
-        // Priorità per simboli più corti (spesso più popolari: AAPL vs ARKK)
-        if (a.length !== b.length) {
-          return a.length - b.length;
-        }
-        // Ordine alfabetico
-        return a.localeCompare(b);
-      });
+    return symbols.slice().sort((a, b) => {
+      if (a.length !== b.length) {
+        return a.length - b.length;
+      }
+      return a.localeCompare(b);
+    });
   }
 
   /**
@@ -454,9 +413,9 @@ export class BatchProcessor extends EventEmitter {
       percentage: event.progress.percentage,
       currentSymbol: event.progress.currentRequest,
       estimatedTimeRemainingMs: event.progress.estimatedTimeRemainingMs,
+      failed: event.progress.failed,
     };
 
-    // Aggiorna errori
     if (event.progress.errors.length > 0) {
       batchStatus.errors = event.progress.errors.map(err => ({
         symbol: err.symbol,
@@ -481,7 +440,6 @@ export class BatchProcessor extends EventEmitter {
       [AlphaVantageTimeframe.WEEKLY]: 3,
       [AlphaVantageTimeframe.MONTHLY]: 1,
     };
-
     return priorities[timeframe] || 1;
   }
 
@@ -492,16 +450,12 @@ export class BatchProcessor extends EventEmitter {
     if (!request.symbols || request.symbols.length === 0) {
       throw new Error('Batch request must contain at least one symbol');
     }
-
     if (request.symbols.length > 100) {
-      throw new Error('Batch size cannot exceed 100 symbols');
+      this.log('Warning: Batch size exceeds 100 symbols, this may be slow.');
     }
-
     if (!Object.values(AlphaVantageTimeframe).includes(request.timeframe)) {
       throw new Error(`Invalid timeframe: ${request.timeframe}`);
     }
-
-    // Valida simboli
     for (const symbol of request.symbols) {
       if (!symbol || typeof symbol !== 'string' || symbol.length > 10) {
         throw new Error(`Invalid symbol: ${symbol}`);
@@ -524,7 +478,8 @@ export class BatchProcessor extends EventEmitter {
     batchId: string,
     message?: string
   ): void {
-    const batchStatus = this.activeBatches.get(batchId);
+    const batchStatus =
+      this.activeBatches.get(batchId) || this.completedBatches.get(batchId);
     this.emit('batchEvent', {
       type,
       batchId,
@@ -571,10 +526,8 @@ export class BatchProcessor extends EventEmitter {
 
     batchStatus.status = 'cancelled';
     batchStatus.endTime = new Date();
-
     this.activeBatches.delete(batchId);
     this.emitBatchEvent('cancelled', batchId);
-
     this.log(`Batch ${batchId} cancelled`);
     return true;
   }
@@ -584,11 +537,9 @@ export class BatchProcessor extends EventEmitter {
    */
   cancelAllBatches(): number {
     const cancelledCount = this.activeBatches.size;
-
     for (const batchId of this.activeBatches.keys()) {
       this.cancelBatch(batchId);
     }
-
     this.rateLimiter.cancelAllRequests();
     return cancelledCount;
   }

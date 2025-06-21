@@ -249,17 +249,18 @@ export class ApiRateLimiter extends EventEmitter {
   }
 
   /**
-   * Applica rate limiting
+   * Controlla e attende se i limiti di richieste sono stati raggiunti
    */
-  private async enforceRateLimits(): Promise<void> {
-    // Controlla limite giornaliero
+  public async enforceRateLimits(): Promise<void> {
+    this.cleanupRequestHistory();
     this.cleanupDailyHistory();
+
+    // Controlla limite giornaliero
     if (this.dailyRequestHistory.length >= this.config.requestsPerDay) {
       throw new Error('Daily API quota exceeded');
     }
 
     // Controlla limite per minuto
-    this.cleanupRequestHistory();
     if (this.requestHistory.length >= this.config.requestsPerMinute) {
       const oldestRequest = this.requestHistory[0];
       const timeToWait = 60000 - (Date.now() - oldestRequest.getTime());
@@ -289,9 +290,9 @@ export class ApiRateLimiter extends EventEmitter {
   }
 
   /**
-   * Registra una richiesta
+   * Registra che una richiesta è stata effettuata
    */
-  private recordRequest(): void {
+  public recordRequest(): void {
     const now = new Date();
     this.requestHistory.push(now);
     this.dailyRequestHistory.push(now);
