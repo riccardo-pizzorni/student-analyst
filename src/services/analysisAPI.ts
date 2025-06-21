@@ -47,8 +47,9 @@ export const fetchAnalysisData = async (
 ): Promise<AnalysisApiResponse> => {
   console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
 
-  // In produzione, VITE_API_BASE_URL sarà l'URL del backend deployato (es. su Railway).
+  // In produzione, VITE_API_BASE_URL sarà l'URL del backend deployato (es. su Render).
   // In sviluppo, sarà una stringa vuota, e la chiamata userà il proxy di Vite.
+  // QUESTA VARIABILE DEVE ESSERE IMPOSTATA NELLE ENV VARS DI VERCEL.
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
   const API_URL = `${API_BASE_URL}/api/analysis`;
 
