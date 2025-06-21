@@ -1,5 +1,5 @@
 // src/services/analysisAPI.ts
-import { AnalysisApiResponse } from './analysisAPI'; 
+import { AnalysisApiResponse } from './analysisAPI';
 
 export interface AnalysisApiResponse {
   historicalData: {
@@ -41,9 +41,9 @@ export const fetchAnalysisData = async (
   console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
 
   const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
-  const API_URL = ${API_BASE_URL}/api/analysis;
+  const API_URL = `${API_BASE_URL}/api/analysis`;
 
-  console.log(Frontend: Eseguo la chiamata a: );
+  console.log(`Frontend: Eseguo la chiamata a: ${API_URL}`);
 
   try {
     const response = await fetch(API_URL, {
@@ -56,7 +56,7 @@ export const fetchAnalysisData = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
-        error: 'La risposta del server non è un JSON valido.',
+        error: 'La risposta del server non ï¿½ un JSON valido.',
       }));
       console.error('Errore API dal backend:', response.status, errorData);
       throw new Error(
