@@ -101,9 +101,11 @@ export class ResponseParser {
       }
 
       return result.data;
-    } catch (_error) {
+    } catch (error) {
       throw new Error(
-        `Errore critico durante parsing ${source}: ${(error as Error).message}`
+        `Errore critico durante parsing ${source}: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -244,10 +246,12 @@ export class ResponseParser {
           }
 
           recordIndex++;
-        } catch (_error) {
+        } catch (error) {
           errors.push({
             type: 'VALUE_ERROR',
-            message: `Errore parsing record: ${(error as Error).message}`,
+            message: `Errore parsing record: ${
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
             record: recordIndex,
             originalValue: values,
           });
@@ -265,10 +269,12 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (_error) {
+    } catch (error) {
       return this.createErrorResult(
         'STRUCTURE_ERROR',
-        `Errore generale Alpha Vantage: ${(error as Error).message}`
+        `Errore generale Alpha Vantage: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -360,10 +366,16 @@ export class ResponseParser {
             if (parsed) {
               result.push(parsed);
             }
-          } catch (_error) {
+          } catch (error) {
+            const errorMessage =
+              typeof item['Error Message'] === 'string'
+                ? item['Error Message']
+                : `Errore parsing record Yahoo Finance: ${
+                    error instanceof Error ? error.message : 'Unknown error'
+                  }`;
             errors.push({
               type: 'VALUE_ERROR',
-              message: `Errore parsing record Yahoo Finance: ${(error as Error).message}`,
+              message: errorMessage,
               record: i,
               originalValue: item,
             });
@@ -382,10 +394,11 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (_error) {
-      return this.createErrorResult(
-        'STRUCTURE_ERROR',
-        `Errore generale Yahoo Finance: ${(error as Error).message}`
+    } catch (error) {
+      throw new Error(
+        `Errore generale Yahoo Finance: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -471,10 +484,11 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (_error) {
-      return this.createErrorResult(
-        'STRUCTURE_ERROR',
-        `Errore IEX Cloud: ${(error as Error).message}`
+    } catch (error) {
+      throw new Error(
+        `Errore IEX Cloud: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -526,10 +540,11 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (_error) {
-      return this.createErrorResult(
-        'STRUCTURE_ERROR',
-        `Errore Polygon: ${(error as Error).message}`
+    } catch (error) {
+      throw new Error(
+        `Errore Polygon: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -557,7 +572,7 @@ export class ResponseParser {
           ? rawData.dataset.column_names
           : ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'];
 
-      for (let i = 0; Array.isArray(_data) && i < data.length; i++) {
+      for (let i = 0; Array.isArray(data) && i < data.length; i++) {
         const row = data[i];
 
         if (Array.isArray(row) && row.length >= 5) {
@@ -580,16 +595,15 @@ export class ResponseParser {
         warnings: [],
         stats: {
           recordsParsed: result.length,
-          recordsSkipped: Array.isArray(_data)
-            ? data.length - result.length
-            : 0,
+          recordsSkipped: Array.isArray(data) ? data.length - result.length : 0,
           parsingTimeMs: 0,
         },
       };
-    } catch (_error) {
-      return this.createErrorResult(
-        'STRUCTURE_ERROR',
-        `Errore Quandl: ${(error as Error).message}`
+    } catch (error) {
+      throw new Error(
+        `Errore Quandl: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -659,7 +673,7 @@ export class ResponseParser {
     return {
       success: false,
       data: [],
-      errors: [{ _type, message, originalValue: null }],
+      errors: [{ type, message, originalValue: null }],
       warnings: [],
       stats: {
         recordsParsed: 0,
@@ -690,12 +704,12 @@ export class ResponseParser {
         structure: this.analyzeStructure(rawData),
         errors: [],
       };
-    } catch (_error) {
+    } catch (error) {
       return {
         canParse: false,
         preview: [],
         structure: this.analyzeStructure(rawData),
-        errors: [(error as Error).message],
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
       };
     }
   }
@@ -705,10 +719,10 @@ export class ResponseParser {
    */
   private analyzeStructure(data: unknown): unknown {
     if (data === null || data === undefined) return { type: 'null' };
-    if (Array.isArray(_data))
+    if (Array.isArray(data))
       return { type: 'array', length: data.length, sample: data[0] };
     if (typeof data === 'object')
-      return { type: 'object', keys: Object.keys(_data).slice(0, 10) };
-    return { type: typeof _data, value: data };
+      return { type: 'object', keys: Object.keys(data).slice(0, 10) };
+    return { type: typeof data, value: data };
   }
 }

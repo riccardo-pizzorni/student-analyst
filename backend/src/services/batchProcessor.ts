@@ -17,6 +17,7 @@ import {
   ProgressEvent,
   RateLimitStats,
 } from './apiRateLimiter';
+import { ErrorCodeHandler } from './errorCodeHandler';
 
 /**
  * Configurazione batch processor
@@ -28,6 +29,10 @@ export interface BatchProcessorConfig {
   enableProgressTracking: boolean;
   enableAutoRetry: boolean;
   cacheFirstStrategy: boolean;
+  rateLimiterConfig: {
+    requestsPerMinute: number;
+    requestsPerDay: number;
+  };
 }
 
 /**
@@ -90,6 +95,7 @@ export class BatchProcessor extends EventEmitter {
   private alphaVantageService: AlphaVantageService;
   private activeBatches: Map<string, BatchStatus> = new Map();
   private completedBatches: Map<string, BatchResult> = new Map();
+  private errorHandler: ErrorCodeHandler;
 
   constructor(
     alphaVantageService: AlphaVantageService,
@@ -104,16 +110,19 @@ export class BatchProcessor extends EventEmitter {
       enableProgressTracking: true,
       enableAutoRetry: true,
       cacheFirstStrategy: true,
+      rateLimiterConfig: {
+        requestsPerMinute: 5,
+        requestsPerDay: 25,
+      },
       ...config,
     };
 
     this.alphaVantageService = alphaVantageService;
-    this.rateLimiter = new ApiRateLimiter({
-      requestsPerMinute: 5,
-      requestsPerDay: 25,
-      enableLogging: true,
-    });
-
+    this.rateLimiter = new ApiRateLimiter(
+      this.alphaVantageService,
+      this.config.rateLimiterConfig
+    );
+    this.errorHandler = ErrorCodeHandler.getInstance();
     this.setupEventListeners();
   }
 
@@ -161,7 +170,7 @@ export class BatchProcessor extends EventEmitter {
       // Ottimizza ordine di elaborazione
       const optimizedSymbols = this.optimizeProcessingOrder(
         request.symbols,
-        request._timeframe
+        request.timeframe
       );
 
       // Strategia cache-first se abilitata
@@ -171,8 +180,8 @@ export class BatchProcessor extends EventEmitter {
       if (this.config.cacheFirstStrategy) {
         const cacheResult = await this.checkCacheFirst(
           optimizedSymbols,
-          request._timeframe,
-          request._options
+          request.timeframe,
+          request.options
         );
         cacheResults = cacheResult.cached;
         symbolsToProcess = cacheResult.uncached;
@@ -187,8 +196,8 @@ export class BatchProcessor extends EventEmitter {
         symbolsToProcess.length > 0
           ? await this.processViaRateLimiter(
               symbolsToProcess,
-              request._timeframe,
-              request._options,
+              request.timeframe,
+              request.options,
               batchId
             )
           : new Map<string, unknown>();
@@ -232,8 +241,22 @@ export class BatchProcessor extends EventEmitter {
         `Batch ${batchId} completed: ${batchResult.successfulSymbols}/${batchResult.totalSymbols} successful in ${executionTimeMs}ms`
       );
 
+      if (results.size > 0) {
+        this.updateBatchProgress(batchId, {
+          type: 'batch_partial_complete',
+          results,
+        });
+      }
+
+      if (errors.length > 0) {
+        this.updateBatchProgress(batchId, {
+          type: 'batch_errors',
+          errors,
+        });
+      }
+
       return batchResult;
-    } catch (_error) {
+    } catch (error) {
       // Gestione errore
       batchStatus.status = 'failed';
       batchStatus.endTime = new Date();
@@ -245,7 +268,7 @@ export class BatchProcessor extends EventEmitter {
         error instanceof Error ? error.message : String(error)
       );
 
-      this.log(`Batch ${batchId} failed: ${error}`);
+      this.log(`Batch ${batchId} failed: ${String(error)}`);
       throw error;
     }
   }
@@ -264,13 +287,13 @@ export class BatchProcessor extends EventEmitter {
     const batchPromises = timeframes.map(async timeframe => {
       const batchRequest: BatchRequest = {
         symbols,
-        _timeframe,
-        _options,
-        priority: this.getTimeframePriority(_timeframe),
+        timeframe,
+        options,
+        priority: this.getTimeframePriority(timeframe),
       };
 
       const batchResult = await this.processBatch(batchRequest);
-      return { _timeframe, batchResult };
+      return { timeframe, batchResult };
     });
 
     // Attendi tutti i batch
@@ -282,16 +305,16 @@ export class BatchProcessor extends EventEmitter {
 
       batchResults.forEach((result, _index) => {
         if (result.status === 'fulfilled') {
-          const { _timeframe, batchResult } = result.value;
-          const symbolData = batchResult.results.get(_symbol);
+          const { timeframe, batchResult } = result.value;
+          const symbolData = batchResult.results.get(symbol);
           if (symbolData) {
-            symbolResults.set(_timeframe, symbolData);
+            symbolResults.set(timeframe, symbolData);
           }
         }
       });
 
       if (symbolResults.size > 0) {
-        results.set(_symbol, symbolResults);
+        results.set(symbol, symbolResults);
       }
     }
 
@@ -313,22 +336,22 @@ export class BatchProcessor extends EventEmitter {
       try {
         // Prova a ottenere da cache (useCache: true, ma senza fallback API)
         const result = await this.alphaVantageService.getStockData(
-          _symbol,
-          _timeframe,
+          symbol,
+          timeframe,
           {
-            ..._options,
+            ...options,
             useCache: true,
           }
         );
 
         if (result.cacheHit) {
-          cached.set(_symbol, result);
+          cached.set(symbol, result);
         } else {
-          uncached.push(_symbol);
+          uncached.push(symbol);
         }
-      } catch (_error) {
+      } catch (error) {
         // Se non in cache, aggiungi a uncached
-        uncached.push(_symbol);
+        uncached.push(symbol);
       }
     }
 
@@ -349,7 +372,7 @@ export class BatchProcessor extends EventEmitter {
     // Configura callback per progress tracking
     this.rateLimiter.on('progress', (event: ProgressEvent) => {
       if (event.batchId === batchId || event.batchId.includes('batch')) {
-        this.updateBatchProgress(batchId, _event);
+        this.updateBatchProgress(batchId, event);
       }
     });
 
@@ -357,12 +380,12 @@ export class BatchProcessor extends EventEmitter {
       // Esegui batch tramite rate limiter
       const rateLimiterResults = await this.rateLimiter.queueBatch(
         symbols,
-        _timeframe,
-        _options
+        timeframe,
+        options
       );
 
       // Converte risultati del rate limiter integrando con AlphaVantageService
-      for (const [_symbol, result] of rateLimiterResults) {
+      for (const [symbol, result] of rateLimiterResults) {
         if (
           typeof result === 'object' &&
           result !== null &&
@@ -378,13 +401,13 @@ export class BatchProcessor extends EventEmitter {
         try {
           // Chiama AlphaVantageService per il risultato reale
           const stockData = await this.alphaVantageService.getStockData(
-            _symbol,
-            _timeframe,
-            _options
+            symbol,
+            timeframe,
+            options
           );
-          results.set(_symbol, stockData);
-        } catch (_error) {
-          this.log(`AlphaVantage error for ${symbol}: ${error}`);
+          results.set(symbol, stockData);
+        } catch (error) {
+          this.log(`AlphaVantage error for ${symbol}: ${String(error)}`);
           // Il rate limiter ha già gestito questo simbolo, non riproveremo
         }
       }
@@ -436,7 +459,7 @@ export class BatchProcessor extends EventEmitter {
     // Aggiorna errori
     if (event.progress.errors.length > 0) {
       batchStatus.errors = event.progress.errors.map(err => ({
-        symbol: err._symbol,
+        symbol: err.symbol,
         error: err.error,
       }));
     }
@@ -474,7 +497,7 @@ export class BatchProcessor extends EventEmitter {
       throw new Error('Batch size cannot exceed 100 symbols');
     }
 
-    if (!Object.values(AlphaVantageTimeframe).includes(request._timeframe)) {
+    if (!Object.values(AlphaVantageTimeframe).includes(request.timeframe)) {
       throw new Error(`Invalid timeframe: ${request.timeframe}`);
     }
 
@@ -503,7 +526,7 @@ export class BatchProcessor extends EventEmitter {
   ): void {
     const batchStatus = this.activeBatches.get(batchId);
     this.emit('batchEvent', {
-      _type,
+      type,
       batchId,
       status: batchStatus,
       message,
@@ -585,7 +608,7 @@ export class BatchProcessor extends EventEmitter {
    */
   private setupEventListeners(): void {
     this.rateLimiter.on('progress', (event: ProgressEvent) => {
-      this.emit('rateLimiterProgress', _event);
+      this.emit('rateLimiterProgress', event);
     });
   }
 
@@ -593,7 +616,9 @@ export class BatchProcessor extends EventEmitter {
    * Logging
    */
   private log(message: string): void {
-    console.log(`[BatchProcessor] ${new Date().toISOString()}: ${message}`);
+    if (this.config.enableLogging) {
+      console.log(`[BatchProcessor] ${new Date().toISOString()}: ${message}`);
+    }
   }
 }
 

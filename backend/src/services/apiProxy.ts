@@ -141,9 +141,9 @@ class ApiKeyManager {
       }
 
       return true;
-    } catch (_error) {
-      console._error('API Key validation failed:', _error);
-      return false;
+    } catch (error) {
+      console.error('API Key validation failed:', error);
+      throw error;
     }
   }
 
@@ -162,17 +162,16 @@ class ApiKeyManager {
 
     // Costruisce URL con parametri
     const baseUrl = 'https://www.alphavantage.co/query';
-    const urlParams = new URLSearchParams({
-      ...queryParams,
-      apikey: apiKey,
-    });
-    const fullUrl = `${baseUrl}?${urlParams.toString()}`;
+    const sortedParams = Object.entries(queryParams).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    );
+    const queryString = sortedParams
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
+    const fullUrl = `${baseUrl}?${queryString}&apikey=${apiKey}`;
 
     // Genera cache key
-    const cacheKey = `av_${Object.entries(queryParams)
-      .filter(([key]) => key !== 'apikey')
-      .map(([_key, value]) => `${key}=${value}`)
-      .join('&')}`;
+    const cacheKey = `av_${queryString}`;
 
     const startTime = Date.now();
 
@@ -182,7 +181,7 @@ class ApiKeyManager {
       if (cached && Date.now() - cached.timestamp.getTime() < cached.ttl) {
         console.log(`📦 Cache hit for Alpha Vantage: ${cacheKey}`);
         return {
-          data: cached._data,
+          data: cached.data,
           source: 'cache',
           responseTime: Date.now() - startTime,
           cached: true,
@@ -211,27 +210,22 @@ class ApiKeyManager {
       }
 
       // Salva in cache solo se è una risposta valida
-      const dataAsRecord = data as Record<string, unknown>;
-      if (
-        !dataAsRecord['Error Message'] &&
-        !dataAsRecord['Note'] &&
-        !dataAsRecord['Information']
-      ) {
+      if (!data['Error Message'] && !data['Note'] && !data['Information']) {
         this._cache.set(cacheKey, {
-          _data,
+          data,
           timestamp: new Date(),
           ttl,
         });
       }
 
       return {
-        _data,
+        data,
         source: 'alpha-vantage',
         responseTime,
         cached: false,
       };
-    } catch (_error) {
-      console._error('Alpha Vantage API call failed:', _error);
+    } catch (error) {
+      console.error('Alpha Vantage API call failed:', error);
       throw error;
     }
   }
@@ -248,7 +242,7 @@ class ApiKeyManager {
     const cached = this._cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp.getTime() < cached.ttl) {
       console.log(`📦 Cache hit for ${cacheKey}`);
-      return { data: cached._data, source: 'cache' };
+      return { data: cached.data, source: 'cache' };
     }
 
     // Esegui chiamata API
@@ -267,15 +261,15 @@ class ApiKeyManager {
       // Salva in cache solo se è una risposta valida
       if (!data['Error Message'] && !data['Note']) {
         this._cache.set(cacheKey, {
-          _data,
+          data,
           timestamp: new Date(),
           ttl,
         });
       }
 
-      return { _data, source: 'alpha-vantage', responseTime };
-    } catch (_error) {
-      console._error('API call failed:', _error);
+      return { data, source: 'alpha-vantage', responseTime };
+    } catch (error) {
+      console.error('API call failed:', error);
       throw error;
     }
   }
@@ -358,13 +352,13 @@ class ApiKeyManager {
     const now = Date.now();
     const keysToDelete: string[] = [];
 
-    this._cache.forEach((value, _key) => {
+    this._cache.forEach((value, key) => {
       if (now - value.timestamp.getTime() > value.ttl) {
-        keysToDelete.push(_key);
+        keysToDelete.push(key);
       }
     });
 
-    keysToDelete.forEach(key => this._cache.delete(_key));
+    keysToDelete.forEach(key => this._cache.delete(key));
 
     if (keysToDelete.length > 0) {
       console.log(`🧹 Cleaned ${keysToDelete.length} expired cache entries`);
@@ -425,8 +419,8 @@ export class ApiProxyService {
       });
 
       // Restituisci dati
-      res.json((result as any)._data);
-    } catch (_error) {
+      res.json((result as any).data);
+    } catch (error) {
       const responseTime = Date.now() - startTime;
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
@@ -442,7 +436,7 @@ export class ApiProxyService {
         errorMessage,
       });
 
-      console._error('Alpha Vantage proxy _error:', _error);
+      console.error('Alpha Vantage proxy error:', error);
 
       res.status(500).json({
         error: 'Alpha Vantage API Error',
@@ -462,7 +456,7 @@ export class ApiProxyService {
     const userAgent = req.get('User-Agent') || 'unknown';
 
     try {
-      if (!_symbol) {
+      if (!symbol) {
         res.status(400).json({
           error: 'Missing Symbol',
           message: 'Symbol parameter is required',
@@ -523,7 +517,7 @@ export class ApiProxyService {
       };
 
       res.json(formattedData);
-    } catch (_error) {
+    } catch (error) {
       const responseTime = Date.now() - startTime;
 
       apiKeyManager.logApiUsage({
@@ -536,12 +530,12 @@ export class ApiProxyService {
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
       });
 
-      console._error(`Quote _error for ${symbol}:`, _error);
+      console.error(`Quote error for ${symbol}:`, error);
 
       res.status(500).json({
         error: 'Quote Fetch Error',
         message: 'Failed to fetch quote data',
-        symbol: _symbol,
+        symbol: symbol.toUpperCase(),
       });
     }
   }
@@ -557,7 +551,7 @@ export class ApiProxyService {
     const userAgent = req.get('User-Agent') || 'unknown';
 
     try {
-      if (!_symbol) {
+      if (!symbol) {
         res.status(400).json({
           error: 'Missing Symbol',
           message: 'Symbol parameter is required',
@@ -622,7 +616,7 @@ export class ApiProxyService {
         'data' in result &&
         typeof (result as any).data === 'object' &&
         (result as any).data !== null
-          ? Object.keys((result as any)._data)
+          ? Object.keys((result as any).data)
           : [];
       const dataKey = keys.find(key => key.includes('Time Series'));
 
@@ -675,7 +669,7 @@ export class ApiProxyService {
       };
 
       res.json(formattedData);
-    } catch (_error) {
+    } catch (error) {
       const responseTime = Date.now() - startTime;
 
       apiKeyManager.logApiUsage({
@@ -688,12 +682,12 @@ export class ApiProxyService {
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
       });
 
-      console._error(`Historical data _error for ${symbol}:`, _error);
+      console.error(`Historical data error for ${symbol}:`, error);
 
       res.status(500).json({
         error: 'Historical Data Error',
         message: 'Failed to fetch historical data',
-        symbol: _symbol,
+        symbol: symbol.toUpperCase(),
         interval,
       });
     }
@@ -711,7 +705,7 @@ export class ApiProxyService {
         stats,
         timestamp: new Date().toISOString(),
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({
         error: 'Stats Error',
         message: 'Failed to get API statistics',
@@ -734,7 +728,7 @@ export class ApiProxyService {
           : 'API connection failed',
         timestamp: new Date().toISOString(),
       });
-    } catch (_error) {
+    } catch (error) {
       res.status(500).json({
         success: false,
         connected: false,

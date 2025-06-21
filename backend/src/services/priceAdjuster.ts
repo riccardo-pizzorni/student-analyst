@@ -100,22 +100,22 @@ export class PriceAdjuster {
 
     try {
       // 1. Rileva splits automaticamente dai dati
-      const detectedSplits = this.detectSplitsFromData(_data, _symbol);
+      const detectedSplits = this.detectSplitsFromData(data, symbol);
 
       // 2. Ottieni splits da cache o API esterne se abilitato
-      const cachedSplits = this.getCachedSplits(_symbol);
+      const cachedSplits = this.getCachedSplits(symbol);
 
       // 3. Combina e valida tutti gli splits
-      const allSplits = this.mergeSplitEvents([
-        ...detectedSplits,
-        ...cachedSplits,
-      ]);
+      const allSplits = this.mergeAndDeduplicateSplits(
+        detectedSplits,
+        cachedSplits
+      );
 
       // 4. Applica aggiustamenti
-      const adjustedData = this.applySplitAdjustments(_data, allSplits);
+      const adjustedData = this.applySplitAdjustments(data, allSplits);
 
       // 5. Aggiorna cache
-      this.updateSplitCache(_symbol, allSplits);
+      this.updateSplitCache(symbol, allSplits);
 
       return adjustedData;
     } catch (_error) {
@@ -123,7 +123,7 @@ export class PriceAdjuster {
       if (process.env.NODE_ENV !== 'production') {
         console.warn(
           `Errore durante aggiustamento splits per ${symbol}:`,
-          error
+          _error
         );
       }
       return data; // Ritorna dati originali in caso di errore
@@ -197,7 +197,7 @@ export class PriceAdjuster {
               // Soglia di confidence per accettare lo split
               splits.push({
                 date: currentDay.date,
-                _symbol,
+                symbol,
                 splitRatio,
                 splitFrom: 1,
                 splitTo: Math.round(splitRatio),
@@ -222,7 +222,7 @@ export class PriceAdjuster {
             if (confidence > 0.7) {
               splits.push({
                 date: currentDay.date,
-                _symbol,
+                symbol,
                 splitRatio: 1 / reverseSplitRatio,
                 splitFrom: Math.round(reverseSplitRatio),
                 splitTo: 1,
@@ -408,15 +408,27 @@ export class PriceAdjuster {
   /**
    * Combina e deduplicata eventi di split
    */
-  private mergeSplitEvents(splits: SplitEvent[]): SplitEvent[] {
+  private mergeAndDeduplicateSplits(
+    detectedSplits: SplitEvent[],
+    cachedSplits: SplitEvent[]
+  ): SplitEvent[] {
     const merged = new Map<string, SplitEvent>();
 
-    for (const split of splits) {
-      const key = `${split.symbol}_${split.date}`;
-      const existing = merged.get(_key);
+    for (const split of detectedSplits) {
+      const key = `${split.date}_${split.symbol}`;
+      const existing = merged.get(key);
 
       if (!existing || split.confidence > existing.confidence) {
-        merged.set(_key, split);
+        merged.set(key, split);
+      }
+    }
+
+    for (const split of cachedSplits) {
+      const key = `${split.date}_${split.symbol}`;
+      const existing = merged.get(key);
+
+      if (!existing || split.confidence > existing.confidence) {
+        merged.set(key, split);
       }
     }
 
@@ -427,14 +439,14 @@ export class PriceAdjuster {
    * Ottieni splits dalla cache
    */
   private getCachedSplits(symbol: string): SplitEvent[] {
-    return this.splitCache.get(_symbol) || [];
+    return this.splitCache.get(symbol) || [];
   }
 
   /**
    * Aggiorna cache splits
    */
   private updateSplitCache(symbol: string, splits: SplitEvent[]): void {
-    this.splitCache.set(_symbol, splits);
+    this.splitCache.set(symbol, splits);
   }
 
   /**
@@ -560,7 +572,7 @@ export class PriceAdjuster {
     confidence: number;
     recommendations: string[];
   } {
-    const splits = this.detectSplitsFromData(_data, _symbol);
+    const splits = this.detectSplitsFromData(data, symbol);
     const avgConfidence =
       splits.length > 0
         ? splits.reduce((sum, split) => sum + split.confidence, 0) /
@@ -584,5 +596,11 @@ export class PriceAdjuster {
       confidence: avgConfidence,
       recommendations,
     };
+  }
+
+  public getSplitHistory(symbol: string): SplitEvent[] {
+    const data = this.splitCache.get(symbol);
+    if (!data) return [];
+    return data;
   }
 }

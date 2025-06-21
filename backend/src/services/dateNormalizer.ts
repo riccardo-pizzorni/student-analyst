@@ -163,7 +163,7 @@ export class DateNormalizer {
         };
 
         results.push(normalizedItem);
-      } catch (_error) {
+      } catch (error) {
         errors.push(
           `Record ${i}: Errore inaspettato - ${(error as Error).message}`
         );
@@ -208,7 +208,7 @@ export class DateNormalizer {
       const match = originalValue.match(pattern);
       if (match) {
         try {
-          const result = this.parseWithFormat(match, _format, originalValue);
+          const result = this.parseWithFormat(match, format, originalValue);
           if (result.success) {
             return result;
           }
@@ -263,7 +263,7 @@ export class DateNormalizer {
     let dayDMY: string, monthDMY: string, yearDMY: string;
     let fullYear: string, fullMonth: string, fullDay: string;
 
-    switch (_format) {
+    switch (format) {
       case 'ISO_FULL':
       case 'ISO_SECONDS':
       case 'ISO_MINUTES':
@@ -338,7 +338,7 @@ export class DateNormalizer {
       date: this.formatToISODate(date),
       timestamp: date.toISOString(),
       originalValue,
-      detectedFormat: _format,
+      detectedFormat: format,
       timezone: this._timezone,
       confidence,
       errors: [],
@@ -357,7 +357,7 @@ export class DateNormalizer {
     const now = new Date();
 
     // Controllo date future
-    if (!this._validationRules.allowFutureDates && date > _now) {
+    if (!this._validationRules.allowFutureDates && date > now) {
       return {
         isValid: false,
         reason: 'Data futura non ammessa',
@@ -485,7 +485,7 @@ export class DateNormalizer {
     validationRules: DateValidationRules;
   } {
     return {
-      supportedFormats: this._datePatterns.map(p => p._format),
+      supportedFormats: this._datePatterns.map(p => p.format),
       timezone: this._timezone,
       validationRules: this._validationRules,
     };
