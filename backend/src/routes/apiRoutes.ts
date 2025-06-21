@@ -162,7 +162,7 @@ router.get(
         });
       }
 
-      console.error('Stock data error:', error);
+      console.error('Stock data error:', _error);
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Failed to fetch stock data',
@@ -186,7 +186,7 @@ router.get(
       // In futuro si può migrare completamente ad AlphaVantageService
       await ApiProxyService.getQuote(req, res);
     } catch (_error) {
-      console.error('Quote error:', error);
+      console.error('Quote error:', _error);
       res.status(500).json({
         error: 'Quote Error',
         message: 'Failed to fetch quote data',
@@ -235,7 +235,7 @@ router.post('/validate/request', async (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
     });
   } catch (_error) {
-    console.error('Validation error:', error);
+    console.error('Validation error:', _error);
     res.status(500).json({
       error: 'Validation Error',
       message: 'Failed to validate request',
@@ -390,7 +390,7 @@ router.post('/stock/batch', async (req: Request, res: Response) => {
           : undefined,
     });
   } catch (_error) {
-    console.error('Batch stock data error:', error);
+    console.error('Batch stock data error:', _error);
     res.status(500).json({
       error: 'Batch Processing Error',
       message: 'Failed to process batch request',
@@ -473,7 +473,7 @@ router.post('/quotes/batch', async (req: Request, res: Response) => {
       timestamp: new Date().toISOString(),
     });
   } catch (_error) {
-    console.error('Batch quotes error:', error);
+    console.error('Batch quotes error:', _error);
     res.status(500).json({
       error: 'Batch Processing Error',
       message: 'Failed to process batch request',
@@ -592,7 +592,7 @@ router.get('/admin/cache-status', async (req: Request, res: Response) => {
       },
     });
   } catch (_error) {
-    console.error('Cache status error:', error);
+    console.error('Cache status error:', _error);
     res.status(500).json({
       error: 'Cache Status Error',
       message: 'Failed to get cache status',
