@@ -1,6 +1,6 @@
 // src/services/analysisAPI.ts
+import { AnalysisApiResponse } from './analysisAPI'; 
 
-// La definizione dei tipi rimane qui, perché è il "contratto" tra frontend e backend
 export interface AnalysisApiResponse {
   historicalData: {
     labels: string[];
@@ -11,7 +11,7 @@ export interface AnalysisApiResponse {
     }[];
   };
   performanceMetrics: {
-    label:string;
+    label: string;
     value: string;
   }[];
   volatility: {
@@ -35,23 +35,12 @@ interface AnalysisParams {
   frequency: 'daily' | 'weekly' | 'monthly';
 }
 
-/**
- * Esegue una chiamata REALE al backend per ottenere i dati dell'analisi.
- *
- * @param params I parametri dell'analisi inseriti dall'utente.
- * @returns Una Promise che risolve con i dati dell'analisi dal backend.
- */
 export const fetchAnalysisData = async (
   params: AnalysisParams
 ): Promise<AnalysisApiResponse> => {
-  // DIAGNOSTIC LOG: Mostriamo tutte le variabili d'ambiente fornite da Vercel
-  console.log('DEBUG: Vercel env vars:', import.meta.env);
-
   console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
 
-  // In produzione, VITE_API_BASE_URL sarà l'URL del backend deployato (es. su Render).
-  // In sviluppo, sarà una stringa vuota, e la chiamata userà il proxy di Vite.
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || '';
   const API_URL = ${API_BASE_URL}/api/analysis;
 
   console.log(Frontend: Eseguo la chiamata a: );
@@ -83,6 +72,6 @@ export const fetchAnalysisData = async (
     return results;
   } catch (error) {
     console.error('Errore catastrofico durante la chiamata fetch:', error);
-    throw error; // Rilanciamo l'errore per farlo gestire dal contesto
+    throw error;
   }
 };
