@@ -580,7 +580,9 @@ export class ResponseParser {
         warnings: [],
         stats: {
           recordsParsed: result.length,
-          recordsSkipped: Array.isArray(_data) ? data.length - result.length : 0,
+          recordsSkipped: Array.isArray(_data)
+            ? data.length - result.length
+            : 0,
           parsingTimeMs: 0,
         },
       };

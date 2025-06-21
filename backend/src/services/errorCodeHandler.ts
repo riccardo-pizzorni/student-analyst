@@ -304,27 +304,39 @@ export class ErrorCodeHandler {
   private mapAlphaVantageError(
     alphaVantageType: AlphaVantageErrorType
   ): SystemErrorType {
-    const mapping: Record<AlphaVantageErrorType, SystemErrorType> = {
+    const alphaVantageToSystemErrorMap: Record<
+      AlphaVantageErrorType,
+      SystemErrorType
+    > = {
       [AlphaVantageErrorType.API_LIMIT_EXCEEDED]:
         SystemErrorType.DAILY_LIMIT_EXCEEDED,
       [AlphaVantageErrorType.RATE_LIMIT]: SystemErrorType.RATE_LIMIT_EXCEEDED,
       [AlphaVantageErrorType.AUTHENTICATION_ERROR]:
         SystemErrorType.INVALID_API_KEY,
       [AlphaVantageErrorType.INVALID_SYMBOL]: SystemErrorType.SYMBOL_NOT_FOUND,
+      [AlphaVantageErrorType.INVALID_FUNCTION]: SystemErrorType.INVALID_REQUEST,
       [AlphaVantageErrorType.NETWORK_ERROR]:
         SystemErrorType.NETWORK_UNAVAILABLE,
-      [AlphaVantageErrorType.NO_DATA_AVAILABLE]:
-        SystemErrorType.NO_DATA_AVAILABLE,
       [AlphaVantageErrorType.PARSING_ERROR]:
         SystemErrorType.INVALID_DATA_FORMAT,
+      [AlphaVantageErrorType.NO_DATA_AVAILABLE]:
+        SystemErrorType.NO_DATA_AVAILABLE,
       [AlphaVantageErrorType.MALFORMED_RESPONSE]:
         SystemErrorType.INVALID_DATA_FORMAT,
-      [AlphaVantageErrorType.INVALID_FUNCTION]: SystemErrorType.INVALID_REQUEST,
       [AlphaVantageErrorType.INVALID_TIMEFRAME]:
         SystemErrorType.UNSUPPORTED_TIMEFRAME,
+      [AlphaVantageErrorType.INVALID_RESPONSE]:
+        SystemErrorType.INVALID_DATA_FORMAT,
+      [AlphaVantageErrorType.SERVER_ERROR]: SystemErrorType.SERVICE_UNAVAILABLE,
+      [AlphaVantageErrorType.UNKNOWN]: SystemErrorType.UNKNOWN_ERROR,
+      [AlphaVantageErrorType.MAX_RETRIES_REACHED]:
+        SystemErrorType.SERVICE_UNAVAILABLE,
     };
 
-    return mapping[alphaVantageType] || SystemErrorType.UNKNOWN_ERROR;
+    return (
+      alphaVantageToSystemErrorMap[alphaVantageType] ||
+      SystemErrorType.UNKNOWN_ERROR
+    );
   }
 
   /**
