@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { IndexedDBCacheL3 } from '../../src/services/IndexedDBCacheL3';
 
-const STORE_NAME = 'cache';
+const _STORE_NAME = 'cache';
 
 class MockEvent implements Event {
   readonly bubbles: boolean;

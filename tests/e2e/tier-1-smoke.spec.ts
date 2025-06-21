@@ -5,7 +5,7 @@ import { expect, Page, test } from '@playwright/test';
  * Fixed with absolute URLs and correct title
  */
 
-async function smartClick(
+async function _smartClick(
   page: Page,
   selector: string,
   options: Record<string, unknown> = {}

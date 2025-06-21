@@ -136,7 +136,7 @@ describe('AutomaticCleanupService', () => {
     });
 
     mockLocalStorage.getItem.mockReturnValue(null);
-    mockSetTimeout.mockImplementation((fn, delay) => {
+    mockSetTimeout.mockImplementation((_fn, _delay) => {
       return 123; // Mock timer ID
     });
 

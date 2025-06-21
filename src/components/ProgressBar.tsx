@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface ProgressBarProps {
   progress: number;
@@ -8,10 +7,10 @@ interface ProgressBarProps {
 }
 
 export default function ProgressBar({
-  progress,
+  progress: _progress,
   label,
-  currentStep,
-  totalSteps,
+  currentStep: _currentStep,
+  totalSteps: _totalSteps,
 }: ProgressBarProps) {
   return (
     <div className="dark-card rounded-xl p-6">

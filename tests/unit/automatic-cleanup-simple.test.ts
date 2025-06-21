@@ -27,7 +27,7 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 Object.defineProperty(global, 'setTimeout', {
-  value: jest.fn((fn: unknown, delay: number) => 123),
+  value: jest.fn((_fn: unknown, _delay: number) => 123),
   writable: true,
 });
 

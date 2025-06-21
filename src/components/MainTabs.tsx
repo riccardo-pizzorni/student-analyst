@@ -16,10 +16,10 @@ import UnifiedInputSection from './input/UnifiedInputSection';
 
 export default function MainTabs({
   activeStep,
-  onShowGlossary,
+  onShowGlossary: _onShowGlossary,
 }: {
   activeStep: string;
-  _onShowGlossary?: () => void;
+  onShowGlossary?: () => void;
 }) {
   const getTabsForStep = (step: string) => {
     switch (step) {
@@ -282,102 +282,102 @@ export default function MainTabs({
         {!['performance', 'rischio', 'diversificazione'].includes(
           activeStep
         ) && (
-          <>
-            <TabsContent value={tabs[0]?.key} className="mt-6">
-              <div className="dark-card rounded-xl p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                    {React.createElement(tabs[0]?.icon, { size: 24 })}
-                    {tabs[0]?.label}
-                  </h3>
-                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
-                    <Info size={14} />
-                    Teoria
-                  </button>
-                </div>
-                <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <BarChart3
-                      size={64}
-                      className="mx-auto text-blue-400 animate-pulse"
-                    />
-                    <div>
-                      <p className="text-xl font-bold text-blue-300">
-                        Interactive Charts
-                      </p>
-                      <p className="text-slate-400">
-                        Real-time data visualization
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            {tabs.length > 1 && (
-              <TabsContent value={tabs[1].key} className="mt-6">
+            <>
+              <TabsContent value={tabs[0]?.key} className="mt-6">
                 <div className="dark-card rounded-xl p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                      {React.createElement(tabs[1].icon, { size: 24 })}
-                      {tabs[1].label}
+                      {React.createElement(tabs[0]?.icon, { size: 24 })}
+                      {tabs[0]?.label}
                     </h3>
                     <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
                       <Info size={14} />
                       Teoria
                     </button>
                   </div>
-                  <div className="overflow-hidden rounded-lg border border-slate-700">
-                    <table className="w-full">
-                      <thead className="bg-slate-800/50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Symbol
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Price
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Change
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Volume
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {['AAPL', 'MSFT', 'GOOGL', 'AMZN'].map((ticker, i) => (
-                          <tr
-                            key={ticker}
-                            className="border-t border-slate-700 hover:bg-slate-800/30"
-                          >
-                            <td className="px-4 py-3 font-medium text-blue-300">
-                              {ticker}
-                            </td>
-                            <td className="px-4 py-3 text-slate-300">
-                              ${(150 + i * 25).toFixed(2)}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`text-sm ${i % 2 === 0 ? 'text-green-400' : 'text-red-400'}`}
-                              >
-                                {i % 2 === 0 ? '+' : '-'}
-                                {(Math.random() * 5).toFixed(2)}%
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-slate-400">
-                              {(Math.random() * 1000000).toFixed(0)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <BarChart3
+                        size={64}
+                        className="mx-auto text-blue-400 animate-pulse"
+                      />
+                      <div>
+                        <p className="text-xl font-bold text-blue-300">
+                          Interactive Charts
+                        </p>
+                        <p className="text-slate-400">
+                          Real-time data visualization
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
-            )}
-          </>
-        )}
+
+              {tabs.length > 1 && (
+                <TabsContent value={tabs[1].key} className="mt-6">
+                  <div className="dark-card rounded-xl p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
+                        {React.createElement(tabs[1].icon, { size: 24 })}
+                        {tabs[1].label}
+                      </h3>
+                      <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                        <Info size={14} />
+                        Teoria
+                      </button>
+                    </div>
+                    <div className="overflow-hidden rounded-lg border border-slate-700">
+                      <table className="w-full">
+                        <thead className="bg-slate-800/50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                              Symbol
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                              Price
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                              Change
+                            </th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
+                              Volume
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {['AAPL', 'MSFT', 'GOOGL', 'AMZN'].map((ticker, i) => (
+                            <tr
+                              key={ticker}
+                              className="border-t border-slate-700 hover:bg-slate-800/30"
+                            >
+                              <td className="px-4 py-3 font-medium text-blue-300">
+                                {ticker}
+                              </td>
+                              <td className="px-4 py-3 text-slate-300">
+                                ${(150 + i * 25).toFixed(2)}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`text-sm ${i % 2 === 0 ? 'text-green-400' : 'text-red-400'}`}
+                                >
+                                  {i % 2 === 0 ? '+' : '-'}
+                                  {(Math.random() * 5).toFixed(2)}%
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-slate-400">
+                                {(Math.random() * 1000000).toFixed(0)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
+            </>
+          )}
       </Tabs>
     </div>
   );

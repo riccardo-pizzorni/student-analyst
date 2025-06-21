@@ -12,7 +12,6 @@ import {
 
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { type FormItemContextValue } from './formTypes';
 
 const Form = FormProvider;
 
@@ -174,5 +173,6 @@ export {
   FormItem,
   FormLabel,
   FormMessage,
-  useFormField,
+  useFormField
 };
+
