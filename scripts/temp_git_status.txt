@@ -1,2 +1,1 @@
  M scripts/temp_git_status.txt
- M vercel.json
