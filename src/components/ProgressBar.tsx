@@ -1,4 +1,3 @@
-
 interface ProgressBarProps {
   progress: number;
   label: string;
