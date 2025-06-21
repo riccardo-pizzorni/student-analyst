@@ -87,7 +87,7 @@ class MockIDBVersionChangeEvent
   readonly newVersion: number | null;
 
   constructor(type: string, eventInitDict?: IDBVersionChangeEventInit) {
-    super(type, eventInitDict);
+    super(_type, eventInitDict);
     this.oldVersion = eventInitDict?.oldVersion || 0;
     this.newVersion = eventInitDict?.newVersion || null;
   }
@@ -240,7 +240,7 @@ class MockIndex implements IDBIndex {
     const keys = (this.objectStore as MockObjectStore).data.map(item =>
       this.getKeyValue(item)
     );
-    const results = query ? keys.filter(key => key === query) : keys;
+    const results = query ? keys.filter(key => key === _query) : keys;
     request.setResult(count ? results.slice(0, count) : results);
     return request;
   }
@@ -313,7 +313,7 @@ class MockObjectStore implements IDBObjectStore {
       throw new DOMException(`Index ${name} already exists`, 'ConstraintError');
     }
     const index = new MockIndex(name, keyPath, options || {}, this);
-    this.indexes.set(name, index);
+    this.indexes.set(name, _index);
     this.indexNames = new MockDOMStringList(Array.from(this.indexes.keys()));
     return index;
   }
@@ -328,7 +328,7 @@ class MockObjectStore implements IDBObjectStore {
 
   index(name: string): IDBIndex {
     const index = this.indexes.get(name);
-    if (!index) {
+    if (!_index) {
       throw new DOMException(`Index ${name} not found`, 'NotFoundError');
     }
     return index;
@@ -342,7 +342,7 @@ class MockObjectStore implements IDBObjectStore {
       if (typeof this.keyPath === 'string') {
         return item[this.keyPath] === key;
       }
-      return (this.keyPath as string[]).some(path => item[path] === key);
+      return (this.keyPath as string[]).some(path => item[path] === _key);
     });
     request.setResult(result);
     return request;
@@ -375,7 +375,7 @@ class MockObjectStore implements IDBObjectStore {
   count(key?: IDBValidKey | IDBKeyRange): IDBRequest<number> {
     const request = new MockIDBRequest();
     const count = key
-      ? this.data.filter(item => this.getKeyValue(item) === key).length
+      ? this.data.filter(item => this.getKeyValue(item) === _key).length
       : this.data.length;
     request.setResult(count);
     return request;
@@ -383,9 +383,9 @@ class MockObjectStore implements IDBObjectStore {
 
   delete(key: IDBValidKey | IDBKeyRange): IDBRequest<undefined> {
     const request = new MockIDBRequest();
-    const index = this.data.findIndex(item => this.getKeyValue(item) === key);
+    const index = this.data.findIndex(item => this.getKeyValue(item) === _key);
     if (index >= 0) {
-      this.data.splice(index, 1);
+      this.data.splice(_index, 1);
     }
     request.setResult(undefined);
     return request;
@@ -397,11 +397,11 @@ class MockObjectStore implements IDBObjectStore {
   ): IDBRequest<Record<string, unknown>[]> {
     const request = new MockIDBRequest();
     const results = this.data.filter(item => {
-      if (!query) return true;
+      if (!_query) return true;
       if (typeof this.keyPath === 'string') {
         return item[this.keyPath] === query;
       }
-      return (this.keyPath as string[]).some(path => item[path] === query);
+      return (this.keyPath as string[]).some(path => item[path] === _query);
     });
     request.setResult(count ? results.slice(0, count) : results);
     return request;
@@ -418,14 +418,14 @@ class MockObjectStore implements IDBObjectStore {
       }
       return (this.keyPath as string[]).map(path => item[path]);
     });
-    const results = query ? keys.filter(key => key === query) : keys;
+    const results = query ? keys.filter(key => key === _query) : keys;
     request.setResult(count ? results.slice(0, count) : results);
     return request;
   }
 
   getKey(query: IDBValidKey | IDBKeyRange): IDBRequest<unknown> {
     const request = new MockIDBRequest();
-    const item = this.data.find(item => this.getKeyValue(item) === query);
+    const item = this.data.find(item => this.getKeyValue(item) === _query);
     request.setResult(item ? this.getKeyValue(item) : undefined);
     return request;
   }
@@ -674,7 +674,7 @@ class MockIndexedDB implements IDBFactory {
           newVersion: newVersion,
         });
         if (request.onupgradeneeded) {
-          request.onupgradeneeded.call(request, event);
+          request.onupgradeneeded.call(request, _event);
         }
         const newDb = new MockDatabase(name, newVersion);
         this._databases.set(name, newDb);
@@ -701,7 +701,7 @@ class MockIndexedDB implements IDBFactory {
         newVersion: null,
       });
       if (request.onblocked) {
-        request.onblocked.call(request, event);
+        request.onblocked.call(request, _event);
       }
       this._databases.delete(name);
     }

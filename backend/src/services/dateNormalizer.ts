@@ -163,7 +163,7 @@ export class DateNormalizer {
         };
 
         results.push(normalizedItem);
-      } catch (error) {
+      } catch (_error) {
         errors.push(
           `Record ${i}: Errore inaspettato - ${(error as Error).message}`
         );
@@ -208,11 +208,11 @@ export class DateNormalizer {
       const match = originalValue.match(pattern);
       if (match) {
         try {
-          const result = this.parseWithFormat(match, format, originalValue);
+          const result = this.parseWithFormat(match, _format, originalValue);
           if (result.success) {
             return result;
           }
-        } catch (error) {
+        } catch (_error) {
           // Continua con il prossimo pattern
         }
       }
@@ -233,7 +233,7 @@ export class DateNormalizer {
           errors: [],
         };
       }
-    } catch (error) {
+    } catch (_error) {
       // Fallback fallito
     }
 
@@ -263,7 +263,7 @@ export class DateNormalizer {
     let dayDMY: string, monthDMY: string, yearDMY: string;
     let fullYear: string, fullMonth: string, fullDay: string;
 
-    switch (format) {
+    switch (_format) {
       case 'ISO_FULL':
       case 'ISO_SECONDS':
       case 'ISO_MINUTES':
@@ -338,7 +338,7 @@ export class DateNormalizer {
       date: this.formatToISODate(date),
       timestamp: date.toISOString(),
       originalValue,
-      detectedFormat: format,
+      detectedFormat: _format,
       timezone: this._timezone,
       confidence,
       errors: [],
@@ -357,7 +357,7 @@ export class DateNormalizer {
     const now = new Date();
 
     // Controllo date future
-    if (!this._validationRules.allowFutureDates && date > now) {
+    if (!this._validationRules.allowFutureDates && date > _now) {
       return {
         isValid: false,
         reason: 'Data futura non ammessa',
@@ -485,7 +485,7 @@ export class DateNormalizer {
     validationRules: DateValidationRules;
   } {
     return {
-      supportedFormats: this._datePatterns.map(p => p.format),
+      supportedFormats: this._datePatterns.map(p => p._format),
       timezone: this._timezone,
       validationRules: this._validationRules,
     };

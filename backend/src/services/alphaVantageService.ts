@@ -204,31 +204,31 @@ export class AlphaVantageService {
   ): Promise<AlphaVantageResponse> {
     try {
       // Validazione input
-      this.validateSymbol(symbol);
-      this.validateTimeframe(timeframe);
+      this.validateSymbol(_symbol);
+      this.validateTimeframe(_timeframe);
 
       // Generazione chiave cache
-      const cacheKey = this.generateCacheKey(symbol, timeframe, options);
+      const cacheKey = this.generateCacheKey(_symbol, _timeframe, _options);
 
       // Controllo cache
       if (options?.useCache !== false && this.config.cacheEnabled) {
-        const cachedData = this.getCachedData(cacheKey, timeframe);
+        const cachedData = this.getCachedData(cacheKey, _timeframe);
         if (cachedData) {
           return { ...cachedData, cacheHit: true };
         }
       }
 
       // Chiamata API con retry logic
-      const response = await this.makeApiCall(symbol, timeframe, options);
+      const response = await this.makeApiCall(_symbol, _timeframe, _options);
 
       // Caching della risposta
       if (this.config.cacheEnabled) {
-        this.setCachedData(cacheKey, response, timeframe);
+        this.setCachedData(cacheKey, response, _timeframe);
       }
 
       return response;
-    } catch (error) {
-      throw this.handleError(error, symbol, timeframe);
+    } catch (_error) {
+      throw this.handleError(error, _symbol, _timeframe);
     }
   }
 
@@ -245,7 +245,7 @@ export class AlphaVantageService {
 
     // Regex per simboli azionari validi (letters, numbers, dots, hyphens)
     const symbolPattern = /^[A-Za-z0-9.-]+$/;
-    if (!symbolPattern.test(symbol)) {
+    if (!symbolPattern.test(_symbol)) {
       throw new AlphaVantageError(
         AlphaVantageErrorType.INVALID_SYMBOL,
         `Simbolo "${symbol}" contiene caratteri non validi. Utilizzare solo lettere, numeri, punti e trattini`
@@ -264,7 +264,7 @@ export class AlphaVantageService {
    * Validazione del timeframe
    */
   private validateTimeframe(timeframe: AlphaVantageTimeframe): void {
-    if (!Object.values(AlphaVantageTimeframe).includes(timeframe)) {
+    if (!Object.values(AlphaVantageTimeframe).includes(_timeframe)) {
       throw new AlphaVantageError(
         AlphaVantageErrorType.INVALID_TIMEFRAME,
         `Timeframe "${timeframe}" non supportato. Valori supportati: ${Object.values(AlphaVantageTimeframe).join(', ')}`
@@ -285,12 +285,12 @@ export class AlphaVantageService {
     for (let attempt = 1; attempt <= this.config.retryAttempts; attempt++) {
       try {
         const response = await this.executeApiRequest(
-          symbol,
-          timeframe,
-          options
+          _symbol,
+          _timeframe,
+          _options
         );
         return response;
-      } catch (error) {
+      } catch (_error) {
         lastError = error as Error;
 
         // Non fare retry per alcuni tipi di errore
@@ -319,16 +319,16 @@ export class AlphaVantageService {
     try {
       // Determina la funzione API da utilizzare
       const apiFunction = this.getApiFunction(
-        timeframe,
+        _timeframe,
         typeof options?.adjusted === 'boolean' ? options.adjusted : undefined
       );
 
       // Costruisce i parametri della richiesta
       const params = this.buildRequestParams(
         apiFunction,
-        symbol,
-        timeframe,
-        options
+        _symbol,
+        _timeframe,
+        _options
       );
 
       // Esegue la richiesta tramite il nostro proxy API sicuro
@@ -349,19 +349,19 @@ export class AlphaVantageService {
           AlphaVantageErrorType.NETWORK_ERROR,
           `HTTP Error: ${axiosResponse.status} - ${axiosResponse.statusText}`,
           undefined,
-          axiosResponse.data,
+          axiosResponse._data,
           true
         );
       }
 
       // Parse e validazione della risposta
       const parsedResponse = this.parseApiResponse(
-        axiosResponse.data,
-        timeframe
+        axiosResponse._data,
+        _timeframe
       );
 
       return parsedResponse;
-    } catch (error) {
+    } catch (_error) {
       if (axios.isAxiosError(error)) {
         return this.handleAxiosError(error);
       }
@@ -378,7 +378,7 @@ export class AlphaVantageService {
   ): AlphaVantageFunction {
     // Sposto dichiarazioni fuori dai case
     let apiFunction: AlphaVantageFunction;
-    switch (timeframe) {
+    switch (_timeframe) {
       case AlphaVantageTimeframe.INTRADAY_1MIN:
       case AlphaVantageTimeframe.INTRADAY_5MIN:
       case AlphaVantageTimeframe.INTRADAY_15MIN:
@@ -459,7 +459,7 @@ export class AlphaVantageService {
       // Identifica le chiavi di dati e metadati
       const { dataKey, metadataKey } = this.identifyResponseKeys(
         responseData,
-        timeframe
+        _timeframe
       );
 
       if (
@@ -484,7 +484,7 @@ export class AlphaVantageService {
       // Parsing dei dati OHLCV
       const ohlcvData = this.parseOHLCVData(
         (responseData[dataKey] ?? {}) as Record<string, unknown>,
-        timeframe
+        _timeframe
       );
 
       // Validazione dati se abilitata
@@ -500,7 +500,7 @@ export class AlphaVantageService {
         requestTimestamp: new Date().toISOString(),
         cacheHit: false,
       };
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof AlphaVantageError) {
         throw error;
       }
@@ -716,7 +716,7 @@ export class AlphaVantageService {
     }
 
     // Validazione dei singoli record
-    for (const record of data) {
+    for (const record of _data) {
       if (
         record.open <= 0 ||
         record.high <= 0 ||
@@ -765,7 +765,7 @@ export class AlphaVantageService {
           AlphaVantageErrorType.AUTHENTICATION_ERROR,
           `Errore di autenticazione: ${status}. Verificare la validità dell'API key`,
           error,
-          data,
+          _data,
           false
         );
       }
@@ -775,7 +775,7 @@ export class AlphaVantageService {
           AlphaVantageErrorType.NETWORK_ERROR,
           `Errore server Alpha Vantage: ${status}`,
           error,
-          data,
+          _data,
           true // Retryable
         );
       }
@@ -784,7 +784,7 @@ export class AlphaVantageService {
         AlphaVantageErrorType.NETWORK_ERROR,
         `Errore HTTP: ${status} - ${error.message}`,
         error,
-        data,
+        _data,
         false
       );
     } else if (error.request) {
@@ -837,7 +837,7 @@ export class AlphaVantageService {
     timeframe: AlphaVantageTimeframe,
     options?: Record<string, unknown>
   ): string {
-    const optionsStr = options ? JSON.stringify(options) : '';
+    const optionsStr = options ? JSON.stringify(_options) : '';
     return `${symbol}_${timeframe}_${optionsStr}`;
   }
 
@@ -873,7 +873,7 @@ export class AlphaVantageService {
     timeframe: AlphaVantageTimeframe
   ): void {
     this.cache.set(cacheKey, {
-      data,
+      _data,
       timestamp: Date.now(),
     });
 
@@ -943,16 +943,16 @@ export class AlphaVantageService {
     const errors: string[] = [];
 
     try {
-      this.validateSymbol(symbol);
-    } catch (error) {
+      this.validateSymbol(_symbol);
+    } catch (_error) {
       if (error instanceof AlphaVantageError) {
         errors.push(error.message);
       }
     }
 
     try {
-      this.validateTimeframe(timeframe);
-    } catch (error) {
+      this.validateTimeframe(_timeframe);
+    } catch (_error) {
       if (error instanceof AlphaVantageError) {
         errors.push(error.message);
       }

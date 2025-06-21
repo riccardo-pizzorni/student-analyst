@@ -21,7 +21,7 @@ async function resilientExpect(assertion: () => Promise<void>, retries = 3) {
     try {
       await assertion();
       return;
-    } catch (error) {
+    } catch (_error) {
       if (i === retries - 1) throw error;
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -152,7 +152,7 @@ test.describe('TIER 1 - Smoke Testing (100% Pass Required)', () => {
           await expect(element).toBeVisible({ timeout: 2000 });
           elementFound = true;
           break;
-        } catch (error) {
+        } catch (_error) {
           continue;
         }
       }
@@ -161,7 +161,7 @@ test.describe('TIER 1 - Smoke Testing (100% Pass Required)', () => {
 
     // Verifica presenza bottoni/interattività
     const buttons = page.locator(
-      'button, [role="button"], [type="button"], input, a'
+      'button, [role="button"], [type="button"], _input, a'
     );
     const buttonCount = await buttons.count();
 
@@ -256,7 +256,7 @@ test.describe('TIER 1 - Smoke Testing (100% Pass Required)', () => {
           await expect(element).toBeVisible({ timeout: 1000 });
           console.log(`Found element with selector: ${selector}`);
           return;
-        } catch (error) {
+        } catch (_error) {
           continue;
         }
       }

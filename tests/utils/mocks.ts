@@ -211,7 +211,7 @@ const mockWindow = {
   setTimeout: jest
     .fn()
     .mockImplementation((callback: () => void, delay: number) => {
-      return setTimeout(callback, delay);
+      return setTimeout(callback, _delay);
     }),
   clearTimeout: jest.fn().mockImplementation((id: number) => {
     clearTimeout(id);
@@ -219,7 +219,7 @@ const mockWindow = {
   setInterval: jest
     .fn()
     .mockImplementation((callback: () => void, delay: number) => {
-      return setInterval(callback, delay);
+      return setInterval(callback, _delay);
     }),
   clearInterval: jest.fn().mockImplementation((id: number) => {
     clearInterval(id);
@@ -344,7 +344,7 @@ const mockCrypto = {
           extractable: boolean,
           keyUsages: string[]
         ) => {
-          return { type: 'secret', extractable, algorithm, usages: keyUsages };
+          return { type: 'secret', extractable, _algorithm, usages: keyUsages };
         }
       ),
     deriveKey: jest
@@ -382,7 +382,7 @@ const mockCrypto = {
           extractable: boolean,
           keyUsages: string[]
         ) => {
-          return { type: 'secret', extractable, algorithm, usages: keyUsages };
+          return { type: 'secret', extractable, _algorithm, usages: keyUsages };
         }
       ),
     exportKey: jest
@@ -573,8 +573,8 @@ export const setupGlobalMocks = () => {
   });
 
   // Setup Window
-  Object.entries(mockWindow).forEach(([key, value]) => {
-    Object.defineProperty(window, key, {
+  Object.entries(mockWindow).forEach(([_key, value]) => {
+    Object.defineProperty(window, _key, {
       value,
       writable: true,
       configurable: true,

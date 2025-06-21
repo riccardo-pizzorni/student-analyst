@@ -61,7 +61,7 @@ test.describe('🎯 Realistic User Journeys', () => {
         const element = page.locator(selector);
         const count = await element.count();
         if (count > 0) visibleElements++;
-      } catch (error) {
+      } catch (_error) {
         // Ignora errori di elementi non trovati
       }
     }

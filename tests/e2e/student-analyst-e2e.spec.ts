@@ -62,7 +62,7 @@ test.describe('🎯 Student Analyst - Core Functionality', () => {
       await expect(page.locator('body')).toBeVisible();
 
       console.log('PyScript navigation successful');
-    } catch (error) {
+    } catch (_error) {
       console.log('PyScript component not found or not clickable');
     }
 
@@ -78,7 +78,7 @@ test.describe('🎯 Student Analyst - Core Functionality', () => {
 
       await expect(page.locator('body')).toBeVisible();
       console.log('UI navigation test passed');
-    } catch (error) {
+    } catch (_error) {
       console.log('UI Component navigation had issues');
     }
 
@@ -195,7 +195,7 @@ test.describe('🎯 Student Analyst - Core Functionality', () => {
 
       // Verifica che non ci siano crash
       await expect(page.locator('body')).toBeVisible();
-    } catch (error) {
+    } catch (_error) {
       console.log('Navigation to PyScript had issues');
       isStable = false;
     }

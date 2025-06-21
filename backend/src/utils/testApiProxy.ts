@@ -76,7 +76,7 @@ export class ApiProxyTester {
             header === 'user-agent' ? 'test-agent' : '',
         };
         const mockRes = {
-          json: (data: unknown) => data,
+          json: (data: unknown) => _data,
           status: (code: number) => ({ json: (data: unknown) => data }),
         };
 
@@ -106,7 +106,7 @@ export class ApiProxyTester {
         // Test che la gestione degli errori funzioni
         try {
           throw new Error('Test error');
-        } catch (error) {
+        } catch (_error) {
           return error instanceof Error && error.message === 'Test error';
         }
       },
@@ -377,7 +377,7 @@ export class ApiProxyTester {
       console.log(
         `  ${result ? '✅' : '❌'} ${testName}: ${description}${responseTime ? ` (${responseTime}ms)` : ''}`
       );
-    } catch (error) {
+    } catch (_error) {
       this.results.push({
         test: testName,
         passed: false,
@@ -447,8 +447,8 @@ export class ApiProxyTester {
 
       console.log(`Quick test result: ${success ? '✅ PASSED' : '❌ FAILED'}`);
       return success;
-    } catch (error) {
-      console.error('❌ Quick test failed:', error);
+    } catch (_error) {
+      console._error('❌ Quick test failed:', _error);
       return false;
     }
   }

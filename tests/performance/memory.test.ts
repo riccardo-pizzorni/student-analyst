@@ -75,7 +75,7 @@ describe('Memory Profiling Tests', () => {
             timestamp: new Date(Date.now() - i * 60000),
           })),
       };
-      const result = calculator.calculateMovingAverage(portfolio.data, 20);
+      const result = calculator.calculateMovingAverage(portfolio._data, 20);
       const afterOptimizationMemory = process.memoryUsage();
       const optimizationMemoryIncrease =
         afterOptimizationMemory.heapUsed - initialMemory.heapUsed;
@@ -95,7 +95,7 @@ describe('Memory Profiling Tests', () => {
             timestamp: new Date(Date.now() - i * 60000),
           })),
       };
-      const result = calculator.calculateRSI(marketData.data, 14);
+      const result = calculator.calculateRSI(marketData._data, 14);
       const afterCalculationMemory = process.memoryUsage();
       const calculationMemoryIncrease =
         afterCalculationMemory.heapUsed - initialMemory.heapUsed;
@@ -156,7 +156,7 @@ describe('Memory Profiling Tests', () => {
               timestamp: new Date(Date.now() - i * 60000),
             })),
         };
-        calculator.calculateMovingAverage(portfolio.data, 20);
+        calculator.calculateMovingAverage(portfolio._data, 20);
       }
       const afterCalculationsMemory = process.memoryUsage();
       const memoryIncrease =
@@ -206,7 +206,7 @@ describe('Memory Profiling Tests', () => {
               timestamp: new Date(Date.now() - i * 60000),
             })),
         };
-        calculator.calculateMovingAverage(portfolio.data, 20);
+        calculator.calculateMovingAverage(portfolio._data, 20);
       }
       const afterCalculationsMemory = process.memoryUsage();
       if (global.gc) {

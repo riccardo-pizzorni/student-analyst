@@ -101,7 +101,7 @@ test.describe('⚡ Performance & Load Testing', () => {
 
     try {
       await Promise.allSettled(promises);
-    } catch (error) {
+    } catch (_error) {
       // Accettiamo errori di rete per test di carico
     }
 

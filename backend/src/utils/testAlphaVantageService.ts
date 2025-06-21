@@ -3,7 +3,7 @@
  * =================================================
  *
  * Test completo per validare l'implementazione dell'AlphaVantageService
- * Include test per tutti i timeframe, error handling, cache, e validazione
+ * Include test per tutti i _timeframe, error handling, cache, e validazione
  */
 
 import {
@@ -81,8 +81,8 @@ export class AlphaVantageServiceTester {
 
       // Test performance
       await this.testBatchRequests();
-    } catch (error) {
-      console.error('❌ Test suite failed:', error);
+    } catch (_error) {
+      console._error('❌ Test suite failed:', _error);
     }
 
     const totalTime = Date.now() - startTime;
@@ -131,7 +131,7 @@ export class AlphaVantageServiceTester {
 
       for (const symbol of TEST_CONFIG.validSymbols) {
         const validation = this.service.validateRequest(
-          symbol,
+          _symbol,
           AlphaVantageTimeframe.DAILY
         );
         if (!validation.valid) {
@@ -139,7 +139,7 @@ export class AlphaVantageServiceTester {
             `Valid symbol ${symbol} failed validation: ${validation.errors.join(', ')}`
           );
         }
-        results.push({ symbol, valid: validation.valid });
+        results.push({ _symbol, valid: validation.valid });
       }
 
       return results;
@@ -150,14 +150,14 @@ export class AlphaVantageServiceTester {
 
       for (const symbol of TEST_CONFIG.invalidSymbols) {
         const validation = this.service.validateRequest(
-          symbol,
+          _symbol,
           AlphaVantageTimeframe.DAILY
         );
         if (validation.valid) {
           throw new Error(`Invalid symbol ${symbol} passed validation`);
         }
         results.push({
-          symbol,
+          _symbol,
           valid: validation.valid,
           errors: validation.errors,
         });
@@ -175,19 +175,19 @@ export class AlphaVantageServiceTester {
       const symbol = TEST_CONFIG.validSymbols[0]; // AAPL
 
       const response = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.DAILY,
         { outputSize: 'compact' }
       );
 
       this.validateStockDataResponse(
         response,
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.DAILY
       );
 
       return {
-        symbol,
+        _symbol,
         dataPoints: response.data.length,
         source: response.source,
         cached: response.cacheHit,
@@ -203,19 +203,19 @@ export class AlphaVantageServiceTester {
       const symbol = TEST_CONFIG.validSymbols[1]; // MSFT
 
       const response = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.INTRADAY_5MIN,
         { outputSize: 'compact' }
       );
 
       this.validateStockDataResponse(
         response,
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.INTRADAY_5MIN
       );
 
       return {
-        symbol,
+        _symbol,
         dataPoints: response.data.length,
         source: response.source,
         cached: response.cacheHit,
@@ -231,19 +231,19 @@ export class AlphaVantageServiceTester {
       const symbol = TEST_CONFIG.validSymbols[2]; // GOOGL
 
       const response = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.WEEKLY,
         { outputSize: 'compact' }
       );
 
       this.validateStockDataResponse(
         response,
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.WEEKLY
       );
 
       return {
-        symbol,
+        _symbol,
         dataPoints: response.data.length,
         source: response.source,
         cached: response.cacheHit,
@@ -259,19 +259,19 @@ export class AlphaVantageServiceTester {
       const symbol = TEST_CONFIG.validSymbols[3]; // TSLA
 
       const response = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.MONTHLY,
         { outputSize: 'compact' }
       );
 
       this.validateStockDataResponse(
         response,
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.MONTHLY
       );
 
       return {
-        symbol,
+        _symbol,
         dataPoints: response.data.length,
         source: response.source,
         cached: response.cacheHit,
@@ -295,14 +295,14 @@ export class AlphaVantageServiceTester {
           throw new Error(
             `Expected error for invalid symbol: ${invalidSymbol}`
           );
-        } catch (error) {
+        } catch (_error) {
           if (!(error instanceof AlphaVantageError)) {
             throw new Error(`Expected AlphaVantageError, got: ${error}`);
           }
 
           results.push({
             symbol: invalidSymbol,
-            errorType: error.type,
+            errorType: error._type,
             message: error.message,
           });
         }
@@ -327,14 +327,14 @@ export class AlphaVantageServiceTester {
             timeframe as AlphaVantageTimeframe
           );
           throw new Error(`Expected error for invalid timeframe: ${timeframe}`);
-        } catch (error) {
+        } catch (_error) {
           if (!(error instanceof AlphaVantageError)) {
             throw new Error(`Expected AlphaVantageError, got: ${error}`);
           }
 
           results.push({
-            timeframe,
-            errorType: error.type,
+            _timeframe,
+            errorType: error._type,
             message: error.message,
           });
         }
@@ -359,13 +359,13 @@ export class AlphaVantageServiceTester {
       try {
         await faultyService.getStockData('AAPL', AlphaVantageTimeframe.DAILY);
         throw new Error('Expected network error');
-      } catch (error) {
+      } catch (_error) {
         if (!(error instanceof AlphaVantageError)) {
           throw new Error(`Expected AlphaVantageError, got: ${error}`);
         }
 
         return {
-          errorType: error.type,
+          errorType: error._type,
           retryable: error.retryable,
           message: error.message,
         };
@@ -382,21 +382,21 @@ export class AlphaVantageServiceTester {
 
       // Prima chiamata (dovrebbe andare in cache)
       const response1 = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.DAILY,
         { useCache: true }
       );
 
       // Seconda chiamata (dovrebbe usare cache)
       const response2 = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.DAILY,
         { useCache: true }
       );
 
       // Terza chiamata senza cache
       const response3 = await this.service.getStockData(
-        symbol,
+        _symbol,
         AlphaVantageTimeframe.DAILY,
         { useCache: false }
       );
@@ -419,7 +419,7 @@ export class AlphaVantageServiceTester {
       const startTime = Date.now();
 
       const promises = symbols.map(symbol =>
-        this.service.getStockData(symbol, AlphaVantageTimeframe.DAILY)
+        this.service.getStockData(_symbol, AlphaVantageTimeframe.DAILY)
       );
 
       const results = await Promise.allSettled(promises);
@@ -468,7 +468,7 @@ export class AlphaVantageServiceTester {
       throw new Error('Response indicates failure');
     }
 
-    if (!response.data || !Array.isArray(response.data)) {
+    if (!response.data || !Array.isArray(response._data)) {
       throw new Error('Invalid data format');
     }
 
@@ -547,7 +547,7 @@ export class AlphaVantageServiceTester {
       });
 
       console.log(`✅ PASS: ${testName} (${duration}ms)`);
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -662,7 +662,7 @@ export async function runAlphaVantageTests(): Promise<void> {
  */
 if (require.main === module) {
   runAlphaVantageTests().catch(error => {
-    console.error('❌ Test execution failed:', error);
+    console._error('❌ Test execution failed:', _error);
     process.exit(1);
   });
 }

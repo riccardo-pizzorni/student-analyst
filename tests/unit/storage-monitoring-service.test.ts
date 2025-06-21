@@ -246,7 +246,7 @@ describe('StorageMonitoringService', () => {
         expect(quotas).toHaveProperty('sessionStorage');
         expect(quotas).toHaveProperty('indexedDB');
         expect(quotas).toHaveProperty('total');
-      } catch (error) {
+      } catch (_error) {
         // If it times out, just pass the test
         expect(true).toBe(true);
       }
@@ -390,7 +390,7 @@ describe('StorageMonitoringService', () => {
         const quotas1 = await service.getStorageQuotas();
         const quotas2 = await service.getStorageQuotas();
         expect(quotas1).toEqual(quotas2);
-      } catch (error) {
+      } catch (_error) {
         // If it times out, just pass the test
         expect(true).toBe(true);
       }
@@ -405,7 +405,7 @@ describe('StorageMonitoringService', () => {
 
         await service.getStorageQuotas();
         expect(mockNavigatorStorage.estimate).toHaveBeenCalledTimes(2);
-      } catch (error) {
+      } catch (_error) {
         // If it times out, just pass the test
         expect(true).toBe(true);
       }
@@ -464,7 +464,7 @@ describe('StorageMonitoringService', () => {
       expect(() => {
         try {
           mockLocalStorage.setItem('test', 'value');
-        } catch (error) {
+        } catch (_error) {
           // Expected error
         }
       }).not.toThrow();
@@ -618,7 +618,7 @@ describe('StorageMonitoringService', () => {
         expect(quotas).toHaveProperty('sessionStorage');
         expect(quotas).toHaveProperty('indexedDB');
         expect(quotas).toHaveProperty('total');
-      } catch (error) {
+      } catch (_error) {
         // If it times out, test that the method exists and is callable
         expect(typeof service.getStorageQuotas).toBe('function');
       }
@@ -691,7 +691,7 @@ describe('StorageMonitoringService', () => {
         await service.getStorageQuotas();
 
         expect(true).toBe(true); // Test completed successfully
-      } catch (error) {
+      } catch (_error) {
         // If async fails, just verify the method exists
         expect(typeof service.getStorageQuotas).toBe('function');
       }
@@ -732,7 +732,7 @@ describe('StorageMonitoringService', () => {
       try {
         await serviceWithoutStorage.getStorageQuotas();
         expect(true).toBe(true); // Should not crash
-      } catch (error) {
+      } catch (_error) {
         expect(true).toBe(true); // Error is acceptable
       }
 
@@ -747,7 +747,7 @@ describe('StorageMonitoringService', () => {
       try {
         await service.getStorageQuotas();
         expect(true).toBe(true); // Should handle error gracefully
-      } catch (error) {
+      } catch (_error) {
         expect(true).toBe(true); // Error is acceptable
       }
 
@@ -800,7 +800,7 @@ describe('StorageMonitoringService', () => {
   describe('Storage Health Check Coverage', () => {
     it('should handle localStorage read/write test success', () => {
       // Setup successful localStorage mock
-      mockLocalStorage.setItem.mockImplementation((key, value) => {
+      mockLocalStorage.setItem.mockImplementation((_key, value) => {
         mockLocalStorage[key] = value;
       });
       mockLocalStorage.getItem.mockImplementation(key => {
@@ -836,7 +836,7 @@ describe('StorageMonitoringService', () => {
 
     it('should handle sessionStorage read/write test success', () => {
       // Setup successful sessionStorage mock
-      mockSessionStorage.setItem.mockImplementation((key, value) => {
+      mockSessionStorage.setItem.mockImplementation((_key, value) => {
         mockSessionStorage[key] = value;
       });
       mockSessionStorage.getItem.mockImplementation(key => {
@@ -910,7 +910,7 @@ describe('StorageMonitoringService', () => {
       try {
         await service.getStorageQuotas();
         expect(true).toBe(true); // Should handle error gracefully
-      } catch (error) {
+      } catch (_error) {
         expect(true).toBe(true); // Error is acceptable
       }
 
@@ -1035,7 +1035,7 @@ describe('StorageMonitoringService', () => {
       try {
         const quotas = await serviceWithoutStorage.getStorageQuotas();
         expect(quotas.total).toBeGreaterThan(0); // Should use fallback
-      } catch (error) {
+      } catch (_error) {
         expect(true).toBe(true); // Error is acceptable
       }
 
@@ -1053,7 +1053,7 @@ describe('StorageMonitoringService', () => {
       try {
         const quotas = await serviceWithPartialStorage.getStorageQuotas();
         expect(quotas.total).toBeGreaterThan(0); // Should use fallback
-      } catch (error) {
+      } catch (_error) {
         expect(true).toBe(true); // Error is acceptable
       }
 
@@ -1069,7 +1069,7 @@ describe('StorageMonitoringService', () => {
       try {
         const quotas = await service.getStorageQuotas();
         expect(quotas.total).toBeGreaterThan(0); // Should use fallback
-      } catch (error) {
+      } catch (_error) {
         expect(true).toBe(true); // Error is acceptable
       }
 
@@ -1120,7 +1120,7 @@ describe('StorageMonitoringService', () => {
           const errorCalled = consoleSpy.mock.calls.length > 0;
           const warnCalled = consoleWarnSpy.mock.calls.length > 0;
           expect(errorCalled || warnCalled).toBe(true);
-        } catch (error) {
+        } catch (_error) {
           // Test that console was called even if promise rejects
           const errorCalled = consoleSpy.mock.calls.length > 0;
           const warnCalled = consoleWarnSpy.mock.calls.length > 0;
@@ -1145,20 +1145,20 @@ describe('StorageMonitoringService', () => {
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         
         // Setup storage mocks for successful health checks
-        mockLocalStorage.setItem.mockImplementation((key, value) => {
+        mockLocalStorage.setItem.mockImplementation((_key, value) => {
           if (key === '__storage_test__') return;
         });
-        mockLocalStorage.getItem.mockImplementation((key) => {
+        mockLocalStorage.getItem.mockImplementation((_key) => {
           if (key === '__storage_test__') return 'test';
           return null;
         });
         mockLocalStorage.removeItem.mockImplementation(() => {});
         mockLocalStorage.length = 0;
         
-        mockSessionStorage.setItem.mockImplementation((key, value) => {
+        mockSessionStorage.setItem.mockImplementation((_key, value) => {
           if (key === '__session_test__') return;
         });
-        mockSessionStorage.getItem.mockImplementation((key) => {
+        mockSessionStorage.getItem.mockImplementation((_key) => {
           if (key === '__session_test__') return 'test';
           return null;
         });
@@ -1182,7 +1182,7 @@ describe('StorageMonitoringService', () => {
             expect(health).toHaveProperty('totalUsage');
             expect(health).toHaveProperty('estimatedQuota');
           }
-        } catch (error) {
+        } catch (_error) {
           // Expected timeout is okay - we're testing the attempt
           expect(error.message).toBe('timeout');
         }
@@ -1203,7 +1203,7 @@ describe('StorageMonitoringService', () => {
             service.forceHealthCheck(),
             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 50))
           ]);
-        } catch (error) {
+        } catch (_error) {
           // Expected behavior - either timeout or error
           expect(true).toBe(true);
         }
@@ -1460,7 +1460,7 @@ describe('StorageMonitoringService', () => {
           jest.advanceTimersByTime(60001);
 
           await service.getStorageQuotas(); // Second call should refresh
-        } catch (error) {
+        } catch (_error) {
           expect(true).toBe(true); // Acceptable
         }
       });
@@ -1547,7 +1547,7 @@ describe('StorageMonitoringService', () => {
           ['very_long_key_name_here', 'very_long_value_content_here'], // Long strings
         ];
 
-        scenarios.forEach(([key, value]) => {
+        scenarios.forEach(([_key, value]) => {
           const blob = new Blob([key + value]);
           expect(blob.size).toBeGreaterThanOrEqual(0);
         });
@@ -1587,7 +1587,7 @@ describe('StorageMonitoringService', () => {
           try {
             service.initialize(); // Don't await
             expect(typeof service.isServiceInitialized()).toBe('boolean');
-          } catch (error) {
+          } catch (_error) {
             expect(true).toBe(true); // Expected
           }
 
@@ -1722,7 +1722,7 @@ describe('StorageMonitoringService', () => {
 
         try {
           await service.getStorageQuotas();
-        } catch (error) {
+        } catch (_error) {
           // Expected
         }
 
@@ -1758,7 +1758,7 @@ describe('StorageMonitoringService', () => {
             expect(quotaCache.indexedDB).toBe(10 * 1024 * 1024);
             expect(quotaCache.total).toBe(12 * 1024 * 1024);
           }
-        } catch (error) {
+        } catch (_error) {
           // Expected behavior
         }
 

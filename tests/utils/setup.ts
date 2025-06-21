@@ -12,8 +12,8 @@ class MockIDBRequest {
       this.result = result;
       if (typeof this.onsuccess === 'function') {
         const event = new Event('success');
-        Object.defineProperty(event, 'target', { value: this });
-        this.onsuccess(event);
+        Object.defineProperty(_event, 'target', { value: this });
+        this.onsuccess(_event);
       }
     }, 1);
   }
@@ -84,13 +84,13 @@ const mockIndexedDB = {
     setTimeout(() => {
       if (typeof req.onupgradeneeded === 'function') {
         const event = new Event('upgradeneeded');
-        Object.defineProperty(event, 'target', { value: req });
-        req.onupgradeneeded(event);
+        Object.defineProperty(_event, 'target', { value: req });
+        req.onupgradeneeded(_event);
       }
       if (typeof req.onsuccess === 'function') {
         const event = new Event('success');
-        Object.defineProperty(event, 'target', { value: req });
-        req.onsuccess(event);
+        Object.defineProperty(_event, 'target', { value: req });
+        req.onsuccess(_event);
       }
     }, 1);
     return req;
@@ -183,7 +183,7 @@ Object.defineProperty(global.window, 'setInterval', {
     callback: (...args: unknown[]) => void,
     delay: number
   ): NodeJS.Timeout => {
-    return setInterval(callback, delay);
+    return setInterval(callback, _delay);
   },
   writable: true,
 });

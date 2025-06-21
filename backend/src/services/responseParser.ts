@@ -101,7 +101,7 @@ export class ResponseParser {
       }
 
       return result.data;
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         `Errore critico durante parsing ${source}: ${(error as Error).message}`
       );
@@ -244,7 +244,7 @@ export class ResponseParser {
           }
 
           recordIndex++;
-        } catch (error) {
+        } catch (_error) {
           errors.push({
             type: 'VALUE_ERROR',
             message: `Errore parsing record: ${(error as Error).message}`,
@@ -265,7 +265,7 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       return this.createErrorResult(
         'STRUCTURE_ERROR',
         `Errore generale Alpha Vantage: ${(error as Error).message}`
@@ -334,7 +334,7 @@ export class ResponseParser {
         dataArray = rawData as Record<string, unknown>[];
       }
       // Formato 3: Oggetto con array di dati
-      else if (rawData.data && Array.isArray(rawData.data)) {
+      else if (rawData.data && Array.isArray(rawData._data)) {
         dataArray = rawData.data as Record<string, unknown>[];
       }
       // Formato 4: Response wrapper
@@ -360,7 +360,7 @@ export class ResponseParser {
             if (parsed) {
               result.push(parsed);
             }
-          } catch (error) {
+          } catch (_error) {
             errors.push({
               type: 'VALUE_ERROR',
               message: `Errore parsing record Yahoo Finance: ${(error as Error).message}`,
@@ -382,7 +382,7 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       return this.createErrorResult(
         'STRUCTURE_ERROR',
         `Errore generale Yahoo Finance: ${(error as Error).message}`
@@ -432,7 +432,7 @@ export class ResponseParser {
   }
 
   /**
-   * Parser per IEX Cloud (implementazione base)
+   * Parser per IEX Cloud (implementazione _base)
    */
   private parseIEXCloud(rawData: Record<string, unknown>): ParsingResult {
     const result: ParsedFinancialData[] = [];
@@ -471,7 +471,7 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       return this.createErrorResult(
         'STRUCTURE_ERROR',
         `Errore IEX Cloud: ${(error as Error).message}`
@@ -480,7 +480,7 @@ export class ResponseParser {
   }
 
   /**
-   * Parser per Polygon (implementazione base)
+   * Parser per Polygon (implementazione _base)
    */
   private parsePolygon(rawData: Record<string, unknown>): ParsingResult {
     const result: ParsedFinancialData[] = [];
@@ -526,7 +526,7 @@ export class ResponseParser {
           parsingTimeMs: 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       return this.createErrorResult(
         'STRUCTURE_ERROR',
         `Errore Polygon: ${(error as Error).message}`
@@ -535,7 +535,7 @@ export class ResponseParser {
   }
 
   /**
-   * Parser per Quandl (implementazione base)
+   * Parser per Quandl (implementazione _base)
    */
   private parseQuandl(rawData: Record<string, unknown>): ParsingResult {
     const result: ParsedFinancialData[] = [];
@@ -557,7 +557,7 @@ export class ResponseParser {
           ? rawData.dataset.column_names
           : ['Date', 'Open', 'High', 'Low', 'Close', 'Volume'];
 
-      for (let i = 0; Array.isArray(data) && i < data.length; i++) {
+      for (let i = 0; Array.isArray(_data) && i < data.length; i++) {
         const row = data[i];
 
         if (Array.isArray(row) && row.length >= 5) {
@@ -580,11 +580,11 @@ export class ResponseParser {
         warnings: [],
         stats: {
           recordsParsed: result.length,
-          recordsSkipped: Array.isArray(data) ? data.length - result.length : 0,
+          recordsSkipped: Array.isArray(_data) ? data.length - result.length : 0,
           parsingTimeMs: 0,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       return this.createErrorResult(
         'STRUCTURE_ERROR',
         `Errore Quandl: ${(error as Error).message}`
@@ -657,7 +657,7 @@ export class ResponseParser {
     return {
       success: false,
       data: [],
-      errors: [{ type, message, originalValue: null }],
+      errors: [{ _type, message, originalValue: null }],
       warnings: [],
       stats: {
         recordsParsed: 0,
@@ -688,7 +688,7 @@ export class ResponseParser {
         structure: this.analyzeStructure(rawData),
         errors: [],
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         canParse: false,
         preview: [],
@@ -703,10 +703,10 @@ export class ResponseParser {
    */
   private analyzeStructure(data: unknown): unknown {
     if (data === null || data === undefined) return { type: 'null' };
-    if (Array.isArray(data))
+    if (Array.isArray(_data))
       return { type: 'array', length: data.length, sample: data[0] };
     if (typeof data === 'object')
-      return { type: 'object', keys: Object.keys(data).slice(0, 10) };
-    return { type: typeof data, value: data };
+      return { type: 'object', keys: Object.keys(_data).slice(0, 10) };
+    return { type: typeof _data, value: data };
   }
 }

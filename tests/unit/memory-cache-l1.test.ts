@@ -32,7 +32,7 @@ describe('MemoryCacheL1', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     mockPerformanceNow.mockReturnValue(100);
-    mockSetInterval.mockImplementation((fn, delay) => {
+    mockSetInterval.mockImplementation((_fn, _delay) => {
       return jest.fn() as unknown; // Return mock timer ID
     });
     mockClearInterval.mockImplementation(() => {});
@@ -115,10 +115,10 @@ describe('MemoryCacheL1', () => {
       const key = 'test-key';
       const value = 'test-value';
 
-      const setResult = cache.set(key, value);
+      const setResult = cache.set(_key, value);
       expect(setResult).toBe(true);
 
-      const getValue = cache.get(key);
+      const getValue = cache.get(_key);
       expect(getValue).toBe(value);
     });
 
@@ -276,9 +276,9 @@ describe('MemoryCacheL1', () => {
       const entries = cache.getEntriesByAccessPattern();
 
       // Should be ordered by recency: b (head), a, c (tail)
-      expect(entries[0].key).toBe('b');
-      expect(entries[1].key).toBe('a');
-      expect(entries[2].key).toBe('c');
+      expect(entries[0]._key).toBe('b');
+      expect(entries[1]._key).toBe('a');
+      expect(entries[2]._key).toBe('c');
     });
 
     it('should handle empty cache for LRU eviction', () => {
@@ -598,7 +598,7 @@ describe('MemoryCacheL1', () => {
 
       expect(evictionHandler).toHaveBeenCalled();
       const event = evictionHandler.mock.calls[0][0];
-      expect(event.type).toBe('eviction');
+      expect(event._type).toBe('eviction');
       expect(event.reason).toBe('LRU eviction');
       expect(event.entry).toBeDefined();
       expect(event.timestamp).toBeGreaterThan(0);
@@ -619,7 +619,7 @@ describe('MemoryCacheL1', () => {
 
       expect(evictionHandler).toHaveBeenCalled();
       const event = evictionHandler.mock.calls[0][0];
-      expect(event.type).toBe('expiration');
+      expect(event._type).toBe('expiration');
       expect(event.reason).toBe('TTL expired');
     });
 
@@ -642,7 +642,7 @@ describe('MemoryCacheL1', () => {
 
       expect(evictionHandler).toHaveBeenCalled();
       const event = evictionHandler.mock.calls[0][0];
-      expect(event.type).toBe('eviction');
+      expect(event._type).toBe('eviction');
       expect(event.reason).toContain('Memory limit exceeded');
 
       memCache.destroy();

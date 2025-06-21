@@ -11,7 +11,7 @@ async function resilientExpect(assertion: () => Promise<void>, retries = 3) {
     try {
       await assertion();
       return;
-    } catch (error) {
+    } catch (_error) {
       if (i === retries - 1) throw error;
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
@@ -20,12 +20,12 @@ async function resilientExpect(assertion: () => Promise<void>, retries = 3) {
 
 async function safeEvaluate(page: Page, fn: () => unknown) {
   try {
-    return await page.evaluate(fn);
-  } catch (error) {
+    return await page.evaluate(_fn);
+  } catch (_error) {
     if (error.message.includes('Target closed')) {
       await page.reload();
       await page.waitForLoadState('networkidle');
-      return await page.evaluate(fn);
+      return await page.evaluate(_fn);
     }
     throw error;
   }
@@ -97,7 +97,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       }));
 
       expect(afterReload.maintained).toBeTruthy();
-    } catch (error) {
+    } catch (_error) {
       // Allow some flexibility in state management testing
       console.log('State interaction partially successful');
     }
@@ -249,7 +249,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
 
         const endTime = Date.now();
         performanceTests.push(endTime - startTime);
-      } catch (error) {
+      } catch (_error) {
         console.log(
           `Performance test iteration ${i + 1} failed:`,
           error.message
@@ -278,7 +278,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
             return 0;
           }
         });
-      } catch (error) {
+      } catch (_error) {
         console.log('Memory check failed:', error.message);
       }
     }
@@ -317,7 +317,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       await page.route('**/*', route => route.continue());
       await page.waitForTimeout(2000);
       errorTests.push('network_recovery');
-    } catch (error) {
+    } catch (_error) {
       console.log('Network recovery test partially successful');
     }
 
@@ -326,16 +326,16 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       await page.goBack();
       await page.goForward();
       errorTests.push('navigation_stress');
-    } catch (error) {
+    } catch (_error) {
       console.log('Navigation stress test partially successful');
     }
 
     try {
       await page.evaluate(() => {
-        console.error('Test error injection');
+        console._error('Test _error injection');
       });
       errorTests.push('error_injection');
-    } catch (error) {
+    } catch (_error) {
       console.log('Error injection test partially successful');
     }
 
@@ -437,7 +437,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
     // Test accessibility features integration
     const a11yCheck = await page.evaluate(() => {
       const focusableElements = document.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], _input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       const ariaElements = document.querySelectorAll('[role]');
       const headingStructure = document.querySelectorAll(
@@ -500,7 +500,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
             }
           })(),
         };
-      } catch (error) {
+      } catch (_error) {
         return {
           canSerialize: false,
           canDeserialize: false,
@@ -529,7 +529,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       await page.keyboard.press('Enter');
       await page.keyboard.press('Escape');
       interactionTests.push('keyboard_navigation');
-    } catch (error) {
+    } catch (_error) {
       console.log('Keyboard navigation partially successful');
     }
 
@@ -538,14 +538,14 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       await page.mouse.click(100, 100);
       await page.mouse.move(200, 200);
       interactionTests.push('mouse_interactions');
-    } catch (error) {
+    } catch (_error) {
       console.log('Mouse interactions partially successful');
     }
 
     try {
       await page.touchscreen.tap(150, 150);
       interactionTests.push('touch_interactions');
-    } catch (error) {
+    } catch (_error) {
       console.log('Touch interactions partially successful');
     }
 
@@ -710,7 +710,7 @@ test.describe('TIER 3 - Integration Testing (80% Pass Required)', () => {
       ) {
         workflowSteps.push('state_verified');
       }
-    } catch (error) {
+    } catch (_error) {
       console.log('Workflow error:', error.message);
     }
 
