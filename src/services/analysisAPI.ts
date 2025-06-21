@@ -1,7 +1,6 @@
 // src/services/analysisAPI.ts
-import { AnalysisApiResponse } from './analysisAPI'; // Manteniamo la definizione dei tipi
 
-// La definizione dei tipi rimane qui, perchÃ© Ã¨ il "contratto" tra frontend e backend
+// La definizione dei tipi rimane qui, perché è il "contratto" tra frontend e backend
 export interface AnalysisApiResponse {
   historicalData: {
     labels: string[];
@@ -12,7 +11,7 @@ export interface AnalysisApiResponse {
     }[];
   };
   performanceMetrics: {
-    label: string;
+    label:string;
     value: string;
   }[];
   volatility: {
@@ -45,15 +44,17 @@ interface AnalysisParams {
 export const fetchAnalysisData = async (
   params: AnalysisParams
 ): Promise<AnalysisApiResponse> => {
+  // DIAGNOSTIC LOG: Mostriamo tutte le variabili d'ambiente fornite da Vercel
+  console.log('DEBUG: Vercel env vars:', import.meta.env);
+
   console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
 
-  // In produzione, VITE_API_BASE_URL sarÃ  l'URL del backend deployato (es. su Render).
-  // In sviluppo, sarÃ  una stringa vuota, e la chiamata userÃ  il proxy di Vite.
-  // QUESTA VARIABILE DEVE ESSERE IMPOSTATA NELLE ENV VARS DI VERCEL.
+  // In produzione, VITE_API_BASE_URL sarà l'URL del backend deployato (es. su Render).
+  // In sviluppo, sarà una stringa vuota, e la chiamata userà il proxy di Vite.
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-  const API_URL = `${API_BASE_URL}/api/analysis`;
+  const API_URL = ${API_BASE_URL}/api/analysis;
 
-  console.log(`Frontend: Eseguo la chiamata a: ${API_URL}`);
+  console.log(Frontend: Eseguo la chiamata a: );
 
   try {
     const response = await fetch(API_URL, {
@@ -66,11 +67,11 @@ export const fetchAnalysisData = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
-        error: 'La risposta del server non Ã¨ un JSON valido.',
+        error: 'La risposta del server non è un JSON valido.',
       }));
       console.error('Errore API dal backend:', response.status, errorData);
       throw new Error(
-        errorData.error || `Errore del server: ${response.status}`
+        errorData.error || Errore del server: 
       );
     }
 
