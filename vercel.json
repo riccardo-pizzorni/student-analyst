@@ -1,1 +1,11 @@
-{"version":2,"builds":[{"src":"package.json","use":"@vercel/vite","config":{"project":"./","distDir":"dist"}},{"src":"backend/package.json","use":"@vercel/node","config":{"maxLambdaSize":"30mb"}}],"routes":[{"src":"/api/(.*)","dest":"/backend/dist/index.js"},{"src":"/(.*)","dest":"/index.html"}]}
+    {
+      "version": 2,
+      "builds": [
+        { "src": "backend/src/index.ts", "use": "@vercel/node" },
+        { "src": "vite.config.ts", "use": "@vercel/vite" }
+      ],
+      "routes": [
+        { "src": "/api/(.*)", "dest": "/backend/src/index.ts" },
+        { "src": "/(.*)", "dest": "/index.html" }
+      ]
+    }
