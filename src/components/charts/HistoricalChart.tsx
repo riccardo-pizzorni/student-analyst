@@ -56,16 +56,52 @@ const options: ChartOptions<'line'> = {
       position: 'top' as const,
       labels: {
         color: 'rgb(203, 213, 225)',
+        usePointStyle: true,
+        padding: 20,
+      },
+      onClick: (e, legendItem, legend) => {
+        // Toggle dataset visibility
+        const index = legendItem.index;
+        const ci = legend.chart;
+        const meta = ci.getDatasetMeta(index!);
+        meta.hidden = !meta.hidden;
+        ci.update();
       },
     },
     tooltip: {
       mode: 'index' as const,
       intersect: false,
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+      backgroundColor: 'rgba(15, 23, 42, 0.95)',
       titleColor: 'rgb(203, 213, 225)',
       bodyColor: 'rgb(203, 213, 225)',
       borderColor: 'rgb(59, 130, 246)',
       borderWidth: 1,
+      cornerRadius: 8,
+      displayColors: true,
+      callbacks: {
+        title: (context) => {
+          const date = new Date(context[0].label);
+          return date.toLocaleDateString('it-IT', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+        },
+        label: (context) => {
+          const label = context.dataset.label || '';
+          const value = context.parsed.y;
+
+          // Formatta i valori in base al tipo di indicatore
+          if (label.includes('RSI')) {
+            return `${label}: ${value.toFixed(2)}`;
+          } else if (label.includes('Volume')) {
+            return `${label}: ${value.toLocaleString()}`;
+          } else {
+            return `${label}: $${value.toFixed(2)}`;
+          }
+        },
+      },
     },
     zoom: {
       zoom: {
@@ -90,14 +126,19 @@ const options: ChartOptions<'line'> = {
       },
       ticks: {
         color: 'rgb(203, 213, 225)',
+        maxRotation: 45,
       },
     },
     y: {
+      type: 'linear' as const,
+      display: true,
+      position: 'left' as const,
       grid: {
         color: 'rgba(255, 255, 255, 0.1)',
       },
       ticks: {
         color: 'rgb(203, 213, 225)',
+        callback: (value) => `$${Number(value).toFixed(2)}`,
       },
     },
     y1: {
@@ -109,7 +150,10 @@ const options: ChartOptions<'line'> = {
       },
       ticks: {
         color: 'rgb(203, 213, 225)',
+        callback: (value) => `${Number(value).toFixed(0)}`,
       },
+      min: 0,
+      max: 100,
     },
   },
 };
@@ -128,6 +172,8 @@ const HistoricalChart = () => {
   const [showSMA200, setShowSMA200] = useState(true);
   const [showRSI, setShowRSI] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
+  const [showBollinger, setShowBollinger] = useState(false);
+  const [showMACD, setShowMACD] = useState(false);
 
   // Funzioni per gestire i click sui bottoni
   const handleRefreshClick = async () => {
@@ -155,7 +201,7 @@ const HistoricalChart = () => {
   const handleInfoClick = () => {
     toast({
       title: "Informazioni sul grafico",
-      description: "Questo grafico mostra l'andamento storico dei prezzi. Usa gli switch per mostrare/nascondere indicatori tecnici come SMA, RSI e Volume. Puoi zoomare e fare pan sul grafico.",
+      description: "Questo grafico mostra l'andamento storico dei prezzi con indicatori tecnici. Usa gli switch per mostrare/nascondere indicatori. Puoi zoomare e fare pan sul grafico.",
     });
   };
 
@@ -174,21 +220,55 @@ const HistoricalChart = () => {
     return rawChartData.datasets.filter((dataset) => {
       const label = dataset.label?.toLowerCase() || '';
 
+      // Gestione indicatori tecnici
       if (label.includes('sma20') || label.includes('20')) return showSMA20;
       if (label.includes('sma50') || label.includes('50')) return showSMA50;
       if (label.includes('sma200') || label.includes('200')) return showSMA200;
       if (label.includes('rsi')) return showRSI;
       if (label.includes('volume')) return showVolume;
+      if (label.includes('bollinger')) return showBollinger;
+      if (label.includes('macd')) return showMACD;
 
       // Mostra sempre i dataset principali (prezzi, portafoglio, ecc.)
       return true;
     });
-  }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume]);
+  }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume, showBollinger, showMACD]);
 
   const chartData = {
     labels: rawChartData.labels,
     datasets: filteredDatasets,
   };
+
+  // Calcola statistiche per il tooltip informativo
+  const getChartStats = () => {
+    if (!analysisResults?.historicalData?.datasets || analysisResults.historicalData.datasets.length === 0) {
+      return null;
+    }
+
+    const priceDataset = analysisResults.historicalData.datasets.find(d =>
+      d.label?.includes('Prezzo') && !d.label?.includes('SMA')
+    );
+
+    if (!priceDataset || !priceDataset.data || priceDataset.data.length === 0) {
+      return null;
+    }
+
+    const prices = priceDataset.data;
+    const firstPrice = prices[0];
+    const lastPrice = prices[prices.length - 1];
+    const change = lastPrice - firstPrice;
+    const changePercent = (change / firstPrice) * 100;
+
+    return {
+      firstPrice: firstPrice.toFixed(2),
+      lastPrice: lastPrice.toFixed(2),
+      change: change.toFixed(2),
+      changePercent: changePercent.toFixed(2),
+      dataPoints: prices.length,
+    };
+  };
+
+  const stats = getChartStats();
 
   return (
     <div className="dark-card rounded-xl p-8">
@@ -209,6 +289,11 @@ const HistoricalChart = () => {
             <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
           </svg>
           Andamento Storico
+          {stats && (
+            <span className="text-sm font-normal text-slate-400">
+              ({stats.changePercent}% | {stats.dataPoints} punti)
+            </span>
+          )}
         </h3>
         <div className="flex gap-2">
           <button
@@ -259,7 +344,31 @@ const HistoricalChart = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      {/* Statistiche rapide */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-slate-800/50 rounded-lg">
+          <div className="text-center">
+            <div className="text-sm text-slate-400">Prezzo Iniziale</div>
+            <div className="text-lg font-bold text-green-400">${stats.firstPrice}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm text-slate-400">Prezzo Attuale</div>
+            <div className="text-lg font-bold text-blue-400">${stats.lastPrice}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm text-slate-400">Variazione</div>
+            <div className={`text-lg font-bold ${stats.changePercent.startsWith('-') ? 'text-red-400' : 'text-green-400'}`}>
+              {stats.changePercent}%
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm text-slate-400">Punti Dati</div>
+            <div className="text-lg font-bold text-slate-300">{stats.dataPoints}</div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
         <div className="flex items-center space-x-2">
           <Switch
             id="sma20"
@@ -306,6 +415,26 @@ const HistoricalChart = () => {
             Volume
           </Label>
         </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="bollinger"
+            checked={showBollinger}
+            onCheckedChange={setShowBollinger}
+          />
+          <Label htmlFor="bollinger" className="text-sm text-slate-300">
+            Bollinger
+          </Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="macd"
+            checked={showMACD}
+            onCheckedChange={setShowMACD}
+          />
+          <Label htmlFor="macd" className="text-sm text-slate-300">
+            MACD
+          </Label>
+        </div>
       </div>
 
       <div className="w-full h-96">
@@ -314,6 +443,7 @@ const HistoricalChart = () => {
             <div className="text-center space-y-4">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
               <p className="text-blue-300">Caricamento dati in corso...</p>
+              <p className="text-sm text-slate-400">Recupero dati storici da Alpha Vantage</p>
             </div>
           </div>
         ) : error ? (
@@ -336,6 +466,12 @@ const HistoricalChart = () => {
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               <p className="text-red-300">{error}</p>
+              <button
+                onClick={handleRefreshClick}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Riprova
+              </button>
             </div>
           </div>
         ) : !analysisResults ? (
@@ -395,6 +531,27 @@ const HistoricalChart = () => {
           <Line data={chartData} options={options} />
         )}
       </div>
+
+      {/* Legenda interattiva */}
+      {analysisResults?.metadata && (
+        <div className="mt-4 p-4 bg-slate-800/30 rounded-lg">
+          <h4 className="text-sm font-semibold text-slate-300 mb-2">Informazioni Analisi</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-400">
+            <div>
+              <span className="font-medium">Simboli:</span> {analysisResults.metadata.symbols.join(', ')}
+            </div>
+            <div>
+              <span className="font-medium">Periodo:</span> {analysisResults.metadata.period.start} - {analysisResults.metadata.period.end}
+            </div>
+            <div>
+              <span className="font-medium">Frequenza:</span> {analysisResults.metadata.frequency}
+            </div>
+            <div>
+              <span className="font-medium">Punti Dati:</span> {analysisResults.metadata.dataPoints}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
