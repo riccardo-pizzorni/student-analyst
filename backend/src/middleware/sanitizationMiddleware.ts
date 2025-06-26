@@ -10,6 +10,7 @@ import { NextFunction, Request, Response } from 'express';
 import { suspiciousActivityLogger } from '../services/suspiciousActivityLogger';
 import DataSanitizer, { ValidationResult } from '../utils/dataSanitizer';
 
+// Estendi l'interfaccia Request con le proprietà aggiuntive
 export interface SanitizedRequest extends Request {
   sanitizedBody?: Record<string, unknown>;
   sanitizedParams?: Record<string, string>;
