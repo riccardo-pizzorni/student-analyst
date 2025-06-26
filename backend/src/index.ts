@@ -31,9 +31,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Rotte API
-app.use('/api', apiRoutes);
+// Rotte API - ANALYSIS PRIMA DI API ROUTES PER EVITARE CONFLITTI
 app.use('/api/analysis', analysisRoutes);
+app.use('/api', apiRoutes);
 
 // Semplice gestore di errori globale
 app.use(
