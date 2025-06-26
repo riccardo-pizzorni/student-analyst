@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { sanitizationMiddleware } from '../middleware/sanitizationMiddleware';
 import {
   AnalysisApiResponse,
   performAnalysis,
@@ -6,8 +7,23 @@ import {
 
 const router = express.Router();
 
+// Applica il middleware di sanitizzazione SOLO a questa route
+router.use(
+  sanitizationMiddleware({
+    enableBodySanitization: true,
+    enableParamsSanitization: true,
+    enableQuerySanitization: false,
+    logSuspiciousActivity: true,
+    blockOnDangerousPatterns: false, // Disabilito temporaneamente il blocco per frequency
+    maxRequestSize: 512 * 1024, // 512KB
+    trustedIPs: ['127.0.0.1', '::1', 'localhost'],
+  })
+);
+
 router.post('/', (req: Request, res: Response) => {
-  const { tickers, startDate, endDate, frequency } = req.body;
+  // Usa il body sanitizzato se presente
+  const body = (req as any).sanitizedBody || req.body;
+  const { tickers, startDate, endDate, frequency } = body;
 
   if (
     !tickers ||
