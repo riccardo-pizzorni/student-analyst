@@ -1,6 +1,7 @@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useAnalysis } from '@/context/AnalysisContext';
+import { useToast } from '@/hooks/use-toast';
 import {
   BarElement,
   CategoryScale,
@@ -118,8 +119,9 @@ type BarDataset = ChartDataset<'bar', number[]>;
 type _MixedDataset = LineDataset | BarDataset;
 
 const HistoricalChart = () => {
-  const { analysisState } = useAnalysis();
+  const { analysisState, startAnalysis } = useAnalysis();
   const { isLoading, error, analysisResults } = analysisState;
+  const { toast } = useToast();
 
   const [showSMA20, setShowSMA20] = useState(true);
   const [showSMA50, setShowSMA50] = useState(true);
@@ -128,14 +130,33 @@ const HistoricalChart = () => {
   const [showVolume, setShowVolume] = useState(false);
 
   // Funzioni per gestire i click sui bottoni
-  const handleRefreshClick = () => {
-    // TODO: Implementare refresh dei dati storici
-    console.log('Refresh dati storici');
+  const handleRefreshClick = async () => {
+    try {
+      toast({
+        title: "Aggiornamento dati",
+        description: "Aggiornamento dei dati storici in corso...",
+      });
+
+      await startAnalysis();
+
+      toast({
+        title: "Aggiornamento completato",
+        description: "I dati storici sono stati aggiornati con successo.",
+      });
+    } catch (error) {
+      toast({
+        title: "Errore nell'aggiornamento",
+        description: "Impossibile aggiornare i dati storici. Riprova più tardi.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInfoClick = () => {
-    // TODO: Implementare popup con informazioni sul grafico
-    console.log('Info grafico storico');
+    toast({
+      title: "Informazioni sul grafico",
+      description: "Questo grafico mostra l'andamento storico dei prezzi. Usa gli switch per mostrare/nascondere indicatori tecnici come SMA, RSI e Volume. Puoi zoomare e fare pan sul grafico.",
+    });
   };
 
   // Fallback robusti per i dati del grafico
@@ -192,7 +213,8 @@ const HistoricalChart = () => {
         <div className="flex gap-2">
           <button
             onClick={handleRefreshClick}
-            className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+            disabled={isLoading}
+            className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -204,13 +226,14 @@ const HistoricalChart = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className={isLoading ? "animate-spin" : ""}
             >
               <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
               <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
               <path d="M16 21h5v-5" />
             </svg>
-            Aggiorna
+            {isLoading ? "Aggiornamento..." : "Aggiorna"}
           </button>
           <button
             onClick={handleInfoClick}
