@@ -10,8 +10,8 @@ import { NextFunction, Request, Response } from 'express';
 import { suspiciousActivityLogger } from '../services/suspiciousActivityLogger';
 import DataSanitizer, { ValidationResult } from '../utils/dataSanitizer';
 
-// Estendi l'interfaccia Request con le proprietà aggiuntive
-export interface SanitizedRequest extends Request {
+// Tipo per le proprietà aggiuntive del middleware
+interface SanitizationData {
   sanitizedBody?: Record<string, unknown>;
   sanitizedParams?: Record<string, string>;
   sanitizedQuery?: Record<string, string | string[]>;
@@ -21,6 +21,9 @@ export interface SanitizedRequest extends Request {
     query?: ValidationResult;
   };
 }
+
+// Tipo combinato per il request
+type SanitizedRequest = Request & SanitizationData;
 
 /**
  * Configurazione per il middleware di sanitizzazione
