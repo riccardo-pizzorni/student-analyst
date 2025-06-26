@@ -1,0 +1,2 @@
+DEBUG-LOGO-STUDENT-ANALYST
+Se vedi questo file su Vercel, la cartella lovable-uploads viene deployata correttamente. 
