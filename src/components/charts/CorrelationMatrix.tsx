@@ -1,12 +1,34 @@
 import { useAnalysis } from '@/context/AnalysisContext';
 import { Activity, AlertCircle, GitBranch, Info, Loader } from 'lucide-react';
 
+// Interfacce TypeScript per type safety
+interface CorrelationMatrix {
+  symbols: string[];
+  matrix: number[][];
+}
+
+interface CorrelationData {
+  correlationMatrix: CorrelationMatrix;
+  diversificationIndex?: number;
+  averageCorrelation?: number;
+}
+
+interface CorrelationResults {
+  correlation?: CorrelationData;
+}
+
 export default function CorrelationMatrix() {
   const { analysisState } = useAnalysis();
   const { analysisResults, isLoading, error } = analysisState;
 
+  // Funzione per gestire il click su "Teoria"
+  const handleTheoryClick = () => {
+    // TODO: Implementare popup o modal con spiegazioni teoriche sulla correlazione
+    console.log('Teoria della correlazione e diversificazione');
+  };
+
   const getCorrelationColor = (value: number) => {
-    const absValue = Math.abs(value);
+    const absValue = Math.abs(value || 0);
     if (absValue >= 0.7) return 'bg-red-500';
     if (absValue >= 0.5) return 'bg-orange-500';
     if (absValue >= 0.3) return 'bg-yellow-500';
@@ -15,8 +37,9 @@ export default function CorrelationMatrix() {
   };
 
   const getCorrelationOpacity = (value: number) => {
-    if (value === 1) return 1;
-    return Math.abs(value) * 0.7 + 0.3;
+    const safeValue = value || 0;
+    if (safeValue === 1) return 1;
+    return Math.abs(safeValue) * 0.7 + 0.3;
   };
 
   const renderContent = () => {
@@ -59,13 +82,31 @@ export default function CorrelationMatrix() {
       );
     }
 
+    const correlationData: CorrelationData = analysisResults.correlation;
     const {
       correlationMatrix,
-      diversificationIndex,
-      averageCorrelation,
-    } = analysisResults.correlation;
+      diversificationIndex = 0,
+      averageCorrelation = 0,
+    } = correlationData;
 
-    const { symbols, matrix } = correlationMatrix;
+    // Fallback robusti per array e oggetti
+    const { symbols = [], matrix = [] } = correlationMatrix || {};
+
+    if (symbols.length === 0 || matrix.length === 0) {
+      return (
+        <div className="w-full h-64 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Activity size={48} className="text-blue-400 mx-auto" />
+            <h4 className="text-xl font-bold text-slate-200">
+              Matrice vuota
+            </h4>
+            <p className="text-slate-400">
+              Nessun dato di correlazione disponibile per questa analisi.
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <>
@@ -76,30 +117,30 @@ export default function CorrelationMatrix() {
               <thead>
                 <tr>
                   <th className="p-2"></th>
-                  {symbols.map((symbol: string) => (
+                  {symbols.map((symbol: string, index: number) => (
                     <th
-                      key={symbol}
+                      key={symbol || `symbol-${index}`}
                       className="p-2 text-xs font-semibold text-blue-300"
                     >
-                      {symbol}
+                      {symbol || 'N/A'}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {matrix.map((row: number[], i: number) => (
-                  <tr key={symbols[i]}>
+                  <tr key={symbols[i] || `row-${i}`}>
                     <td className="p-2 text-xs font-semibold text-blue-300">
-                      {symbols[i]}
+                      {symbols[i] || 'N/A'}
                     </td>
                     {row.map((value: number, j: number) => (
                       <td key={j} className="p-1">
                         <div
                           className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white ${getCorrelationColor(value)}`}
                           style={{ opacity: getCorrelationOpacity(value) }}
-                          title={`${symbols[i]} / ${symbols[j]}: ${value.toFixed(2)}`}
+                          title={`${symbols[i] || 'N/A'} / ${symbols[j] || 'N/A'}: ${(value || 0).toFixed(2)}`}
                         >
-                          {value.toFixed(2)}
+                          {(value || 0).toFixed(2)}
                         </div>
                       </td>
                     ))}
@@ -117,7 +158,7 @@ export default function CorrelationMatrix() {
               Indice Diversificazione
             </h4>
             <div className="text-2xl font-bold text-green-400">
-              {diversificationIndex?.toFixed(2) || '0.00'}
+              {(diversificationIndex || 0).toFixed(2)}
             </div>
             <p className="text-xs text-green-200">
               Maggiore è il valore, migliore è la diversificazione
@@ -129,7 +170,7 @@ export default function CorrelationMatrix() {
               Correlazione Media
             </h4>
             <div className="text-2xl font-bold text-blue-400">
-              {averageCorrelation?.toFixed(2) || '0.00'}
+              {(averageCorrelation || 0).toFixed(2)}
             </div>
             <p className="text-xs text-blue-200">
               Correlazione media tra tutti i titoli
@@ -147,7 +188,10 @@ export default function CorrelationMatrix() {
           <GitBranch size={24} />
           Matrice delle Correlazioni
         </h3>
-        <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+        <button
+          onClick={handleTheoryClick}
+          className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+        >
           <Info size={14} />
           Teoria
         </button>
