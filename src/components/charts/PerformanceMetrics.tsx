@@ -82,20 +82,20 @@ export default function PerformanceMetrics() {
           {metrics.map(
             (metric: { label: string; value: string }, index: number) => (
               <div
-                key={metric.label}
+                key={metric.label || `metric-${index}`}
                 className={`bg-gradient-to-br ${colors[index % colors.length].bgColor} border ${colors[index % colors.length].borderColor} rounded-xl p-6 relative overflow-hidden`}
               >
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3">
                     <Award size={16} className="text-slate-300" />
                     <span className="text-sm font-medium text-slate-300">
-                      {metric.label}
+                      {metric.label || 'Metrica'}
                     </span>
                   </div>
                   <div
                     className={`text-2xl font-bold bg-gradient-to-r ${colors[index % colors.length].color} bg-clip-text text-transparent`}
                   >
-                    {metric.value}
+                    {metric.value || '0%'}
                   </div>
                 </div>
                 <div

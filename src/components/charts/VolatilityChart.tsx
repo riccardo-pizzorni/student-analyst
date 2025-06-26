@@ -65,19 +65,18 @@ export default function VolatilityChart() {
               </h4>
             </div>
             <div className="text-3xl font-bold text-red-400 mb-2">
-              {(annualizedVolatility.value * 100).toFixed(1)}%
+              {(annualizedVolatility * 100).toFixed(1)}%
             </div>
             <div className="w-full bg-red-950/50 rounded-full h-2 mb-3">
               <div
                 className="bg-gradient-to-r from-red-500 to-orange-400 h-2 rounded-full"
                 style={{
-                  width: `${Math.min(100, (annualizedVolatility.value / 0.3) * 100)}%`,
+                  width: `${Math.min(100, (annualizedVolatility / 0.3) * 100)}%`,
                 }} // Example scaling
               ></div>
             </div>
             <p className="text-sm text-red-200">
-              {annualizedVolatility.description} (
-              {(annualizedVolatility.benchmark * 100).toFixed(1)}%)
+              Misura del rischio del portafoglio (vs 15% benchmark)
             </p>
           </div>
 
@@ -87,17 +86,17 @@ export default function VolatilityChart() {
               <h4 className="font-semibold text-blue-300">Sharpe Ratio</h4>
             </div>
             <div className="text-3xl font-bold text-blue-400 mb-2">
-              {sharpeRatio.value.toFixed(2)}
+              {sharpeRatio?.toFixed(2) || '0.00'}
             </div>
             <div className="w-full bg-blue-950/50 rounded-full h-2 mb-3">
               <div
                 className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full"
                 style={{
-                  width: `${Math.min(100, (sharpeRatio.value / sharpeRatio.max) * 100)}%`,
+                  width: `${Math.min(100, (sharpeRatio / 2) * 100)}%`,
                 }}
               ></div>
             </div>
-            <p className="text-sm text-blue-200">{sharpeRatio.description}</p>
+            <p className="text-sm text-blue-200">Rendimento per unità di rischio</p>
           </div>
         </div>
 

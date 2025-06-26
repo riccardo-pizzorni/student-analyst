@@ -159,10 +159,10 @@ export default function TickerInputSection() {
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${ticker.status === 'valid'
-                          ? 'bg-green-500/20 text-green-300'
-                          : ticker.status === 'invalid'
-                            ? 'bg-red-500/20 text-red-300'
-                            : 'bg-blue-500/20 text-blue-300'
+                        ? 'bg-green-500/20 text-green-300'
+                        : ticker.status === 'invalid'
+                          ? 'bg-red-500/20 text-red-300'
+                          : 'bg-blue-500/20 text-blue-300'
                         }`}
                     >
                       {ticker.status === 'loading' ? (
@@ -193,17 +193,11 @@ export default function TickerInputSection() {
                   <div className="flex items-center gap-4">
                     {ticker.price && (
                       <div className="text-right">
-                        <div className="font-semibold text-slate-200">
-                          ${ticker.price.toFixed(2)}
+                        <div className="text-lg font-semibold text-green-400">
+                          ${ticker.price?.toFixed(2) || '0.00'}
                         </div>
-                        <div
-                          className={`text-sm ${ticker.change && ticker.change > 0
-                              ? 'text-green-400'
-                              : 'text-red-400'
-                            }`}
-                        >
-                          {ticker.change && ticker.change > 0 ? '+' : ''}
-                          {ticker.change?.toFixed(2)}%
+                        <div className="text-sm text-slate-400">
+                          {ticker.change !== undefined ? `${ticker.change >= 0 ? '+' : ''}${ticker.change.toFixed(2)}%` : '0.00%'}
                         </div>
                       </div>
                     )}

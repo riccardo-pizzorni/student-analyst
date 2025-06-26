@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { ReactNode, createContext, useContext, useRef, useState } from 'react';
 import {
   AnalysisApiResponse,
   fetchAnalysisData,
@@ -55,6 +55,9 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [analysisState, setAnalysisState] =
     useState<AnalysisState>(initialState);
 
+  // Ref per prevenire chiamate multiple
+  const isAnalysisRunning = useRef(false);
+
   const setTickers = (tickers: string[]) => {
     setAnalysisState(prev => ({ ...prev, tickers }));
   };
@@ -80,6 +83,34 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const startAnalysis = async () => {
+    // Prevenire chiamate multiple
+    if (isAnalysisRunning.current) {
+      console.log('🚫 Analisi già in corso, ignoro chiamata multipla');
+      return;
+    }
+
+    // Validazione parametri
+    const { tickers, startDate, endDate, frequency } = analysisState;
+    if (!tickers || tickers.length === 0) {
+      setAnalysisState(prev => ({
+        ...prev,
+        error: 'Seleziona almeno un ticker',
+        isLoading: false,
+      }));
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      setAnalysisState(prev => ({
+        ...prev,
+        error: 'Seleziona le date di inizio e fine',
+        isLoading: false,
+      }));
+      return;
+    }
+
+    isAnalysisRunning.current = true;
+
     setAnalysisState(prevState => ({
       ...prevState,
       isLoading: true,
@@ -88,7 +119,8 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     try {
-      const { tickers, startDate, endDate, frequency } = analysisState;
+      console.log('🚀 Avvio analisi con parametri:', { tickers, startDate, endDate, frequency });
+
       const results = await fetchAnalysisData({
         tickers,
         startDate,
@@ -96,19 +128,43 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
         frequency,
       });
 
+      // Validazione risultati prima di salvarli
+      const validatedResults = {
+        ...results,
+        performanceMetrics: results.performanceMetrics?.map(metric => ({
+          label: metric.label || 'Metrica',
+          value: metric.value || '0%'
+        })) || [],
+        volatility: results.volatility ? {
+          annualizedVolatility: results.volatility.annualizedVolatility || 0,
+          sharpeRatio: results.volatility.sharpeRatio || 0
+        } : null,
+        correlation: results.correlation ? {
+          correlationMatrix: results.correlation.correlationMatrix || { symbols: [], matrix: [] },
+          diversificationIndex: results.correlation.diversificationIndex || 0,
+          averageCorrelation: results.correlation.averageCorrelation || 0
+        } : null
+      };
+
       setAnalysisState(prevState => ({
         ...prevState,
-        analysisResults: results,
+        analysisResults: validatedResults,
         isLoading: false,
       }));
+
+      console.log('✅ Analisi completata con successo');
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Si è verificato un errore';
+      console.error('❌ Errore durante l\'analisi:', errorMessage);
+
       setAnalysisState(prevState => ({
         ...prevState,
         isLoading: false,
         error: errorMessage,
       }));
+    } finally {
+      isAnalysisRunning.current = false;
     }
   };
 

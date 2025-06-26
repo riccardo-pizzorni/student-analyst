@@ -320,10 +320,10 @@ export default function UnifiedInputSection() {
             id="start-analysis-button"
             name="start-analysis"
             onClick={startAnalysis}
-            disabled={isAnalysisDisabled}
+            disabled={isAnalysisDisabled || analysisState.isLoading}
             className="px-10 py-3 bg-blue-600/80 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium text-sm"
           >
-            Avvia Analisi
+            {analysisState.isLoading ? 'Analisi in corso...' : 'Avvia Analisi'}
           </button>
         </div>
       </div>
