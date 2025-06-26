@@ -284,7 +284,7 @@ HEALTH_CHECK_INTERVAL=30000
 
 ```typescript
 // src/utils/envValidator.ts
-import { config } from 'dotenv';
+import { config } from 'dotenv'
 
 config();
 
@@ -1244,3 +1244,25 @@ RATE_LIMIT_MAX_REQUESTS=100
 6. ✅ API endpoint test
 7. ✅ CORS verification
 8. ✅ Security validation
+
+# 🚦 ACCESSIBILITÀ - REGOLE OBBLIGATORIE
+
+## Regole per input e form
+- Ogni campo input, select, textarea DEVE avere:
+  - attributo id univoco
+  - attributo name univoco
+  - label associato tramite label htmlFor="id" oppure nesting diretto
+- Ogni label DEVE essere associato a un campo tramite htmlFor
+- Ogni bottone solo icona DEVE avere aria-label descrittivo
+- Usa aria-describedby per collegare input a testo di aiuto
+- Il placeholder NON sostituisce mai il label
+
+## Checklist pre-commit/pre-deploy
+- [ ] Tutti gli input hanno id e name
+- [ ] Tutti i label sono associati tramite htmlFor
+- [ ] Bottoni icona hanno aria-label
+- [ ] Nessun campo senza label
+- [ ] Testato con Lighthouse (score > 90)
+- [ ] Navigazione da tastiera OK
+
+**Regola finale:** Ogni modifica a form/input DEVE rispettare queste regole prima del merge o deploy.

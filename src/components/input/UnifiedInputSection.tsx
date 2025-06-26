@@ -81,12 +81,12 @@ export default function UnifiedInputSection() {
             prev.map(t =>
               t.symbol === symbol
                 ? {
-                    symbol,
-                    name: `${symbol} Company`,
-                    status: Math.random() > 0.2 ? 'valid' : 'invalid',
-                    price: Math.random() * 500 + 50,
-                    change: (Math.random() - 0.5) * 10,
-                  }
+                  symbol,
+                  name: `${symbol} Company`,
+                  status: Math.random() > 0.2 ? 'valid' : 'invalid',
+                  price: Math.random() * 500 + 50,
+                  change: (Math.random() - 0.5) * 10,
+                }
                 : t
             )
           );
@@ -118,7 +118,7 @@ export default function UnifiedInputSection() {
         {/* Ticker Selection */}
         <div className="space-y-3">
           <div>
-            <label className="text-slate-300 text-sm font-medium block mb-2">
+            <label htmlFor="ticker-input" className="text-slate-300 text-sm font-medium block mb-2">
               Ticker
             </label>
             <p className="text-slate-500 text-xs mb-3">
@@ -133,13 +133,12 @@ export default function UnifiedInputSection() {
                 {validatedTickers.map(ticker => (
                   <div
                     key={ticker.symbol}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ${
-                      ticker.status === 'valid'
-                        ? 'border-blue-500/30 bg-blue-500/5 text-blue-300'
-                        : ticker.status === 'invalid'
-                          ? 'border-red-500/30 bg-red-500/5 text-red-300'
-                          : 'border-yellow-500/30 bg-yellow-500/5 text-yellow-300'
-                    }`}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ${ticker.status === 'valid'
+                      ? 'border-blue-500/30 bg-blue-500/5 text-blue-300'
+                      : ticker.status === 'invalid'
+                        ? 'border-red-500/30 bg-red-500/5 text-red-300'
+                        : 'border-yellow-500/30 bg-yellow-500/5 text-yellow-300'
+                      }`}
                   >
                     <span className="font-medium">{ticker.symbol}</span>
                     {ticker.status === 'loading' && (
@@ -163,12 +162,15 @@ export default function UnifiedInputSection() {
           {/* Ticker Input */}
           <div className="flex gap-3">
             <input
+              id="ticker-input"
+              name="ticker-input"
               type="text"
               value={tickerInput}
               onChange={e => setTickerInput(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && addTicker()}
               placeholder="AAPL, MSFT, TSLA"
               className="flex-1 px-3 py-2.5 bg-transparent border border-slate-700/50 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-200 placeholder-slate-500 transition-all duration-200 text-sm"
+              aria-describedby="ticker-help"
             />
             <button
               onClick={addTicker}
@@ -178,6 +180,9 @@ export default function UnifiedInputSection() {
               Aggiungi
             </button>
           </div>
+          <p id="ticker-help" className="text-slate-500 text-xs">
+            Premi Enter o clicca Aggiungi per inserire i ticker
+          </p>
         </div>
 
         {/* Date Selection */}
@@ -188,10 +193,12 @@ export default function UnifiedInputSection() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-slate-400 text-xs">Da data</label>
+              <label htmlFor="start-date-button" className="text-slate-400 text-xs">Da data</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    id="start-date-button"
+                    name="start-date"
                     variant="outline"
                     className={cn(
                       'w-full justify-start text-left font-normal bg-transparent border-slate-700/50 hover:border-slate-600 h-10 text-slate-300 text-sm',
@@ -200,7 +207,7 @@ export default function UnifiedInputSection() {
                   >
                     <Calendar className="mr-2 h-4 w-4" />
                     {analysisState.startDate
-                      ? format(analysisState.startDate, 'dd/MM/yyyy')
+                      ? format(parseISO(analysisState.startDate), 'dd/MM/yyyy')
                       : '30/05/2024'}
                   </Button>
                 </PopoverTrigger>
@@ -224,10 +231,12 @@ export default function UnifiedInputSection() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-slate-400 text-xs">A data</label>
+              <label htmlFor="end-date-button" className="text-slate-400 text-xs">A data</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    id="end-date-button"
+                    name="end-date"
                     variant="outline"
                     className={cn(
                       'w-full justify-start text-left font-normal bg-transparent border-slate-700/50 hover:border-slate-600 h-10 text-slate-300 text-sm',
@@ -236,7 +245,7 @@ export default function UnifiedInputSection() {
                   >
                     <Calendar className="mr-2 h-4 w-4" />
                     {analysisState.endDate
-                      ? format(analysisState.endDate, 'dd/MM/yyyy')
+                      ? format(parseISO(analysisState.endDate), 'dd/MM/yyyy')
                       : 'Seleziona data'}
                   </Button>
                 </PopoverTrigger>
@@ -263,90 +272,59 @@ export default function UnifiedInputSection() {
 
         {/* Frequency Selection */}
         <div className="space-y-3">
-          <label className="text-slate-300 text-sm font-medium block">
-            Frequenza dati
+          <label htmlFor="frequency-select" className="text-slate-300 text-sm font-medium block">
+            Frequenza di analisi
           </label>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setFrequency('daily')}
-              variant={
-                analysisState.frequency === 'daily' ? 'default' : 'outline'
-              }
-              className={`flex-1 transition-all text-sm ${
-                analysisState.frequency === 'daily'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-transparent border-slate-700/50 hover:bg-slate-700/50'
-              }`}
-            >
-              Giornaliera
-            </Button>
-            <Button
-              onClick={() => setFrequency('weekly')}
-              variant={
-                analysisState.frequency === 'weekly' ? 'default' : 'outline'
-              }
-              className={`flex-1 transition-all text-sm ${
-                analysisState.frequency === 'weekly'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-transparent border-slate-700/50 hover:bg-slate-700/50'
-              }`}
-            >
-              Settimanale
-            </Button>
-            <Button
-              onClick={() => setFrequency('monthly')}
-              variant={
-                analysisState.frequency === 'monthly' ? 'default' : 'outline'
-              }
-              className={`flex-1 transition-all text-sm ${
-                analysisState.frequency === 'monthly'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-transparent border-slate-700/50 hover:bg-slate-700/50'
-              }`}
-            >
-              Mensile
-            </Button>
-          </div>
+          <select
+            id="frequency-select"
+            name="frequency"
+            value={analysisState.frequency}
+            onChange={e => setFrequency(e.target.value as 'daily' | 'weekly' | 'monthly')}
+            className="w-full px-3 py-2.5 bg-transparent border border-slate-700/50 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all duration-200 text-sm"
+          >
+            <option value="daily">Giornaliera</option>
+            <option value="weekly">Settimanale</option>
+            <option value="monthly">Mensile</option>
+          </select>
         </div>
 
         {/* File Upload */}
         <div className="space-y-3">
-          <label className="text-slate-300 text-sm font-medium">
+          <label htmlFor="file-upload-button" className="text-slate-300 text-sm font-medium block">
             File CSV opzionale
           </label>
-          <div className="relative border-2 border-dashed border-slate-700/70 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-blue-500/50 transition-colors">
-            <Upload className="text-slate-500 w-10 h-10 mb-3" />
-            <p className="text-slate-400 text-sm font-medium">
-              Drag and drop file here
-            </p>
-            <p className="text-slate-500 text-xs mt-1">
-              Limit 200MB per file • CSV, XLS, XLSX
-            </p>
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              aria-label="File upload"
-            />
-          </div>
+          <button
+            id="file-upload-button"
+            name="file-upload"
+            onClick={handleFileUpload}
+            className="w-full py-4 px-4 border border-dashed border-slate-700/50 rounded-lg text-slate-500 hover:border-blue-500/50 hover:text-blue-400 transition-all duration-200 flex flex-col items-center justify-center gap-2 group bg-transparent"
+          >
+            <div className="w-6 h-6 rounded-full border border-slate-700 group-hover:border-blue-500/50 flex items-center justify-center transition-colors">
+              <Upload
+                size={14}
+                className="text-slate-500 group-hover:text-blue-400"
+              />
+            </div>
+            <div className="text-center">
+              <div className="text-sm">Drag and drop file here</div>
+              <div className="text-xs text-slate-600 mt-1">
+                Limit 200MB per file • CSV, XLS, XLSX
+              </div>
+            </div>
+          </button>
         </div>
 
         {/* Action Button */}
-        <div className="mt-auto">
-          <Button
+        <div className="mt-auto pt-3 text-center">
+          <button
+            id="start-analysis-button"
+            name="start-analysis"
             onClick={startAnalysis}
-            disabled={isAnalysisDisabled || analysisState.isLoading}
-            className="w-full h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg text-lg font-bold transition-all mt-auto disabled:bg-slate-600 disabled:cursor-not-allowed"
+            disabled={isAnalysisDisabled}
+            className="px-10 py-3 bg-blue-600/80 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 font-medium text-sm"
           >
-            {analysisState.isLoading ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Analisi in corso...</span>
-              </div>
-            ) : (
-              'Avvia Analisi'
-            )}
-          </Button>
+            Avvia Analisi
+          </button>
         </div>
       </div>
     </div>

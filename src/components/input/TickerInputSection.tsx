@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
 import {
-  Plus,
-  X,
-  TrendingUp,
   AlertTriangle,
   CheckCircle,
+  Plus,
   Search,
+  TrendingUp,
+  X,
 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function TickerInputSection() {
   const [tickerInput, setTickerInput] = useState('');
@@ -67,12 +67,12 @@ export default function TickerInputSection() {
             prev.map(t =>
               t.symbol === symbol
                 ? {
-                    symbol,
-                    name: `${symbol} Company`,
-                    status: Math.random() > 0.2 ? 'valid' : 'invalid',
-                    price: Math.random() * 500 + 50,
-                    change: (Math.random() - 0.5) * 10,
-                  }
+                  symbol,
+                  name: `${symbol} Company`,
+                  status: Math.random() > 0.2 ? 'valid' : 'invalid',
+                  price: Math.random() * 500 + 50,
+                  change: (Math.random() - 0.5) * 10,
+                }
                 : t
             )
           );
@@ -108,15 +108,20 @@ export default function TickerInputSection() {
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
             />
             <input
+              id="ticker-search-input"
+              name="ticker-search"
               type="text"
               value={tickerInput}
               onChange={e => setTickerInput(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && addTicker()}
               placeholder="Inserisci ticker (es: AAPL, MSFT, GOOGL)"
               className="w-full pl-12 pr-4 py-4 bg-slate-700/50 border border-slate-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-200 placeholder-slate-400 transition-all duration-200"
+              aria-describedby="ticker-help-text"
             />
           </div>
           <button
+            id="add-ticker-button"
+            name="add-ticker"
             onClick={addTicker}
             disabled={!tickerInput.trim()}
             className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg shadow-blue-500/25 flex items-center gap-2"
@@ -126,7 +131,7 @@ export default function TickerInputSection() {
           </button>
         </div>
 
-        <div className="text-sm text-slate-400">
+        <div id="ticker-help-text" className="text-sm text-slate-400">
           Puoi inserire più ticker separati da virgola o spazio
         </div>
       </div>
@@ -153,13 +158,12 @@ export default function TickerInputSection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                        ticker.status === 'valid'
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${ticker.status === 'valid'
                           ? 'bg-green-500/20 text-green-300'
                           : ticker.status === 'invalid'
                             ? 'bg-red-500/20 text-red-300'
                             : 'bg-blue-500/20 text-blue-300'
-                      }`}
+                        }`}
                     >
                       {ticker.status === 'loading' ? (
                         <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -187,17 +191,16 @@ export default function TickerInputSection() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    {ticker.status === 'valid' && ticker.price && (
+                    {ticker.price && (
                       <div className="text-right">
                         <div className="font-semibold text-slate-200">
                           ${ticker.price.toFixed(2)}
                         </div>
                         <div
-                          className={`text-sm ${
-                            ticker.change && ticker.change > 0
+                          className={`text-sm ${ticker.change && ticker.change > 0
                               ? 'text-green-400'
                               : 'text-red-400'
-                          }`}
+                            }`}
                         >
                           {ticker.change && ticker.change > 0 ? '+' : ''}
                           {ticker.change?.toFixed(2)}%
@@ -206,8 +209,11 @@ export default function TickerInputSection() {
                     )}
 
                     <button
+                      id={`remove-${ticker.symbol}-button`}
+                      name={`remove-${ticker.symbol}`}
                       onClick={() => removeTicker(ticker.symbol)}
                       className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      aria-label={`Rimuovi ${ticker.symbol} dal portafoglio`}
                     >
                       <X size={16} />
                     </button>
@@ -245,6 +251,8 @@ export default function TickerInputSection() {
           ].map(symbol => (
             <button
               key={symbol}
+              id={`popular-${symbol}-button`}
+              name={`popular-${symbol}`}
               onClick={() => {
                 if (!tickers.find(t => t.symbol === symbol)) {
                   setTickerInput(prev =>
@@ -254,6 +262,7 @@ export default function TickerInputSection() {
               }}
               disabled={tickers.some(t => t.symbol === symbol)}
               className="px-4 py-2 bg-purple-500/10 text-purple-300 rounded-lg hover:bg-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium border border-purple-500/20"
+              aria-label={`Aggiungi ${symbol} ai ticker`}
             >
               {symbol}
             </button>

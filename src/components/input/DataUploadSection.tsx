@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
 import {
-  Upload,
-  FileText,
   AlertCircle,
   CheckCircle,
-  X,
+  FileText,
   Info,
+  Upload,
+  X,
 } from 'lucide-react';
+import React, { useState } from 'react';
 
 export default function DataUploadSection() {
   const [dragActive, setDragActive] = useState(false);
@@ -70,7 +70,12 @@ export default function DataUploadSection() {
             Carica i tuoi dati storici per iniziare l'analisi
           </p>
         </div>
-        <button className="flex items-center gap-2 text-sm px-4 py-2 bg-blue-500/10 text-blue-300 rounded-xl hover:bg-blue-500/20 transition-all duration-200 border border-blue-500/30">
+        <button
+          id="format-guide-button"
+          name="format-guide"
+          className="flex items-center gap-2 text-sm px-4 py-2 bg-blue-500/10 text-blue-300 rounded-xl hover:bg-blue-500/20 transition-all duration-200 border border-blue-500/30"
+          aria-label="Guida ai formati supportati"
+        >
           <Info size={16} />
           Guida Formati
         </button>
@@ -78,60 +83,61 @@ export default function DataUploadSection() {
 
       {/* Main Upload Area */}
       <div
+        id="file-drop-zone"
         className={`
           relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer group
-          ${
-            dragActive
-              ? 'border-blue-400 bg-blue-500/10 scale-[1.02]'
-              : 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-slate-800/20 hover:border-blue-400/50 hover:bg-blue-500/8'
+          ${dragActive
+            ? 'border-blue-400 bg-blue-500/10 scale-[1.02]'
+            : 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-slate-800/20 hover:border-blue-400/50 hover:bg-blue-500/8'
           }
         `}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
+        role="button"
+        tabIndex={0}
+        aria-label="Area di caricamento file"
+        aria-describedby="upload-instructions"
       >
-        <div className="space-y-6">
-          <div
-            className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
-              dragActive
-                ? 'bg-blue-500/20 scale-110'
-                : 'bg-blue-500/10 group-hover:bg-blue-500/15'
-            }`}
-          >
-            <Upload
-              size={32}
-              className={`transition-all duration-300 ${
-                dragActive ? 'text-blue-300 scale-110' : 'text-blue-400'
-              }`}
-            />
-          </div>
+        <Upload className="text-slate-500 w-10 h-10 mb-3" />
+        <p className="text-slate-400 text-sm font-medium">
+          Drag and drop file here
+        </p>
+        <p id="upload-instructions" className="text-slate-500 text-xs mt-1">
+          Limit 200MB per file • CSV, XLS, XLSX
+        </p>
+        <input
+          id="file-input"
+          name="file-input"
+          type="file"
+          multiple
+          accept=".csv,.xls,.xlsx"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          aria-label="Seleziona file da caricare"
+          onChange={(e) => {
+            if (e.target.files) {
+              const files = Array.from(e.target.files);
+              files.forEach((file, index) => {
+                const newFile = {
+                  id: Date.now() + index + '',
+                  name: file.name,
+                  size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+                  status: 'uploading' as const,
+                };
 
-          <div className="space-y-2">
-            <h4 className="text-xl font-semibold text-slate-200">
-              {dragActive
-                ? 'Rilascia i file qui'
-                : 'Trascina i file o clicca per selezionare'}
-            </h4>
-            <p className="text-slate-400">
-              Supportati: CSV, XLSX, XLS • Max 50MB per file
-            </p>
-          </div>
+                setUploadedFiles(prev => [...prev, newFile]);
 
-          <div className="flex justify-center">
-            <button className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg shadow-blue-500/25">
-              Seleziona File
-            </button>
-          </div>
-        </div>
-
-        {dragActive && (
-          <div className="absolute inset-0 bg-blue-500/5 rounded-2xl flex items-center justify-center">
-            <div className="text-blue-300 text-xl font-medium animate-pulse">
-              Rilascia per caricare
-            </div>
-          </div>
-        )}
+                // Simulate upload process
+                setTimeout(() => {
+                  setUploadedFiles(prev =>
+                    prev.map(f => (f.id === newFile.id ? { ...f, status: 'success' } : f))
+                  );
+                }, 2000);
+              });
+            }
+          }}
+        />
       </div>
 
       {/* Uploaded Files List */}
@@ -150,13 +156,12 @@ export default function DataUploadSection() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      file.status === 'uploading'
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${file.status === 'uploading'
                         ? 'bg-blue-500/20'
                         : file.status === 'success'
                           ? 'bg-green-500/20'
                           : 'bg-red-500/20'
-                    }`}
+                      }`}
                   >
                     {file.status === 'uploading' && (
                       <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -176,8 +181,11 @@ export default function DataUploadSection() {
                 </div>
 
                 <button
+                  id={`remove-file-${file.id}-button`}
+                  name={`remove-file-${file.id}`}
                   onClick={() => removeFile(file.id)}
                   className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                  aria-label={`Rimuovi file ${file.name}`}
                 >
                   <X size={16} />
                 </button>
