@@ -13,6 +13,7 @@
 **Motivazione**: Evita errori `TypeError: Cannot read properties of undefined (reading 'toFixed')` e crash dell'applicazione.
 
 **Implementazione**:
+
 ```typescript
 // ✅ CORRETTO - Protezione contro undefined
 {metric.label || 'Metrica'}
@@ -28,6 +29,7 @@ ${ticker.price.toFixed(2)}
 ```
 
 **Checklist Pre-Commit**:
+
 - [ ] Tutti i valori numerici hanno protezione `?.` o `||`
 - [ ] Tutti i valori stringa hanno fallback
 - [ ] Tutti i valori array hanno `|| []`
@@ -43,23 +45,32 @@ ${ticker.price.toFixed(2)}
 **Regola**: Validare sempre i dati prima di salvarli nel context per evitare errori runtime.
 
 **Implementazione**:
+
 ```typescript
 // Validazione risultati prima di salvarli
 const validatedResults = {
   ...results,
-  performanceMetrics: results.performanceMetrics?.map(metric => ({
-    label: metric.label || 'Metrica',
-    value: metric.value || '0%'
-  })) || [],
-  volatility: results.volatility ? {
-    annualizedVolatility: results.volatility.annualizedVolatility || 0,
-    sharpeRatio: results.volatility.sharpeRatio || 0
-  } : null,
-  correlation: results.correlation ? {
-    correlationMatrix: results.correlation.correlationMatrix || { symbols: [], matrix: [] },
-    diversificationIndex: results.correlation.diversificationIndex || 0,
-    averageCorrelation: results.correlation.averageCorrelation || 0
-  } : null
+  performanceMetrics:
+    results.performanceMetrics?.map(metric => ({
+      label: metric.label || 'Metrica',
+      value: metric.value || '0%',
+    })) || [],
+  volatility: results.volatility
+    ? {
+        annualizedVolatility: results.volatility.annualizedVolatility || 0,
+        sharpeRatio: results.volatility.sharpeRatio || 0,
+      }
+    : null,
+  correlation: results.correlation
+    ? {
+        correlationMatrix: results.correlation.correlationMatrix || {
+          symbols: [],
+          matrix: [],
+        },
+        diversificationIndex: results.correlation.diversificationIndex || 0,
+        averageCorrelation: results.correlation.averageCorrelation || 0,
+      }
+    : null,
 };
 ```
 
@@ -72,6 +83,7 @@ const validatedResults = {
 **Regola**: Prevenire sempre chiamate API multiple con flag di stato non reattivo.
 
 **Implementazione**:
+
 ```typescript
 const isAnalysisRunning = useRef(false);
 
@@ -80,7 +92,7 @@ const startAnalysis = async () => {
     console.log('🚫 Analisi già in corso, ignoro chiamata multipla');
     return;
   }
-  
+
   isAnalysisRunning.current = true;
   try {
     // ... logica analisi
