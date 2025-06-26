@@ -1,6 +1,6 @@
 # 🆕 NUOVE REGOLE - STUDENT ANALYST
 
-> **⚠️ REGOLE APPRESE DURANTE LO SVILUPPO** | [Componenti Analisi](#componenti-analisi) | [Validazione Dati](#validazione-dati)
+> **⚠️ REGOLE APPRESE DURANTE LO SVILUPPO** | [Componenti Analisi](#componenti-analisi) | [Validazione Dati](#validazione-dati) | [Testing](#testing) | [Documentazione](#documentazione)
 
 ---
 
@@ -59,6 +59,46 @@ ${ticker.price.toFixed(2)}
 - [ ] Tutti i valori oggetto hanno `|| {}`
 - [ ] Testato con dati undefined/null
 
+### **Collegamento Dati Reali - SEMPRE OBBLIGATORIO**
+
+**Regola**: Ogni componente di output deve leggere SOLO da `analysisResults` del context, mai da dati statici o placeholder.
+
+**Motivazione**: Garantisce coerenza dei dati e elimina valori finti che confondono l'utente.
+
+**Implementazione**:
+
+```typescript
+// ✅ CORRETTO - Dati reali dal context
+const { analysisResults } = useAnalysisContext();
+const metrics = analysisResults?.performanceMetrics || [];
+const volatility = analysisResults?.volatility;
+
+// ❌ SBAGLIATO - Dati statici
+const metrics = [
+  { label: 'Rendimento Totale', value: '15.25%' },
+  { label: 'Rendimento Annuo', value: '12.50%' },
+];
+```
+
+### **Messaggi Utente Professionali - SEMPRE OBBLIGATORIO**
+
+**Regola**: Ogni stato senza dati deve avere un messaggio chiaro che guidi l'utente.
+
+**Implementazione**:
+
+```typescript
+// ✅ CORRETTO - Messaggio chiaro e professionale
+{!hasData && (
+  <div className="text-center text-muted-foreground py-8">
+    <p>Avvia un'analisi per vedere le metriche di performance</p>
+    <p className="text-sm">Inserisci i simboli dei titoli e clicca su "Avvia Analisi"</p>
+  </div>
+)}
+
+// ❌ SBAGLIATO - Messaggio generico
+{!hasData && <div>Nessun dato</div>}
+```
+
 ---
 
 ## 🔒 VALIDAZIONE DATI
@@ -97,6 +137,35 @@ const validatedResults = {
 };
 ```
 
+### **TypeScript Interfaces - SEMPRE OBBLIGATORIO**
+
+**Regola**: Definire sempre interfacce TypeScript per tutti i dati e props.
+
+**Implementazione**:
+
+```typescript
+// ✅ CORRETTO - Interfacce definite
+interface PerformanceMetric {
+  label: string;
+  value: string;
+  description?: string;
+}
+
+interface VolatilityData {
+  annualizedVolatility: number;
+  sharpeRatio: number;
+}
+
+interface PerformanceMetricsProps {
+  data?: PerformanceMetric[];
+  onTheoryClick?: () => void;
+  className?: string;
+}
+
+// ❌ SBAGLIATO - Nessuna interfaccia
+const PerformanceMetrics = (props: any) => {
+```
+
 ---
 
 ## 🚫 CHIAMATE MULTIPLE
@@ -127,6 +196,232 @@ const startAnalysis = async () => {
 
 ---
 
+## 🧪 TESTING
+
+### **Test E2E - SEMPRE OBBLIGATORIO**
+
+**Regola**: Implementare test E2E per tutti i componenti di output e flussi critici.
+
+**Implementazione**:
+
+```typescript
+// Test per componenti di output
+test.describe('Output Components E2E Tests', () => {
+  test('should show no data message when no analysis is performed', async ({
+    page,
+  }) => {
+    await expect(
+      page.locator(
+        "text=Avvia un'analisi per vedere le metriche di performance"
+      )
+    ).toBeVisible();
+  });
+
+  test('should display performance metrics after analysis', async ({
+    page,
+  }) => {
+    await page.fill('[data-testid="ticker-input"]', 'AAPL,GOOGL');
+    await page.click('[data-testid="start-analysis-button"]');
+    await page.waitForSelector('[data-testid="performance-metrics"]', {
+      timeout: 30000,
+    });
+    await expect(
+      page.locator('[data-testid="performance-metrics"]')
+    ).toBeVisible();
+  });
+});
+```
+
+**Coverage Minimo**:
+
+- ✅ **Rendering senza dati** - Verifica messaggi "no data"
+- ✅ **Rendering con dati reali** - Verifica visualizzazione corretta
+- ✅ **Interazioni utente** - Verifica bottoni teoria e aggiorna
+- ✅ **Integrazione componenti** - Verifica sincronizzazione
+- ✅ **Gestione errori** - Verifica robustezza con input invalidi
+- ✅ **Accessibilità** - Verifica struttura e navigazione
+
+### **Test Unitari - SEMPRE OBBLIGATORIO**
+
+**Regola**: Implementare test unitari per ogni componente con coverage >80%.
+
+**Implementazione**:
+
+```typescript
+describe('PerformanceMetrics', () => {
+  it('should render with no data message when no context is provided', () => {
+    render(<PerformanceMetrics />);
+    expect(screen.getByText('Avvia un\'analisi per vedere le metriche di performance')).toBeInTheDocument();
+  });
+
+  it('should render with real data when provided', () => {
+    const mockData = [{ label: 'Rendimento Totale', value: '15.25%' }];
+    render(<PerformanceMetrics data={mockData} />);
+    expect(screen.getByText('Rendimento Totale')).toBeInTheDocument();
+  });
+});
+```
+
+### **Test Setup - SEMPRE OBBLIGATORIO**
+
+**Regola**: Configurare correttamente Jest e Playwright per evitare errori di setup.
+
+**Implementazione**:
+
+```javascript
+// jest.config.js
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  collectCoverageFrom: ['src/**/*.{ts,tsx}'],
+  coverageThreshold: {
+    global: { branches: 80, functions: 80, lines: 80, statements: 80 },
+  },
+};
+```
+
+---
+
+## 📚 DOCUMENTAZIONE
+
+### **Documentazione Refactoring - SEMPRE OBBLIGATORIA**
+
+**Regola**: Documentare sempre il refactoring con esempi prima/dopo e best practice.
+
+**Implementazione**:
+
+````markdown
+# Guida al Refactoring - Componenti di Output
+
+## Prima del Refactoring
+
+```typescript
+// ❌ DATI STATICI - SBAGLIATO
+const metrics = [{ label: 'Rendimento Totale', value: '15.25%' }];
+```
+````
+
+## Dopo il Refactoring
+
+```typescript
+// ✅ DATI REALI DAL CONTEXT - CORRETTO
+const { analysisResults } = useAnalysisContext();
+const metrics = analysisResults?.performanceMetrics || [];
+```
+
+## Best Practice Implementate
+
+- ✅ Protezione valori undefined
+- ✅ Fallback robusti
+- ✅ Messaggi utente chiari
+- ✅ TypeScript interfaces
+
+````
+
+### **Regole Anti-Regressione - SEMPRE OBBLIGATORIO**
+
+**Regola**: Documentare regole anti-regressione per evitare ricadute future.
+
+**Implementazione**:
+
+```markdown
+## 🚨 REGOLE ANTI-REGRESSIONE
+
+### **Protezione Valori Undefined**
+- Ogni valore numerico deve avere protezione `?.` o `||`
+- Ogni valore stringa deve avere fallback
+- Ogni valore array deve avere `|| []`
+- Ogni valore oggetto deve avere `|| {}`
+
+### **Validazione Context**
+- Validare sempre i dati prima di salvarli nel context
+- Implementare fallback per ogni campo
+- Testare con dati edge case
+
+### **Prevenzione Chiamate Multiple**
+- Usare flag di stato non reattivo
+- Prevenire chiamate API multiple
+- Gestire stati di loading correttamente
+````
+
+---
+
+## 🎯 OPERATIONAL PROMPT
+
+### **Prompt per Refactoring Completo - SEMPRE OBBLIGATORIO**
+
+**Regola**: Usare sempre un prompt operativo strutturato per refactoring complessi.
+
+**Implementazione**:
+
+```markdown
+# PROMPT OPERATIVO PER COLLEGAMENTO STEP ANALISI DATI
+
+## REGOLE CRITICHE DA RISPETTARE
+
+- Non fare mai supposizioni su nomi di variabili, funzioni o file
+- Leggi sempre il file target prima di modificare
+- Ogni componente di output deve leggere solo da analysisResults del context
+- Non usare mai dati statici, random, di copertina o placeholder
+- Proteggi ogni valore numerico con fallback (?. o ||)
+- Valida sempre i dati prima di salvarli nel context
+- Previeni chiamate API multiple con flag di stato non reattivo
+
+## PERCORSO OPERATIVO
+
+1. **Step 1: Mappatura** - Mappa tutti i componenti di output
+2. **Step 2: Refactor Componenti** - Refactorizza ogni componente
+3. **Step 3: Azioni e Sincronizzazione** - Collega bottoni e logica
+4. **Step 4: Test e Documentazione** - Aggiungi test e documenta
+```
+
+---
+
+## 🔧 TROUBLESHOOTING
+
+### **Errori Comuni - SEMPRE DOCUMENTARE**
+
+**Regola**: Documentare sempre le soluzioni per errori comuni.
+
+**Implementazione**:
+
+````markdown
+## 🔧 Troubleshooting Comune
+
+### **Errore: "Cannot read properties of undefined"**
+
+```typescript
+// ✅ SOLUZIONE
+const value = data?.price?.toFixed(2) || '0.00';
+```
+````
+
+### **Errore: "Component not rendering"**
+
+```typescript
+// ✅ SOLUZIONE
+{(data || []).map(item => <div>{item.name || 'N/A'}</div>)}
+```
+
+### **Errore: "Multiple API calls"**
+
+```typescript
+// ✅ SOLUZIONE
+const isRunning = useRef(false);
+if (isRunning.current) return;
+isRunning.current = true;
+// ... logica
+isRunning.current = false;
+```
+
+```
+
+---
+
 ## 🎯 REGOLE FINALI
 
 1. **Ogni componente di analisi DEVE avere protezione contro undefined**
@@ -134,5 +429,37 @@ const startAnalysis = async () => {
 3. **Ogni funzione async DEVE prevenire chiamate multiple**
 4. **Ogni valore numerico DEVE avere fallback per toFixed()**
 5. **Ogni modifica DEVE essere testata con dati edge case**
+6. **Ogni refactoring DEVE essere documentato con esempi**
+7. **Ogni componente DEVE avere test E2E e unitari**
+8. **Ogni errore comune DEVE avere soluzione documentata**
+9. **Ogni prompt operativo DEVE essere strutturato e completo**
+10. **Ogni regola anti-regressione DEVE essere implementata**
 
 **⚠️ IMPORTANTE**: Queste regole sono critiche per la stabilità dell'applicazione. Non ignorare mai.
+
+---
+
+## 📊 METRICHE DI QUALITÀ
+
+### **Checklist Pre-Commit OBBLIGATORIA**
+
+- [ ] Tutti i valori numerici hanno protezione `?.` o `||`
+- [ ] Tutti i valori stringa hanno fallback
+- [ ] Tutti i valori array hanno `|| []`
+- [ ] Tutti i valori oggetto hanno `|| {}`
+- [ ] Testato con dati undefined/null
+- [ ] TypeScript check passa (`tsc --noEmit`)
+- [ ] Test E2E passano
+- [ ] Test unitari passano (se implementati)
+- [ ] Commit message convenzionale
+- [ ] Documentazione aggiornata
+- [ ] Regole anti-regressione rispettate
+
+### **Metriche Minime**
+
+- **Coverage Test**: >80% per componenti critici
+- **Test E2E**: 1 test per ogni componente di output
+- **TypeScript**: 0 errori di tipo
+- **Fallback**: 100% dei valori protetti
+- **Documentazione**: 1 guida per ogni refactoring complesso
+```
