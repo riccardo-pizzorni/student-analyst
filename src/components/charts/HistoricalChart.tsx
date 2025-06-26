@@ -556,4 +556,4 @@ const HistoricalChart = () => {
     );
 };
 
-export default HistoricalChart; 
+export default HistoricalChart;
