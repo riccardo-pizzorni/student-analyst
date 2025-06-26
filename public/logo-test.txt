@@ -1,0 +1,2 @@
+DEBUG-LOGO-ROOT
+Se vedi questo file su Vercel, la cartella public viene deployata correttamente. 
