@@ -43,7 +43,7 @@ const defaultConfig: SanitizationConfig = {
   enableParamsSanitization: true,
   enableQuerySanitization: true,
   logSuspiciousActivity: true,
-  blockOnDangerousPatterns: true,
+  blockOnDangerousPatterns: false,
   maxRequestSize: 1024 * 1024, // 1MB
   trustedIPs: ['127.0.0.1', '::1', 'localhost'],
 };
