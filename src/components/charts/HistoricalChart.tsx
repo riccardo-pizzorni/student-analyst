@@ -16,7 +16,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 
 // Registra i componenti necessari di Chart.js
@@ -32,6 +32,16 @@ ChartJS.register(
   Filler,
   zoomPlugin
 );
+
+// Interfacce TypeScript per type safety
+interface HistoricalData {
+  labels: string[];
+  datasets: ChartDataset<'line', number[]>[];
+}
+
+interface HistoricalResults {
+  historicalData?: HistoricalData;
+}
 
 const options: ChartOptions<'line'> = {
   responsive: true,
@@ -111,16 +121,53 @@ const HistoricalChart = () => {
   const { analysisState } = useAnalysis();
   const { isLoading, error, analysisResults } = analysisState;
 
-  const chartData = {
-    labels: analysisResults?.historicalData?.labels || [],
-    datasets: analysisResults?.historicalData?.datasets || [],
-  };
-
   const [showSMA20, setShowSMA20] = useState(true);
   const [showSMA50, setShowSMA50] = useState(true);
   const [showSMA200, setShowSMA200] = useState(true);
   const [showRSI, setShowRSI] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
+
+  // Funzioni per gestire i click sui bottoni
+  const handleRefreshClick = () => {
+    // TODO: Implementare refresh dei dati storici
+    console.log('Refresh dati storici');
+  };
+
+  const handleInfoClick = () => {
+    // TODO: Implementare popup con informazioni sul grafico
+    console.log('Info grafico storico');
+  };
+
+  // Fallback robusti per i dati del grafico
+  const rawChartData: HistoricalData = {
+    labels: analysisResults?.historicalData?.labels || [],
+    datasets: analysisResults?.historicalData?.datasets || [],
+  };
+
+  // Filtra i dataset in base agli switch attivi
+  const filteredDatasets = useMemo(() => {
+    if (!rawChartData.datasets || rawChartData.datasets.length === 0) {
+      return [];
+    }
+
+    return rawChartData.datasets.filter((dataset) => {
+      const label = dataset.label?.toLowerCase() || '';
+
+      if (label.includes('sma20') || label.includes('20')) return showSMA20;
+      if (label.includes('sma50') || label.includes('50')) return showSMA50;
+      if (label.includes('sma200') || label.includes('200')) return showSMA200;
+      if (label.includes('rsi')) return showRSI;
+      if (label.includes('volume')) return showVolume;
+
+      // Mostra sempre i dataset principali (prezzi, portafoglio, ecc.)
+      return true;
+    });
+  }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume]);
+
+  const chartData = {
+    labels: rawChartData.labels,
+    datasets: filteredDatasets,
+  };
 
   return (
     <div className="dark-card rounded-xl p-8">
@@ -143,7 +190,10 @@ const HistoricalChart = () => {
           Andamento Storico
         </h3>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+          <button
+            onClick={handleRefreshClick}
+            className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -162,7 +212,10 @@ const HistoricalChart = () => {
             </svg>
             Aggiorna
           </button>
-          <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+          <button
+            onClick={handleInfoClick}
+            className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -286,6 +339,32 @@ const HistoricalChart = () => {
               <p className="text-slate-400">
                 Vai alla sezione 'Input & Validazione' per avviare una nuova
                 analisi.
+              </p>
+            </div>
+          </div>
+        ) : !rawChartData.labels || rawChartData.labels.length === 0 || !filteredDatasets || filteredDatasets.length === 0 ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-blue-400 mx-auto"
+              >
+                <path d="M3 3v18h18" />
+                <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
+              </svg>
+              <h4 className="text-xl font-bold text-slate-200">
+                Nessun Dato Storico Disponibile
+              </h4>
+              <p className="text-slate-400">
+                Avvia un'analisi per visualizzare l'andamento storico dei prezzi.
               </p>
             </div>
           </div>
