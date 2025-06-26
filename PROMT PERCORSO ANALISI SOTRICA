@@ -15,6 +15,7 @@
 ## 🎯 **CONTESTO E OBIETTIVI DEL PROGETTO**
 
 ### **Student Analyst - Piattaforma di Analisi Finanziaria**
+
 - **Target**: Studenti universitari, professori, analisti finanziari
 - **Obiettivo**: Creare uno strumento didattico-professionale di livello Bloomberg
 - **Filosofia**: "Dalla teoria alla pratica" con focus su didattica e precisione
@@ -23,6 +24,7 @@
 - **URL Backend**: https://student-analyst.onrender.com
 
 ### **Step "Analisi Storica" - Fondamento del Sistema**
+
 - **Ruolo**: Primo step di ogni analisi finanziaria
 - **Scopo**: Trasformare dati grezzi in informazioni significative
 - **Obiettivo**: Strumento professionale per analisi storica di titoli e portafogli
@@ -33,6 +35,7 @@
 ## 🎯 **OBIETTIVI SPECIFICI DELLO STEP**
 
 ### **Obiettivi Didattici**
+
 1. **Comprensione dei Pattern**: Identificare trend, cicli e pattern ricorrenti
 2. **Analisi della Volatilità**: Comprendere la variabilità dei prezzi nel tempo
 3. **Identificazione di Fasi di Mercato**: Distinguere bull market, bear market, consolidamento
@@ -40,6 +43,7 @@
 5. **Glossario Integrato**: Spiegazioni teoriche per ogni concetto
 
 ### **Obiettivi Tecnici**
+
 1. **Dati Reali**: Sostituire completamente i mock con calcoli reali da Alpha Vantage
 2. **Indicatori Avanzati**: Implementare SMA, RSI, Bollinger Bands, MACD, Volume analysis
 3. **Performance Metrics**: Calcoli di rendimento, drawdown, volatilità annualizzata
@@ -48,6 +52,7 @@
 6. **Tabella Dati**: Visualizzazione completa dati OHLCV con sorting e filtri
 
 ### **Obiettivi di Qualità**
+
 1. **Precisione Assoluta**: Zero errori nei calcoli finanziari
 2. **Performance**: Tempo di caricamento < 2 secondi, rendering grafico < 500ms
 3. **Accessibilità**: WCAG 2.1 compliance completa
@@ -62,6 +67,7 @@
 ### **FASE 1: ANALISI E PIANIFICAZIONE (2-3 ore)**
 
 #### **Step 1.1: Lettura Completa della Documentazione**
+
 ```
 1. Leggi completamente il file "STEP STEP/1-analisi-storica.txt"
 2. Leggi la "BIBBIA_STUDENT_ANALYST.txt" (sezioni relative all'analisi storica)
@@ -81,6 +87,7 @@
 ```
 
 #### **Step 1.2: Validazione degli Obiettivi**
+
 ```
 1. Conferma che hai compreso ogni obiettivo didattico e tecnico
 2. Verifica che gli obiettivi siano realistici e misurabili
@@ -91,6 +98,7 @@
 ```
 
 #### **Step 1.3: Pianificazione del Workflow**
+
 ```
 1. Definisci l'ordine esatto di implementazione
 2. Identifica le dipendenze tra i task
@@ -103,6 +111,7 @@
 ### **FASE 2: IMPLEMENTAZIONE BACKEND - DATI REALI (4-6 ore)**
 
 #### **Step 2.1: Analisi del Backend Attuale**
+
 ```
 1. Leggi completamente backend/src/services/analysisService.ts
 2. Identifica tutti i dati mock attuali
@@ -114,6 +123,7 @@
 ```
 
 #### **Step 2.2: Implementazione Calcoli Finanziari Base**
+
 ```
 1. Crea le funzioni di calcolo SMA:
    - Verifica la formula: SMA = (P1 + P2 + ... + Pn) / n
@@ -139,6 +149,7 @@
 ```
 
 #### **Step 2.3: Implementazione Indicatori Avanzati**
+
 ```
 1. Bollinger Bands:
    - Middle Band = SMA(20)
@@ -162,6 +173,7 @@
 ```
 
 #### **Step 2.4: Integrazione Alpha Vantage**
+
 ```
 1. Verifica la configurazione API:
    - Controlla environment variables (ALPHA_VANTAGE_API_KEY)
@@ -184,6 +196,7 @@
 ```
 
 #### **Step 2.5: Implementazione Performance Metrics**
+
 ```
 1. Calcolo rendimento totale:
    - Formula: (Prezzo finale - Prezzo iniziale) / Prezzo iniziale
@@ -207,6 +220,7 @@
 ```
 
 #### **Step 2.6: Aggiornamento analysisService.ts**
+
 ```
 1. Sostituisci tutti i mock con calcoli reali:
    - Rimuovi dati statici hardcoded
@@ -232,6 +246,7 @@
 ### **FASE 3: IMPLEMENTAZIONE FRONTEND - UI/UX (3-4 ore)**
 
 #### **Step 3.1: Analisi del Frontend Attuale**
+
 ```
 1. Leggi completamente src/components/charts/HistoricalChart.tsx
 2. Identifica tutti i componenti coinvolti (MainTabs, AnalysisContext)
@@ -242,6 +257,7 @@
 ```
 
 #### **Step 3.2: Miglioramento Grafico Storico**
+
 ```
 1. Aggiorna il componente per dati reali:
    - Rimuovi tutti i dati statici e placeholder
@@ -268,6 +284,7 @@
 ```
 
 #### **Step 3.3: Implementazione Tabella Dati**
+
 ```
 1. Crea componente HistoricalTable:
    - Visualizzazione dati OHLCV completi
@@ -293,6 +310,7 @@
 ```
 
 #### **Step 3.4: Miglioramento Didattico**
+
 ```
 1. Implementa glossario integrato:
    - Tooltip educativi per ogni indicatore
@@ -317,6 +335,7 @@
 ```
 
 #### **Step 3.5: Miglioramento UX/UI**
+
 ```
 1. Stati di loading ottimizzati:
    - Skeleton loading per grafici
@@ -341,6 +360,7 @@
 ### **FASE 4: TESTING E VALIDAZIONE (2-3 ore)**
 
 #### **Step 4.1: Test Unitari**
+
 ```
 1. Testa ogni funzione di calcolo:
    - SMA con dataset noti e risultati attesi
@@ -364,6 +384,7 @@
 ```
 
 #### **Step 4.2: Test E2E**
+
 ```
 1. Testa il flusso completo:
    - Input ticker (validi e invalidi)
@@ -388,6 +409,7 @@
 ```
 
 #### **Step 4.3: Test di Performance**
+
 ```
 1. Testa con grandi dataset:
    - 5 anni di dati giornalieri (1250+ record)
@@ -410,6 +432,7 @@
 ```
 
 #### **Step 4.4: Test di Accessibilità**
+
 ```
 1. Testa con screen reader:
    - Navigazione completa da tastiera
@@ -435,6 +458,7 @@
 ### **FASE 5: DOCUMENTAZIONE E DEPLOYMENT (1-2 ore)**
 
 #### **Step 5.1: Aggiornamento Documentazione**
+
 ```
 1. Aggiorna "STEP STEP/1-analisi-storica.txt":
    - Sezione implementazione completata
@@ -459,6 +483,7 @@
 ```
 
 #### **Step 5.2: Deployment e Verifica**
+
 ```
 1. Test locale completo:
    - Build frontend: npm run build
@@ -487,6 +512,7 @@
 ## 🛡️ **REGOLE DI SICUREZZA ASSOLUTA**
 
 ### **Prima di Ogni Modifica**
+
 ```
 1. FAI SEMPRE backup del file che stai modificando
 2. LEGGI COMPLETAMENTE il file prima di modificarlo
@@ -497,6 +523,7 @@
 ```
 
 ### **Durante l'Implementazione**
+
 ```
 1. TESTA ogni funzione dopo l'implementazione
 2. VERIFICA che non rompi funzionalità esistenti
@@ -507,6 +534,7 @@
 ```
 
 ### **Dopo Ogni Modifica**
+
 ```
 1. ESEGUI test unitari: npm test
 2. VERIFICA che il build funzioni: npm run build
@@ -517,6 +545,7 @@
 ```
 
 ### **Regole Specifiche per Calcoli Finanziari**
+
 ```
 1. VERIFICA ogni formula con fonti autorevoli (Investopedia, Bloomberg)
 2. TESTA con dati noti e risultati attesi
@@ -527,6 +556,7 @@
 ```
 
 ### **Regole per API Integration**
+
 ```
 1. VERIFICA rate limiting e implementa retry logic
 2. VALIDA ogni response prima di processarlo
@@ -541,6 +571,7 @@
 ## 🎯 **CRITERI DI SUCCESSO**
 
 ### **Criteri Tecnici**
+
 - [ ] Tutti i dati mock sostituiti con calcoli reali da Alpha Vantage
 - [ ] Tutti gli indicatori tecnici implementati e testati (SMA, RSI, Bollinger, MACD, Volume)
 - [ ] Performance metrics calcolate correttamente (rendimento, drawdown, volatilità)
@@ -551,6 +582,7 @@
 - [ ] Export funzionalità per CSV, Excel, PNG, PDF
 
 ### **Criteri Didattici**
+
 - [ ] Glossario integrato per ogni termine tecnico
 - [ ] Tooltip educativi per ogni indicatore con formule
 - [ ] Tutorial interattivo implementato con progress tracking
@@ -559,6 +591,7 @@
 - [ ] FAQ basate su test reali con utenti
 
 ### **Criteri UX**
+
 - [ ] Interfaccia intuitiva e professionale di livello Bloomberg
 - [ ] Responsive design per tutti i dispositivi (mobile, tablet, desktop)
 - [ ] Accessibilità WCAG 2.1 compliance completa
@@ -567,6 +600,7 @@
 - [ ] Loading states appropriati per ogni operazione
 
 ### **Criteri di Qualità**
+
 - [ ] Codice pulito e ben documentato con JSDoc
 - [ ] Architettura modulare e scalabile
 - [ ] Gestione errori robusta con logging
@@ -575,6 +609,7 @@
 - [ ] Testing completo con coverage reporting
 
 ### **Criteri di Sicurezza**
+
 - [ ] Input sanitization per tutti i parametri
 - [ ] API key protection e rate limiting
 - [ ] CORS configuration corretta
@@ -587,6 +622,7 @@
 ## 🚨 **PUNTI DI ATTENZIONE CRITICI**
 
 ### **Calcoli Finanziari**
+
 - **PRECISIONE ASSOLUTA**: Un errore nei calcoli può compromettere l'intera credibilità
 - **VALIDAZIONE DATI**: Controlla sempre la qualità e completezza dei dati
 - **EDGE CASES**: Gestisci sempre dati mancanti, zero, negativi, NaN
@@ -594,6 +630,7 @@
 - **FLOATING POINT**: Attenzione alla precisione numerica nei calcoli
 
 ### **Performance**
+
 - **API CALLS**: Ottimizza le chiamate API per evitare rate limiting
 - **CACHING**: Implementa caching intelligente con TTL appropriati
 - **MEMORY**: Monitora l'uso della memoria e previeni memory leaks
@@ -601,6 +638,7 @@
 - **BUNDLE SIZE**: Mantieni il bundle size ottimizzato
 
 ### **UX/UI**
+
 - **ACCESSIBILITÀ**: Non compromettere mai l'accessibilità
 - **RESPONSIVE**: Testa su tutti i dispositivi e orientazioni
 - **LOADING**: Stati di loading appropriati per ogni operazione
@@ -608,6 +646,7 @@
 - **NAVIGATION**: Keyboard navigation completa e intuitiva
 
 ### **Testing**
+
 - **COVERAGE**: Mantieni coverage > 90% per unit tests
 - **E2E**: Testa sempre il flusso completo end-to-end
 - **PERFORMANCE**: Testa con dataset reali e grandi
@@ -615,6 +654,7 @@
 - **ACCESSIBILITÀ**: Testa con screen reader e keyboard navigation
 
 ### **Deployment**
+
 - **ENVIRONMENT**: Verifica tutte le environment variables
 - **HEALTH CHECK**: Implementa health check endpoints
 - **LOGGING**: Setup logging appropriato per monitoring
@@ -626,6 +666,7 @@
 ## 📞 **PROTOCOLLO DI COMUNICAZIONE**
 
 ### **Quando Chiedere Aiuto**
+
 ```
 1. Se non sei sicuro di una formula finanziaria
 2. Se non comprendi completamente un file esistente
@@ -637,6 +678,7 @@
 ```
 
 ### **Come Chiedere Aiuto**
+
 ```
 1. Descrivi il problema in dettaglio con esempi
 2. Fornisci il codice rilevante e gli errori esatti
@@ -647,6 +689,7 @@
 ```
 
 ### **Checklist Pre-Help Request**
+
 ```
 - [ ] Ho letto completamente la documentazione
 - [ ] Ho testato con dati noti e semplici
@@ -661,6 +704,7 @@
 ## 🎯 **METRICHE DI SUCCESSO**
 
 ### **Metriche Tecniche**
+
 - **Performance**: Tempo di caricamento < 2s, rendering < 500ms
 - **Coverage**: Unit tests > 90%, E2E tests 100%
 - **Errors**: Zero errori TypeScript, zero errori linting
@@ -668,6 +712,7 @@
 - **API**: Response time < 1s, success rate > 99%
 
 ### **Metriche UX**
+
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Responsive**: Funziona perfettamente su tutti i dispositivi
 - **Usability**: Task completion rate > 95%
@@ -675,6 +720,7 @@
 - **Loading**: Perceived performance score > 90
 
 ### **Metriche Didattiche**
+
 - **Comprehension**: User understanding score > 85%
 - **Engagement**: Tutorial completion rate > 80%
 - **Retention**: Return user rate > 70%
@@ -687,7 +733,8 @@
 
 Questo prompt ti guiderà attraverso l'implementazione completa e professionale dello step "Analisi Storica" per Student Analyst.
 
-**RICORDA**: 
+**RICORDA**:
+
 - La precisione è più importante della velocità
 - Ogni decisione deve essere documentata
 - Ogni implementazione deve essere testata
