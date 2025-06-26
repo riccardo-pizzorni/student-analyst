@@ -5,6 +5,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAnalysis } from '@/context/AnalysisContext';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -275,17 +282,19 @@ export default function UnifiedInputSection() {
           <label htmlFor="frequency-select" className="text-slate-300 text-sm font-medium block">
             Frequenza di analisi
           </label>
-          <select
-            id="frequency-select"
-            name="frequency"
+          <Select
             value={analysisState.frequency}
-            onChange={e => setFrequency(e.target.value as 'daily' | 'weekly' | 'monthly')}
-            className="w-full px-3 py-2.5 bg-transparent border border-slate-700/50 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all duration-200 text-sm"
+            onValueChange={value => setFrequency(value as 'daily' | 'weekly' | 'monthly')}
           >
-            <option value="daily">Giornaliera</option>
-            <option value="weekly">Settimanale</option>
-            <option value="monthly">Mensile</option>
-          </select>
+            <SelectTrigger id="frequency-select" name="frequency" className="w-full px-3 py-2.5 bg-transparent border border-slate-700/50 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all duration-200 text-sm">
+              <SelectValue placeholder="Seleziona frequenza" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-700 text-slate-200">
+              <SelectItem value="daily">Giornaliera</SelectItem>
+              <SelectItem value="weekly">Settimanale</SelectItem>
+              <SelectItem value="monthly">Mensile</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* File Upload */}
