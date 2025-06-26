@@ -4,6 +4,29 @@
 
 ---
 
+## 🚨 REGOLE ANTI-REGRESSIONE E DEPLOY STATICI (2024-06)
+
+### **Static Assets & Vercel - SEMPRE OBBLIGATORIO**
+
+- **Verifica SEMPRE** che la configurazione Vercel (`vercel.json`) abbia la chiave `outputDirectory` corretta (es: `"dist"` per Vite) quando usi build tools che non producono output in `public/`.
+- **Testa SEMPRE** la raggiungibilità di almeno un file statico di test (es: `/logo-test.txt`, `/lovable-uploads/debug-logo.txt`) dopo ogni deploy.
+- **Non dare MAI per scontato** che la presenza dei file in `dist/` o `public/` localmente implichi che saranno serviti da Vercel: controlla sempre la root di deploy e la configurazione.
+- **Se un asset non si vede ma la build è corretta**, controlla subito: outputDirectory, root di progetto su Vercel, e la presenza reale del file via URL pubblico.
+- **Se un file statico non viene servito, NON modificare il codice React/JSX**: il problema è quasi sempre di deploy/config.
+- **Quando sostituisci asset binari (es: PNG)**, verifica che siano validi e non corrotti sia localmente che dopo il deploy (apri l'URL diretto!).
+- **Documenta sempre** la soluzione definitiva nel repo (README o regole) per evitare ricadute future.
+
+### **UI/UX Component Regression - SEMPRE OBBLIGATORIO**
+
+- **Non sostituire MAI componenti custom (es: Select, Dropdown, DatePicker) con elementi HTML nativi** senza motivazione e test visivo: causa regressioni di stile e UX.
+- **Quando modifichi un input o una select, verifica SEMPRE che il look sia coerente con il resto dell'app** (soprattutto dopo merge o refactor).
+- **Se usi una libreria UI (Shadcn, Radix, HeadlessUI, ecc.), preferisci SEMPRE i componenti custom rispetto agli elementi nativi** per coerenza visiva e accessibilità.
+- **Dopo ogni refactor di componenti UI, testa manualmente i flussi principali** e confronta con screenshot precedenti.
+- **Aggiungi test visivi o screenshot di riferimento** per i componenti critici (dropdown, sidebar, logo, ecc.).
+- **Se noti una regressione, ripristina subito il componente custom** e documenta la causa per evitare errori simili.
+
+---
+
 ## 🧩 COMPONENTI ANALISI
 
 ### **Protezione Valori Undefined - SEMPRE OBBLIGATORIA**
