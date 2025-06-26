@@ -8,9 +8,30 @@ import {
   Zap,
 } from 'lucide-react';
 
+// Interfacce TypeScript per type safety
+interface PerformanceMetric {
+  label: string;
+  value: string;
+}
+
+interface PerformanceResults {
+  performanceMetrics?: PerformanceMetric[];
+  benchmarkComparison?: {
+    portfolio: number;
+    benchmark: number;
+    dates: string[];
+  };
+}
+
 export default function PerformanceMetrics() {
   const { analysisState } = useAnalysis();
   const { analysisResults, isLoading, error } = analysisState;
+
+  // Funzione per gestire il click su "Teoria"
+  const handleTheoryClick = () => {
+    // TODO: Implementare popup o modal con spiegazioni teoriche
+    console.log('Teoria delle metriche di performance');
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -52,7 +73,10 @@ export default function PerformanceMetrics() {
       );
     }
 
-    const metrics = analysisResults.performanceMetrics || [];
+    // Fallback robusto per array vuoto o undefined
+    const metrics: PerformanceMetric[] = analysisResults.performanceMetrics || [];
+    const benchmarkData = analysisResults.benchmarkComparison;
+
     const colors = [
       {
         color: 'from-green-500 to-emerald-400',
@@ -79,30 +103,38 @@ export default function PerformanceMetrics() {
     return (
       <>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {metrics.map(
-            (metric: { label: string; value: string }, index: number) => (
-              <div
-                key={metric.label || `metric-${index}`}
-                className={`bg-gradient-to-br ${colors[index % colors.length].bgColor} border ${colors[index % colors.length].borderColor} rounded-xl p-6 relative overflow-hidden`}
-              >
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Award size={16} className="text-slate-300" />
-                    <span className="text-sm font-medium text-slate-300">
-                      {metric.label || 'Metrica'}
-                    </span>
+          {metrics.length > 0 ? (
+            metrics.map(
+              (metric: PerformanceMetric, index: number) => (
+                <div
+                  key={metric.label || `metric-${index}`}
+                  className={`bg-gradient-to-br ${colors[index % colors.length].bgColor} border ${colors[index % colors.length].borderColor} rounded-xl p-6 relative overflow-hidden`}
+                >
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Award size={16} className="text-slate-300" />
+                      <span className="text-sm font-medium text-slate-300">
+                        {metric.label || 'Metrica'}
+                      </span>
+                    </div>
+                    <div
+                      className={`text-2xl font-bold bg-gradient-to-r ${colors[index % colors.length].color} bg-clip-text text-transparent`}
+                    >
+                      {metric.value || '0%'}
+                    </div>
                   </div>
                   <div
-                    className={`text-2xl font-bold bg-gradient-to-r ${colors[index % colors.length].color} bg-clip-text text-transparent`}
-                  >
-                    {metric.value || '0%'}
-                  </div>
+                    className={`absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br ${colors[index % colors.length].color} opacity-10 rounded-full transform translate-x-6 translate-y-6`}
+                  ></div>
                 </div>
-                <div
-                  className={`absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br ${colors[index % colors.length].color} opacity-10 rounded-full transform translate-x-6 translate-y-6`}
-                ></div>
-              </div>
+              )
             )
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <p className="text-slate-400">
+                Nessuna metrica di performance disponibile per questa analisi.
+              </p>
+            </div>
           )}
         </div>
 
@@ -123,20 +155,38 @@ export default function PerformanceMetrics() {
               </div>
             </div>
           </div>
-          <div className="h-48 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <LineChart size={48} className="mx-auto text-blue-400" />
-              <div>
-                <p className="text-lg font-bold text-blue-300">
-                  Grafico in arrivo
-                </p>
-                <p className="text-slate-400">
-                  La visualizzazione della performance comparativa è in fase di
-                  sviluppo.
-                </p>
+
+          {benchmarkData ? (
+            <div className="h-48 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <LineChart size={48} className="mx-auto text-blue-400" />
+                <div>
+                  <p className="text-lg font-bold text-blue-300">
+                    Dati benchmark disponibili
+                  </p>
+                  <p className="text-slate-400">
+                    Portafoglio: {benchmarkData.portfolio?.toFixed(2) || '0'}% |
+                    Benchmark: {benchmarkData.benchmark?.toFixed(2) || '0'}%
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="h-48 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <LineChart size={48} className="mx-auto text-blue-400" />
+                <div>
+                  <p className="text-lg font-bold text-blue-300">
+                    Grafico in arrivo
+                  </p>
+                  <p className="text-slate-400">
+                    La visualizzazione della performance comparativa è in fase di
+                    sviluppo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </>
     );
@@ -149,7 +199,10 @@ export default function PerformanceMetrics() {
           <Zap size={24} />
           Metriche di Performance
         </h3>
-        <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+        <button
+          onClick={handleTheoryClick}
+          className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+        >
           <Info size={14} />
           Teoria
         </button>
