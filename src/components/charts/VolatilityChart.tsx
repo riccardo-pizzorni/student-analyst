@@ -7,9 +7,28 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+// Interfacce TypeScript per type safety
+interface VolatilityData {
+  annualizedVolatility: number;
+  sharpeRatio?: number;
+  maxDrawdown?: number;
+  var95?: number;
+  cvar95?: number;
+}
+
+interface VolatilityResults {
+  volatility?: VolatilityData;
+}
+
 export default function VolatilityChart() {
   const { analysisState } = useAnalysis();
   const { analysisResults, isLoading, error } = analysisState;
+
+  // Funzione per gestire il click su "Teoria"
+  const handleTheoryClick = () => {
+    // TODO: Implementare popup o modal con spiegazioni teoriche sulla volatilità
+    console.log('Teoria della volatilità e del rischio');
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -51,7 +70,13 @@ export default function VolatilityChart() {
       );
     }
 
-    const { annualizedVolatility, sharpeRatio } = analysisResults.volatility;
+    const volatilityData: VolatilityData = analysisResults.volatility;
+    const { annualizedVolatility = 0, sharpeRatio = 0 } = volatilityData;
+
+    // Fallback robusti per calcoli e stili
+    const volatilityPercentage = ((annualizedVolatility || 0) * 100).toFixed(1);
+    const volatilityBarWidth = Math.min(100, Math.max(0, ((annualizedVolatility || 0) / 0.3) * 100));
+    const sharpeBarWidth = Math.min(100, Math.max(0, ((sharpeRatio || 0) / 2) * 100));
 
     return (
       <>
@@ -65,14 +90,14 @@ export default function VolatilityChart() {
               </h4>
             </div>
             <div className="text-3xl font-bold text-red-400 mb-2">
-              {(annualizedVolatility * 100).toFixed(1)}%
+              {volatilityPercentage}%
             </div>
             <div className="w-full bg-red-950/50 rounded-full h-2 mb-3">
               <div
-                className="bg-gradient-to-r from-red-500 to-orange-400 h-2 rounded-full"
+                className="bg-gradient-to-r from-red-500 to-orange-400 h-2 rounded-full transition-all duration-300"
                 style={{
-                  width: `${Math.min(100, (annualizedVolatility / 0.3) * 100)}%`,
-                }} // Example scaling
+                  width: `${volatilityBarWidth}%`,
+                }}
               ></div>
             </div>
             <p className="text-sm text-red-200">
@@ -86,13 +111,13 @@ export default function VolatilityChart() {
               <h4 className="font-semibold text-blue-300">Sharpe Ratio</h4>
             </div>
             <div className="text-3xl font-bold text-blue-400 mb-2">
-              {sharpeRatio?.toFixed(2) || '0.00'}
+              {(sharpeRatio || 0).toFixed(2)}
             </div>
             <div className="w-full bg-blue-950/50 rounded-full h-2 mb-3">
               <div
-                className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full"
+                className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full transition-all duration-300"
                 style={{
-                  width: `${Math.min(100, (sharpeRatio / 2) * 100)}%`,
+                  width: `${sharpeBarWidth}%`,
                 }}
               ></div>
             </div>
@@ -102,21 +127,40 @@ export default function VolatilityChart() {
 
         {/* Interactive Chart Area */}
         <div className="bg-gradient-to-br from-slate-900/50 to-blue-950/30 border border-blue-500/20 rounded-xl p-6">
-          <div className="h-64 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
-                <TrendingUp size={32} className="text-blue-400 animate-pulse" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-blue-300">
-                  Grafico Volatilità Interattivo
-                </p>
-                <p className="text-slate-400">
-                  Questa visualizzazione è in fase di sviluppo.
-                </p>
+          {volatilityData.maxDrawdown !== undefined || volatilityData.var95 !== undefined ? (
+            <div className="h-64 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
+                  <TrendingUp size={32} className="text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-blue-300">
+                    Dati di rischio avanzati disponibili
+                  </p>
+                  <p className="text-slate-400">
+                    {volatilityData.maxDrawdown !== undefined && `Max Drawdown: ${(volatilityData.maxDrawdown * 100).toFixed(2)}%`}
+                    {volatilityData.var95 !== undefined && ` | VaR 95%: ${(volatilityData.var95 * 100).toFixed(2)}%`}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
+                  <TrendingUp size={32} className="text-blue-400 animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-blue-300">
+                    Grafico Volatilità Interattivo
+                  </p>
+                  <p className="text-slate-400">
+                    Questa visualizzazione è in fase di sviluppo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </>
     );
@@ -129,7 +173,10 @@ export default function VolatilityChart() {
           <TrendingUp size={24} />
           Analisi Volatilità
         </h3>
-        <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+        <button
+          onClick={handleTheoryClick}
+          className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+        >
           <Info size={14} />
           Teoria
         </button>
