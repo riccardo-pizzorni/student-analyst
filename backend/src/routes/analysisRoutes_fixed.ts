@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { sanitizationMiddleware } from '../middleware/sanitizationMiddleware';
 import {
   AnalysisApiResponse,
   performAnalysis,
@@ -7,18 +6,52 @@ import {
 
 const router = express.Router();
 
-// Applica il middleware di sanitizzazione SOLO a questa route
-router.use(
-  sanitizationMiddleware({
-    enableBodySanitization: true,
-    enableParamsSanitization: true,
-    enableQuerySanitization: false,
-    logSuspiciousActivity: true,
-    blockOnDangerousPatterns: false, // Disabilito temporaneamente il blocco per frequency
-    maxRequestSize: 512 * 1024, // 512KB
-    trustedIPs: ['127.0.0.1', '::1', 'localhost'],
-  })
-);
+// Whitelist di campi sicuri per l'analisi finanziaria
+const ALLOWED_ANALYSIS_FIELDS = [
+  'tickers',
+  'startDate',
+  'endDate',
+  'frequency',
+];
+
+// Middleware personalizzato per l'analisi che bypassa la sanitizzazione aggressiva
+router.use((req: Request, res: Response, next: any) => {
+  if (req.method === 'POST' && req.body) {
+    // Sanitizzazione personalizzata per campi di analisi
+    const sanitizedBody: any = {};
+    const errors: string[] = [];
+
+    for (const [key, value] of Object.entries(req.body)) {
+      // Controlla se il campo è nella whitelist
+      if (ALLOWED_ANALYSIS_FIELDS.includes(key)) {
+        // Sanitizzazione base per valori stringa
+        if (typeof value === 'string') {
+          // Rimuovi solo caratteri HTML pericolosi, non bloccare il campo
+          sanitizedBody[key] = value
+            .replace(/[<>]/g, '') // Rimuovi solo < e >
+            .trim();
+        } else {
+          sanitizedBody[key] = value;
+        }
+      } else {
+        errors.push(`Field '${key}' not allowed in analysis request`);
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        error: 'Invalid Request Body',
+        message: 'Request contains disallowed fields',
+        details: errors,
+      });
+    }
+
+    // Sostituisci il body con quello sanitizzato
+    (req as any).sanitizedBody = sanitizedBody;
+  }
+
+  next();
+});
 
 router.post('/', (req: Request, res: Response) => {
   // Usa il body sanitizzato se presente
