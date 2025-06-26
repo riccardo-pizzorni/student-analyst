@@ -1,0 +1,103 @@
+# 🆕 NUOVE REGOLE - STUDENT ANALYST
+
+> **⚠️ REGOLE APPRESE DURANTE LO SVILUPPO** | [Componenti Analisi](#componenti-analisi) | [Validazione Dati](#validazione-dati)
+
+---
+
+## 🧩 COMPONENTI ANALISI
+
+### **Protezione Valori Undefined - SEMPRE OBBLIGATORIA**
+
+**Regola**: Ogni modifica futura ai componenti di analisi deve includere protezione contro valori undefined e validazione dei dati.
+
+**Motivazione**: Evita errori `TypeError: Cannot read properties of undefined (reading 'toFixed')` e crash dell'applicazione.
+
+**Implementazione**:
+```typescript
+// ✅ CORRETTO - Protezione contro undefined
+{metric.label || 'Metrica'}
+{metric.value || '0%'}
+${ticker.price?.toFixed(2) || '0.00'}
+{sharpeRatio?.toFixed(2) || '0.00'}
+
+// ❌ SBAGLIATO - Nessuna protezione
+{metric.label}
+{metric.value}
+${ticker.price.toFixed(2)}
+{sharpeRatio.toFixed(2)}
+```
+
+**Checklist Pre-Commit**:
+- [ ] Tutti i valori numerici hanno protezione `?.` o `||`
+- [ ] Tutti i valori stringa hanno fallback
+- [ ] Tutti i valori array hanno `|| []`
+- [ ] Tutti i valori oggetto hanno `|| {}`
+- [ ] Testato con dati undefined/null
+
+---
+
+## 🔒 VALIDAZIONE DATI
+
+### **Validazione Context - SEMPRE OBBLIGATORIA**
+
+**Regola**: Validare sempre i dati prima di salvarli nel context per evitare errori runtime.
+
+**Implementazione**:
+```typescript
+// Validazione risultati prima di salvarli
+const validatedResults = {
+  ...results,
+  performanceMetrics: results.performanceMetrics?.map(metric => ({
+    label: metric.label || 'Metrica',
+    value: metric.value || '0%'
+  })) || [],
+  volatility: results.volatility ? {
+    annualizedVolatility: results.volatility.annualizedVolatility || 0,
+    sharpeRatio: results.volatility.sharpeRatio || 0
+  } : null,
+  correlation: results.correlation ? {
+    correlationMatrix: results.correlation.correlationMatrix || { symbols: [], matrix: [] },
+    diversificationIndex: results.correlation.diversificationIndex || 0,
+    averageCorrelation: results.correlation.averageCorrelation || 0
+  } : null
+};
+```
+
+---
+
+## 🚫 CHIAMATE MULTIPLE
+
+### **Protezione API Calls - SEMPRE OBBLIGATORIA**
+
+**Regola**: Prevenire sempre chiamate API multiple con flag di stato non reattivo.
+
+**Implementazione**:
+```typescript
+const isAnalysisRunning = useRef(false);
+
+const startAnalysis = async () => {
+  if (isAnalysisRunning.current) {
+    console.log('🚫 Analisi già in corso, ignoro chiamata multipla');
+    return;
+  }
+  
+  isAnalysisRunning.current = true;
+  try {
+    // ... logica analisi
+  } finally {
+    isAnalysisRunning.current = false;
+  }
+};
+```
+
+---
+
+## 🎯 REGOLE FINALI
+
+1. **Ogni componente di analisi DEVE avere protezione contro undefined**
+2. **Ogni context DEVE validare i dati prima di salvarli**
+3. **Ogni funzione async DEVE prevenire chiamate multiple**
+4. **Ogni valore numerico DEVE avere fallback per toFixed()**
+5. **Ogni modifica DEVE essere testata con dati edge case**
+
+**⚠️ IMPORTANTE**: Queste regole sono critiche per la stabilità dell'applicazione. Non ignorare mai.
