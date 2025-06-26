@@ -43,10 +43,13 @@ export default [
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
         ecmaFeatures: { jsx: true },
       },
       globals: {
         ...globals.browser,
+        'import.meta': 'readonly',
       },
     },
     plugins: {
