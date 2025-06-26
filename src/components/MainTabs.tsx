@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import {
   BarChart3,
   Calculator,
@@ -21,6 +22,37 @@ export default function MainTabs({
   activeStep: string;
   onShowGlossary?: () => void;
 }) {
+  const { toast } = useToast();
+
+  // Funzioni per gestire i click sui bottoni
+  const handleTheoryClick = (step: string) => {
+    const theoryInfo = {
+      'confronto': {
+        title: "Teoria del Confronto Performance",
+        description: "Il confronto con benchmark di mercato permette di valutare la performance relativa del portafoglio rispetto a indici di riferimento come S&P 500, NASDAQ, o altri indici settoriali.",
+      },
+      'var': {
+        title: "Teoria del Value at Risk (VaR)",
+        description: "Il VaR misura la perdita massima attesa in un determinato intervallo di confidenza. Il CVaR (Conditional VaR) misura la perdita media oltre il VaR, fornendo una misura più conservativa del rischio.",
+      },
+      'cluster': {
+        title: "Teoria del Clustering",
+        description: "L'analisi dei cluster raggruppa i titoli per similarità di comportamento. Questo aiuta a identificare gruppi di titoli che si muovono insieme e migliorare la diversificazione.",
+      },
+      'tabella': {
+        title: "Informazioni sui Dati Storici",
+        description: "Questa tabella mostra i dati storici dei prezzi in formato tabulare. Include prezzi di apertura, chiusura, massimi, minimi e volumi per ogni periodo.",
+      },
+      'default': {
+        title: "Informazioni",
+        description: "Questa sezione è in fase di sviluppo. Le funzionalità avanzate saranno disponibili nelle prossime versioni.",
+      }
+    };
+
+    const info = theoryInfo[step as keyof typeof theoryInfo] || theoryInfo.default;
+    toast(info);
+  };
+
   const getTabsForStep = (step: string) => {
     switch (step) {
       case 'input':
@@ -122,7 +154,10 @@ export default function MainTabs({
                     <BarChart3 size={24} />
                     Confronto Performance
                   </h3>
-                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                  <button
+                    onClick={() => handleTheoryClick('confronto')}
+                    className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                  >
                     <Info size={14} />
                     Teoria
                   </button>
@@ -162,7 +197,10 @@ export default function MainTabs({
                     <Calculator size={24} />
                     Value at Risk & CVaR
                   </h3>
-                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                  <button
+                    onClick={() => handleTheoryClick('var')}
+                    className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                  >
                     <Info size={14} />
                     Teoria
                   </button>
@@ -174,7 +212,7 @@ export default function MainTabs({
                       VaR (95%)
                     </h4>
                     <div className="text-3xl font-bold text-red-400 mb-2">
-                      -4.2%
+                      Calcolo in corso...
                     </div>
                     <p className="text-sm text-red-200">
                       Perdita massima attesa in 5% dei casi
@@ -186,7 +224,7 @@ export default function MainTabs({
                       CVaR (95%)
                     </h4>
                     <div className="text-3xl font-bold text-purple-400 mb-2">
-                      -6.8%
+                      Calcolo in corso...
                     </div>
                     <p className="text-sm text-purple-200">
                       Perdita media oltre il VaR
@@ -212,7 +250,10 @@ export default function MainTabs({
                     <PieChart size={24} />
                     Cluster Analysis
                   </h3>
-                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                  <button
+                    onClick={() => handleTheoryClick('cluster')}
+                    className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                  >
                     <Info size={14} />
                     Teoria
                   </button>
@@ -252,7 +293,10 @@ export default function MainTabs({
                     <Table size={24} />
                     Dati Storici
                   </h3>
-                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                  <button
+                    onClick={() => handleTheoryClick('tabella')}
+                    className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                  >
                     <Info size={14} />
                     Info
                   </button>
@@ -279,105 +323,81 @@ export default function MainTabs({
         )}
 
         {/* Default content for other steps */}
-        {!['performance', 'rischio', 'diversificazione'].includes(
+        {!['performance', 'rischio', 'diversificazione', 'storica'].includes(
           activeStep
         ) && (
-          <>
-            <TabsContent value={tabs[0]?.key} className="mt-6">
-              <div className="dark-card rounded-xl p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                    {React.createElement(tabs[0]?.icon, { size: 24 })}
-                    {tabs[0]?.label}
-                  </h3>
-                  <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
-                    <Info size={14} />
-                    Teoria
-                  </button>
-                </div>
-                <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <BarChart3
-                      size={64}
-                      className="mx-auto text-blue-400 animate-pulse"
-                    />
-                    <div>
-                      <p className="text-xl font-bold text-blue-300">
-                        Interactive Charts
-                      </p>
-                      <p className="text-slate-400">
-                        Real-time data visualization
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
-            {tabs.length > 1 && (
-              <TabsContent value={tabs[1].key} className="mt-6">
+            <>
+              <TabsContent value={tabs[0]?.key} className="mt-6">
                 <div className="dark-card rounded-xl p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                      {React.createElement(tabs[1].icon, { size: 24 })}
-                      {tabs[1].label}
+                      {React.createElement(tabs[0]?.icon, { size: 24 })}
+                      {tabs[0]?.label}
                     </h3>
-                    <button className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors">
+                    <button
+                      onClick={() => handleTheoryClick('default')}
+                      className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                    >
                       <Info size={14} />
                       Teoria
                     </button>
                   </div>
-                  <div className="overflow-hidden rounded-lg border border-slate-700">
-                    <table className="w-full">
-                      <thead className="bg-slate-800/50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Symbol
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Price
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Change
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-300">
-                            Volume
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {['AAPL', 'MSFT', 'GOOGL', 'AMZN'].map((ticker, i) => (
-                          <tr
-                            key={ticker}
-                            className="border-t border-slate-700 hover:bg-slate-800/30"
-                          >
-                            <td className="px-4 py-3 font-medium text-blue-300">
-                              {ticker}
-                            </td>
-                            <td className="px-4 py-3 text-slate-300">
-                              ${(150 + i * 25).toFixed(2)}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`text-sm ${i % 2 === 0 ? 'text-green-400' : 'text-red-400'}`}
-                              >
-                                {i % 2 === 0 ? '+' : '-'}
-                                {(Math.random() * 5).toFixed(2)}%
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-slate-400">
-                              {(Math.random() * 1000000).toFixed(0)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
+                    <div className="text-center space-y-4">
+                      <BarChart3
+                        size={64}
+                        className="mx-auto text-blue-400 animate-pulse"
+                      />
+                      <div>
+                        <p className="text-xl font-bold text-blue-300">
+                          Funzionalità in Sviluppo
+                        </p>
+                        <p className="text-slate-400">
+                          Questa sezione sarà disponibile nelle prossime versioni
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
-            )}
-          </>
-        )}
+
+              {tabs.length > 1 && (
+                <TabsContent value={tabs[1].key} className="mt-6">
+                  <div className="dark-card rounded-xl p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
+                        {React.createElement(tabs[1].icon, { size: 24 })}
+                        {tabs[1].label}
+                      </h3>
+                      <button
+                        onClick={() => handleTheoryClick('default')}
+                        className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                      >
+                        <Info size={14} />
+                        Teoria
+                      </button>
+                    </div>
+                    <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
+                      <div className="text-center space-y-4">
+                        <Table
+                          size={64}
+                          className="mx-auto text-blue-400 animate-pulse"
+                        />
+                        <div>
+                          <p className="text-xl font-bold text-blue-300">
+                            Dati non Disponibili
+                          </p>
+                          <p className="text-slate-400">
+                            Avvia un'analisi per visualizzare i dati
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
+            </>
+          )}
       </Tabs>
     </div>
   );

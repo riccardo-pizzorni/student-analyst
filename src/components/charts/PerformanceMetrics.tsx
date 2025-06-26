@@ -1,4 +1,5 @@
 import { useAnalysis } from '@/context/AnalysisContext';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertTriangle,
   Award,
@@ -26,11 +27,14 @@ interface PerformanceResults {
 export default function PerformanceMetrics() {
   const { analysisState } = useAnalysis();
   const { analysisResults, isLoading, error } = analysisState;
+  const { toast } = useToast();
 
   // Funzione per gestire il click su "Teoria"
   const handleTheoryClick = () => {
-    // TODO: Implementare popup o modal con spiegazioni teoriche
-    console.log('Teoria delle metriche di performance');
+    toast({
+      title: "Teoria delle Metriche di Performance",
+      description: "Le metriche di performance misurano la capacità del portafoglio di generare rendimenti. Include indicatori come Sharpe Ratio, Alpha, Beta, e confronti con benchmark di mercato. Valori più alti indicano generalmente performance superiori.",
+    });
   };
 
   const renderContent = () => {

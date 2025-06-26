@@ -1,4 +1,5 @@
 import { useAnalysis } from '@/context/AnalysisContext';
+import { useToast } from '@/hooks/use-toast';
 import { Activity, AlertCircle, GitBranch, Info, Loader } from 'lucide-react';
 
 // Interfacce TypeScript per type safety
@@ -20,11 +21,14 @@ interface CorrelationResults {
 export default function CorrelationMatrix() {
   const { analysisState } = useAnalysis();
   const { analysisResults, isLoading, error } = analysisState;
+  const { toast } = useToast();
 
   // Funzione per gestire il click su "Teoria"
   const handleTheoryClick = () => {
-    // TODO: Implementare popup o modal con spiegazioni teoriche sulla correlazione
-    console.log('Teoria della correlazione e diversificazione');
+    toast({
+      title: "Teoria della Correlazione e Diversificazione",
+      description: "La correlazione misura quanto due titoli si muovono insieme. Correlazioni basse (<0.3) indicano buona diversificazione. L'indice di diversificazione misura l'efficacia della diversificazione del portafoglio.",
+    });
   };
 
   const getCorrelationColor = (value: number) => {

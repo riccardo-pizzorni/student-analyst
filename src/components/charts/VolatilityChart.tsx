@@ -1,4 +1,5 @@
 import { useAnalysis } from '@/context/AnalysisContext';
+import { useToast } from '@/hooks/use-toast';
 import {
   Activity,
   AlertTriangle,
@@ -23,11 +24,14 @@ interface VolatilityResults {
 export default function VolatilityChart() {
   const { analysisState } = useAnalysis();
   const { analysisResults, isLoading, error } = analysisState;
+  const { toast } = useToast();
 
   // Funzione per gestire il click su "Teoria"
   const handleTheoryClick = () => {
-    // TODO: Implementare popup o modal con spiegazioni teoriche sulla volatilità
-    console.log('Teoria della volatilità e del rischio');
+    toast({
+      title: "Teoria della Volatilità e del Rischio",
+      description: "La volatilità misura la variabilità dei rendimenti nel tempo. Il Sharpe Ratio confronta rendimenti con rischio. Valori più bassi di volatilità e più alti di Sharpe indicano un portafoglio più stabile e efficiente.",
+    });
   };
 
   const renderContent = () => {
