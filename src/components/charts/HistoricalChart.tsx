@@ -330,8 +330,9 @@ const HistoricalChart = () => {
     const stats = getChartStats();
 
     return (
-        <div className="dark-card rounded-xl p-8">
-            <div className="flex items-center justify-between mb-6">
+        <div className="dark-card rounded-xl p-8 space-y-6">
+            {/* SEZIONE 1: Header e Controlli Principali */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -343,6 +344,7 @@ const HistoricalChart = () => {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        aria-hidden="true"
                     >
                         <path d="M3 3v18h18" />
                         <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
@@ -358,7 +360,8 @@ const HistoricalChart = () => {
                     <button
                         onClick={handleRefreshClick}
                         disabled={isLoading}
-                        className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Aggiorna dati storici"
+                        className="flex items-center gap-2 text-sm px-3 py-2 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -371,6 +374,7 @@ const HistoricalChart = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             className={isLoading ? "animate-spin" : ""}
+                            aria-hidden="true"
                         >
                             <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                             <path d="M3 3v5h5" />
@@ -381,7 +385,8 @@ const HistoricalChart = () => {
                     </button>
                     <button
                         onClick={handleInfoClick}
-                        className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                        aria-label="Informazioni sul grafico"
+                        className="flex items-center gap-2 text-sm px-3 py-2 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -393,6 +398,7 @@ const HistoricalChart = () => {
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
+                            aria-hidden="true"
                         >
                             <circle cx="12" cy="12" r="10" />
                             <path d="M12 16v-4" />
@@ -403,130 +409,202 @@ const HistoricalChart = () => {
                 </div>
             </div>
 
-            {/* Messaggio warning per serie incomplete */}
-            {/* FALLBACK: Serie che si interrompono prima della fine del periodo */}
-            {/* MESSAGGIO: Guida l'utente a verificare la copertura storica */}
-            {incompleteSeries.length > 0 && (
-                <div className="mb-4 p-3 bg-yellow-900/60 text-yellow-200 rounded-lg text-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-300"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Attenzione: dati disponibili solo fino a una certa data per {incompleteSeries.join(', ')}. Verifica la copertura storica del titolo.
+            {/* SEZIONE 2: Messaggi e Warning Raggruppati */}
+            {(incompleteSeries.length > 0 || missingTickers.length > 0 || hasTemporalGaps) && (
+                <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Avvisi e Informazioni
+                    </h4>
+
+                    {/* Messaggio warning per serie incomplete */}
+                    {incompleteSeries.length > 0 && (
+                        <div className="p-3 bg-yellow-900/60 text-yellow-200 rounded-lg text-sm flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-300" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Attenzione: dati disponibili solo fino a una certa data per <strong>{incompleteSeries.join(', ')}</strong>. Verifica la copertura storica del titolo.</span>
+                        </div>
+                    )}
+
+                    {/* Messaggio per ticker mancanti */}
+                    {missingTickers.length > 0 && (
+                        <div className="p-3 bg-orange-900/60 text-orange-200 rounded-lg text-sm flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-orange-300" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Ticker <strong>{missingTickers.join(', ')}</strong> non ha dati disponibili per il periodo selezionato. Verifica il simbolo o prova un periodo diverso.</span>
+                        </div>
+                    )}
+
+                    {/* Messaggio per buchi temporali significativi */}
+                    {hasTemporalGaps && (
+                        <div className="p-3 bg-blue-900/60 text-blue-200 rounded-lg text-sm flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-300" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Rilevati buchi temporali significativi nei dati. Potrebbe essere dovuto a IPO recente, merge aziendale o cambio di simbolo.</span>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* Messaggio per ticker mancanti */}
-            {/* FALLBACK: Ticker richiesti ma non trovati nei dati */}
-            {/* MESSAGGIO: Guida l'utente a verificare simbolo o periodo */}
-            {missingTickers.length > 0 && (
-                <div className="mb-4 p-3 bg-orange-900/60 text-orange-200 rounded-lg text-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-orange-300"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Ticker {missingTickers.join(', ')} non ha dati disponibili per il periodo selezionato. Verifica il simbolo o prova un periodo diverso.
-                </div>
-            )}
-
-            {/* Messaggio per buchi temporali significativi */}
-            {/* FALLBACK: Serie con più del 20% di punti null */}
-            {/* MESSAGGIO: Spiega possibili cause (IPO, merge, cambio simbolo) */}
-            {hasTemporalGaps && (
-                <div className="mb-4 p-3 bg-blue-900/60 text-blue-200 rounded-lg text-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-300"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Rilevati buchi temporali significativi nei dati. Potrebbe essere dovuto a IPO recente, merge aziendale o cambio di simbolo.
-                </div>
-            )}
-
-            {/* Statistiche rapide */}
-            {stats && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-slate-800/50 rounded-lg">
-                    <div className="text-center">
-                        <div className="text-sm text-slate-400">Prezzo Iniziale</div>
-                        <div className="text-lg font-bold text-green-400">${stats.firstPrice}</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-sm text-slate-400">Prezzo Attuale</div>
-                        <div className="text-lg font-bold text-blue-400">${stats.lastPrice}</div>
-                    </div>
-                    <div className="text-center">
-                        <div className="text-sm text-slate-400">Variazione</div>
-                        <div className={`text-lg font-bold ${stats.changePercent.startsWith('-') ? 'text-red-400' : 'text-green-400'}`}>
-                            {stats.changePercent}%
+            {/* SEZIONE 3: Info Analisi */}
+            {analysisResults?.metadata && (
+                <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
+                    <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Informazioni Analisi
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-slate-400">
+                        <div>
+                            <span className="font-medium text-slate-300">Simboli:</span>
+                            <div className="mt-1">{analysisResults.metadata.symbols.join(', ')}</div>
+                        </div>
+                        <div>
+                            <span className="font-medium text-slate-300">Periodo:</span>
+                            <div className="mt-1">{analysisResults.metadata.period.start} - {analysisResults.metadata.period.end}</div>
+                        </div>
+                        <div>
+                            <span className="font-medium text-slate-300">Frequenza:</span>
+                            <div className="mt-1">{analysisResults.metadata.frequency}</div>
+                        </div>
+                        <div>
+                            <span className="font-medium text-slate-300">Punti Dati:</span>
+                            <div className="mt-1">{analysisResults.metadata.dataPoints}</div>
                         </div>
                     </div>
-                    <div className="text-center">
-                        <div className="text-sm text-slate-400">Punti Dati</div>
-                        <div className="text-lg font-bold text-slate-300">{stats.dataPoints}</div>
+                </div>
+            )}
+
+            {/* SEZIONE 4: Statistiche Rapide */}
+            {stats && (
+                <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
+                    <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-green-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Statistiche Performance
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                            <div className="text-xs text-slate-400 mb-1">Prezzo Iniziale</div>
+                            <div className="text-lg font-bold text-green-400">${stats.firstPrice}</div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                            <div className="text-xs text-slate-400 mb-1">Prezzo Attuale</div>
+                            <div className="text-lg font-bold text-blue-400">${stats.lastPrice}</div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                            <div className="text-xs text-slate-400 mb-1">Variazione</div>
+                            <div className={`text-lg font-bold ${stats.changePercent.startsWith('-') ? 'text-red-400' : 'text-green-400'}`}>
+                                {stats.changePercent}%
+                            </div>
+                        </div>
+                        <div className="text-center p-3 bg-slate-700/30 rounded-lg">
+                            <div className="text-xs text-slate-400 mb-1">Punti Dati</div>
+                            <div className="text-lg font-bold text-slate-300">{stats.dataPoints}</div>
+                        </div>
                     </div>
                 </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        id="sma20"
-                        checked={showSMA20}
-                        onCheckedChange={setShowSMA20}
-                    />
-                    <Label htmlFor="sma20" className="text-sm text-slate-300">
-                        SMA 20
-                    </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        id="sma50"
-                        checked={showSMA50}
-                        onCheckedChange={setShowSMA50}
-                    />
-                    <Label htmlFor="sma50" className="text-sm text-slate-300">
-                        SMA 50
-                    </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        id="sma200"
-                        checked={showSMA200}
-                        onCheckedChange={setShowSMA200}
-                    />
-                    <Label htmlFor="sma200" className="text-sm text-slate-300">
-                        SMA 200
-                    </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Switch id="rsi" checked={showRSI} onCheckedChange={setShowRSI} />
-                    <Label htmlFor="rsi" className="text-sm text-slate-300">
-                        RSI
-                    </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        id="volume"
-                        checked={showVolume}
-                        onCheckedChange={setShowVolume}
-                    />
-                    <Label htmlFor="volume" className="text-sm text-slate-300">
-                        Volume
-                    </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        id="bollinger"
-                        checked={showBollinger}
-                        onCheckedChange={setShowBollinger}
-                    />
-                    <Label htmlFor="bollinger" className="text-sm text-slate-300">
-                        Bollinger
-                    </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Switch
-                        id="macd"
-                        checked={showMACD}
-                        onCheckedChange={setShowMACD}
-                    />
-                    <Label htmlFor="macd" className="text-sm text-slate-300">
-                        MACD
-                    </Label>
+            {/* SEZIONE 5: Controlli Indicatori */}
+            <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
+                <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-purple-400">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Controlli Indicatori
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="sma20"
+                            checked={showSMA20}
+                            onCheckedChange={setShowSMA20}
+                            aria-label="Mostra/nascondi SMA 20"
+                        />
+                        <Label htmlFor="sma20" className="text-sm text-slate-300">
+                            SMA 20
+                        </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="sma50"
+                            checked={showSMA50}
+                            onCheckedChange={setShowSMA50}
+                            aria-label="Mostra/nascondi SMA 50"
+                        />
+                        <Label htmlFor="sma50" className="text-sm text-slate-300">
+                            SMA 50
+                        </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="sma200"
+                            checked={showSMA200}
+                            onCheckedChange={setShowSMA200}
+                            aria-label="Mostra/nascondi SMA 200"
+                        />
+                        <Label htmlFor="sma200" className="text-sm text-slate-300">
+                            SMA 200
+                        </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="rsi"
+                            checked={showRSI}
+                            onCheckedChange={setShowRSI}
+                            aria-label="Mostra/nascondi RSI"
+                        />
+                        <Label htmlFor="rsi" className="text-sm text-slate-300">
+                            RSI
+                        </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="volume"
+                            checked={showVolume}
+                            onCheckedChange={setShowVolume}
+                            aria-label="Mostra/nascondi Volume"
+                        />
+                        <Label htmlFor="volume" className="text-sm text-slate-300">
+                            Volume
+                        </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="bollinger"
+                            checked={showBollinger}
+                            onCheckedChange={setShowBollinger}
+                            aria-label="Mostra/nascondi Bande di Bollinger"
+                        />
+                        <Label htmlFor="bollinger" className="text-sm text-slate-300">
+                            Bollinger
+                        </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                            id="macd"
+                            checked={showMACD}
+                            onCheckedChange={setShowMACD}
+                            aria-label="Mostra/nascondi MACD"
+                        />
+                        <Label htmlFor="macd" className="text-sm text-slate-300">
+                            MACD
+                        </Label>
+                    </div>
                 </div>
             </div>
 
-            <div className="w-full h-96">
+            {/* SEZIONE 6: Grafico */}
+            <div className="w-full h-96 bg-slate-800/20 rounded-lg border border-slate-700/50 p-4">
                 {isLoading ? (
                     <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center space-y-4">
@@ -550,6 +628,7 @@ const HistoricalChart = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="text-red-500"
+                                aria-hidden="true"
                             >
                                 <circle cx="12" cy="12" r="10" />
                                 <line x1="12" y1="8" x2="12" y2="12" />
@@ -579,6 +658,7 @@ const HistoricalChart = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="text-blue-400 mx-auto"
+                                aria-hidden="true"
                             >
                                 <path d="M3 3v18h18" />
                                 <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
@@ -607,6 +687,7 @@ const HistoricalChart = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="text-blue-400 mx-auto"
+                                aria-hidden="true"
                             >
                                 <path d="M3 3v18h18" />
                                 <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
@@ -624,27 +705,6 @@ const HistoricalChart = () => {
                     <Line data={chartData} options={options} />
                 )}
             </div>
-
-            {/* Legenda interattiva */}
-            {analysisResults?.metadata && (
-                <div className="mt-4 p-4 bg-slate-800/30 rounded-lg">
-                    <h4 className="text-sm font-semibold text-slate-300 mb-2">Informazioni Analisi</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-400">
-                        <div>
-                            <span className="font-medium">Simboli:</span> {analysisResults.metadata.symbols.join(', ')}
-                        </div>
-                        <div>
-                            <span className="font-medium">Periodo:</span> {analysisResults.metadata.period.start} - {analysisResults.metadata.period.end}
-                        </div>
-                        <div>
-                            <span className="font-medium">Frequenza:</span> {analysisResults.metadata.frequency}
-                        </div>
-                        <div>
-                            <span className="font-medium">Punti Dati:</span> {analysisResults.metadata.dataPoints}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
