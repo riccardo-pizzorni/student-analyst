@@ -1,8 +1,8 @@
 import {
-  AlphaVantageService,
-  AlphaVantageTimeframe,
-  OHLCVData,
-} from './alphaVantageService';
+  DataSource,
+  DataSourceManager,
+  UnifiedDataResponse,
+} from './dataSourceManager';
 
 /**
  * Interface per i dati storici processati
@@ -103,18 +103,27 @@ export interface HistoricalAnalysisResponse {
     frequency: string;
     dataPoints: number;
     processingTime: number;
+    dataSources: {
+      primary: DataSource;
+      fallbacks: DataSource[];
+    };
   };
   error?: string;
 }
 
 /**
  * Classe per l'analisi storica avanzata
+ * Aggiornata per usare DataSourceManager invece di AlphaVantageService
  */
 export class HistoricalAnalysisService {
-  private alphaVantageService: AlphaVantageService;
+  private dataSourceManager: DataSourceManager;
 
   constructor() {
-    this.alphaVantageService = new AlphaVantageService();
+    this.dataSourceManager = new DataSourceManager({
+      primarySource: DataSource.YAHOO_FINANCE,
+      enableFallback: true,
+      logFallbacks: true,
+    });
   }
 
   /**
@@ -124,6 +133,7 @@ export class HistoricalAnalysisService {
     params: HistoricalAnalysisParams
   ): Promise<HistoricalAnalysisResponse> {
     const startTime = Date.now();
+    const fallbackSources: DataSource[] = [];
 
     try {
       console.log('🚀 Avvio analisi storica per:', params.tickers);
@@ -142,11 +152,15 @@ export class HistoricalAnalysisService {
         historicalDataPromises
       );
 
-      // 2. Filtra i risultati riusciti
+      // 2. Filtra i risultati riusciti e raccogli informazioni sui fallback
       const successfulData = historicalDataResults
         .map((result, index) => {
           if (result.status === 'fulfilled') {
-            return { ticker: params.tickers[index], data: result.value };
+            const data = result.value;
+            if (data.fallbackUsed) {
+              fallbackSources.push(data.source);
+            }
+            return { ticker: params.tickers[index], data: data.data };
           } else {
             console.error(
               `❌ Errore nel fetch dati per ${params.tickers[index]}:`,
@@ -157,7 +171,16 @@ export class HistoricalAnalysisService {
         })
         .filter(item => item !== null) as Array<{
         ticker: string;
-        data: OHLCVData[];
+        data: Array<{
+          date: string;
+          open: number;
+          high: number;
+          low: number;
+          close: number;
+          adjustedClose?: number;
+          volume: number;
+          timestamp?: string;
+        }>;
       }>;
 
       if (successfulData.length === 0) {
@@ -199,13 +222,19 @@ export class HistoricalAnalysisService {
             0
           ),
           processingTime,
+          dataSources: {
+            primary: DataSource.YAHOO_FINANCE,
+            fallbacks: [...new Set(fallbackSources)],
+          },
         },
       };
     } catch (error) {
       console.error("❌ Errore durante l'analisi storica:", error);
       return {
         success: false,
-        data: { historicalData: [] },
+        data: {
+          historicalData: [],
+        },
         metadata: {
           analysisDate: new Date().toISOString(),
           symbols: params.tickers,
@@ -213,6 +242,10 @@ export class HistoricalAnalysisService {
           frequency: params.frequency,
           dataPoints: 0,
           processingTime: Date.now() - startTime,
+          dataSources: {
+            primary: DataSource.YAHOO_FINANCE,
+            fallbacks: fallbackSources,
+          },
         },
         error: error instanceof Error ? error.message : 'Errore sconosciuto',
       };
@@ -220,111 +253,120 @@ export class HistoricalAnalysisService {
   }
 
   /**
-   * Fetch dati storici da Alpha Vantage
+   * Fetch dati storici usando DataSourceManager
    */
   private async fetchHistoricalData(
     symbol: string,
     startDate: string,
     endDate: string,
     frequency: string
-  ): Promise<OHLCVData[]> {
-    const timeframe = this.mapFrequencyToTimeframe(frequency);
-
-    const response = await this.alphaVantageService.getStockData(
-      symbol,
-      timeframe,
-      {
-        outputSize: 'full',
-        adjusted: true,
-      }
-    );
-
-    if (!response.success || !response.data || response.data.length === 0) {
-      throw new Error(`Nessun dato disponibile per ${symbol}`);
-    }
-
-    // Filtra i dati per il periodo richiesto
-    const filteredData = response.data.filter(item => {
-      const itemDate = new Date(item.date);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      return itemDate >= start && itemDate <= end;
-    });
-
-    if (filteredData.length === 0) {
-      throw new Error(
-        `Nessun dato disponibile per ${symbol} nel periodo specificato`
+  ): Promise<UnifiedDataResponse> {
+    try {
+      const response = await this.dataSourceManager.getStockData(
+        symbol,
+        frequency,
+        {
+          startDate,
+          endDate,
+          useCache: true,
+        }
       );
-    }
 
-    // Ordina per data crescente
-    return filteredData.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-  }
+      // Filtra i dati per il periodo richiesto
+      const filteredData = response.data.filter(item => {
+        const itemDate = new Date(item.date);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return itemDate >= start && itemDate <= end;
+      });
 
-  /**
-   * Mappa la frequenza ai timeframe di Alpha Vantage
-   */
-  private mapFrequencyToTimeframe(frequency: string): AlphaVantageTimeframe {
-    switch (frequency) {
-      case 'daily':
-        return AlphaVantageTimeframe.DAILY;
-      case 'weekly':
-        return AlphaVantageTimeframe.WEEKLY;
-      case 'monthly':
-        return AlphaVantageTimeframe.MONTHLY;
-      default:
-        return AlphaVantageTimeframe.DAILY;
+      return {
+        ...response,
+        data: filteredData,
+      };
+    } catch (error) {
+      console.error(`❌ Errore nel fetch dati per ${symbol}:`, error);
+      throw error;
     }
   }
 
   /**
-   * Processa i dati storici e calcola indicatori tecnici
+   * Processa i dati storici per un singolo ticker
    */
   private async processHistoricalData(
     symbol: string,
-    data: OHLCVData[],
+    data: Array<{
+      date: string;
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+      adjustedClose?: number;
+      volume: number;
+      timestamp?: string;
+    }>,
     params: HistoricalAnalysisParams
   ): Promise<ProcessedHistoricalData> {
-    const dates = data.map(item => item.date);
+    // Ordina i dati per data
+    const sortedData = data.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    // Estrai array di prezzi e volumi
+    const dates = sortedData.map(item => item.date);
     const prices = {
-      open: data.map(item => item.open),
-      high: data.map(item => item.high),
-      low: data.map(item => item.low),
-      close: data.map(item => item.close),
-      adjustedClose: data.map(item => item.adjustedClose || item.close),
-      volume: data.map(item => item.volume),
+      open: sortedData.map(item => item.open),
+      high: sortedData.map(item => item.high),
+      low: sortedData.map(item => item.low),
+      close: sortedData.map(item => item.close),
+      adjustedClose: sortedData.map(item => item.adjustedClose || item.close),
+      volume: sortedData.map(item => item.volume),
     };
 
     // Calcola i rendimenti
     const returns = this.calculateReturns(prices.adjustedClose);
 
-    // Calcola indicatori tecnici
-    const technicalIndicators =
-      params.includeTechnicalIndicators !== false
-        ? this.calculateTechnicalIndicators(prices.adjustedClose, prices.volume)
-        : {
-            sma20: [],
-            sma50: [],
-            sma200: [],
-            rsi: [],
-            bollingerBands: { upper: [], middle: [], lower: [] },
-            macd: { macd: [], signal: [], histogram: [] },
-          };
+    // Calcola indicatori tecnici se richiesti
+    let technicalIndicators = {
+      sma20: [] as number[],
+      sma50: [] as number[],
+      sma200: [] as number[],
+      rsi: [] as number[],
+      bollingerBands: {
+        upper: [] as number[],
+        middle: [] as number[],
+        lower: [] as number[],
+      },
+      macd: {
+        macd: [] as number[],
+        signal: [] as number[],
+        histogram: [] as number[],
+      },
+    };
 
-    // Calcola metriche di performance
-    const performanceMetrics =
-      params.includePerformanceMetrics !== false
-        ? this.calculatePerformanceMetrics(returns, prices.adjustedClose)
-        : {
-            totalReturn: 0,
-            annualizedReturn: 0,
-            volatility: 0,
-            sharpeRatio: 0,
-            maxDrawdown: 0,
-            calmarRatio: 0,
-          };
+    if (params.includeTechnicalIndicators) {
+      technicalIndicators = this.calculateTechnicalIndicators(
+        prices.adjustedClose,
+        prices.volume
+      );
+    }
+
+    // Calcola metriche di performance se richieste
+    let performanceMetrics = {
+      totalReturn: 0,
+      annualizedReturn: 0,
+      volatility: 0,
+      sharpeRatio: 0,
+      maxDrawdown: 0,
+      calmarRatio: 0,
+    };
+
+    if (params.includePerformanceMetrics) {
+      performanceMetrics = this.calculatePerformanceMetrics(
+        returns,
+        prices.adjustedClose
+      );
+    }
 
     return {
       symbol,
@@ -337,43 +379,53 @@ export class HistoricalAnalysisService {
   }
 
   /**
-   * Calcola i rendimenti giornalieri e cumulativi
+   * Calcola i rendimenti dai prezzi
    */
   private calculateReturns(prices: number[]): {
     daily: number[];
     cumulative: number[];
     logReturns: number[];
   } {
+    if (prices.length < 2) {
+      return {
+        daily: [],
+        cumulative: [],
+        logReturns: [],
+      };
+    }
+
     const daily: number[] = [];
     const logReturns: number[] = [];
     const cumulative: number[] = [];
 
+    // Calcola rendimenti giornalieri
     for (let i = 1; i < prices.length; i++) {
       const dailyReturn = (prices[i] - prices[i - 1]) / prices[i - 1];
-      const logReturn = Math.log(prices[i] / prices[i - 1]);
-
       daily.push(dailyReturn);
-      logReturns.push(logReturn);
+      logReturns.push(Math.log(prices[i] / prices[i - 1]));
+    }
 
-      const cumulativeReturn =
-        i === 1 ? dailyReturn : (1 + cumulative[i - 2]) * (1 + dailyReturn) - 1;
-      cumulative.push(cumulativeReturn);
+    // Calcola rendimenti cumulativi
+    let cumulativeReturn = 1;
+    for (const dailyReturn of daily) {
+      cumulativeReturn *= 1 + dailyReturn;
+      cumulative.push(cumulativeReturn - 1);
     }
 
     return { daily, cumulative, logReturns };
   }
 
   /**
-   * Calcola indicatori tecnici avanzati
+   * Calcola indicatori tecnici
    */
   private calculateTechnicalIndicators(prices: number[], volume: number[]) {
     return {
       sma20: this.calculateSMA(prices, 20),
       sma50: this.calculateSMA(prices, 50),
       sma200: this.calculateSMA(prices, 200),
-      rsi: this.calculateRSI(prices, 14),
-      bollingerBands: this.calculateBollingerBands(prices, 20, 2),
-      macd: this.calculateMACD(prices, 12, 26, 9),
+      rsi: this.calculateRSI(prices),
+      bollingerBands: this.calculateBollingerBands(prices),
+      macd: this.calculateMACD(prices),
     };
   }
 
@@ -398,31 +450,26 @@ export class HistoricalAnalysisService {
   }
 
   /**
-   * Calcola Relative Strength Index
+   * Calcola RSI
    */
   private calculateRSI(prices: number[], period: number = 14): number[] {
     const rsi: number[] = [];
-    const gains: number[] = [];
-    const losses: number[] = [];
 
-    // Calcola gains e losses
-    for (let i = 1; i < prices.length; i++) {
-      const change = prices[i] - prices[i - 1];
-      gains.push(change > 0 ? change : 0);
-      losses.push(change < 0 ? -change : 0);
-    }
-
-    // Calcola RSI
     for (let i = 0; i < prices.length; i++) {
       if (i < period) {
         rsi.push(NaN);
       } else {
-        const avgGain =
-          gains.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0) /
-          period;
-        const avgLoss =
-          losses.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0) /
-          period;
+        const gains: number[] = [];
+        const losses: number[] = [];
+
+        for (let j = i - period + 1; j <= i; j++) {
+          const change = prices[j] - prices[j - 1];
+          gains.push(change > 0 ? change : 0);
+          losses.push(change < 0 ? -change : 0);
+        }
+
+        const avgGain = gains.reduce((a, b) => a + b, 0) / period;
+        const avgLoss = losses.reduce((a, b) => a + b, 0) / period;
 
         if (avgLoss === 0) {
           rsi.push(100);
@@ -455,14 +502,15 @@ export class HistoricalAnalysisService {
         lower.push(NaN);
       } else {
         const slice = prices.slice(i - period + 1, i + 1);
-        const mean = slice.reduce((a, b) => a + b, 0) / period;
+        const sma = slice.reduce((a, b) => a + b, 0) / period;
         const variance =
-          slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / period;
+          slice.reduce((sum, price) => sum + Math.pow(price - sma, 2), 0) /
+          period;
         const standardDeviation = Math.sqrt(variance);
 
-        middle.push(mean);
-        upper.push(mean + stdDev * standardDeviation);
-        lower.push(mean - stdDev * standardDeviation);
+        middle.push(sma);
+        upper.push(sma + standardDeviation * stdDev);
+        lower.push(sma - standardDeviation * stdDev);
       }
     }
 
@@ -490,10 +538,7 @@ export class HistoricalAnalysisService {
       }
     }
 
-    const signal = this.calculateEMA(
-      macd.filter(x => !isNaN(x)),
-      signalPeriod
-    );
+    const signal = this.calculateEMA(macd, signalPeriod);
     const histogram: number[] = [];
 
     for (let i = 0; i < macd.length; i++) {
@@ -517,8 +562,11 @@ export class HistoricalAnalysisService {
     for (let i = 0; i < prices.length; i++) {
       if (i === 0) {
         ema.push(prices[i]);
+      } else if (i < period - 1) {
+        ema.push(NaN);
       } else {
-        ema.push(prices[i] * multiplier + ema[i - 1] * (1 - multiplier));
+        const newEMA = prices[i] * multiplier + ema[i - 1] * (1 - multiplier);
+        ema.push(newEMA);
       }
     }
 
@@ -532,31 +580,34 @@ export class HistoricalAnalysisService {
     returns: { daily: number[]; cumulative: number[] },
     prices: number[]
   ) {
-    const totalReturn = returns.cumulative[returns.cumulative.length - 1] || 0;
+    if (returns.daily.length === 0) {
+      return {
+        totalReturn: 0,
+        annualizedReturn: 0,
+        volatility: 0,
+        sharpeRatio: 0,
+        maxDrawdown: 0,
+        calmarRatio: 0,
+      };
+    }
 
-    // Calcola rendimento annualizzato
-    const days = returns.daily.length;
-    const years = days / 252; // Assumiamo 252 giorni di trading
+    const totalReturn = returns.cumulative[returns.cumulative.length - 1];
     const annualizedReturn =
-      years > 0 ? Math.pow(1 + totalReturn, 1 / years) - 1 : 0;
+      Math.pow(1 + totalReturn, 252 / returns.daily.length) - 1;
 
-    // Calcola volatilità annualizzata
     const meanReturn =
       returns.daily.reduce((a, b) => a + b, 0) / returns.daily.length;
     const variance =
-      returns.daily.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) /
-      returns.daily.length;
-    const volatility = Math.sqrt(variance * 252); // Annualizzata
+      returns.daily.reduce(
+        (sum, ret) => sum + Math.pow(ret - meanReturn, 2),
+        0
+      ) / returns.daily.length;
+    const volatility = Math.sqrt(variance * 252);
 
-    // Calcola Sharpe Ratio (assumendo risk-free rate = 0.02)
-    const riskFreeRate = 0.02;
-    const sharpeRatio =
-      volatility > 0 ? (annualizedReturn - riskFreeRate) / volatility : 0;
+    const riskFreeRate = 0.02; // 2% annual risk-free rate
+    const sharpeRatio = (annualizedReturn - riskFreeRate) / volatility;
 
-    // Calcola Maximum Drawdown
     const maxDrawdown = this.calculateMaxDrawdown(prices);
-
-    // Calcola Calmar Ratio
     const calmarRatio =
       maxDrawdown !== 0 ? annualizedReturn / Math.abs(maxDrawdown) : 0;
 
@@ -577,14 +628,13 @@ export class HistoricalAnalysisService {
     let maxDrawdown = 0;
     let peak = prices[0];
 
-    for (let i = 1; i < prices.length; i++) {
-      if (prices[i] > peak) {
-        peak = prices[i];
-      } else {
-        const drawdown = (peak - prices[i]) / peak;
-        if (drawdown > maxDrawdown) {
-          maxDrawdown = drawdown;
-        }
+    for (const price of prices) {
+      if (price > peak) {
+        peak = price;
+      }
+      const drawdown = (peak - price) / peak;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
       }
     }
 
@@ -592,34 +642,38 @@ export class HistoricalAnalysisService {
   }
 
   /**
-   * Calcola dati del portafoglio (equal-weighted)
+   * Calcola dati del portafoglio
    */
   private calculatePortfolioData(processedData: ProcessedHistoricalData[]) {
-    // Trova le date comuni
-    const commonDates = this.findCommonDates(processedData.map(d => d.dates));
+    // Trova date comuni
+    const allDates = processedData.map(data => data.dates);
+    const commonDates = this.findCommonDates(allDates);
 
     if (commonDates.length === 0) {
       return undefined;
     }
 
+    // Calcola valore portafoglio per ogni data
     const portfolioValue: number[] = [];
     const portfolioReturns: number[] = [];
 
-    // Calcola valore del portafoglio per ogni data
+    // Assumi pesi uguali per semplicità
+    const weights = processedData.map(() => 1 / processedData.length);
+
     for (let i = 0; i < commonDates.length; i++) {
       const date = commonDates[i];
       let totalValue = 0;
 
-      for (const data of processedData) {
-        const dateIndex = data.dates.indexOf(date);
-        if (dateIndex !== -1) {
-          totalValue += data.prices.adjustedClose[dateIndex];
+      for (let j = 0; j < processedData.length; j++) {
+        const dataIndex = processedData[j].dates.indexOf(date);
+        if (dataIndex !== -1) {
+          totalValue +=
+            processedData[j].prices.adjustedClose[dataIndex] * weights[j];
         }
       }
 
       portfolioValue.push(totalValue);
 
-      // Calcola rendimento del portafoglio
       if (i > 0) {
         const return_ =
           (totalValue - portfolioValue[i - 1]) / portfolioValue[i - 1];
@@ -629,25 +683,22 @@ export class HistoricalAnalysisService {
 
     // Calcola metriche del portafoglio
     const totalReturn =
-      portfolioValue.length > 1
-        ? (portfolioValue[portfolioValue.length - 1] - portfolioValue[0]) /
-          portfolioValue[0]
-        : 0;
-
-    const years = portfolioReturns.length / 252;
+      (portfolioValue[portfolioValue.length - 1] - portfolioValue[0]) /
+      portfolioValue[0];
     const annualizedReturn =
-      years > 0 ? Math.pow(1 + totalReturn, 1 / years) - 1 : 0;
+      Math.pow(1 + totalReturn, 252 / portfolioReturns.length) - 1;
 
     const meanReturn =
       portfolioReturns.reduce((a, b) => a + b, 0) / portfolioReturns.length;
     const variance =
-      portfolioReturns.reduce((a, b) => a + Math.pow(b - meanReturn, 2), 0) /
-      portfolioReturns.length;
+      portfolioReturns.reduce(
+        (sum, ret) => sum + Math.pow(ret - meanReturn, 2),
+        0
+      ) / portfolioReturns.length;
     const volatility = Math.sqrt(variance * 252);
 
     const riskFreeRate = 0.02;
-    const sharpeRatio =
-      volatility > 0 ? (annualizedReturn - riskFreeRate) / volatility : 0;
+    const sharpeRatio = (annualizedReturn - riskFreeRate) / volatility;
 
     const maxDrawdown = this.calculateMaxDrawdown(portfolioValue);
 
@@ -666,7 +717,7 @@ export class HistoricalAnalysisService {
   }
 
   /**
-   * Trova le date comuni tra tutti i dataset
+   * Trova date comuni tra tutti i dataset
    */
   private findCommonDates(allDates: string[][]): string[] {
     if (allDates.length === 0) return [];
@@ -679,10 +730,21 @@ export class HistoricalAnalysisService {
   }
 
   /**
-   * Identifica fasi di mercato (bull/bear/consolidation)
+   * Identifica fasi di mercato
    */
   private identifyMarketPhases(data: ProcessedHistoricalData) {
-    const { prices, returns } = data;
+    const prices = data.prices.adjustedClose;
+    const dates = data.dates;
+
+    if (prices.length < 20) {
+      return {
+        bullMarkets: [],
+        bearMarkets: [],
+        consolidation: [],
+      };
+    }
+
+    const sma20 = this.calculateSMA(prices, 20);
     const bullMarkets: Array<{
       start: string;
       end: string;
@@ -703,61 +765,85 @@ export class HistoricalAnalysisService {
 
     let currentPhase: 'bull' | 'bear' | 'consolidation' | null = null;
     let phaseStart = 0;
-    let phaseStartPrice = prices.adjustedClose[0];
+    let phaseStartPrice = prices[0];
 
-    for (let i = 1; i < prices.adjustedClose.length; i++) {
-      const currentPrice = prices.adjustedClose[i];
-      const priceChange = (currentPrice - phaseStartPrice) / phaseStartPrice;
-      const daysSinceStart = i - phaseStart;
-
-      // Definisci le soglie per le fasi di mercato
-      const bullThreshold = 0.2; // 20% di rialzo
-      const bearThreshold = -0.15; // 15% di ribasso
-      const consolidationThreshold = 0.05; // 5% di movimento
+    for (let i = 20; i < prices.length; i++) {
+      const price = prices[i];
+      const sma = sma20[i];
 
       let newPhase: 'bull' | 'bear' | 'consolidation' | null = null;
 
-      if (priceChange >= bullThreshold) {
+      if (price > sma * 1.05) {
         newPhase = 'bull';
-      } else if (priceChange <= bearThreshold) {
+      } else if (price < sma * 0.95) {
         newPhase = 'bear';
-      } else if (
-        Math.abs(priceChange) <= consolidationThreshold &&
-        daysSinceStart >= 30
-      ) {
+      } else {
         newPhase = 'consolidation';
       }
 
-      // Se la fase è cambiata, registra la fase precedente
-      if (newPhase !== currentPhase && currentPhase !== null) {
-        const phaseData = {
-          start: data.dates[phaseStart],
-          end: data.dates[i - 1],
-          duration: daysSinceStart,
-          return: priceChange,
-        };
+      if (newPhase !== currentPhase) {
+        // Chiudi fase precedente
+        if (currentPhase && i - phaseStart > 5) {
+          const phaseReturn = (price - phaseStartPrice) / phaseStartPrice;
+          const phaseData = {
+            start: dates[phaseStart],
+            end: dates[i - 1],
+            duration: i - phaseStart,
+            return: phaseReturn,
+          };
 
-        switch (currentPhase) {
-          case 'bull':
-            bullMarkets.push(phaseData);
-            break;
-          case 'bear':
-            bearMarkets.push(phaseData);
-            break;
-          case 'consolidation':
-            consolidation.push(phaseData);
-            break;
+          switch (currentPhase) {
+            case 'bull':
+              bullMarkets.push(phaseData);
+              break;
+            case 'bear':
+              bearMarkets.push(phaseData);
+              break;
+            case 'consolidation':
+              consolidation.push({
+                start: dates[phaseStart],
+                end: dates[i - 1],
+                duration: i - phaseStart,
+              });
+              break;
+          }
         }
 
         // Inizia nuova fase
-        phaseStart = i - 1;
-        phaseStartPrice = currentPrice;
+        currentPhase = newPhase;
+        phaseStart = i;
+        phaseStartPrice = price;
       }
-
-      currentPhase = newPhase;
     }
 
     return { bullMarkets, bearMarkets, consolidation };
+  }
+
+  /**
+   * Health check del servizio
+   */
+  public async healthCheck(): Promise<{
+    status: string;
+    timestamp: string;
+    dataSourceManager: any;
+  }> {
+    try {
+      const dataSourceHealth = await this.dataSourceManager.healthCheck();
+
+      return {
+        status: dataSourceHealth.status,
+        timestamp: new Date().toISOString(),
+        dataSourceManager: dataSourceHealth,
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        dataSourceManager: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
   }
 }
 
