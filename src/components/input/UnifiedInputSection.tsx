@@ -231,6 +231,9 @@ export default function UnifiedInputSection() {
                     }
                     onSelect={setStartDate}
                     initialFocus
+                    captionLayout="dropdown"
+                    fromYear={2000}
+                    toYear={2030}
                     className="pointer-events-auto"
                   />
                 </PopoverContent>
@@ -269,6 +272,9 @@ export default function UnifiedInputSection() {
                     }
                     onSelect={setEndDate}
                     initialFocus
+                    captionLayout="dropdown"
+                    fromYear={2000}
+                    toYear={2030}
                     className="pointer-events-auto"
                   />
                 </PopoverContent>
