@@ -650,4 +650,288 @@ describe('Historical Analysis Service', () => {
       expect(result.errors[0]).toContain('duplicate date');
     });
   });
+
+  describe('Yahoo Finance Integration', () => {
+    const yahooFinanceDeepData = {
+      AAPL: Array.from({ length: 4000 }, (_, i) => ({
+        date: `2020-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
+        open: 150.0 + Math.random() * 10,
+        high: 155.0 + Math.random() * 10,
+        low: 145.0 + Math.random() * 10,
+        close: 152.0 + Math.random() * 10,
+        volume: 1000000 + Math.floor(Math.random() * 500000),
+      })),
+    };
+
+    const yahooFinanceBatchData = {
+      AAPL: Array.from({ length: 1000 }, (_, i) => ({
+        date: `2023-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
+        open: 150.0 + Math.random() * 10,
+        high: 155.0 + Math.random() * 10,
+        low: 145.0 + Math.random() * 10,
+        close: 152.0 + Math.random() * 10,
+        volume: 1000000 + Math.floor(Math.random() * 500000),
+      })),
+      MSFT: Array.from({ length: 1000 }, (_, i) => ({
+        date: `2023-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
+        open: 300.0 + Math.random() * 20,
+        high: 310.0 + Math.random() * 20,
+        low: 290.0 + Math.random() * 20,
+        close: 305.0 + Math.random() * 20,
+        volume: 800000 + Math.floor(Math.random() * 400000),
+      })),
+      GOOGL: Array.from({ length: 1000 }, (_, i) => ({
+        date: `2023-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
+        open: 2500.0 + Math.random() * 100,
+        high: 2550.0 + Math.random() * 100,
+        low: 2450.0 + Math.random() * 100,
+        close: 2520.0 + Math.random() * 100,
+        volume: 500000 + Math.floor(Math.random() * 300000),
+      })),
+    };
+
+    describe('Deep Historical Data Processing (15+ Years)', () => {
+      it('should process 4000+ data points correctly', () => {
+        const result = processHistoricalData(yahooFinanceDeepData);
+
+        expect(result.success).toBe(true);
+        expect(result.data.labels).toHaveLength(4000);
+        expect(result.data.datasets[0].data).toHaveLength(4000);
+        expect(result.metadata.dataPoints).toBe(4000);
+        expect(result.metadata.symbols).toEqual(['AAPL']);
+      });
+
+      it('should calculate indicators for deep historical data', () => {
+        const result = processHistoricalData(yahooFinanceDeepData, {
+          calculateSMA: true,
+          calculateRSI: true,
+          calculateBollingerBands: true,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.indicators.sma).toBeDefined();
+        expect(result.indicators.sma[20]).toHaveLength(4000); // 20-period SMA
+        expect(result.indicators.rsi).toBeDefined();
+        expect(result.indicators.rsi[14]).toHaveLength(4000); // 14-period RSI
+        expect(result.indicators.bollingerBands).toBeDefined();
+        expect(result.indicators.bollingerBands[20]).toBeDefined();
+      });
+
+      it('should handle very long date ranges', () => {
+        const longRangeData = {
+          AAPL: Array.from({ length: 6000 }, (_, i) => ({
+            date: `2010-${String(Math.floor(i / 365) + 1).padStart(2, '0')}-${String((i % 365) + 1).padStart(3, '0')}`,
+            open: 150.0 + Math.random() * 10,
+            high: 155.0 + Math.random() * 10,
+            low: 145.0 + Math.random() * 10,
+            close: 152.0 + Math.random() * 10,
+            volume: 1000000 + Math.floor(Math.random() * 500000),
+          })),
+        };
+
+        const result = processHistoricalData(longRangeData);
+
+        expect(result.success).toBe(true);
+        expect(result.data.labels).toHaveLength(6000);
+        expect(result.metadata.dataPoints).toBe(6000);
+        expect(result.metadata.dateRange.start).toContain('2010');
+        expect(result.metadata.dateRange.end).toContain('2025');
+      });
+
+      it('should validate deep historical data quality', () => {
+        const validationResult = validateHistoricalData(
+          yahooFinanceDeepData.AAPL
+        );
+
+        expect(validationResult.isValid).toBe(true);
+        expect(validationResult.dataPoints).toBe(4000);
+        expect(validationResult.dateRange.start).toBeDefined();
+        expect(validationResult.dateRange.end).toBeDefined();
+        expect(validationResult.qualityScore).toBeGreaterThan(0.8);
+      });
+    });
+
+    describe('Batch Ticker Processing', () => {
+      it('should process multiple tickers with large datasets', () => {
+        const result = processHistoricalData(yahooFinanceBatchData);
+
+        expect(result.success).toBe(true);
+        expect(result.data.datasets).toHaveLength(3);
+        expect(result.metadata.symbols).toEqual(['AAPL', 'MSFT', 'GOOGL']);
+        expect(result.metadata.totalDataPoints).toBe(3000);
+
+        // Each dataset should have 1000 data points
+        result.data.datasets.forEach(dataset => {
+          expect(dataset.data).toHaveLength(1000);
+        });
+      });
+
+      it('should calculate correlation matrix for batch data', () => {
+        const result = processHistoricalData(yahooFinanceBatchData, {
+          calculateCorrelation: true,
+        });
+
+        expect(result.success).toBe(true);
+        expect(result.correlation).toBeDefined();
+        expect(result.correlation.matrix).toHaveLength(3);
+        expect(result.correlation.matrix[0]).toHaveLength(3);
+        expect(result.correlation.symbols).toEqual(['AAPL', 'MSFT', 'GOOGL']);
+      });
+
+      it('should handle mixed data quality in batch', () => {
+        const mixedQualityData = {
+          ...yahooFinanceBatchData,
+          INVALID: [
+            {
+              date: '2023-01-01',
+              open: -150.0, // Invalid negative price
+              high: 155.5,
+              low: 149.25,
+              close: 153.75,
+              volume: 1000000,
+            },
+          ],
+        };
+
+        const result = processHistoricalData(mixedQualityData);
+
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('validation failed');
+        expect(result.error).toContain('INVALID');
+      });
+
+      it('should aggregate portfolio metrics for batch data', () => {
+        const result = aggregatePortfolioData(yahooFinanceBatchData);
+
+        expect(result.success).toBe(true);
+        expect(result.portfolioMetrics).toBeDefined();
+        expect(result.portfolioMetrics.totalValue).toBeGreaterThan(0);
+        expect(result.portfolioMetrics.weightedReturn).toBeDefined();
+        expect(result.portfolioMetrics.volatility).toBeDefined();
+        expect(result.portfolioMetrics.sharpeRatio).toBeDefined();
+      });
+    });
+
+    describe('Fallback System Integration', () => {
+      it('should handle Alpha Vantage fallback data format', () => {
+        const alphaVantageData = {
+          AAPL: Array.from({ length: 100 }, (_, i) => ({
+            date: `2024-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
+            open: 150.0 + Math.random() * 10,
+            high: 155.0 + Math.random() * 10,
+            low: 145.0 + Math.random() * 10,
+            close: 152.0 + Math.random() * 10,
+            volume: 1000000 + Math.floor(Math.random() * 500000),
+            source: 'alpha_vantage',
+            fallbackUsed: true,
+          })),
+        };
+
+        const result = processHistoricalData(alphaVantageData);
+
+        expect(result.success).toBe(true);
+        expect(result.metadata.source).toBe('alpha_vantage');
+        expect(result.metadata.fallbackUsed).toBe(true);
+      });
+
+      it('should validate fallback data quality', () => {
+        const fallbackData = Array.from({ length: 100 }, (_, i) => ({
+          date: `2024-${String(Math.floor(i / 30) + 1).padStart(2, '0')}-${String((i % 30) + 1).padStart(2, '0')}`,
+          open: 150.0 + Math.random() * 10,
+          high: 155.0 + Math.random() * 10,
+          low: 145.0 + Math.random() * 10,
+          close: 152.0 + Math.random() * 10,
+          volume: 1000000 + Math.floor(Math.random() * 500000),
+        }));
+
+        const validationResult = validateHistoricalData(fallbackData);
+
+        expect(validationResult.isValid).toBe(true);
+        expect(validationResult.dataPoints).toBe(100);
+        expect(validationResult.qualityScore).toBeGreaterThan(0.7);
+      });
+    });
+
+    describe('Performance and Memory Management', () => {
+      it('should handle large datasets without memory issues', () => {
+        const largeDataset = {
+          AAPL: Array.from({ length: 10000 }, (_, i) => ({
+            date: `2020-${String(Math.floor(i / 365) + 1).padStart(2, '0')}-${String((i % 365) + 1).padStart(3, '0')}`,
+            open: 150.0 + Math.random() * 10,
+            high: 155.0 + Math.random() * 10,
+            low: 145.0 + Math.random() * 10,
+            close: 152.0 + Math.random() * 10,
+            volume: 1000000 + Math.floor(Math.random() * 500000),
+          })),
+        };
+
+        const startTime = Date.now();
+        const result = processHistoricalData(largeDataset);
+        const endTime = Date.now();
+
+        expect(result.success).toBe(true);
+        expect(result.data.labels).toHaveLength(10000);
+        expect(endTime - startTime).toBeLessThan(10000); // Should complete within 10 seconds
+      });
+
+      it('should optimize calculations for deep historical data', () => {
+        const deepData = {
+          AAPL: Array.from({ length: 5000 }, (_, i) => ({
+            date: `2020-${String(Math.floor(i / 365) + 1).padStart(2, '0')}-${String((i % 365) + 1).padStart(3, '0')}`,
+            open: 150.0 + Math.random() * 10,
+            high: 155.0 + Math.random() * 10,
+            low: 145.0 + Math.random() * 10,
+            close: 152.0 + Math.random() * 10,
+            volume: 1000000 + Math.floor(Math.random() * 500000),
+          })),
+        };
+
+        const startTime = Date.now();
+        const result = processHistoricalData(deepData, {
+          calculateSMA: true,
+          calculateRSI: true,
+          calculateBollingerBands: true,
+          calculateMACD: true,
+        });
+        const endTime = Date.now();
+
+        expect(result.success).toBe(true);
+        expect(result.indicators.sma).toBeDefined();
+        expect(result.indicators.rsi).toBeDefined();
+        expect(result.indicators.bollingerBands).toBeDefined();
+        expect(result.indicators.macd).toBeDefined();
+        expect(endTime - startTime).toBeLessThan(15000); // Should complete within 15 seconds
+      });
+    });
+
+    describe('Data Source Metadata', () => {
+      it('should include Yahoo Finance metadata', () => {
+        const result = processHistoricalData(yahooFinanceDeepData);
+
+        expect(result.success).toBe(true);
+        expect(result.metadata.source).toBe('yahoo_finance');
+        expect(result.metadata.lastRefreshed).toBeDefined();
+        expect(result.metadata.dataPoints).toBe(4000);
+        expect(result.metadata.symbols).toEqual(['AAPL']);
+      });
+
+      it('should handle source transitions (Yahoo to Alpha Vantage)', () => {
+        const mixedSourceData = {
+          AAPL: yahooFinanceDeepData.AAPL.map((point, index) => ({
+            ...point,
+            source: index < 2000 ? 'yahoo_finance' : 'alpha_vantage',
+            fallbackUsed: index >= 2000,
+          })),
+        };
+
+        const result = processHistoricalData(mixedSourceData);
+
+        expect(result.success).toBe(true);
+        expect(result.metadata.source).toBe('mixed');
+        expect(result.metadata.fallbackUsed).toBe(true);
+        expect(result.metadata.yahooFinancePoints).toBe(2000);
+        expect(result.metadata.alphaVantagePoints).toBe(2000);
+      });
+    });
+  });
 });
