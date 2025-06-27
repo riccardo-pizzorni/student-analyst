@@ -12,6 +12,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { analysisRoutes } from './routes/analysisRoutes_fixed';
 import { apiRoutes } from './routes/apiRoutes';
+import healthRouter from './routes/health';
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -23,13 +24,7 @@ app.use(morgan('dev'));
 app.use(express.json()); // Per il parsing del body JSON delle richieste
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    port: PORT,
-  });
-});
+app.use('/', healthRouter);
 
 // Rotte API - ANALYSIS PRIMA DI API ROUTES PER EVITARE CONFLITTI
 app.use('/api/analysis', analysisRoutes);
