@@ -1,11 +1,84 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import * as React from 'react';
-import { DayPicker } from 'react-day-picker';
+import { DayPicker, useNavigation } from 'react-day-picker';
 
 import { buttonVariants } from '@/components/ui/buttonVariants';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { addMonths, getMonth, getYear, setMonth, setYear } from 'date-fns';
+
+import type { CaptionProps } from 'react-day-picker';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+function CustomCaption({ displayMonth }: CaptionProps) {
+  const navigation = useNavigation();
+  const goToMonth = navigation?.goToMonth;
+  const fromYear = 2000;
+  const toYear = 2030;
+  const year = getYear(displayMonth);
+  const month = getMonth(displayMonth);
+  const years = [];
+  for (let y = fromYear; y <= toYear; y++) years.push(y);
+
+  return (
+    <div className="flex items-center gap-2 w-full justify-center">
+      <button
+        type="button"
+        aria-label="Previous month"
+        className="mr-2"
+        onClick={() => goToMonth && goToMonth(addMonths(displayMonth, -1))}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <Select
+        value={String(month)}
+        onValueChange={val => goToMonth && goToMonth(setMonth(displayMonth, Number(val)))}
+      >
+        <SelectTrigger className="w-28">
+          <SelectValue>{MONTHS[month]}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {MONTHS.map((m, idx) => (
+            <SelectItem key={m} value={String(idx)}>{m}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select
+        value={String(year)}
+        onValueChange={val => goToMonth && goToMonth(setYear(displayMonth, Number(val)))}
+      >
+        <SelectTrigger className="w-20">
+          <SelectValue>{year}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {years.map(y => (
+            <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <button
+        type="button"
+        aria-label="Next month"
+        className="ml-2"
+        onClick={() => goToMonth && goToMonth(addMonths(displayMonth, 1))}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
 function Calendar({
   className,
@@ -54,6 +127,7 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Caption: CustomCaption,
       }}
       {...props}
     />
@@ -62,3 +136,4 @@ function Calendar({
 Calendar.displayName = 'Calendar';
 
 export { Calendar };
+
