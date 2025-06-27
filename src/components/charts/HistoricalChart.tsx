@@ -58,6 +58,24 @@ const options: ChartOptions<'line'> = {
                 color: 'rgb(203, 213, 225)',
                 usePointStyle: true,
                 padding: 20,
+                generateLabels: (chart) => {
+                    const datasets = chart.data.datasets;
+                    return datasets.map((dataset, index) => {
+                        const meta = chart.getDatasetMeta(index);
+                        const hasGaps = dataset.data && dataset.data.filter(v => v === null).length > dataset.data.length * 0.1;
+                        const label = dataset.label || `Dataset ${index}`;
+                        return {
+                            text: hasGaps ? `⚠️ ${label}` : label,
+                            fillStyle: dataset.borderColor as string,
+                            strokeStyle: dataset.borderColor as string,
+                            lineWidth: 2,
+                            pointStyle: 'circle',
+                            hidden: meta.hidden,
+                            index: index,
+                            datasetIndex: index,
+                        };
+                    });
+                },
             },
             onClick: (e, legendItem, legend) => {
                 // Toggle dataset visibility
@@ -236,6 +254,8 @@ const HistoricalChart = () => {
     }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume, showBollinger, showMACD]);
 
     // Calcola ticker con dati interrotti (es. ultimi punti null)
+    // FALLBACK: Se una serie ha null negli ultimi 5 punti, viene considerata incompleta
+    // EDGE CASE: Gestisce ticker che si fermano prima della fine del periodo (es. META al 2013)
     const incompleteSeries = useMemo(() => {
         if (!filteredDatasets || filteredDatasets.length === 0) return [];
         return filteredDatasets
@@ -246,6 +266,30 @@ const HistoricalChart = () => {
                 return lastPoints.some(v => v === null);
             })
             .map(ds => ds.label || '');
+    }, [filteredDatasets]);
+
+    // Calcola ticker richiesti ma non presenti nei risultati
+    // FALLBACK: Confronta ticker richiesti con quelli effettivamente disponibili
+    // EDGE CASE: Gestisce ticker non trovati, simboli errati, o periodi senza dati
+    const missingTickers = useMemo(() => {
+        if (!analysisResults?.metadata?.symbols || !filteredDatasets || filteredDatasets.length === 0) return [];
+        const availableTickers = filteredDatasets
+            .filter(ds => ds.label?.includes(' - Prezzo'))
+            .map(ds => ds.label?.split(' - ')[0] || '');
+        return analysisResults.metadata.symbols.filter(ticker => !availableTickers.includes(ticker));
+    }, [analysisResults?.metadata?.symbols, filteredDatasets]);
+
+    // Calcola se ci sono buchi temporali significativi (IPO, merge, ecc.)
+    // FALLBACK: Se più del 20% dei punti sono null, considera buchi significativi
+    // EDGE CASE: Gestisce IPO recenti, merge aziendali, cambi di simbolo
+    const hasTemporalGaps = useMemo(() => {
+        if (!filteredDatasets || filteredDatasets.length === 0) return false;
+        return filteredDatasets.some(ds => {
+            if (!ds.data || ds.data.length === 0) return false;
+            // Se più del 20% dei punti sono null, consideriamo buchi significativi
+            const nullCount = ds.data.filter(v => v === null).length;
+            return nullCount > ds.data.length * 0.2;
+        });
     }, [filteredDatasets]);
 
     const chartData = {
@@ -360,10 +404,32 @@ const HistoricalChart = () => {
             </div>
 
             {/* Messaggio warning per serie incomplete */}
+            {/* FALLBACK: Serie che si interrompono prima della fine del periodo */}
+            {/* MESSAGGIO: Guida l'utente a verificare la copertura storica */}
             {incompleteSeries.length > 0 && (
                 <div className="mb-4 p-3 bg-yellow-900/60 text-yellow-200 rounded-lg text-sm flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-300"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     Attenzione: dati disponibili solo fino a una certa data per {incompleteSeries.join(', ')}. Verifica la copertura storica del titolo.
+                </div>
+            )}
+
+            {/* Messaggio per ticker mancanti */}
+            {/* FALLBACK: Ticker richiesti ma non trovati nei dati */}
+            {/* MESSAGGIO: Guida l'utente a verificare simbolo o periodo */}
+            {missingTickers.length > 0 && (
+                <div className="mb-4 p-3 bg-orange-900/60 text-orange-200 rounded-lg text-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-orange-300"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Ticker {missingTickers.join(', ')} non ha dati disponibili per il periodo selezionato. Verifica il simbolo o prova un periodo diverso.
+                </div>
+            )}
+
+            {/* Messaggio per buchi temporali significativi */}
+            {/* FALLBACK: Serie con più del 20% di punti null */}
+            {/* MESSAGGIO: Spiega possibili cause (IPO, merge, cambio simbolo) */}
+            {hasTemporalGaps && (
+                <div className="mb-4 p-3 bg-blue-900/60 text-blue-200 rounded-lg text-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-300"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Rilevati buchi temporali significativi nei dati. Potrebbe essere dovuto a IPO recente, merge aziendale o cambio di simbolo.
                 </div>
             )}
 
@@ -466,7 +532,8 @@ const HistoricalChart = () => {
                         <div className="text-center space-y-4">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                             <p className="text-blue-300">Caricamento dati in corso...</p>
-                            <p className="text-sm text-slate-400">Recupero dati storici da Alpha Vantage</p>
+                            {/* FALLBACK: Messaggio aggiornato per riflettere la fonte dati attuale */}
+                            <p className="text-sm text-slate-400">Recupero dati storici da Yahoo Finance</p>
                         </div>
                     </div>
                 ) : error ? (
@@ -488,6 +555,7 @@ const HistoricalChart = () => {
                                 <line x1="12" y1="8" x2="12" y2="12" />
                                 <line x1="12" y1="16" x2="12.01" y2="16" />
                             </svg>
+                            {/* FALLBACK: Mostra errore specifico + azione di recovery */}
                             <p className="text-red-300">{error}</p>
                             <button
                                 onClick={handleRefreshClick}
@@ -515,6 +583,7 @@ const HistoricalChart = () => {
                                 <path d="M3 3v18h18" />
                                 <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
                             </svg>
+                            {/* FALLBACK: Nessuna analisi eseguita + guida all'azione */}
                             <h4 className="text-xl font-bold text-slate-200">
                                 Nessuna Analisi Eseguita
                             </h4>
@@ -542,6 +611,7 @@ const HistoricalChart = () => {
                                 <path d="M3 3v18h18" />
                                 <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
                             </svg>
+                            {/* FALLBACK: Dati vuoti dopo analisi + guida all'azione */}
                             <h4 className="text-xl font-bold text-slate-200">
                                 Nessun Dato Storico Disponibile
                             </h4>
