@@ -154,13 +154,17 @@ export class AlphaVantageService {
   private readonly resilienceService: NetworkResilienceService;
 
   constructor(config?: Partial<AlphaVantageConfig>) {
-    // Determina se siamo in produzione
-    const isProduction = process.env.NODE_ENV === 'production';
+    // Forza endpoint pubblico Alpha Vantage in produzione
+    let baseUrl: string;
+    if (process.env.NODE_ENV === 'production') {
+      baseUrl = 'https://www.alphavantage.co/query';
+    } else {
+      baseUrl =
+        process.env.ALPHA_VANTAGE_BASE_URL ||
+        'https://www.alphavantage.co/query';
+    }
     this.config = {
-      baseUrl: isProduction
-        ? 'https://www.alphavantage.co/query'
-        : process.env.ALPHA_VANTAGE_BASE_URL ||
-          'https://www.alphavantage.co/query',
+      baseUrl,
       timeout: 30000, // 30 secondi
       retryAttempts: 3,
       retryDelay: 1000, // 1 secondo
