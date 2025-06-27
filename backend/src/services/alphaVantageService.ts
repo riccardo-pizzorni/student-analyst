@@ -154,8 +154,13 @@ export class AlphaVantageService {
   private readonly resilienceService: NetworkResilienceService;
 
   constructor(config?: Partial<AlphaVantageConfig>) {
+    // Determina se siamo in produzione
+    const isProduction = process.env.NODE_ENV === 'production';
     this.config = {
-      baseUrl: process.env.BACKEND_URL || 'http://localhost:10000',
+      baseUrl: isProduction
+        ? 'https://www.alphavantage.co/query'
+        : process.env.ALPHA_VANTAGE_BASE_URL ||
+          'https://www.alphavantage.co/query',
       timeout: 30000, // 30 secondi
       retryAttempts: 3,
       retryDelay: 1000, // 1 secondo
@@ -338,8 +343,13 @@ export class AlphaVantageService {
         options
       );
 
-      // Esegue la richiesta tramite il nostro proxy API sicuro
-      const url = `${this.config.baseUrl}/api/v1/alpha-vantage`;
+      // Esegue la richiesta tramite proxy API sicuro o direttamente verso Alpha Vantage
+      let url: string;
+      if (this.config.baseUrl.includes('alphavantage.co')) {
+        url = this.config.baseUrl;
+      } else {
+        url = `${this.config.baseUrl}/api/v1/alpha-vantage`;
+      }
 
       const axiosResponse: AxiosResponse = await axios.get(url, {
         params,
