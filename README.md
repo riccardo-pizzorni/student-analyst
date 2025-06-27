@@ -9,6 +9,8 @@
 
 > **⚠️ IMPORTANTE**: Questo progetto ha subito critiche ottimizzazioni il 2024-12-19. Leggi la [documentazione dei fix critici](docs/CRITICAL_FIXES_SUMMARY.md) prima di iniziare.
 
+> **🆕 NUOVO**: Integrazione Yahoo Finance come sorgente primaria per dati storici (2025-06-27). Supporto per dati storici profondi (15+ anni) senza limiti artificiali.
+
 ---
 
 ## 🚀 Quick Start
@@ -80,6 +82,31 @@ student-analyst/
 
 ---
 
+## 📊 Sorgenti Dati Finanziari
+
+### **Yahoo Finance (Sorgente Primaria)**
+
+- ✅ **Dati storici completi**: Supporto per 15+ anni di dati storici
+- ✅ **Nessun limite artificiale**: Accesso illimitato ai dati
+- ✅ **Batch processing**: Analisi di multiple ticker simultaneamente
+- ✅ **Dati aggiornati**: Quote in tempo reale e dati storici precisi
+- ✅ **Gratuito**: Nessun costo per l'accesso ai dati
+
+### **Alpha Vantage (Fallback)**
+
+- 🔄 **Fallback automatico**: Attivato in caso di problemi con Yahoo Finance
+- 🔄 **Compatibilità**: Mantiene tutte le funzionalità esistenti
+- 🔄 **Robustezza**: Garantisce continuità del servizio
+
+### **Vantaggi dell'Integrazione Multi-Sorgente**
+
+- **Affidabilità**: Doppia sorgente per massima stabilità
+- **Performance**: Ottimizzazione automatica delle richieste
+- **Scalabilità**: Supporto per dataset di grandi dimensioni
+- **Flessibilità**: Adattamento automatico alle condizioni di rete
+
+---
+
 ## 🧪 Testing
 
 ```bash
@@ -112,6 +139,12 @@ npm test -- --coverage
 - [🧪 Testing Guide](docs/TESTING_GUIDE.md)
 - [💾 Cache System](docs/CACHE_SYSTEM.md)
 - [⚡ Performance](docs/PERFORMANCE_TESTING.md)
+
+### **Integrazione Yahoo Finance**
+
+- [📊 Data Sources](docs/YAHOO_FINANCE_INTEGRATION.md) - Documentazione completa dell'integrazione
+- [🔄 Fallback System](docs/FALLBACK_SYSTEM.md) - Gestione automatica dei fallback
+- [📈 Historical Data](docs/HISTORICAL_DATA_GUIDE.md) - Guida ai dati storici
 
 ---
 
@@ -198,29 +231,16 @@ cd backend && npm run build  # Build backend
 - **Node.js** + Express
 - **TypeScript** - Type safety
 - **Jest** - Testing
-- **Alpha Vantage API** - Dati finanziari
+- **Yahoo Finance API** - Dati storici primari
+- **Alpha Vantage API** - Fallback dati
+- **Multi-source Data Manager** - Gestione sorgenti multiple
 
-### **Testing**
+### **Data Sources**
 
-- **Jest** - Unit testing
-- **Playwright** - E2E testing
-- **React Testing Library** - Component testing
-
-### **Quality**
-
-- **ESLint** - Linting
-- **Prettier** - Formattazione
-- **TypeScript** - Type checking
-
----
-
-## 📊 Metriche di Qualità
-
-- **Type Safety**: 100% ✅
-- **Code Coverage**: >80% ✅
-- **ESLint Errors**: 0 ✅
-- **Prettier Issues**: 0 ✅
-- **Test Pass Rate**: 100% ✅
+- **Yahoo Finance** - Sorgente primaria per dati storici
+- **Alpha Vantage** - Sorgente di fallback
+- **Cache System** - Ottimizzazione performance
+- **Error Handling** - Gestione robusta degli errori
 
 ---
 
@@ -228,86 +248,75 @@ cd backend && npm run build  # Build backend
 
 ### **Frontend (Vercel)**
 
-```bash
-npm run build
-vercel --prod
-```
+- **URL**: https://student-analyst.vercel.app
+- **Build**: Automatico su push a `master`
+- **Environment**: Production-ready
 
-### **Backend (Railway/Render)**
+### **Backend (Render)**
 
-```bash
-cd backend
-npm run build
-# Deploy su Railway o Render
-```
+- **URL**: https://student-analyst.onrender.com
+- **Health Check**: `/health`
+- **API**: `/api/analysis`
+- **Environment**: Production-ready
+
+---
+
+## 📈 Performance e Scalabilità
+
+### **Ottimizzazioni Implementate**
+
+- **Lazy Loading**: Caricamento progressivo dei dati
+- **Caching**: Cache intelligente per ridurre chiamate API
+- **Batch Processing**: Elaborazione simultanea di multiple ticker
+- **Fallback System**: Continuità del servizio garantita
+- **Error Recovery**: Recupero automatico da errori temporanei
+
+### **Limiti e Best Practices**
+
+- **Dataset Grandi**: Supporto fino a 50 ticker simultanei
+- **Profondità Storica**: Fino a 15+ anni di dati storici
+- **Performance**: Ottimizzazione automatica per grandi dataset
+- **Monitoring**: Health check e logging dettagliato
 
 ---
 
 ## 🤝 Contributing
 
-1. **Leggi la documentazione** dei fix critici
-2. **Esegui `npx husky install`** dopo l'installazione per attivare i pre-commit hooks
-3. **Segui il workflow** di sviluppo
-4. **Rispetta le regole** TypeScript
-5. **Mantieni la formattazione** Prettier
-6. **Testa tutto** prima del commit
+### **Regole di Sviluppo**
 
-### **Branch Naming**
+1. **TypeScript Strict**: Mai usare `any`, sempre definire interfacce
+2. **Testing**: Coverage >80% per tutti i componenti
+3. **Documentation**: Aggiornare sempre la documentazione
+4. **Code Quality**: Prettier + ESLint sempre attivi
+5. **Data Sources**: Mantenere compatibilità multi-sorgente
 
-```bash
-feature/nome-feature
-fix/nome-fix
-docs/nome-documentazione
-test/nome-test
-```
+### **Processo di Contribuzione**
 
----
-
-## 📞 Supporto
-
-### **Documentazione**
-
-- [Fix Critici](docs/CRITICAL_FIXES_SUMMARY.md)
-- [Workflow](docs/DEVELOPMENT_WORKFLOW.md)
-- [Guida AI](docs/AI_ASSISTANT_GUIDE.md)
-
-### **Comandi di Emergenza**
-
-```bash
-# Reset completo
-git reset --hard HEAD
-npm ci
-npm run format
-npm run lint:fix
-
-# Verifica stato
-npm run lint
-npm run format:check
-npm test
-npm run build
-```
-
----
-
-## 📝 Changelog
-
-### **2024-12-19 - Fix Critici**
-
-- ✅ Eliminazione completa uso di `any` in TypeScript
-- ✅ Integrazione Prettier per formattazione automatica
-- ✅ Fix configurazione porte backend (3001 → 10000)
-- ✅ Standardizzazione workflow di sviluppo
-- ✅ Documentazione completa per AI e sviluppatori
+1. Fork del repository
+2. Creazione feature branch
+3. Implementazione con test
+4. Pull Request con documentazione
+5. Review e merge
 
 ---
 
 ## 📄 Licenza
 
-MIT License - vedi [LICENSE](LICENSE) per dettagli.
+Questo progetto è proprietario e non open source. Tutti i diritti riservati.
 
 ---
 
-**⚠️ IMPORTANTE**: Questo progetto ha standard di qualità elevati. Leggi sempre la documentazione prima di contribuire.
+## 🆘 Support
+
+Per supporto tecnico o domande:
+
+- **Documentazione**: Consulta la documentazione in `/docs`
+- **Issues**: Apri un issue su GitHub
+- **AI Assistant**: Usa l'AI integrato per domande tecniche
+
+---
+
+**Student Analyst** - La piattaforma di analisi finanziaria per studenti e professionisti. 🎓📊
 
 <!-- Trigger Vercel Redeploy -->
 
@@ -565,6 +574,10 @@ test('should work in browser', async ({ page }) => {
    ```bash
 
    ```
-#   T r i g g e r   d e p l o y  
- #   T r i g g e r   d e p l o y   v i a   w e b h o o k  
- 
+
+   #   T r i g g e r   d e p l o y 
+    
+    
+   #   T r i g g e r   d e p l o y   v i a   w e b h o o k 
+    
+    

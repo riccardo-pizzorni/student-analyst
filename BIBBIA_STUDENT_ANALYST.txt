@@ -1,5 +1,5 @@
 🏆 BIBBIA_STUDENT_ANALYST — COSTITUZIONE DEL SOFTWARE
-Versione aggiornata: 2025-06-15
+Versione aggiornata: 2025-06-27
 
 ________________________________________
 0. LOVABLE PHILOSOPHY – PRINCIPI DI COMUNICAZIONE, FEEDBACK E DESIGN
@@ -199,461 +199,304 @@ Student Analyst è organizzato in macro-moduli, ciascuno dei quali rappresenta u
 - Didattica: tooltip, pop-up e box didattici su teoria multifattoriale, significato parametri, implicazioni pratiche, limiti dei modelli; casi reali, esempi di regressione, interpretazione risultati.
 - Output: grafici, tabelle, confronti esportabili, alert e suggerimenti.
 
-### GLOSSARIO INTEGRATO (RISORSA SEMPRE DISPONIBILE)
-- Accesso contestuale tramite click su tecnicismi, parole, frasi, grafici, formule, metriche, box informativi.
-- Definizioni chiare, formule, esempi, casi reali, link a risorse esterne, esportazione PDF/TXT.
-- Nessun termine ambiguo o non spiegato.
-- Didattica: approfondimento on demand, best practice, errori comuni, suggerimenti operativi.
+________________________________________
+4. ARCHITETTURA TECNICA E SORGENTI DATI
+
+### 4.1 Sorgenti Dati Finanziari
+
+#### **Yahoo Finance (Sorgente Primaria)**
+- **Dati Storici Completi**: Supporto per 15+ anni di dati storici senza limiti artificiali
+- **Batch Processing**: Analisi simultanea di fino a 50 ticker
+- **Dati Aggiornati**: Quote in tempo reale e dati storici precisi
+- **Gratuito**: Nessun costo per l'accesso ai dati
+- **Affidabilità**: Servizio stabile e ben mantenuto
+- **Performance**: Risposta rapida e cache intelligente
+
+#### **Alpha Vantage (Sorgente di Fallback)**
+- **Fallback Automatico**: Attivato in caso di problemi con Yahoo Finance
+- **Compatibilità**: Mantiene tutte le funzionalità esistenti
+- **Robustezza**: Garantisce continuità del servizio
+- **Rate Limiting**: Gestione automatica dei limiti del piano gratuito
+
+#### **Vantaggi dell'Integrazione Multi-Sorgente**
+- **Affidabilità**: Doppia sorgente per massima stabilità
+- **Performance**: Ottimizzazione automatica delle richieste
+- **Scalabilità**: Supporto per dataset di grandi dimensioni
+- **Flessibilità**: Adattamento automatico alle condizioni di rete
+
+### 4.2 Architettura Backend
+
+#### **DataSourceManager**
+- **Coordinazione Multi-Sorgente**: Gestione intelligente tra Yahoo Finance e Alpha Vantage
+- **Fallback Automatico**: Switch automatico in caso di problemi
+- **Cache System**: Ottimizzazione performance con cache intelligente
+- **Error Handling**: Gestione robusta degli errori e recovery
+
+#### **YahooFinanceService**
+- **Fetch Dati Storici**: Recupero dati OHLCV completi
+- **Validazione Input**: Controlli automatici su simboli e date
+- **Gestione Errori**: Retry logic e error recovery
+- **Cache Management**: Cache con TTL ottimizzato
+
+#### **HistoricalAnalysisService**
+- **Analisi Storica**: Elaborazione dati storici per analisi avanzate
+- **Portfolio Analysis**: Analisi di portafogli multi-asset
+- **Market Phases**: Identificazione fasi di mercato (bull/bear/sideways)
+- **Performance Metrics**: Calcolo metriche di performance e rischio
+
+### 4.3 Architettura Frontend
+
+#### **React + TypeScript**
+- **Type Safety**: Controlli di tipo rigorosi per prevenire errori
+- **Component Architecture**: Componenti modulari e riutilizzabili
+- **State Management**: Context API per gestione stato globale
+- **Performance**: Lazy loading e ottimizzazioni React
+
+#### **UI/UX Framework**
+- **Tailwind CSS**: Styling utility-first per design coerente
+- **Shadcn/ui**: Componenti UI professionali e accessibili
+- **Chart.js**: Grafici interattivi e responsive
+- **Responsive Design**: Ottimizzazione per tutti i dispositivi
+
+### 4.4 Sistema di Cache
+
+#### **Multi-Level Caching**
+- **L1 Cache (Memory)**: Cache in memoria per accesso ultra-rapido
+- **L2 Cache (LocalStorage)**: Cache persistente nel browser
+- **L3 Cache (IndexedDB)**: Cache avanzata per grandi dataset
+- **Cache Analytics**: Monitoraggio performance e hit rate
+
+#### **Cache Strategy**
+- **TTL Differenziato**: Cache con scadenza basata su tipo di dati
+- **Invalidation**: Invalidazione intelligente basata su aggiornamenti
+- **Compression**: Compressione dati per ottimizzare storage
+- **Cleanup**: Pulizia automatica per prevenire overflow
+
+### 4.5 Sistema di Error Handling
+
+#### **Error Recovery**
+- **Retry Logic**: Tentativi automatici con backoff esponenziale
+- **Circuit Breaker**: Protezione da cascading failures
+- **Graceful Degradation**: Risposta parziale quando possibile
+- **User Feedback**: Messaggi chiari e suggerimenti utili
+
+#### **Monitoring e Logging**
+- **Health Checks**: Monitoraggio continuo dello stato del sistema
+- **Performance Metrics**: Tracciamento tempi di risposta e throughput
+- **Error Tracking**: Logging dettagliato per debugging
+- **Alerting**: Notifiche automatiche per problemi critici
 
 ________________________________________
-4. DESIGN, USABILITÀ, AUTOMAZIONE, SCALABILITÀ
+5. STANDARD DI QUALITÀ E TESTING
 
-4.1 Palette Cromatica e Stile Grafico
-• Base dark blue, elegante, con sfondo soft per evitare affaticamento visivo.
-• Ogni livello ha una sfumatura fluo diversa e ordinata: la transizione colore da input a output deve essere armonica (nessun colore pesante, nessun mix casuale!).
-• La palette di riferimento è quella delle immagini "sidebar quasi perfetta e stile icone perfetto" fornite dal creatore.
-4.2 Icone
-• Stile uniforme, professionale, "morbido" (linea smooth e coerente per tutte le icone).
-• Logo ufficiale: cappello da laurea + testo "Student Analyst" in font moderno, didattico e istituzionale.
-• Ogni icona ha il proprio colore di sfondo in accordo cromatico con il percorso sidebar.
-4.3 Layout Sidebar & Navigazione
-• Sidebar verticale con livelli ordinati, icona + testo breve per ogni step.
-• Ogni selezione di livello apre una schermata dedicata con tab orizzontali (grafici, dati, spiegazione, esempi).
-• Sidebar compatta ma super leggibile, pensata per monitor grandi e piccoli.
-• Cliccando le icone/step la UI non deve mai "saltare" o risultare confusa.
-4.4 Elementi Didattici e Accessibilità
-• Info-box popup ("i"): spiegazione rapida, attivabile/disattivabile.
-• Expander con teoria, glossario e FAQ in ogni livello.
+### 5.1 TypeScript Standards
 
-4. PRINCIPI DI DESIGN E USABILITÀ
+#### **Type Safety Rigorosa**
+- **No Any**: Mai utilizzare il tipo `any` in TypeScript
+- **Interface Definition**: Definire interfacce per tutti i data structures
+- **Strict Mode**: Utilizzare sempre TypeScript in strict mode
+- **Null Checks**: Gestione esplicita di null e undefined
 
-4.1 Chiarezza e Minimalismo
-L'interfaccia di Student Analyst è progettata secondo principi di chiarezza, minimalismo e pulizia visiva. Ogni elemento grafico ha una funzione precisa e non esistono orpelli decorativi inutili. I colori sono scelti per massimizzare la leggibilità e la distinzione tra dati, grafici e spiegazioni. Le icone sono intuitive, i font sono leggibili e la disposizione degli elementi segue una logica gerarchica che guida l'occhio dell'utente.
+#### **Code Quality**
+- **ESLint**: Regole rigorose per mantenere qualità del codice
+- **Prettier**: Formattazione automatica e consistente
+- **Pre-commit Hooks**: Controlli automatici prima di ogni commit
+- **Code Review**: Review obbligatoria per tutte le modifiche
 
-4.2 Accessibilità e Inclusività
-Il software è accessibile a utenti con diversi livelli di esperienza e abilità. Sono previsti temi ad alto contrasto, font scalabili, e una navigazione completamente da tastiera. Ogni funzione è documentata e spiegata, e sono disponibili scorciatoie e suggerimenti per facilitare l'uso anche a chi ha difficoltà visive o motorie.
+### 5.2 Testing Strategy
 
-4.3 Coerenza e Continuità Esperienziale
-Tutti i moduli condividono lo stesso stile grafico, la stessa logica di navigazione e la stessa filosofia di interazione. I popup, le info-box, i glossari e le spiegazioni sono sempre accessibili nello stesso modo, garantendo una continuità esperienziale che riduce il carico cognitivo e accelera l'apprendimento.
+#### **Test Coverage**
+- **Unit Tests**: Coverage >80% per tutti i componenti
+- **Integration Tests**: Test per API e servizi
+- **E2E Tests**: Test end-to-end per flussi critici
+- **Performance Tests**: Test di carico e stress
 
-4.4 Responsività e Adattabilità
-Student Analyst è progettato per essere perfettamente fruibile su qualsiasi dispositivo: desktop, laptop, tablet e smartphone. La UI si adatta dinamicamente alle dimensioni dello schermo, mantenendo sempre la massima leggibilità e usabilità. I grafici e le tabelle sono interattivi e si adattano automaticamente allo spazio disponibile.
+#### **Testing Tools**
+- **Jest**: Framework di testing principale
+- **React Testing Library**: Testing di componenti React
+- **Playwright**: E2E testing automatizzato
+- **MSW**: Mock Service Worker per API testing
 
-4.5 Filosofia di User Experience
-L'esperienza utente è al centro di ogni scelta progettuale. Ogni funzione, ogni spiegazione, ogni feedback visivo è pensato per accompagnare l'utente, anticipare i suoi bisogni, prevenire errori e facilitare la comprensione. L'obiettivo è rendere l'analisi azionaria non solo efficace e professionale, ma anche piacevole, motivante e gratificante.
+### 5.3 Performance Standards
 
-[Segue con la sezione 5: AUTOMAZIONE, INTEGRAZIONI E SCALABILITÀ]
+#### **Frontend Performance**
+- **Lighthouse Score**: >90 per tutte le metriche
+- **Bundle Size**: <2MB per il bundle principale
+- **Loading Time**: <3 secondi per il primo caricamento
+- **Responsiveness**: <100ms per interazioni utente
 
-5. AUTOMAZIONE, INTEGRAZIONI E SCALABILITÀ
+#### **Backend Performance**
+- **Response Time**: <2 secondi per analisi standard
+- **Throughput**: Supporto per 100+ richieste simultanee
+- **Memory Usage**: <512MB per istanza
+- **CPU Usage**: <80% utilizzo CPU medio
 
-5.1 Automazione dei Processi
-Student Analyst implementa una serie di automazioni per garantire efficienza, sicurezza e tracciabilità. Tra queste:
-• Script batch per auto-commit e push automatico delle modifiche, eseguiti dalla root del progetto per assicurare che ogni cambiamento sia tracciato e sincronizzato con il repository remoto.
-• Backup automatico delle chat di sviluppo e della documentazione, per garantire la conservazione di ogni decisione progettuale e facilitare la collaborazione.
-• Deploy automatico tramite webhook e deploy hook su Vercel, che consente il rilascio immediato di ogni nuova versione dopo il push, senza intervento manuale.
+### 5.4 Security Standards
 
-5.2 Integrazioni con Servizi Esterni
-Il software è integrato con servizi esterni per l'importazione dati (es. Yahoo Finance tramite yfinance), la gestione dei deploy (Vercel), e la sincronizzazione della documentazione. Ogni integrazione è documentata e può essere sostituita o aggiornata senza impattare la struttura principale del software.
+#### **Data Security**
+- **Input Validation**: Validazione rigorosa di tutti gli input
+- **Sanitization**: Sanitizzazione automatica dei dati
+- **Rate Limiting**: Protezione da abuso delle API
+- **CORS**: Configurazione sicura per cross-origin requests
 
-5.3 Gestione del Deploy e Ottimizzazione Risorse
-La pipeline di deploy è ottimizzata per funzionare anche su piani gratuiti, con strategie di riduzione del traffico e delle risorse. Sono previsti sistemi di caching, compressione dei dati e ottimizzazione delle query per garantire performance elevate anche in condizioni di carico elevato.
-
-5.4 Scalabilità e Futuri Sviluppi
-La struttura modulare e la documentazione rigorosa permettono di scalare facilmente il software, aggiungendo nuovi moduli, funzionalità e integrazioni. Sono previste future espansioni verso l'intelligenza artificiale, l'analisi di sentiment, l'integrazione di quiz didattici e dashboard personalizzate. Ogni nuovo sviluppo seguirà gli stessi standard di qualità, automazione e tracciabilità.
-
-[Segue con la sezione 6: GESTIONE DELLA DOCUMENTAZIONE E DELLA "BIBBIA"]
-
-6. GESTIONE DELLA DOCUMENTAZIONE E DELLA "BIBBIA"
-
-6.1 Centralità della Documentazione
-La "Bibbia" di Student Analyst è il documento centrale che raccoglie tutte le regole, le decisioni progettuali, le linee guida tecniche e didattiche, e le best practice. Ogni modifica significativa al software, ogni nuova funzione, ogni bugfix o suggerimento deve essere validato e documentato in questa sede, per garantire coerenza, tracciabilità e qualità.
-
-6.2 Aggiornamento e Versionamento
-La documentazione viene aggiornata in parallelo allo sviluppo del software. Ogni nuova release, ogni refactor, ogni cambiamento strutturale comporta una revisione della Bibbia, con versionamento e tracciamento delle modifiche. Sono previsti changelog dettagliati e la possibilità di consultare versioni precedenti per garantire la massima trasparenza.
-
-6.3 Regole d'Oro per la Manutenzione
-• Mai cambiare la sequenza dei livelli né il loro contenuto senza valida motivazione didattica o analitica.
-• Sidebar, palette, icone, font: immutabili senza approvazione e validazione documentata.
-• Ogni spiegazione didattica deve essere breve, precisa e chiara nelle pagine primarie; esaustiva in popup e pagine secondarie.
-• Nessuna funzione superflua: ogni feature deve portare valore didattico o analitico.
-• Gestione errori sempre trasparente e proattiva.
-• Ogni nuova funzione, bugfix, suggerimento va validato con questa Bibbia.
-• In ogni nuova chat o iterazione con IA, queste regole vanno copiate o riassunte come base.
-
-6.4 Utilizzo della Bibbia nello Sviluppo
-La Bibbia è utilizzata come riferimento costante in ogni fase dello sviluppo: progettazione, coding, testing, documentazione, review e deploy. Ogni membro del team, ogni collaboratore, ogni IA coinvolta deve attenersi alle regole e alle linee guida qui definite, per garantire la massima coerenza e qualità del prodotto finale.
-
-[Segue con la sezione 7: ROADMAP E SVILUPPI FUTURI]
+#### **Authentication & Authorization**
+- **JWT Tokens**: Autenticazione basata su token
+- **Role-based Access**: Controllo accessi basato su ruoli
+- **Session Management**: Gestione sicura delle sessioni
+- **Audit Logging**: Logging di tutte le azioni critiche
 
 ________________________________________
-7. ROADMAP E SVILUPPI FUTURI
+6. DEPLOYMENT E INFRASTRUTTURA
 
-7.1 Roadmap Attuale
-Il roadmap attuale di Student Analyst include:
-• Completamento dei macro-moduli principali con focus su:
-  - Ottimizzazione delle performance di calcolo e visualizzazione
-  - Miglioramento dell'usabilità e dell'accessibilità
-  - Espansione delle funzionalità di analisi fondamentale
-  - Implementazione di nuove metriche di rischio e rendimento
-  - Integrazione di strumenti di backtesting avanzati
+### 6.1 Frontend Deployment (Vercel)
 
-7.2 Sviluppi Tecnici
-• Miglioramento dell'architettura software:
-  - Ottimizzazione del codice per performance e manutenibilità
-  - Implementazione di test automatizzati
-  - Miglioramento della gestione degli errori e logging
-  - Ottimizzazione del caching e della gestione della memoria
-  - Implementazione di strategie di lazy loading per i dati
+#### **Configurazione**
+- **URL**: https://student-analyst.vercel.app
+- **Build**: Automatico su push a `master`
+- **Environment**: Production-ready con ottimizzazioni
+- **CDN**: Distribuzione globale per performance ottimali
 
-7.3 Espansioni Funzionali
-• Nuove funzionalità in sviluppo:
-  - Integrazione con API di news finanziarie per sentiment analysis
-  - Implementazione di algoritmi di machine learning per pattern recognition
-  - Sviluppo di dashboard personalizzabili
-  - Creazione di quiz didattici interattivi
-  - Implementazione di strategie di trading automatizzate
+#### **Monitoring**
+- **Uptime**: Monitoraggio continuo della disponibilità
+- **Performance**: Tracciamento Core Web Vitals
+- **Error Tracking**: Monitoraggio errori frontend
+- **Analytics**: Metriche di utilizzo e engagement
 
-7.4 Integrazioni Future
-• Pianificazione di nuove integrazioni:
-  - Connessione con broker per trading reale
-  - Integrazione con piattaforme di social trading
-  - Supporto per criptovalute e mercati emergenti
-  - Implementazione di API per integrazione con altri software
-  - Sviluppo di plugin per browser e mobile
+### 6.2 Backend Deployment (Render)
 
-8. MODULARITÀ E ESPANDIBILITÀ
+#### **Configurazione**
+- **URL**: https://student-analyst.onrender.com
+- **Runtime**: Node.js 18+ con TypeScript
+- **Database**: PostgreSQL per dati persistenti
+- **Cache**: Redis per cache distribuita
 
-8.1 Architettura Modulare
-• Ogni modulo è progettato come unità indipendente:
-  - Interfaccia standardizzata per comunicazione tra moduli
-  - Gestione autonoma dei dati e delle dipendenze
-  - Possibilità di attivazione/disattivazione senza impatto sul sistema
-  - Documentazione interna completa e standardizzata
-  - Test unitari e di integrazione
+#### **Health Monitoring**
+- **Health Check**: Endpoint `/health` per monitoraggio
+- **Logs**: Logging strutturato per debugging
+- **Metrics**: Metriche di performance e utilizzo
+- **Alerting**: Notifiche automatiche per problemi
 
-8.2 Sistema di Plugin
-• Architettura estensibile tramite plugin:
-  - API standardizzata per sviluppo di plugin
-  - Sistema di registrazione e gestione dei plugin
-  - Controllo delle versioni e compatibilità
-  - Gestione delle dipendenze tra plugin
-  - Documentazione per sviluppatori di plugin
+### 6.3 CI/CD Pipeline
 
-8.3 Gestione delle Dipendenze
-• Sistema di gestione dipendenze robusto:
-  - Controllo delle versioni delle librerie
-  - Gestione delle compatibilità
-  - Ottimizzazione del bundle size
-  - Lazy loading delle dipendenze
-  - Cache intelligente per performance
+#### **Automation**
+- **GitHub Actions**: Automazione build e deploy
+- **Testing**: Esecuzione automatica di tutti i test
+- **Quality Gates**: Controlli di qualità prima del deploy
+- **Rollback**: Capacità di rollback automatico
 
-8.4 Scalabilità e Performance
-• Strategie per la scalabilità:
-  - Architettura distribuita per calcoli pesanti
-  - Sistema di caching multilevel
-  - Ottimizzazione delle query e delle operazioni I/O
-  - Gestione efficiente della memoria
-  - Monitoraggio delle performance in tempo reale
-
-[Segue con la sezione 9: FUNZIONALITÀ AVANZATE E METRICHE]
+#### **Environment Management**
+- **Environment Variables**: Gestione sicura delle configurazioni
+- **Secrets Management**: Protezione di chiavi e segreti
+- **Configuration**: Configurazioni specifiche per ambiente
+- **Backup**: Backup automatici di dati critici
 
 ________________________________________
-9. FUNZIONALITÀ AVANZATE E METRICHE
+7. DOCUMENTAZIONE E MANUTENZIONE
 
-9.1 Metriche Quantitative di Performance
-• Rendimento e Crescita:
-  - CAGR (Compound Annual Growth Rate)
-    * Formula: CAGR = (End Value / Start Value)^(1/n) - 1
-    * Interpretazione: tasso di crescita annuale composto
-    * Modalità studente: spiegazione differenza tra media aritmetica e geometrica
-    * Visualizzazione: grafico storico con CAGR evidenziato
-  
-  - Volatilità Annualizzata
-    * Formula: σ * sqrt(252) per dati giornalieri
-    * Interpretazione: deviazione standard annualizzata
-    * Tooltip: spiegazione del concetto di volatilità
-    * Confronto: volatilità storica vs implicita
+### 7.1 Documentazione Tecnica
 
-  - Sharpe Ratio
-    * Formula: (Rp - Rf) / σp
-    * Interpretazione: rendimento aggiustato per il rischio
-    * Risk-free rate: aggiornabile dall'utente
-    * Benchmark: >1 buono, >2 ottimo, >3 eccellente
-  
-  - Sortino Ratio
-    * Formula: (Rp - Rf) / σd
-    * Interpretazione: rendimento aggiustato per il rischio al ribasso
-    * Vantaggio: considera solo la volatilità negativa
-  
-  - Calmar Ratio
-    * Formula: CAGR / Max Drawdown
-    * Interpretazione: efficienza nella gestione dei drawdown
-    * Utilizzo: confronto tra strategie con drawdown bassi
+#### **Code Documentation**
+- **JSDoc**: Documentazione automatica delle funzioni
+- **README**: Guida completa per sviluppatori
+- **API Documentation**: Documentazione dettagliata delle API
+- **Architecture Docs**: Documentazione dell'architettura
 
-9.2 Metriche di Rischio Avanzate
-• Analisi del Rischio:
-  - Value at Risk (VaR)
-    * Tipi: Parametrico, Storico, Monte Carlo
-    * Formula Parametrica: VaR = μ - z * σ
-    * Interpretazione: perdita massima attesa in X% dei casi
-    * Visualizzazione: grafico distribuzione con VaR evidenziato
-  
-  - Conditional VaR (CVaR)
-    * Formula: media delle perdite oltre il VaR
-    * Interpretazione: perdita media nei peggiori X% casi
-    * Vantaggio: considera la coda della distribuzione
-  
-  - Maximum Drawdown
-    * Calcolo: massima perdita da picco a minimo
-    * Visualizzazione: evidenziato nel grafico storico
-    * Tooltip: "la perdita massima che avresti subito"
-    * Analisi: durata e recovery del drawdown
+#### **User Documentation**
+- **User Guide**: Guida completa per utenti
+- **Tutorial**: Tutorial passo-passo per funzionalità
+- **FAQ**: Domande frequenti e risposte
+- **Video Tutorials**: Tutorial video per funzionalità complesse
 
-  - Gain-to-Pain Ratio
-    * Formula: somma rendimenti positivi / somma rendimenti negativi
-    * Interpretazione: efficienza nel generare rendimenti vs perdite
-  
-  - Omega Ratio
-    * Formula: integrale rendimenti positivi / integrale rendimenti negativi
-    * Interpretazione: probabilità-weighted return ratio
+### 7.2 Maintenance Strategy
 
-9.3 Analisi di Regressione e Fattori
-• CAPM e Fattori:
-  - Alpha e Beta
-    * Da regressione CAPM contro benchmark selezionabile
-    * Visualizzazione: retta regressione, valori e interpretazione
-    * Analisi: significatività statistica
-  
-  - R² e Errori Standard
-    * Interpretazione: bontà del fit e precisione delle stime
-    * Visualizzazione: grafico scatter con retta regressione
-  
-  - Fama-French Fattori
-    * Supporto per modelli 3/4/5 fattori
-    * Importazione dati da Ken French library
-    * Regressione multifattoriale con visualizzazione a barre
-    * Spiegazione: interpretazione dei carichi fattoriali
+#### **Regular Maintenance**
+- **Dependency Updates**: Aggiornamenti regolari delle dipendenze
+- **Security Patches**: Applicazione tempestiva di patch di sicurezza
+- **Performance Optimization**: Ottimizzazioni continue delle performance
+- **Bug Fixes**: Risoluzione rapida di bug segnalati
 
-9.4 Analisi Fondamentale Dettagliata
-• Multipli di Valutazione:
-  - P/E (Price/Earnings)
-    * Formula: Prezzo / EPS
-    * Interpretazione: anni per ripagare l'investimento
-    * Confronto: settore, storico, peer group
-  
-  - EV/EBITDA
-    * Formula: Enterprise Value / EBITDA
-    * Interpretazione: valutazione aziendale indipendente dalla struttura
-    * Utilizzo: confronto tra aziende con diversa leva finanziaria
-  
-  - P/B (Price/Book)
-    * Formula: Prezzo / Book Value per azione
-    * Interpretazione: premium sul valore contabile
-    * Analisi: settori ad alta vs bassa intensità di capitale
-
-• Indicatori di Crescita e Redditività:
-  - ROE (Return on Equity)
-    * Formula: Net Income / Shareholders' Equity
-    * Analisi: efficienza del capitale proprio
-  
-  - ROIC (Return on Invested Capital)
-    * Formula: NOPAT / Invested Capital
-    * Interpretazione: efficienza del capitale investito
-  
-  - EPS Growth
-    * Formula: (EPS t - EPS t-1) / EPS t-1
-    * Analisi: trend 1-3-5 anni
-    * Confronto: vs settore e benchmark
-
-9.5 Ottimizzazione Portafoglio
-• Mean-Variance Optimization:
-  - Frontiera Efficiente
-    * Simulazioni Monte Carlo (5000+ portafogli)
-    * Visualizzazione interattiva
-    * Vincoli personalizzabili (pesi min/max)
-  
-  - Portafogli Ottimali
-    * Max Sharpe
-    * Min CVaR
-    * Min Vol
-    * Visualizzazione pesi e caratteristiche
-
-• Risk Attribution:
-  - Decomposizione del Rischio
-    * Per asset class
-    * Per fattori
-    * Visualizzazione a torta/barre
-  
-  - Style Analysis
-    * Regressione contro fattori di stile
-    * Visualizzazione carichi fattoriali
-
-9.6 Backtesting e Strategie
-• Strategie Tecniche:
-  - Moving Averages
-    * SMA 20/50
-    * Crossover strategies
-    * Visualizzazione segnali
-  
-  - Momentum
-    * Calcolo e ranking
-    * Strategie di rotazione
-    * Performance tracking
-  
-  - Mean Reversion
-    * Indicatori di deviazione
-    * Strategie di contrarian
-    * Test di significatività
-
-• Strategie di Gestione del Rischio:
-  - CPPI (Constant Proportion Portfolio Insurance)
-    * Calcolo floor e multiplier
-    * Simulazione dinamica
-    * Analisi performance
-  
-  - Risk Parity
-    * Calcolo pesi per rischio uguale
-    * Visualizzazione allocazione
-    * Confronto con strategie tradizionali
-
-• Dashboard Risultati:
-  - Metriche di Performance
-    * CAGR, Sharpe, Sortino
-    * Max Drawdown
-    * Win Rate
-  
-  - Analisi di Robustezza
-    * Test out-of-sample
-    * Analisi di sensibilità
-    * Stress testing
-
-[Segue con la sezione 10: DIDATTICA INTEGRATA]
-
-10. DIDATTICA INTEGRATA
-
-10.1 Sistema di Apprendimento
-• Struttura Didattica:
-  - Percorso guidato step-by-step
-  - Esempi pratici e casi reali
-  - Esercizi interattivi
-  - Quiz di verifica
-  - Feedback immediato
-  - Progress tracking
-  - Certificazioni di competenza
-
-10.2 Risorse Didattiche
-• Materiali di Supporto:
-  - Glossario completo e interattivo
-  - Video tutorial
-  - Guide pratiche
-  - Best practices
-  - Case studies
-  - Template di analisi
-  - Cheat sheet
-  - FAQ dettagliate
-
-10.3 Supporto all'Apprendimento
-• Strumenti di Aiuto:
-  - Tooltip contestuali
-  - Info-box dettagliate
-  - Popup esplicativi
-  - Guide contestuali
-  - Suggerimenti intelligenti
-  - Esempi pratici
-  - Tutorial interattivi
-  - Help desk integrato
-
-10.4 Valutazione e Feedback
-• Sistema di Valutazione:
-  - Quiz di verifica
-  - Esercizi pratici
-  - Progetti di analisi
-  - Certificazioni
-  - Feedback automatico
-  - Progress tracking
-  - Report di performance
-  - Suggerimenti personalizzati
-
-[Segue con la sezione 11: LOGO E IDENTITÀ VISIVA]
+#### **Monitoring and Alerts**
+- **Uptime Monitoring**: Monitoraggio continuo della disponibilità
+- **Error Tracking**: Tracciamento automatico degli errori
+- **Performance Monitoring**: Monitoraggio delle performance
+- **User Feedback**: Raccolta e analisi del feedback utenti
 
 ________________________________________
-11. LOGO E IDENTITÀ VISIVA
+8. ROADMAP E SVILUPPI FUTURI
 
-11.1 Logo Ufficiale
-• Il logo ufficiale di Student Analyst è il cappello da laurea blu ("LOGO definitivo").
-• Caratteristiche del logo:
-  - Design minimalista e professionale
-  - Colori istituzionali (blu principale)
-  - Versione monocromatica per documenti
-  - Versione a colori per interfaccia
-  - Dimensioni e proporzioni standardizzate
-  - Area di rispetto definita
-  - Versione responsive per mobile
+### 8.1 Short-term Goals (3-6 mesi)
 
-11.2 Palette Colori
-• Schema colori principale:
-  - Blu istituzionale (#1E3A8A)
-  - Grigio scuro (#1F2937)
-  - Bianco (#FFFFFF)
-  - Accenti e highlights
-  - Colori per grafici e visualizzazioni
-  - Colori per stati e feedback
-  - Colori per temi dark/light
+#### **Feature Enhancements**
+- **Real-time Data**: Integrazione quote in tempo reale
+- **Advanced Analytics**: Analisi tecniche avanzate
+- **Portfolio Management**: Gestione portafogli avanzata
+- **Mobile App**: App mobile nativa
 
-11.3 Typography
-• Font system:
-  - Font principale: Inter
-  - Font secondario: Roboto Mono
-  - Gerarchia tipografica definita
-  - Dimensioni standardizzate
-  - Pesi e stili
-  - Line-height e spacing
-  - Responsive typography
+#### **Performance Improvements**
+- **Caching Optimization**: Ottimizzazione sistema cache
+- **Load Balancing**: Bilanciamento del carico
+- **Database Optimization**: Ottimizzazione query e indici
+- **CDN Enhancement**: Miglioramento distribuzione globale
 
-11.4 Elementi UI
-• Componenti standardizzati:
-  - Bottoni e controlli
-  - Input fields
-  - Cards e containers
-  - Tabelle e griglie
-  - Grafici e visualizzazioni
-  - Icone e simboli
-  - Loading states
-  - Error states
+### 8.2 Medium-term Goals (6-12 mesi)
 
-12. NOTE FINALI
+#### **Advanced Features**
+- **Machine Learning**: Integrazione algoritmi ML per predizioni
+- **Alternative Data**: Integrazione dati alternativi (social, sentiment)
+- **International Markets**: Supporto mercati internazionali
+- **Options Analysis**: Analisi opzioni e derivati
 
-12.1 Importanza del Documento
-• Questo documento rappresenta la "costituzione" di Student Analyst:
-  - Fonte di verità per ogni decisione
-  - Riferimento per lo sviluppo
-  - Guida per la manutenzione
-  - Base per la documentazione
-  - Standard per la qualità
-  - Tracciamento delle decisioni
-  - Storia del progetto
+#### **Platform Expansion**
+- **API Public**: API pubblica per sviluppatori terzi
+- **White-label Solution**: Soluzione white-label per istituzioni
+- **Enterprise Features**: Funzionalità enterprise avanzate
+- **Integration Ecosystem**: Ecosistema di integrazioni
 
-12.2 Manutenzione e Aggiornamento
-• Regole per la manutenzione:
-  - Aggiornamento continuo e tempestivo
-  - Versionamento delle modifiche
-  - Approvazione delle modifiche
-  - Documentazione delle decisioni
-  - Tracciamento delle evoluzioni
-  - Backup e controllo versioni
-  - Review periodiche
+### 8.3 Long-term Vision (1-3 anni)
 
-12.3 Validazione e Qualità
-• Processo di validazione:
-  - Check contro la Bibbia
-  - Test di coerenza
-  - Verifica della completezza
-  - Controllo della qualità
-  - Validazione tecnica
-  - Review peer-to-peer
-  - Approvazione finale
+#### **Market Leadership**
+- **Industry Standard**: Diventare standard di settore per analisi educativa
+- **Global Expansion**: Espansione globale con supporto multilingua
+- **Academic Partnerships**: Partnership con università e istituzioni
+- **Research Platform**: Piattaforma per ricerca accademica
 
-12.4 Conclusione
-Student Analyst è più di un software: è un progetto educativo, professionale e tecnologico che mira a elevare il livello di competenza e consapevolezza nell'analisi finanziaria. Questo documento, la "Bibbia" del progetto, garantisce che ogni aspetto dello sviluppo, dalla progettazione all'implementazione, dalla documentazione alla manutenzione, segua i più alti standard di qualità, coerenza e valore didattico.
+#### **Technology Innovation**
+- **AI Integration**: Integrazione avanzata di intelligenza artificiale
+- **Blockchain Integration**: Integrazione tecnologie blockchain
+- **Quantum Computing**: Preparazione per computing quantistico
+- **AR/VR Experience**: Esperienze immersive in realtà aumentata/virtuale
 
-[FINE DOCUMENTO] 
+________________________________________
+9. CONCLUSIONI E PRINCIPI FONDAMENTALI
+
+Student Analyst rappresenta non solo un software di analisi finanziaria, ma un vero e proprio ecosistema educativo e professionale. La piattaforma è progettata per essere il punto di riferimento mondiale nell'ambito dell'analisi azionaria formativa, combinando la potenza tecnica dei migliori strumenti professionali con la chiarezza didattica delle migliori istituzioni accademiche.
+
+I principi fondamentali che guidano ogni decisione di sviluppo sono:
+
+1. **Eccellenza Tecnica**: Ogni aspetto del software deve raggiungere i più alti standard di qualità, performance e affidabilità.
+
+2. **Accessibilità Educativa**: La piattaforma deve essere accessibile a tutti, indipendentemente dal livello di preparazione iniziale, mantenendo sempre un rigore didattico elevatissimo.
+
+3. **Innovazione Continua**: Student Analyst deve essere sempre all'avanguardia tecnologica, integrando le migliori pratiche e le tecnologie più avanzate.
+
+4. **Esperienza Utente**: L'esperienza utente deve essere sempre al centro di ogni decisione, garantendo usabilità, piacevolezza e efficacia didattica.
+
+5. **Affidabilità e Sicurezza**: La piattaforma deve garantire la massima affidabilità, sicurezza e protezione dei dati degli utenti.
+
+6. **Scalabilità e Performance**: L'architettura deve supportare la crescita e l'espansione senza compromettere performance e qualità.
+
+7. **Documentazione e Manutenzione**: Ogni aspetto del software deve essere documentato e mantenuto secondo i più alti standard professionali.
+
+Student Analyst è destinato a diventare il punto di riferimento mondiale per l'analisi azionaria educativa e professionale, formando una nuova generazione di analisti finanziari consapevoli, critici, preparati e capaci di affrontare con successo le sfide dei mercati moderni.
+
+La piattaforma rappresenta la realizzazione di una visione ambiziosa: unire la potenza quantitativa dei migliori strumenti professionali con la chiarezza didattica delle migliori istituzioni accademiche, creando un'esperienza unica e memorabile per ogni utente che si avvicina al mondo dell'analisi finanziaria.
+
+Student Analyst non è solo un software, ma un compagno di viaggio, una guida, un maestro che accompagna l'utente dalla totale inesperienza fino alla piena padronanza delle tecniche più avanzate di analisi azionaria, con l'obiettivo di formare una nuova generazione di analisti finanziari consapevoli, critici, preparati e capaci di affrontare con successo le sfide dei mercati moderni.
+
+---
+
+**Student Analyst** - La piattaforma di analisi finanziaria per studenti e professionisti. 🎓📊
+
+**Versione**: 2025-06-27  
+**Autore**: Student Analyst Team  
+**Status**: Production Ready con integrazione Yahoo Finance 
