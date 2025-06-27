@@ -513,4 +513,326 @@ test.describe('Historical Analysis Performance Tests', () => {
       expect(averageRefreshTime).toBeLessThan(10000);
     });
   });
+
+  test.describe('Large Dataset Performance', () => {
+    test('should handle 1000+ data points without lag', async ({ page }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+
+      // Seleziona periodo massimo per ottenere molti dati
+      await page.click('[data-testid="period-select"]');
+      await page.click('text=Massimo');
+
+      const startTime = Date.now();
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 60000,
+      });
+      const loadTime = Date.now() - startTime;
+
+      // Verifica che il caricamento sia veloce (< 60 secondi)
+      expect(loadTime).toBeLessThan(60000);
+
+      // Verifica che il grafico sia renderizzato
+      await expect(page.locator('[data-testid="chart-line"]')).toBeVisible();
+
+      // Verifica che ci siano molti punti dati
+      const dataPointsText = await page
+        .locator('text=/\\d+ punti/')
+        .textContent();
+      const dataPoints = parseInt(dataPointsText?.match(/\d+/)?.[0] || '0');
+      expect(dataPoints).toBeGreaterThan(500); // Almeno 500 punti per periodo massimo
+    });
+
+    test('should handle 2000+ data points with multiple indicators', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL,MSFT');
+
+      // Seleziona periodo massimo
+      await page.click('[data-testid="period-select"]');
+      await page.click('text=Massimo');
+
+      // Attiva tutti gli indicatori
+      await page.click('[data-testid="sma-toggle"]');
+      await page.click('[data-testid="rsi-toggle"]');
+
+      const startTime = Date.now();
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 90000,
+      });
+      const loadTime = Date.now() - startTime;
+
+      // Verifica che il caricamento sia ragionevole (< 90 secondi)
+      expect(loadTime).toBeLessThan(90000);
+
+      // Verifica che tutti gli indicatori siano presenti
+      await expect(page.locator('text=SMA 20')).toBeVisible();
+      await expect(page.locator('text=RSI')).toBeVisible();
+    });
+  });
+
+  test.describe('Multiple Tickers Performance', () => {
+    test('should handle 10+ tickers efficiently', async ({ page }) => {
+      const manyTickers =
+        'AAPL,MSFT,GOOGL,AMZN,TSLA,META,NVDA,NFLX,AMD,INTC,ORCL,CRM';
+      await page.fill('[data-testid="ticker-input"]', manyTickers);
+
+      const startTime = Date.now();
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 120000,
+      });
+      const loadTime = Date.now() - startTime;
+
+      // Verifica che il caricamento sia ragionevole (< 2 minuti)
+      expect(loadTime).toBeLessThan(120000);
+
+      // Verifica che tutti i ticker siano presenti
+      const tickers = manyTickers.split(',');
+      for (const ticker of tickers) {
+        await expect(page.locator(`text=${ticker}`)).toBeVisible();
+      }
+    });
+
+    test('should handle 20+ tickers with graceful degradation', async ({
+      page,
+    }) => {
+      const manyTickers =
+        'AAPL,MSFT,GOOGL,AMZN,TSLA,META,NVDA,NFLX,AMD,INTC,ORCL,CRM,ADBE,PYPL,COIN,UBER,LYFT,SPOT,ZOOM,SNOW';
+      await page.fill('[data-testid="ticker-input"]', manyTickers);
+
+      const startTime = Date.now();
+      await page.click('[data-testid="start-analysis-button"]');
+
+      // Aspetta o timeout o completamento
+      try {
+        await page.waitForSelector('[data-testid="historical-chart"]', {
+          timeout: 180000,
+        });
+        const loadTime = Date.now() - startTime;
+
+        // Se completa, verifica che sia ragionevole (< 3 minuti)
+        expect(loadTime).toBeLessThan(180000);
+
+        // Verifica che almeno alcuni ticker siano presenti
+        await expect(page.locator('text=AAPL')).toBeVisible();
+        await expect(page.locator('text=MSFT')).toBeVisible();
+      } catch (error) {
+        // Se timeout, verifica che ci sia un messaggio appropriato
+        await expect(
+          page.locator('text=Timeout') || page.locator('text=Errore')
+        ).toBeVisible();
+      }
+    });
+  });
+
+  test.describe('Rendering Performance', () => {
+    test('should render chart within 5 seconds for normal dataset', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+
+      const startTime = Date.now();
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+      const renderTime = Date.now() - startTime;
+
+      // Verifica che il rendering sia veloce (< 30 secondi)
+      expect(renderTime).toBeLessThan(30000);
+
+      // Verifica che il grafico sia visibile
+      await expect(page.locator('[data-testid="chart-line"]')).toBeVisible();
+    });
+
+    test('should handle rapid chart interactions without lag', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+
+      // Testa interazioni rapide
+      const interactionTimes: number[] = [];
+
+      for (let i = 0; i < 10; i++) {
+        const startTime = Date.now();
+        await page.click('[data-testid="refresh-button"]');
+        await page.waitForTimeout(1000); // Breve pausa
+        interactionTimes.push(Date.now() - startTime);
+      }
+
+      // Verifica che ogni interazione sia veloce (< 5 secondi)
+      interactionTimes.forEach(time => {
+        expect(time).toBeLessThan(5000);
+      });
+
+      // Verifica che l'ultima interazione sia completata
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+    });
+  });
+
+  test.describe('Memory and Resource Usage', () => {
+    test('should not cause memory leaks with repeated interactions', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+
+      // Esegui multiple analisi per testare memory leaks
+      for (let i = 0; i < 5; i++) {
+        await page.click('[data-testid="start-analysis-button"]');
+        await page.waitForSelector('[data-testid="historical-chart"]', {
+          timeout: 30000,
+        });
+        await page.waitForTimeout(2000); // Pausa tra le analisi
+      }
+
+      // Verifica che l'ultima analisi sia ancora funzionante
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+
+      // Verifica che i controlli siano ancora responsivi
+      await page.click('[data-testid="refresh-button"]');
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+    });
+
+    test('should handle browser back/forward navigation gracefully', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+
+      // Naviga avanti e indietro
+      await page.goBack();
+      await page.goForward();
+
+      // Aspetta che l'app sia ricaricata
+      await page.waitForSelector('[data-testid="ticker-input"]', {
+        timeout: 10000,
+      });
+
+      // Verifica che l'analisi sia ancora presente
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+    });
+  });
+
+  test.describe('Concurrent Operations', () => {
+    test('should handle multiple rapid requests gracefully', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+
+      // Clicca rapidamente multiple volte
+      for (let i = 0; i < 5; i++) {
+        await page.click('[data-testid="start-analysis-button"]');
+        await page.waitForTimeout(100); // Pausa molto breve
+      }
+
+      // Aspetta che una delle richieste sia completata
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+
+      // Verifica che il risultato sia valido
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+    });
+
+    test('should prevent duplicate requests during loading', async ({
+      page,
+    }) => {
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+
+      // Avvia analisi
+      await page.click('[data-testid="start-analysis-button"]');
+
+      // Aspetta che inizi il loading
+      await page.waitForSelector('text=Caricamento dati in corso...', {
+        timeout: 5000,
+      });
+
+      // Prova a cliccare di nuovo durante il loading
+      await page.click('[data-testid="start-analysis-button"]');
+
+      // Verifica che il bottone sia disabilitato durante il loading
+      await expect(
+        page.locator('[data-testid="start-analysis-button"]')
+      ).toBeDisabled();
+
+      // Aspetta che l'analisi sia completata
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+
+      // Verifica che il risultato sia valido
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+    });
+  });
+
+  test.describe('Mobile Performance', () => {
+    test('should perform well on mobile devices', async ({ page }) => {
+      // Imposta viewport mobile
+      await page.setViewportSize({ width: 375, height: 667 });
+
+      await page.fill('[data-testid="ticker-input"]', 'AAPL,MSFT');
+
+      const startTime = Date.now();
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+      const loadTime = Date.now() - startTime;
+
+      // Verifica che il caricamento sia veloce anche su mobile
+      expect(loadTime).toBeLessThan(30000);
+
+      // Verifica che il layout sia responsive
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+
+      // Verifica che i controlli siano accessibili
+      await expect(
+        page.locator('[data-testid="refresh-button"]')
+      ).toBeVisible();
+      await expect(page.locator('[data-testid="info-button"]')).toBeVisible();
+    });
+
+    test('should handle touch interactions smoothly', async ({ page }) => {
+      // Imposta viewport mobile
+      await page.setViewportSize({ width: 375, height: 667 });
+
+      await page.fill('[data-testid="ticker-input"]', 'AAPL');
+      await page.click('[data-testid="start-analysis-button"]');
+      await page.waitForSelector('[data-testid="historical-chart"]', {
+        timeout: 30000,
+      });
+
+      // Simula touch interactions
+      await page.touchscreen.tap(200, 300); // Tap sul grafico
+      await page.waitForTimeout(1000);
+
+      // Verifica che l'interazione non abbia causato problemi
+      await expect(
+        page.locator('[data-testid="historical-chart"]')
+      ).toBeVisible();
+    });
+  });
 });

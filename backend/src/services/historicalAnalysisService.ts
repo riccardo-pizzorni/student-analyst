@@ -187,10 +187,24 @@ export class HistoricalAnalysisService {
         throw new Error('Nessun dato valido ottenuto per i ticker richiesti');
       }
 
-      // 3. Processa i dati storici
-      const processedData = await Promise.all(
+      // 3. Processa i dati storici (prima passata, per raccogliere tutte le date)
+      const processedDataRaw = await Promise.all(
         successfulData.map(async ({ ticker, data }) => {
           return this.processHistoricalData(ticker, data, params);
+        })
+      );
+
+      // Calcola l'unione di tutte le date presenti in almeno una serie
+      const allDatesSet = new Set<string>();
+      processedDataRaw.forEach(d =>
+        d.dates.forEach(date => allDatesSet.add(date))
+      );
+      const allDates = Array.from(allDatesSet).sort();
+
+      // 3b. Riallinea ogni ticker su tutte le date (con null dove mancano dati)
+      const processedData = await Promise.all(
+        successfulData.map(async ({ ticker, data }) => {
+          return this.processHistoricalData(ticker, data, params, allDates);
         })
       );
 
@@ -291,6 +305,20 @@ export class HistoricalAnalysisService {
   }
 
   /**
+   * Allinea una serie di dati a tutte le date richieste, riempiendo i buchi con null
+   */
+  private alignSeriesToAllDates<T = number>(
+    allDates: string[],
+    dates: string[],
+    values: T[]
+  ): (T | null)[] {
+    const dateToValue = new Map(dates.map((d, i) => [d, values[i]]));
+    return allDates.map(date =>
+      dateToValue.has(date) ? dateToValue.get(date)! : null
+    );
+  }
+
+  /**
    * Processa i dati storici per un singolo ticker
    */
   private async processHistoricalData(
@@ -305,7 +333,8 @@ export class HistoricalAnalysisService {
       volume: number;
       timestamp?: string;
     }>,
-    params: HistoricalAnalysisParams
+    params: HistoricalAnalysisParams,
+    allDates?: string[] // opzionale: se passato, allinea la serie
   ): Promise<ProcessedHistoricalData> {
     // Ordina i dati per data
     const sortedData = data.sort(
@@ -368,12 +397,106 @@ export class HistoricalAnalysisService {
       );
     }
 
+    // Se allDates è passato, allinea tutte le serie
+    let alignedDates = dates;
+    let alignedPrices = prices;
+    let alignedReturns = returns;
+    let alignedTechnicalIndicators = technicalIndicators;
+    if (allDates && allDates.length > 0) {
+      alignedDates = allDates;
+      alignedPrices = {
+        open: this.alignSeriesToAllDates(allDates, dates, prices.open),
+        high: this.alignSeriesToAllDates(allDates, dates, prices.high),
+        low: this.alignSeriesToAllDates(allDates, dates, prices.low),
+        close: this.alignSeriesToAllDates(allDates, dates, prices.close),
+        adjustedClose: this.alignSeriesToAllDates(
+          allDates,
+          dates,
+          prices.adjustedClose
+        ),
+        volume: this.alignSeriesToAllDates(allDates, dates, prices.volume),
+      };
+      alignedReturns = {
+        daily: this.alignSeriesToAllDates(
+          allDates,
+          dates.slice(1),
+          returns.daily
+        ),
+        cumulative: this.alignSeriesToAllDates(
+          allDates,
+          dates.slice(1),
+          returns.cumulative
+        ),
+        logReturns: this.alignSeriesToAllDates(
+          allDates,
+          dates.slice(1),
+          returns.logReturns
+        ),
+      };
+      alignedTechnicalIndicators = {
+        sma20: this.alignSeriesToAllDates(
+          allDates,
+          dates,
+          technicalIndicators.sma20
+        ),
+        sma50: this.alignSeriesToAllDates(
+          allDates,
+          dates,
+          technicalIndicators.sma50
+        ),
+        sma200: this.alignSeriesToAllDates(
+          allDates,
+          dates,
+          technicalIndicators.sma200
+        ),
+        rsi: this.alignSeriesToAllDates(
+          allDates,
+          dates,
+          technicalIndicators.rsi
+        ),
+        bollingerBands: {
+          upper: this.alignSeriesToAllDates(
+            allDates,
+            dates,
+            technicalIndicators.bollingerBands.upper
+          ),
+          middle: this.alignSeriesToAllDates(
+            allDates,
+            dates,
+            technicalIndicators.bollingerBands.middle
+          ),
+          lower: this.alignSeriesToAllDates(
+            allDates,
+            dates,
+            technicalIndicators.bollingerBands.lower
+          ),
+        },
+        macd: {
+          macd: this.alignSeriesToAllDates(
+            allDates,
+            dates,
+            technicalIndicators.macd.macd
+          ),
+          signal: this.alignSeriesToAllDates(
+            allDates,
+            dates,
+            technicalIndicators.macd.signal
+          ),
+          histogram: this.alignSeriesToAllDates(
+            allDates,
+            dates,
+            technicalIndicators.macd.histogram
+          ),
+        },
+      };
+    }
+
     return {
       symbol,
-      dates,
-      prices,
-      returns,
-      technicalIndicators,
+      dates: alignedDates,
+      prices: alignedPrices,
+      returns: alignedReturns,
+      technicalIndicators: alignedTechnicalIndicators,
       performanceMetrics,
     };
   }

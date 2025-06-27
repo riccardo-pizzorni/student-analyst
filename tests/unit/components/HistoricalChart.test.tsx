@@ -62,7 +62,7 @@ describe('HistoricalChart', () => {
             render(<HistoricalChart />);
 
             expect(screen.getByText('Caricamento dati in corso...')).toBeInTheDocument();
-            expect(screen.getByText('Recupero dati storici da Alpha Vantage')).toBeInTheDocument();
+            expect(screen.getByText('Recupero dati storici da Yahoo Finance')).toBeInTheDocument();
             expect(screen.getByRole('button', { name: /aggiornamento/i })).toBeDisabled();
         });
 
@@ -401,6 +401,366 @@ describe('HistoricalChart', () => {
             rerender(<HistoricalChart />);
 
             expect(screen.getByTestId('chart-line')).toBeInTheDocument();
+        });
+    });
+
+    describe('Edge Cases and Data Gaps', () => {
+        it('should show warning for incomplete series (META example)', () => {
+            const mockData = {
+                historicalData: {
+                    labels: ['2010-01-01', '2010-01-02', '2013-01-01', '2013-01-02', '2024-01-01'],
+                    datasets: [
+                        {
+                            label: 'AAPL - Prezzo',
+                            data: [25.0, 25.5, 50.0, 51.0, 150.0],
+                            borderColor: '#FF6384',
+                        },
+                        {
+                            label: 'META - Prezzo',
+                            data: [null, null, 25.0, 26.0, null], // META si ferma al 2013
+                            borderColor: '#36A2EB',
+                        },
+                    ],
+                },
+                metadata: {
+                    symbols: ['AAPL', 'META'],
+                    period: { start: '2010-01-01', end: '2024-01-01' },
+                    frequency: 'daily',
+                    dataPoints: 5,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            expect(screen.getByText(/Attenzione: dati disponibili solo fino a una certa data per META/)).toBeInTheDocument();
+            expect(screen.getByText(/Verifica la copertura storica del titolo/)).toBeInTheDocument();
+        });
+
+        it('should show warning for missing tickers', () => {
+            const mockData = {
+                historicalData: {
+                    labels: ['2024-01-01', '2024-01-02'],
+                    datasets: [
+                        {
+                            label: 'AAPL - Prezzo',
+                            data: [150.25, 155.50],
+                            borderColor: '#FF6384',
+                        },
+                    ],
+                },
+                metadata: {
+                    symbols: ['AAPL', 'INVALID', 'MISSING'], // Ticker richiesti ma non trovati
+                    period: { start: '2024-01-01', end: '2024-01-02' },
+                    frequency: 'daily',
+                    dataPoints: 2,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            expect(screen.getByText(/Ticker INVALID, MISSING non ha dati disponibili/)).toBeInTheDocument();
+            expect(screen.getByText(/Verifica il simbolo o prova un periodo diverso/)).toBeInTheDocument();
+        });
+
+        it('should show warning for significant temporal gaps (IPO example)', () => {
+            const mockData = {
+                historicalData: {
+                    labels: ['2020-01-01', '2020-01-02', '2020-12-01', '2020-12-02', '2021-01-01'],
+                    datasets: [
+                        {
+                            label: 'ABNB - Prezzo', // IPO recente con molti buchi
+                            data: [null, null, 150.0, 155.0, 160.0], // 80% null = buchi significativi
+                            borderColor: '#FFCE56',
+                        },
+                    ],
+                },
+                metadata: {
+                    symbols: ['ABNB'],
+                    period: { start: '2020-01-01', end: '2021-01-01' },
+                    frequency: 'daily',
+                    dataPoints: 5,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            expect(screen.getByText(/Rilevati buchi temporali significativi nei dati/)).toBeInTheDocument();
+            expect(screen.getByText(/IPO recente, merge aziendale o cambio di simbolo/)).toBeInTheDocument();
+        });
+
+        it('should handle null values in tooltip gracefully', () => {
+            const mockData = {
+                historicalData: {
+                    labels: ['2024-01-01', '2024-01-02'],
+                    datasets: [
+                        {
+                            label: 'AAPL - Prezzo',
+                            data: [150.25, null], // Valore null per test tooltip
+                            borderColor: '#FF6384',
+                        },
+                    ],
+                },
+                metadata: {
+                    symbols: ['AAPL'],
+                    period: { start: '2024-01-01', end: '2024-01-02' },
+                    frequency: 'daily',
+                    dataPoints: 2,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            // Verifica che il grafico si renderizzi senza crash
+            expect(screen.getByTestId('chart-line')).toBeInTheDocument();
+            expect(screen.getByText('(+0.00% | 1 punti)')).toBeInTheDocument(); // Solo 1 punto valido
+        });
+
+        it('should handle multiple warning states simultaneously', () => {
+            const mockData = {
+                historicalData: {
+                    labels: ['2020-01-01', '2020-01-02', '2023-01-01', '2023-01-02'],
+                    datasets: [
+                        {
+                            label: 'AAPL - Prezzo',
+                            data: [100.0, 101.0, 150.0, 151.0],
+                            borderColor: '#FF6384',
+                        },
+                        {
+                            label: 'META - Prezzo',
+                            data: [null, null, 200.0, null], // Incompleta
+                            borderColor: '#36A2EB',
+                        },
+                        {
+                            label: 'ABNB - Prezzo',
+                            data: [null, null, null, 120.0], // Molti buchi
+                            borderColor: '#FFCE56',
+                        },
+                    ],
+                },
+                metadata: {
+                    symbols: ['AAPL', 'META', 'ABNB', 'MISSING'], // Ticker mancante
+                    period: { start: '2020-01-01', end: '2023-01-02' },
+                    frequency: 'daily',
+                    dataPoints: 4,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            // Verifica che tutti i warning siano presenti
+            expect(screen.getByText(/META/)).toBeInTheDocument(); // Serie incompleta
+            expect(screen.getByText(/MISSING/)).toBeInTheDocument(); // Ticker mancante
+            expect(screen.getByText(/buchi temporali significativi/)).toBeInTheDocument(); // ABNB con buchi
+        });
+    });
+
+    describe('Performance and Large Datasets', () => {
+        it('should handle large datasets without performance issues', () => {
+            // Simula dataset grande (1000 punti)
+            const labels = Array.from({ length: 1000 }, (_, i) => `2024-01-${String(i + 1).padStart(2, '0')}`);
+            const data = Array.from({ length: 1000 }, (_, i) => 100 + Math.sin(i * 0.1) * 10);
+
+            const mockData = {
+                historicalData: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'AAPL - Prezzo',
+                            data,
+                            borderColor: '#FF6384',
+                        },
+                        {
+                            label: 'MSFT - Prezzo',
+                            data: data.map(v => v * 1.1),
+                            borderColor: '#36A2EB',
+                        },
+                        {
+                            label: 'GOOGL - Prezzo',
+                            data: data.map(v => v * 1.2),
+                            borderColor: '#FFCE56',
+                        },
+                    ],
+                },
+                metadata: {
+                    symbols: ['AAPL', 'MSFT', 'GOOGL'],
+                    period: { start: '2024-01-01', end: '2024-12-31' },
+                    frequency: 'daily',
+                    dataPoints: 1000,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            const startTime = performance.now();
+            render(<HistoricalChart />);
+            const endTime = performance.now();
+
+            // Verifica che il rendering sia veloce (< 100ms)
+            expect(endTime - startTime).toBeLessThan(100);
+            expect(screen.getByTestId('chart-line')).toBeInTheDocument();
+            expect(screen.getByText(/1000 punti/)).toBeInTheDocument();
+        });
+
+        it('should handle many tickers without UI lag', () => {
+            // Simula molti ticker (10 ticker)
+            const tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX', 'AMD', 'INTC'];
+            const datasets = tickers.map((ticker, index) => ({
+                label: `${ticker} - Prezzo`,
+                data: [100 + index * 10, 105 + index * 10, 110 + index * 10],
+                borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+            }));
+
+            const mockData = {
+                historicalData: {
+                    labels: ['2024-01-01', '2024-01-02', '2024-01-03'],
+                    datasets,
+                },
+                metadata: {
+                    symbols: tickers,
+                    period: { start: '2024-01-01', end: '2024-01-03' },
+                    frequency: 'daily',
+                    dataPoints: 3,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            const startTime = performance.now();
+            render(<HistoricalChart />);
+            const endTime = performance.now();
+
+            // Verifica che il rendering sia veloce anche con molti ticker
+            expect(endTime - startTime).toBeLessThan(50);
+            expect(screen.getByTestId('chart-line')).toBeInTheDocument();
+
+            // Verifica che tutti i ticker siano presenti nei metadata
+            tickers.forEach(ticker => {
+                expect(screen.getByText(ticker)).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe('Accessibility and Responsive Design', () => {
+        it('should have proper aria-labels for all interactive elements', () => {
+            const mockData = {
+                historicalData: {
+                    labels: ['2024-01-01'],
+                    datasets: [{ label: 'AAPL - Prezzo', data: [150.25], borderColor: '#FF6384' }],
+                },
+                metadata: {
+                    symbols: ['AAPL'],
+                    period: { start: '2024-01-01', end: '2024-01-01' },
+                    frequency: 'daily',
+                    dataPoints: 1,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            // Verifica aria-label sui bottoni
+            expect(screen.getByRole('button', { name: /aggiorna dati storici/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /informazioni sul grafico/i })).toBeInTheDocument();
+
+            // Verifica aria-label sugli switch
+            expect(screen.getByRole('switch', { name: /mostra\/nascondi sma 20/i })).toBeInTheDocument();
+            expect(screen.getByRole('switch', { name: /mostra\/nascondi rsi/i })).toBeInTheDocument();
+        });
+
+        it('should be keyboard navigable', async () => {
+            const user = userEvent.setup();
+            const mockData = {
+                historicalData: {
+                    labels: ['2024-01-01'],
+                    datasets: [{ label: 'AAPL - Prezzo', data: [150.25], borderColor: '#FF6384' }],
+                },
+                metadata: {
+                    symbols: ['AAPL'],
+                    period: { start: '2024-01-01', end: '2024-01-01' },
+                    frequency: 'daily',
+                    dataPoints: 1,
+                },
+            };
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+            });
+
+            render(<HistoricalChart />);
+
+            // Navigazione con Tab
+            await user.tab();
+            expect(screen.getByRole('button', { name: /aggiorna dati storici/i })).toHaveFocus();
+
+            await user.tab();
+            expect(screen.getByRole('button', { name: /informazioni sul grafico/i })).toHaveFocus();
+
+            // Test attivazione con Enter
+            await user.keyboard('{Enter}');
+            expect(mockToast.title).toHaveBeenCalledWith('Informazioni sul grafico');
         });
     });
 }); 
