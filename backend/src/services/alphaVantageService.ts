@@ -444,6 +444,7 @@ export class AlphaVantageService {
       function: apiFunction,
       symbol: symbol.toUpperCase(),
       datatype: 'json',
+      apikey: process.env.ALPHA_VANTAGE_API_KEY || '',
     };
 
     // Parametri specifici per intraday
