@@ -25,6 +25,33 @@ export interface AnalysisApiResponse {
     diversificationIndex: number;
     averageCorrelation: number;
   } | null;
+  marketPhases?: {
+    bullMarkets: Array<{
+      start: string;
+      end: string;
+      duration: number;
+      return: number;
+    }>;
+    bearMarkets: Array<{
+      start: string;
+      end: string;
+      duration: number;
+      return: number;
+    }>;
+    consolidation: Array<{ start: string; end: string; duration: number }>;
+  };
+  metadata?: {
+    analysisDate: string;
+    symbols: string[];
+    period: { start: string; end: string };
+    frequency: string;
+    dataPoints: number;
+    processingTime: number;
+    dataSources?: {
+      primary: string;
+      fallbacks: string[];
+    };
+  };
 }
 
 interface AnalysisParams {

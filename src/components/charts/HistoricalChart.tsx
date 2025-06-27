@@ -91,14 +91,15 @@ const options: ChartOptions<'line'> = {
                 label: (context) => {
                     const label = context.dataset.label || '';
                     const value = context.parsed.y;
-
-                    // Formatta i valori in base al tipo di indicatore
+                    if (value === null || value === undefined || isNaN(value)) {
+                        return `${label}: Dato mancante`;
+                    }
                     if (label.includes('RSI')) {
-                        return `${label}: ${value.toFixed(2)}`;
+                        return `${label}: ${Number(value).toFixed(2)}`;
                     } else if (label.includes('Volume')) {
-                        return `${label}: ${value.toLocaleString()}`;
+                        return `${label}: ${Number(value).toLocaleString()}`;
                     } else {
-                        return `${label}: $${value.toFixed(2)}`;
+                        return `${label}: $${Number(value).toFixed(2)}`;
                     }
                 },
             },
@@ -234,9 +235,25 @@ const HistoricalChart = () => {
         });
     }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume, showBollinger, showMACD]);
 
+    // Calcola ticker con dati interrotti (es. ultimi punti null)
+    const incompleteSeries = useMemo(() => {
+        if (!filteredDatasets || filteredDatasets.length === 0) return [];
+        return filteredDatasets
+            .filter(ds => {
+                if (!ds.data || ds.data.length === 0) return false;
+                // Se almeno uno degli ultimi 5 punti è null, consideriamo la serie interrotta
+                const lastPoints = ds.data.slice(-5);
+                return lastPoints.some(v => v === null);
+            })
+            .map(ds => ds.label || '');
+    }, [filteredDatasets]);
+
     const chartData = {
         labels: rawChartData.labels,
-        datasets: filteredDatasets,
+        datasets: filteredDatasets.map(ds => ({
+            ...ds,
+            spanGaps: true, // Attiva linee spezzate tra i buchi
+        })),
     };
 
     // Calcola statistiche per il tooltip informativo
@@ -244,26 +261,24 @@ const HistoricalChart = () => {
         if (!analysisResults?.historicalData?.datasets || analysisResults.historicalData.datasets.length === 0) {
             return null;
         }
-
         const priceDataset = analysisResults.historicalData.datasets.find(d =>
             d.label?.includes('Prezzo') && !d.label?.includes('SMA')
         );
-
         if (!priceDataset || !priceDataset.data || priceDataset.data.length === 0) {
             return null;
         }
-
-        const prices = priceDataset.data;
+        // Fallback robusto: trova il primo e ultimo valore non null
+        const prices = priceDataset.data.filter(v => v !== null && v !== undefined && !isNaN(Number(v)));
+        if (prices.length === 0) return null;
         const firstPrice = prices[0];
         const lastPrice = prices[prices.length - 1];
         const change = lastPrice - firstPrice;
-        const changePercent = (change / firstPrice) * 100;
-
+        const changePercent = firstPrice !== 0 ? (change / firstPrice) * 100 : 0;
         return {
-            firstPrice: firstPrice.toFixed(2),
-            lastPrice: lastPrice.toFixed(2),
-            change: change.toFixed(2),
-            changePercent: changePercent.toFixed(2),
+            firstPrice: Number(firstPrice).toFixed(2),
+            lastPrice: Number(lastPrice).toFixed(2),
+            change: Number(change).toFixed(2),
+            changePercent: Number(changePercent).toFixed(2),
             dataPoints: prices.length,
         };
     };
@@ -343,6 +358,14 @@ const HistoricalChart = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Messaggio warning per serie incomplete */}
+            {incompleteSeries.length > 0 && (
+                <div className="mb-4 p-3 bg-yellow-900/60 text-yellow-200 rounded-lg text-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-yellow-300"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Attenzione: dati disponibili solo fino a una certa data per {incompleteSeries.join(', ')}. Verifica la copertura storica del titolo.
+                </div>
+            )}
 
             {/* Statistiche rapide */}
             {stats && (
