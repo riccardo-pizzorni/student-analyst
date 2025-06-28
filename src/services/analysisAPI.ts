@@ -91,6 +91,16 @@ export const fetchAnalysisData = async (
     throw new Error(errorData.error || `Errore del server: ${response.status}`);
   }
 
-  const results: AnalysisApiResponse = await response.json();
-  return results;
+  const responseData = await response.json();
+
+  // Il backend restituisce { success: true, data: {...}, timestamp: "..." }
+  // Estraiamo solo il campo 'data' che contiene i dati dell'analisi
+  if (responseData.success && responseData.data) {
+    console.log('✅ Dati ricevuti dal backend:', responseData.data);
+    return responseData.data;
+  } else {
+    throw new Error(
+      responseData.error || 'Formato response non valido dal backend'
+    );
+  }
 };
