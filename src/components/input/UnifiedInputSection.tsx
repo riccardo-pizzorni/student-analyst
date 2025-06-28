@@ -88,12 +88,12 @@ export default function UnifiedInputSection() {
             prev.map(t =>
               t.symbol === symbol
                 ? {
-                  symbol,
-                  name: `${symbol} Company`,
-                  status: Math.random() > 0.2 ? 'valid' : 'invalid',
-                  price: Math.random() * 500 + 50,
-                  change: (Math.random() - 0.5) * 10,
-                }
+                    symbol,
+                    name: `${symbol} Company`,
+                    status: Math.random() > 0.2 ? 'valid' : 'invalid',
+                    price: Math.random() * 500 + 50,
+                    change: (Math.random() - 0.5) * 10,
+                  }
                 : t
             )
           );
@@ -125,7 +125,10 @@ export default function UnifiedInputSection() {
         {/* Ticker Selection */}
         <div className="space-y-3">
           <div>
-            <label htmlFor="ticker-input" className="text-slate-300 text-sm font-medium block mb-2">
+            <label
+              htmlFor="ticker-input"
+              className="text-slate-300 text-sm font-medium block mb-2"
+            >
               Ticker
             </label>
             <p className="text-slate-500 text-xs mb-3">
@@ -140,12 +143,13 @@ export default function UnifiedInputSection() {
                 {validatedTickers.map(ticker => (
                   <div
                     key={ticker.symbol}
-                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ${ticker.status === 'valid'
-                      ? 'border-blue-500/30 bg-blue-500/5 text-blue-300'
-                      : ticker.status === 'invalid'
-                        ? 'border-red-500/30 bg-red-500/5 text-red-300'
-                        : 'border-yellow-500/30 bg-yellow-500/5 text-yellow-300'
-                      }`}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border ${
+                      ticker.status === 'valid'
+                        ? 'border-blue-500/30 bg-blue-500/5 text-blue-300'
+                        : ticker.status === 'invalid'
+                          ? 'border-red-500/30 bg-red-500/5 text-red-300'
+                          : 'border-yellow-500/30 bg-yellow-500/5 text-yellow-300'
+                    }`}
                   >
                     <span className="font-medium">{ticker.symbol}</span>
                     {ticker.status === 'loading' && (
@@ -200,7 +204,12 @@ export default function UnifiedInputSection() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label htmlFor="start-date-button" className="text-slate-400 text-xs">Da data</label>
+              <label
+                htmlFor="start-date-button"
+                className="text-slate-400 text-xs"
+              >
+                Da data
+              </label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -241,7 +250,12 @@ export default function UnifiedInputSection() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="end-date-button" className="text-slate-400 text-xs">A data</label>
+              <label
+                htmlFor="end-date-button"
+                className="text-slate-400 text-xs"
+              >
+                A data
+              </label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -285,14 +299,23 @@ export default function UnifiedInputSection() {
 
         {/* Frequency Selection */}
         <div className="space-y-3">
-          <label htmlFor="frequency-select" className="text-slate-300 text-sm font-medium block">
+          <label
+            htmlFor="frequency-select"
+            className="text-slate-300 text-sm font-medium block"
+          >
             Frequenza di analisi
           </label>
           <Select
             value={analysisState.frequency}
-            onValueChange={value => setFrequency(value as 'daily' | 'weekly' | 'monthly')}
+            onValueChange={value =>
+              setFrequency(value as 'daily' | 'weekly' | 'monthly')
+            }
           >
-            <SelectTrigger id="frequency-select" name="frequency" className="w-full px-3 py-2.5 bg-transparent border border-slate-700/50 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all duration-200 text-sm">
+            <SelectTrigger
+              id="frequency-select"
+              name="frequency"
+              className="w-full px-3 py-2.5 bg-transparent border border-slate-700/50 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-slate-200 transition-all duration-200 text-sm"
+            >
               <SelectValue placeholder="Seleziona frequenza" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-slate-700 text-slate-200">
@@ -305,7 +328,10 @@ export default function UnifiedInputSection() {
 
         {/* File Upload */}
         <div className="space-y-3">
-          <label htmlFor="file-upload-button" className="text-slate-300 text-sm font-medium block">
+          <label
+            htmlFor="file-upload-button"
+            className="text-slate-300 text-sm font-medium block"
+          >
             File CSV opzionale
           </label>
           <button

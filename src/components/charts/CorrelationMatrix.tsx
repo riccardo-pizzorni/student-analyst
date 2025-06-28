@@ -26,8 +26,9 @@ export default function CorrelationMatrix() {
   // Funzione per gestire il click su "Teoria"
   const handleTheoryClick = () => {
     toast({
-      title: "Teoria della Correlazione e Diversificazione",
-      description: "La correlazione misura quanto due titoli si muovono insieme. Correlazioni basse (<0.3) indicano buona diversificazione. L'indice di diversificazione misura l'efficacia della diversificazione del portafoglio.",
+      title: 'Teoria della Correlazione e Diversificazione',
+      description:
+        "La correlazione misura quanto due titoli si muovono insieme. Correlazioni basse (<0.3) indicano buona diversificazione. L'indice di diversificazione misura l'efficacia della diversificazione del portafoglio.",
     });
   };
 
@@ -101,9 +102,7 @@ export default function CorrelationMatrix() {
         <div className="w-full h-64 flex items-center justify-center">
           <div className="text-center space-y-4">
             <Activity size={48} className="text-blue-400 mx-auto" />
-            <h4 className="text-xl font-bold text-slate-200">
-              Matrice vuota
-            </h4>
+            <h4 className="text-xl font-bold text-slate-200">Matrice vuota</h4>
             <p className="text-slate-400">
               Nessun dato di correlazione disponibile per questa analisi.
             </p>

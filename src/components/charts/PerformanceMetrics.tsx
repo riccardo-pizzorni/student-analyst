@@ -32,8 +32,9 @@ export default function PerformanceMetrics() {
   // Funzione per gestire il click su "Teoria"
   const handleTheoryClick = () => {
     toast({
-      title: "Teoria delle Metriche di Performance",
-      description: "Le metriche di performance misurano la capacità del portafoglio di generare rendimenti. Include indicatori come Sharpe Ratio, Alpha, Beta, e confronti con benchmark di mercato. Valori più alti indicano generalmente performance superiori.",
+      title: 'Teoria delle Metriche di Performance',
+      description:
+        'Le metriche di performance misurano la capacità del portafoglio di generare rendimenti. Include indicatori come Sharpe Ratio, Alpha, Beta, e confronti con benchmark di mercato. Valori più alti indicano generalmente performance superiori.',
     });
   };
 
@@ -78,7 +79,8 @@ export default function PerformanceMetrics() {
     }
 
     // Fallback robusto per array vuoto o undefined
-    const metrics: PerformanceMetric[] = analysisResults.performanceMetrics || [];
+    const metrics: PerformanceMetric[] =
+      analysisResults.performanceMetrics || [];
     const benchmarkData = analysisResults.benchmarkComparison;
 
     const colors = [
@@ -108,31 +110,29 @@ export default function PerformanceMetrics() {
       <>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {metrics.length > 0 ? (
-            metrics.map(
-              (metric: PerformanceMetric, index: number) => (
-                <div
-                  key={metric.label || `metric-${index}`}
-                  className={`bg-gradient-to-br ${colors[index % colors.length].bgColor} border ${colors[index % colors.length].borderColor} rounded-xl p-6 relative overflow-hidden`}
-                >
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Award size={16} className="text-slate-300" />
-                      <span className="text-sm font-medium text-slate-300">
-                        {metric.label || 'Metrica'}
-                      </span>
-                    </div>
-                    <div
-                      className={`text-2xl font-bold bg-gradient-to-r ${colors[index % colors.length].color} bg-clip-text text-transparent`}
-                    >
-                      {metric.value || '0%'}
-                    </div>
+            metrics.map((metric: PerformanceMetric, index: number) => (
+              <div
+                key={metric.label || `metric-${index}`}
+                className={`bg-gradient-to-br ${colors[index % colors.length].bgColor} border ${colors[index % colors.length].borderColor} rounded-xl p-6 relative overflow-hidden`}
+              >
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Award size={16} className="text-slate-300" />
+                    <span className="text-sm font-medium text-slate-300">
+                      {metric.label || 'Metrica'}
+                    </span>
                   </div>
                   <div
-                    className={`absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br ${colors[index % colors.length].color} opacity-10 rounded-full transform translate-x-6 translate-y-6`}
-                  ></div>
+                    className={`text-2xl font-bold bg-gradient-to-r ${colors[index % colors.length].color} bg-clip-text text-transparent`}
+                  >
+                    {metric.value || '0%'}
+                  </div>
                 </div>
-              )
-            )
+                <div
+                  className={`absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br ${colors[index % colors.length].color} opacity-10 rounded-full transform translate-x-6 translate-y-6`}
+                ></div>
+              </div>
+            ))
           ) : (
             <div className="col-span-full text-center py-8">
               <p className="text-slate-400">
@@ -184,8 +184,8 @@ export default function PerformanceMetrics() {
                     Grafico in arrivo
                   </p>
                   <p className="text-slate-400">
-                    La visualizzazione della performance comparativa è in fase di
-                    sviluppo.
+                    La visualizzazione della performance comparativa è in fase
+                    di sviluppo.
                   </p>
                 </div>
               </div>

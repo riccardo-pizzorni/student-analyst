@@ -1,37 +1,37 @@
 {
-	"meta": {
-		"generatedAt": "2025-06-28T10:35:03.939Z",
-		"tasksAnalyzed": 3,
-		"totalTasks": 4,
-		"analysisCount": 3,
-		"thresholdScore": 5,
-		"projectName": "Taskmaster",
-		"usedResearch": false
-	},
-	"complexityAnalysis": [
-		{
-			"taskId": 2,
-			"taskTitle": "Phase 1 Critical Cleanup",
-			"complexityScore": 3,
-			"recommendedSubtasks": 3,
-			"expansionPrompt": "Break down the 19 files into smaller groups based on type or issue.  For example, group by file extension, error type, or severity.",
-			"reasoning": "Deleting files is a relatively straightforward task, but 19 files could benefit from categorization for more efficient processing."
-		},
-		{
-			"taskId": 3,
-			"taskTitle": "Phase 2 Organization Structure",
-			"complexityScore": 5,
-			"recommendedSubtasks": 5,
-			"expansionPrompt": "Define clear naming conventions for folders and subfolders.  Consider using a hierarchical structure that reflects the project's content.",
-			"reasoning": "Creating a logical folder structure requires planning and decision-making about categorization and naming conventions."
-		},
-		{
-			"taskId": 4,
-			"taskTitle": "Phase 3 Content Optimization",
-			"complexityScore": 7,
-			"recommendedSubtasks": 7,
-			"expansionPrompt": "Develop a strategy for identifying and merging duplicate files.  Consider using tools or scripts to automate this process.",
-			"reasoning": "Merging duplicate files can be complex, requiring careful comparison and handling of potential conflicts."
-		}
-	]
+  "meta": {
+    "generatedAt": "2025-06-28T10:35:03.939Z",
+    "tasksAnalyzed": 3,
+    "totalTasks": 4,
+    "analysisCount": 3,
+    "thresholdScore": 5,
+    "projectName": "Taskmaster",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 2,
+      "taskTitle": "Phase 1 Critical Cleanup",
+      "complexityScore": 3,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the 19 files into smaller groups based on type or issue.  For example, group by file extension, error type, or severity.",
+      "reasoning": "Deleting files is a relatively straightforward task, but 19 files could benefit from categorization for more efficient processing."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Phase 2 Organization Structure",
+      "complexityScore": 5,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Define clear naming conventions for folders and subfolders.  Consider using a hierarchical structure that reflects the project's content.",
+      "reasoning": "Creating a logical folder structure requires planning and decision-making about categorization and naming conventions."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Phase 3 Content Optimization",
+      "complexityScore": 7,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Develop a strategy for identifying and merging duplicate files.  Consider using tools or scripts to automate this process.",
+      "reasoning": "Merging duplicate files can be complex, requiring careful comparison and handling of potential conflicts."
+    }
+  ]
 }

@@ -29,8 +29,9 @@ export default function VolatilityChart() {
   // Funzione per gestire il click su "Teoria"
   const handleTheoryClick = () => {
     toast({
-      title: "Teoria della Volatilità e del Rischio",
-      description: "La volatilità misura la variabilità dei rendimenti nel tempo. Il Sharpe Ratio confronta rendimenti con rischio. Valori più bassi di volatilità e più alti di Sharpe indicano un portafoglio più stabile e efficiente.",
+      title: 'Teoria della Volatilità e del Rischio',
+      description:
+        'La volatilità misura la variabilità dei rendimenti nel tempo. Il Sharpe Ratio confronta rendimenti con rischio. Valori più bassi di volatilità e più alti di Sharpe indicano un portafoglio più stabile e efficiente.',
     });
   };
 
@@ -79,8 +80,14 @@ export default function VolatilityChart() {
 
     // Fallback robusti per calcoli e stili
     const volatilityPercentage = ((annualizedVolatility || 0) * 100).toFixed(1);
-    const volatilityBarWidth = Math.min(100, Math.max(0, ((annualizedVolatility || 0) / 0.3) * 100));
-    const sharpeBarWidth = Math.min(100, Math.max(0, ((sharpeRatio || 0) / 2) * 100));
+    const volatilityBarWidth = Math.min(
+      100,
+      Math.max(0, ((annualizedVolatility || 0) / 0.3) * 100)
+    );
+    const sharpeBarWidth = Math.min(
+      100,
+      Math.max(0, ((sharpeRatio || 0) / 2) * 100)
+    );
 
     return (
       <>
@@ -125,13 +132,16 @@ export default function VolatilityChart() {
                 }}
               ></div>
             </div>
-            <p className="text-sm text-blue-200">Rendimento per unità di rischio</p>
+            <p className="text-sm text-blue-200">
+              Rendimento per unità di rischio
+            </p>
           </div>
         </div>
 
         {/* Interactive Chart Area */}
         <div className="bg-gradient-to-br from-slate-900/50 to-blue-950/30 border border-blue-500/20 rounded-xl p-6">
-          {volatilityData.maxDrawdown !== undefined || volatilityData.var95 !== undefined ? (
+          {volatilityData.maxDrawdown !== undefined ||
+          volatilityData.var95 !== undefined ? (
             <div className="h-64 flex items-center justify-center">
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
@@ -142,8 +152,10 @@ export default function VolatilityChart() {
                     Dati di rischio avanzati disponibili
                   </p>
                   <p className="text-slate-400">
-                    {volatilityData.maxDrawdown !== undefined && `Max Drawdown: ${(volatilityData.maxDrawdown * 100).toFixed(2)}%`}
-                    {volatilityData.var95 !== undefined && ` | VaR 95%: ${(volatilityData.var95 * 100).toFixed(2)}%`}
+                    {volatilityData.maxDrawdown !== undefined &&
+                      `Max Drawdown: ${(volatilityData.maxDrawdown * 100).toFixed(2)}%`}
+                    {volatilityData.var95 !== undefined &&
+                      ` | VaR 95%: ${(volatilityData.var95 * 100).toFixed(2)}%`}
                   </p>
                 </div>
               </div>
@@ -152,7 +164,10 @@ export default function VolatilityChart() {
             <div className="h-64 flex items-center justify-center">
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-blue-500/30">
-                  <TrendingUp size={32} className="text-blue-400 animate-pulse" />
+                  <TrendingUp
+                    size={32}
+                    className="text-blue-400 animate-pulse"
+                  />
                 </div>
                 <div>
                   <p className="text-lg font-bold text-blue-300">

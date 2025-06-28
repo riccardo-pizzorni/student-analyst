@@ -27,29 +27,35 @@ export default function MainTabs({
   // Funzioni per gestire i click sui bottoni
   const handleTheoryClick = (step: string) => {
     const theoryInfo = {
-      'confronto': {
-        title: "Teoria del Confronto Performance",
-        description: "Il confronto con benchmark di mercato permette di valutare la performance relativa del portafoglio rispetto a indici di riferimento come S&P 500, NASDAQ, o altri indici settoriali.",
+      confronto: {
+        title: 'Teoria del Confronto Performance',
+        description:
+          'Il confronto con benchmark di mercato permette di valutare la performance relativa del portafoglio rispetto a indici di riferimento come S&P 500, NASDAQ, o altri indici settoriali.',
       },
-      'var': {
-        title: "Teoria del Value at Risk (VaR)",
-        description: "Il VaR misura la perdita massima attesa in un determinato intervallo di confidenza. Il CVaR (Conditional VaR) misura la perdita media oltre il VaR, fornendo una misura più conservativa del rischio.",
+      var: {
+        title: 'Teoria del Value at Risk (VaR)',
+        description:
+          'Il VaR misura la perdita massima attesa in un determinato intervallo di confidenza. Il CVaR (Conditional VaR) misura la perdita media oltre il VaR, fornendo una misura più conservativa del rischio.',
       },
-      'cluster': {
-        title: "Teoria del Clustering",
-        description: "L'analisi dei cluster raggruppa i titoli per similarità di comportamento. Questo aiuta a identificare gruppi di titoli che si muovono insieme e migliorare la diversificazione.",
+      cluster: {
+        title: 'Teoria del Clustering',
+        description:
+          "L'analisi dei cluster raggruppa i titoli per similarità di comportamento. Questo aiuta a identificare gruppi di titoli che si muovono insieme e migliorare la diversificazione.",
       },
-      'tabella': {
-        title: "Informazioni sui Dati Storici",
-        description: "Questa tabella mostra i dati storici dei prezzi in formato tabulare. Include prezzi di apertura, chiusura, massimi, minimi e volumi per ogni periodo.",
+      tabella: {
+        title: 'Informazioni sui Dati Storici',
+        description:
+          'Questa tabella mostra i dati storici dei prezzi in formato tabulare. Include prezzi di apertura, chiusura, massimi, minimi e volumi per ogni periodo.',
       },
-      'default': {
-        title: "Informazioni",
-        description: "Questa sezione è in fase di sviluppo. Le funzionalità avanzate saranno disponibili nelle prossime versioni.",
-      }
+      default: {
+        title: 'Informazioni',
+        description:
+          'Questa sezione è in fase di sviluppo. Le funzionalità avanzate saranno disponibili nelle prossime versioni.',
+      },
     };
 
-    const info = theoryInfo[step as keyof typeof theoryInfo] || theoryInfo.default;
+    const info =
+      theoryInfo[step as keyof typeof theoryInfo] || theoryInfo.default;
     toast(info);
   };
 
@@ -326,13 +332,48 @@ export default function MainTabs({
         {!['performance', 'rischio', 'diversificazione', 'storica'].includes(
           activeStep
         ) && (
-            <>
-              <TabsContent value={tabs[0]?.key} className="mt-6">
+          <>
+            <TabsContent value={tabs[0]?.key} className="mt-6">
+              <div className="dark-card rounded-xl p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
+                    {React.createElement(tabs[0]?.icon, { size: 24 })}
+                    {tabs[0]?.label}
+                  </h3>
+                  <button
+                    onClick={() => handleTheoryClick('default')}
+                    className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
+                  >
+                    <Info size={14} />
+                    Teoria
+                  </button>
+                </div>
+                <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <BarChart3
+                      size={64}
+                      className="mx-auto text-blue-400 animate-pulse"
+                    />
+                    <div>
+                      <p className="text-xl font-bold text-blue-300">
+                        Funzionalità in Sviluppo
+                      </p>
+                      <p className="text-slate-400">
+                        Questa sezione sarà disponibile nelle prossime versioni
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {tabs.length > 1 && (
+              <TabsContent value={tabs[1].key} className="mt-6">
                 <div className="dark-card rounded-xl p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                      {React.createElement(tabs[0]?.icon, { size: 24 })}
-                      {tabs[0]?.label}
+                      {React.createElement(tabs[1].icon, { size: 24 })}
+                      {tabs[1].label}
                     </h3>
                     <button
                       onClick={() => handleTheoryClick('default')}
@@ -344,60 +385,25 @@ export default function MainTabs({
                   </div>
                   <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
                     <div className="text-center space-y-4">
-                      <BarChart3
+                      <Table
                         size={64}
                         className="mx-auto text-blue-400 animate-pulse"
                       />
                       <div>
                         <p className="text-xl font-bold text-blue-300">
-                          Funzionalità in Sviluppo
+                          Dati non Disponibili
                         </p>
                         <p className="text-slate-400">
-                          Questa sezione sarà disponibile nelle prossime versioni
+                          Avvia un'analisi per visualizzare i dati
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
               </TabsContent>
-
-              {tabs.length > 1 && (
-                <TabsContent value={tabs[1].key} className="mt-6">
-                  <div className="dark-card rounded-xl p-8">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                        {React.createElement(tabs[1].icon, { size: 24 })}
-                        {tabs[1].label}
-                      </h3>
-                      <button
-                        onClick={() => handleTheoryClick('default')}
-                        className="flex items-center gap-2 text-sm px-3 py-1 bg-blue-500/10 text-blue-300 rounded-lg hover:bg-blue-500/20 transition-colors"
-                      >
-                        <Info size={14} />
-                        Teoria
-                      </button>
-                    </div>
-                    <div className="w-full h-96 rounded-xl bg-gradient-to-br from-blue-950/50 to-slate-900/50 border border-blue-500/20 flex items-center justify-center">
-                      <div className="text-center space-y-4">
-                        <Table
-                          size={64}
-                          className="mx-auto text-blue-400 animate-pulse"
-                        />
-                        <div>
-                          <p className="text-xl font-bold text-blue-300">
-                            Dati non Disponibili
-                          </p>
-                          <p className="text-slate-400">
-                            Avvia un'analisi per visualizzare i dati
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-              )}
-            </>
-          )}
+            )}
+          </>
+        )}
       </Tabs>
     </div>
   );

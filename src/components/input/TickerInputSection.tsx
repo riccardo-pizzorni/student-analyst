@@ -67,12 +67,12 @@ export default function TickerInputSection() {
             prev.map(t =>
               t.symbol === symbol
                 ? {
-                  symbol,
-                  name: `${symbol} Company`,
-                  status: Math.random() > 0.2 ? 'valid' : 'invalid',
-                  price: Math.random() * 500 + 50,
-                  change: (Math.random() - 0.5) * 10,
-                }
+                    symbol,
+                    name: `${symbol} Company`,
+                    status: Math.random() > 0.2 ? 'valid' : 'invalid',
+                    price: Math.random() * 500 + 50,
+                    change: (Math.random() - 0.5) * 10,
+                  }
                 : t
             )
           );
@@ -158,12 +158,13 @@ export default function TickerInputSection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${ticker.status === 'valid'
-                        ? 'bg-green-500/20 text-green-300'
-                        : ticker.status === 'invalid'
-                          ? 'bg-red-500/20 text-red-300'
-                          : 'bg-blue-500/20 text-blue-300'
-                        }`}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                        ticker.status === 'valid'
+                          ? 'bg-green-500/20 text-green-300'
+                          : ticker.status === 'invalid'
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'bg-blue-500/20 text-blue-300'
+                      }`}
                     >
                       {ticker.status === 'loading' ? (
                         <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -197,7 +198,9 @@ export default function TickerInputSection() {
                           ${ticker.price?.toFixed(2) || '0.00'}
                         </div>
                         <div className="text-sm text-slate-400">
-                          {ticker.change !== undefined ? `${ticker.change >= 0 ? '+' : ''}${ticker.change.toFixed(2)}%` : '0.00%'}
+                          {ticker.change !== undefined
+                            ? `${ticker.change >= 0 ? '+' : ''}${ticker.change.toFixed(2)}%`
+                            : '0.00%'}
                         </div>
                       </div>
                     )}

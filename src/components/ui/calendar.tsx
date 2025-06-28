@@ -18,8 +18,18 @@ import type { CaptionProps } from 'react-day-picker';
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function CustomCaption({ displayMonth }: CaptionProps) {
@@ -44,27 +54,35 @@ function CustomCaption({ displayMonth }: CaptionProps) {
       </button>
       <Select
         value={String(month)}
-        onValueChange={val => goToMonth && goToMonth(setMonth(displayMonth, Number(val)))}
+        onValueChange={val =>
+          goToMonth && goToMonth(setMonth(displayMonth, Number(val)))
+        }
       >
         <SelectTrigger className="w-28">
           <SelectValue>{MONTHS[month]}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {MONTHS.map((m, idx) => (
-            <SelectItem key={m} value={String(idx)}>{m}</SelectItem>
+            <SelectItem key={m} value={String(idx)}>
+              {m}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
       <Select
         value={String(year)}
-        onValueChange={val => goToMonth && goToMonth(setYear(displayMonth, Number(val)))}
+        onValueChange={val =>
+          goToMonth && goToMonth(setYear(displayMonth, Number(val)))
+        }
       >
         <SelectTrigger className="w-20">
           <SelectValue>{year}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {years.map(y => (
-            <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+            <SelectItem key={y} value={String(y)}>
+              {y}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -136,4 +154,3 @@ function Calendar({
 Calendar.displayName = 'Calendar';
 
 export { Calendar };
-

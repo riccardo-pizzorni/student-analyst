@@ -119,7 +119,12 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     try {
-      console.log('🚀 Avvio analisi con parametri:', { tickers, startDate, endDate, frequency });
+      console.log('🚀 Avvio analisi con parametri:', {
+        tickers,
+        startDate,
+        endDate,
+        frequency,
+      });
 
       const results = await fetchAnalysisData({
         tickers,
@@ -131,19 +136,29 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       // Validazione risultati prima di salvarli
       const validatedResults = {
         ...results,
-        performanceMetrics: results.performanceMetrics?.map(metric => ({
-          label: metric.label || 'Metrica',
-          value: metric.value || '0%'
-        })) || [],
-        volatility: results.volatility ? {
-          annualizedVolatility: results.volatility.annualizedVolatility || 0,
-          sharpeRatio: results.volatility.sharpeRatio || 0
-        } : null,
-        correlation: results.correlation ? {
-          correlationMatrix: results.correlation.correlationMatrix || { symbols: [], matrix: [] },
-          diversificationIndex: results.correlation.diversificationIndex || 0,
-          averageCorrelation: results.correlation.averageCorrelation || 0
-        } : null
+        performanceMetrics:
+          results.performanceMetrics?.map(metric => ({
+            label: metric.label || 'Metrica',
+            value: metric.value || '0%',
+          })) || [],
+        volatility: results.volatility
+          ? {
+              annualizedVolatility:
+                results.volatility.annualizedVolatility || 0,
+              sharpeRatio: results.volatility.sharpeRatio || 0,
+            }
+          : null,
+        correlation: results.correlation
+          ? {
+              correlationMatrix: results.correlation.correlationMatrix || {
+                symbols: [],
+                matrix: [],
+              },
+              diversificationIndex:
+                results.correlation.diversificationIndex || 0,
+              averageCorrelation: results.correlation.averageCorrelation || 0,
+            }
+          : null,
       };
 
       setAnalysisState(prevState => ({
@@ -156,7 +171,7 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Si è verificato un errore';
-      console.error('❌ Errore durante l\'analisi:', errorMessage);
+      console.error("❌ Errore durante l'analisi:", errorMessage);
 
       setAnalysisState(prevState => ({
         ...prevState,

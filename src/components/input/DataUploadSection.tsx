@@ -86,9 +86,10 @@ export default function DataUploadSection() {
         id="file-drop-zone"
         className={`
           relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer group
-          ${dragActive
-            ? 'border-blue-400 bg-blue-500/10 scale-[1.02]'
-            : 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-slate-800/20 hover:border-blue-400/50 hover:bg-blue-500/8'
+          ${
+            dragActive
+              ? 'border-blue-400 bg-blue-500/10 scale-[1.02]'
+              : 'border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-slate-800/20 hover:border-blue-400/50 hover:bg-blue-500/8'
           }
         `}
         onDragEnter={handleDrag}
@@ -115,7 +116,7 @@ export default function DataUploadSection() {
           accept=".csv,.xls,.xlsx"
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           aria-label="Seleziona file da caricare"
-          onChange={(e) => {
+          onChange={e => {
             if (e.target.files) {
               const files = Array.from(e.target.files);
               files.forEach((file, index) => {
@@ -131,7 +132,9 @@ export default function DataUploadSection() {
                 // Simulate upload process
                 setTimeout(() => {
                   setUploadedFiles(prev =>
-                    prev.map(f => (f.id === newFile.id ? { ...f, status: 'success' } : f))
+                    prev.map(f =>
+                      f.id === newFile.id ? { ...f, status: 'success' } : f
+                    )
                   );
                 }, 2000);
               });
@@ -156,12 +159,13 @@ export default function DataUploadSection() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${file.status === 'uploading'
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      file.status === 'uploading'
                         ? 'bg-blue-500/20'
                         : file.status === 'success'
                           ? 'bg-green-500/20'
                           : 'bg-red-500/20'
-                      }`}
+                    }`}
                   >
                     {file.status === 'uploading' && (
                       <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />

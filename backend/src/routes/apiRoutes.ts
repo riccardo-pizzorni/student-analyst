@@ -6,4 +6,3 @@ export const apiRoutes = Router();
 apiRoutes.get('/', (req, res) => {
   res.json({ message: 'API route placeholder' });
 });
-
