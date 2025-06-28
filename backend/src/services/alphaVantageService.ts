@@ -175,6 +175,12 @@ export class AlphaVantageService {
       ...config,
     };
 
+    // DEBUG: logga la chiave API usata
+    console.log(
+      '[DEBUG] AlphaVantage API KEY:',
+      process.env.ALPHA_VANTAGE_API_KEY
+    );
+
     this.cache = new Map();
     this.errorHandler = ErrorCodeHandler.getInstance();
 
@@ -444,7 +450,6 @@ export class AlphaVantageService {
       function: apiFunction,
       symbol: symbol.toUpperCase(),
       datatype: 'json',
-      apikey: process.env.ALPHA_VANTAGE_API_KEY || '',
     };
 
     // Parametri specifici per intraday
@@ -463,6 +468,12 @@ export class AlphaVantageService {
       params.outputsize =
         typeof options.outputSize === 'string' ? options.outputSize : 'compact';
     }
+
+    // Inserisci sempre la chiave API
+    params.apikey = process.env.ALPHA_VANTAGE_API_KEY || '';
+
+    // DEBUG: logga i parametri della richiesta
+    console.log('[DEBUG] AlphaVantage params:', params);
 
     return params;
   }
