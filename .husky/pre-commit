@@ -1,3 +1,53 @@
 #!/usr/bin/env sh
-# Comando per uscire sempre con successo, bypassando tutti i controlli.
-exit 0
+# Student Analyst Project - Robust Pre-Commit Hook
+# This hook enforces code quality gates before allowing commits
+
+set -e
+
+echo "🔍 Starting pre-commit quality gates..."
+
+# 1. TypeScript Type Checking
+echo "📝 Checking TypeScript types..."
+npm run typecheck
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript type checking failed. Please fix the errors and try again."
+  exit 1
+fi
+echo "✅ TypeScript type checking passed"
+
+# 2. ESLint Validation (only errors, warnings allowed)
+echo "🔍 Running ESLint validation..."
+npm run lint -- --max-warnings 10
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint validation failed. Run 'npm run lint:fix' to auto-fix issues, then try again."
+  exit 1
+fi
+echo "✅ ESLint validation passed (warnings under threshold)"
+
+# 3. Prettier Code Formatting (auto-format staged files)
+echo "🎨 Auto-formatting staged files with Prettier..."
+npx prettier --write --ignore-unknown $(git diff --cached --name-only --diff-filter=ACM)
+if [ $? -eq 0 ]; then
+  echo "✅ Staged files formatted successfully"
+  # Re-add formatted files to staging
+  git add $(git diff --cached --name-only --diff-filter=ACM)
+else
+  echo "⚠️ Some files could not be formatted, but continuing..."
+fi
+
+# 4. Test Execution for Critical Components
+echo "🧪 Running tests for critical components..."
+npm run test -- --passWithNoTests --silent
+if [ $? -ne 0 ]; then
+  echo "❌ Test execution failed. Please fix the failing tests and try again."
+  exit 1
+fi
+echo "✅ All tests passed"
+
+echo "🎉 All quality gates passed! Proceeding with commit..."
+echo "📊 Summary:"
+echo "  ✅ TypeScript type checking"
+echo "  ✅ ESLint validation (warnings allowed)"
+echo "  ✅ Prettier auto-formatting applied"
+echo "  ✅ Test execution"
+echo "🚀 Commit ready!"
