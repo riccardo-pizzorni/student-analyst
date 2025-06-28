@@ -79,25 +79,22 @@ export const fetchAnalysisData = async (
   params: AnalysisParams
 ): Promise<AnalysisApiResponse> => {
   const API_URL = `${API_BASE_URL}/api/analysis`;
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({
-        error: 'La risposta del server non è un JSON valido.',
-      }));
-      throw new Error(
-        errorData.error || `Errore del server: ${response.status}`
-      );
-    }
-    const results: AnalysisApiResponse = await response.json();
-    return results;
-  } catch (error) {
-    throw error;
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({
+      error: 'La risposta del server non è un JSON valido.',
+    }));
+    throw new Error(errorData.error || `Errore del server: ${response.status}`);
   }
+
+  const results: AnalysisApiResponse = await response.json();
+  return results;
 };
