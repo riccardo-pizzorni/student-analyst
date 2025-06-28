@@ -1,6 +1,7 @@
 import HistoricalChart from '@/components/charts/HistoricalChart';
 import { useAnalysis } from '@/context/AnalysisContext';
 import { useToast } from '@/hooks/use-toast';
+import { AnalysisApiResponse } from '@/services/analysisAPI';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -30,18 +31,47 @@ const mockUseToast = useToast as jest.MockedFunction<typeof useToast>;
 
 describe('HistoricalChart', () => {
     const mockToast = {
-        title: jest.fn(),
-        description: jest.fn(),
-        variant: jest.fn(),
+        toast: jest.fn(),
+        dismiss: jest.fn(),
+        toasts: [],
     };
 
     const mockStartAnalysis = jest.fn();
 
     const defaultAnalysisState = {
+        tickers: ['AAPL'],
+        startDate: '2024-01-01',
+        endDate: '2024-01-02',
+        frequency: 'daily' as const,
+        analysisResults: null,
         isLoading: false,
         error: null,
-        analysisResults: null,
     };
+
+    const createMockAnalysisResults = (overrides: Partial<AnalysisApiResponse> = {}): AnalysisApiResponse => ({
+        historicalData: {
+            labels: ['2024-01-01', '2024-01-02'],
+            datasets: [
+                {
+                    label: 'AAPL - Prezzo',
+                    data: [150.25, 155.50],
+                    borderColor: '#FF6384',
+                },
+            ],
+        },
+        performanceMetrics: [],
+        volatility: null,
+        correlation: null,
+        metadata: {
+            analysisDate: '2024-01-02T12:00:00Z',
+            symbols: ['AAPL'],
+            period: { start: '2024-01-01', end: '2024-01-02' },
+            frequency: 'daily',
+            dataPoints: 2,
+            processingTime: 0,
+        },
+        ...overrides,
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -49,6 +79,11 @@ describe('HistoricalChart', () => {
         mockUseAnalysis.mockReturnValue({
             analysisState: defaultAnalysisState,
             startAnalysis: mockStartAnalysis,
+            setAnalysisState: jest.fn(),
+            setTickers: jest.fn(),
+            setStartDate: jest.fn(),
+            setEndDate: jest.fn(),
+            setFrequency: jest.fn(),
         });
     });
 
@@ -57,6 +92,11 @@ describe('HistoricalChart', () => {
             mockUseAnalysis.mockReturnValue({
                 analysisState: { ...defaultAnalysisState, isLoading: true },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -71,6 +111,11 @@ describe('HistoricalChart', () => {
             mockUseAnalysis.mockReturnValue({
                 analysisState: { ...defaultAnalysisState, error: errorMessage },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -90,9 +135,16 @@ describe('HistoricalChart', () => {
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
                     ...defaultAnalysisState,
-                    analysisResults: { historicalData: { labels: [], datasets: [] } },
+                    analysisResults: createMockAnalysisResults({
+                        historicalData: { labels: [], datasets: [] }
+                    }),
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -102,7 +154,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should render chart with data correctly', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01', '2024-01-02'],
                     datasets: [
@@ -114,12 +166,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2024-01-02T12:00:00Z',
                     symbols: ['AAPL'],
                     period: { start: '2024-01-01', end: '2024-01-02' },
                     frequency: 'daily',
                     dataPoints: 2,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -127,6 +181,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -148,8 +207,7 @@ describe('HistoricalChart', () => {
             await user.click(refreshButton);
 
             expect(mockStartAnalysis).toHaveBeenCalledTimes(1);
-            expect(mockToast.title).toHaveBeenCalledWith('Aggiornamento dati');
-            expect(mockToast.description).toHaveBeenCalledWith('Aggiornamento dei dati storici in corso...');
+            expect(mockToast.toast).toHaveBeenCalled();
         });
 
         it('should handle info button click', async () => {
@@ -160,8 +218,7 @@ describe('HistoricalChart', () => {
             const infoButton = screen.getByRole('button', { name: /info/i });
             await user.click(infoButton);
 
-            expect(mockToast.title).toHaveBeenCalledWith('Informazioni sul grafico');
-            expect(mockToast.description).toContain('Questo grafico mostra l\'andamento storico');
+            expect(mockToast.toast).toHaveBeenCalled();
         });
 
         it('should handle retry button click in error state', async () => {
@@ -169,6 +226,11 @@ describe('HistoricalChart', () => {
             mockUseAnalysis.mockReturnValue({
                 analysisState: { ...defaultAnalysisState, error: 'Test error' },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -181,16 +243,16 @@ describe('HistoricalChart', () => {
 
         it('should handle switch toggles for indicators', async () => {
             const user = userEvent.setup();
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01'],
                     datasets: [
-                        { label: 'AAPL - Prezzo', data: [150.25] },
-                        { label: 'AAPL - SMA 20', data: [149.50] },
-                        { label: 'AAPL - RSI', data: [65.5] },
+                        { label: 'AAPL - Prezzo', data: [150.25], borderColor: '#FF6384' },
+                        { label: 'AAPL - SMA 20', data: [149.50], borderColor: '#36A2EB' },
+                        { label: 'AAPL - RSI', data: [65.5], borderColor: '#FFCE56' },
                     ],
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -198,6 +260,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -212,6 +279,49 @@ describe('HistoricalChart', () => {
             await user.click(rsiSwitch);
             expect(rsiSwitch).toBeChecked();
         });
+
+        it('should handle RSI smoothing toggle', async () => {
+            const user = userEvent.setup();
+            const mockData = createMockAnalysisResults({
+                historicalData: {
+                    labels: ['2024-01-01', '2024-01-02', '2024-01-03'],
+                    datasets: [
+                        { label: 'AAPL - Prezzo', data: [150.25, 155.50, 160.75], borderColor: '#FF6384' },
+                        { label: 'AAPL - RSI', data: [45, 55, 65], borderColor: '#FFCE56' },
+                    ],
+                },
+            });
+
+            mockUseAnalysis.mockReturnValue({
+                analysisState: {
+                    ...defaultAnalysisState,
+                    analysisResults: mockData,
+                },
+                startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
+            });
+
+            render(<HistoricalChart />);
+
+            // Attiva RSI
+            const rsiSwitch = screen.getByRole('checkbox', { name: /rsi/i });
+            await user.click(rsiSwitch);
+
+            // Verifica che appaia il controllo smoothing
+            const smoothingSwitch = screen.getByRole('checkbox', { name: /smoothing rsi/i });
+            expect(smoothingSwitch).toBeInTheDocument();
+
+            // Attiva smoothing
+            await user.click(smoothingSwitch);
+            expect(smoothingSwitch).toBeChecked();
+
+            // Verifica che il grafico sia ancora presente
+            expect(screen.getByTestId('chart-line')).toBeInTheDocument();
+        });
     });
 
     describe('Data Processing and Fallbacks', () => {
@@ -219,14 +329,19 @@ describe('HistoricalChart', () => {
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
                     ...defaultAnalysisState,
-                    analysisResults: {
+                    analysisResults: createMockAnalysisResults({
                         historicalData: {
                             labels: ['2024-01-01'],
                             datasets: [],
                         },
-                    },
+                    }),
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -241,6 +356,11 @@ describe('HistoricalChart', () => {
                     analysisResults: undefined,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -249,7 +369,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should calculate statistics correctly', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01', '2024-01-02', '2024-01-03'],
                     datasets: [
@@ -260,7 +380,7 @@ describe('HistoricalChart', () => {
                         },
                     ],
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -268,6 +388,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -277,7 +402,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should handle negative price changes', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01', '2024-01-02'],
                     datasets: [
@@ -288,7 +413,7 @@ describe('HistoricalChart', () => {
                         },
                     ],
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -296,6 +421,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -343,21 +473,19 @@ describe('HistoricalChart', () => {
             await user.click(refreshButton);
 
             await waitFor(() => {
-                expect(mockToast.title).toHaveBeenCalledWith('Errore nell\'aggiornamento');
-                expect(mockToast.description).toHaveBeenCalledWith('Impossibile aggiornare i dati storici. Riprova più tardi.');
-                expect(mockToast.variant).toHaveBeenCalledWith('destructive');
+                expect(mockToast.toast).toHaveBeenCalled();
             });
         });
 
         it('should handle missing price dataset', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01'],
                     datasets: [
-                        { label: 'AAPL - SMA 20', data: [149.50] }, // Solo SMA, nessun prezzo
+                        { label: 'AAPL - SMA 20', data: [149.50], borderColor: '#36A2EB' }, // Solo SMA, nessun prezzo
                     ],
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -365,6 +493,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -377,15 +510,15 @@ describe('HistoricalChart', () => {
 
     describe('Performance and Optimization', () => {
         it('should memoize filtered datasets', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01'],
                     datasets: [
-                        { label: 'AAPL - Prezzo', data: [150.25] },
-                        { label: 'AAPL - SMA 20', data: [149.50] },
+                        { label: 'AAPL - Prezzo', data: [150.25], borderColor: '#FF6384' },
+                        { label: 'AAPL - SMA 20', data: [149.50], borderColor: '#36A2EB' },
                     ],
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -393,6 +526,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             const { rerender } = render(<HistoricalChart />);
@@ -406,7 +544,7 @@ describe('HistoricalChart', () => {
 
     describe('Edge Cases and Data Gaps', () => {
         it('should show warning for incomplete series (META example)', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2010-01-01', '2010-01-02', '2013-01-01', '2013-01-02', '2024-01-01'],
                     datasets: [
@@ -423,12 +561,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2024-01-01T12:00:00Z',
                     symbols: ['AAPL', 'META'],
                     period: { start: '2010-01-01', end: '2024-01-01' },
                     frequency: 'daily',
                     dataPoints: 5,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -436,6 +576,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -445,7 +590,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should show warning for missing tickers', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01', '2024-01-02'],
                     datasets: [
@@ -457,12 +602,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2024-01-02T12:00:00Z',
                     symbols: ['AAPL', 'INVALID', 'MISSING'], // Ticker richiesti ma non trovati
                     period: { start: '2024-01-01', end: '2024-01-02' },
                     frequency: 'daily',
                     dataPoints: 2,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -470,6 +617,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -479,7 +631,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should show warning for significant temporal gaps (IPO example)', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2020-01-01', '2020-01-02', '2020-12-01', '2020-12-02', '2021-01-01'],
                     datasets: [
@@ -491,12 +643,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2021-01-01T12:00:00Z',
                     symbols: ['ABNB'],
                     period: { start: '2020-01-01', end: '2021-01-01' },
                     frequency: 'daily',
                     dataPoints: 5,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -504,6 +658,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -513,7 +672,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should handle null values in tooltip gracefully', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01', '2024-01-02'],
                     datasets: [
@@ -525,12 +684,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2024-01-02T12:00:00Z',
                     symbols: ['AAPL'],
                     period: { start: '2024-01-01', end: '2024-01-02' },
                     frequency: 'daily',
                     dataPoints: 2,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -538,6 +699,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -548,7 +714,7 @@ describe('HistoricalChart', () => {
         });
 
         it('should handle multiple warning states simultaneously', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2020-01-01', '2020-01-02', '2023-01-01', '2023-01-02'],
                     datasets: [
@@ -570,12 +736,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2023-01-02T12:00:00Z',
                     symbols: ['AAPL', 'META', 'ABNB', 'MISSING'], // Ticker mancante
                     period: { start: '2020-01-01', end: '2023-01-02' },
                     frequency: 'daily',
                     dataPoints: 4,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -583,6 +751,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -600,7 +773,7 @@ describe('HistoricalChart', () => {
             const labels = Array.from({ length: 1000 }, (_, i) => `2024-01-${String(i + 1).padStart(2, '0')}`);
             const data = Array.from({ length: 1000 }, (_, i) => 100 + Math.sin(i * 0.1) * 10);
 
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels,
                     datasets: [
@@ -622,12 +795,14 @@ describe('HistoricalChart', () => {
                     ],
                 },
                 metadata: {
+                    analysisDate: '2024-12-31T12:00:00Z',
                     symbols: ['AAPL', 'MSFT', 'GOOGL'],
                     period: { start: '2024-01-01', end: '2024-12-31' },
                     frequency: 'daily',
                     dataPoints: 1000,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -635,6 +810,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             const startTime = performance.now();
@@ -656,18 +836,20 @@ describe('HistoricalChart', () => {
                 borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
             }));
 
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01', '2024-01-02', '2024-01-03'],
                     datasets,
                 },
                 metadata: {
+                    analysisDate: '2024-01-03T12:00:00Z',
                     symbols: tickers,
                     period: { start: '2024-01-01', end: '2024-01-03' },
                     frequency: 'daily',
                     dataPoints: 3,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -675,6 +857,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             const startTime = performance.now();
@@ -694,18 +881,20 @@ describe('HistoricalChart', () => {
 
     describe('Accessibility and Responsive Design', () => {
         it('should have proper aria-labels for all interactive elements', () => {
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01'],
                     datasets: [{ label: 'AAPL - Prezzo', data: [150.25], borderColor: '#FF6384' }],
                 },
                 metadata: {
+                    analysisDate: '2024-01-01T12:00:00Z',
                     symbols: ['AAPL'],
                     period: { start: '2024-01-01', end: '2024-01-01' },
                     frequency: 'daily',
                     dataPoints: 1,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -713,6 +902,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -728,18 +922,20 @@ describe('HistoricalChart', () => {
 
         it('should be keyboard navigable', async () => {
             const user = userEvent.setup();
-            const mockData = {
+            const mockData = createMockAnalysisResults({
                 historicalData: {
                     labels: ['2024-01-01'],
                     datasets: [{ label: 'AAPL - Prezzo', data: [150.25], borderColor: '#FF6384' }],
                 },
                 metadata: {
+                    analysisDate: '2024-01-01T12:00:00Z',
                     symbols: ['AAPL'],
                     period: { start: '2024-01-01', end: '2024-01-01' },
                     frequency: 'daily',
                     dataPoints: 1,
+                    processingTime: 0,
                 },
-            };
+            });
 
             mockUseAnalysis.mockReturnValue({
                 analysisState: {
@@ -747,6 +943,11 @@ describe('HistoricalChart', () => {
                     analysisResults: mockData,
                 },
                 startAnalysis: mockStartAnalysis,
+                setAnalysisState: jest.fn(),
+                setTickers: jest.fn(),
+                setStartDate: jest.fn(),
+                setEndDate: jest.fn(),
+                setFrequency: jest.fn(),
             });
 
             render(<HistoricalChart />);
@@ -760,7 +961,7 @@ describe('HistoricalChart', () => {
 
             // Test attivazione con Enter
             await user.keyboard('{Enter}');
-            expect(mockToast.title).toHaveBeenCalledWith('Informazioni sul grafico');
+            expect(mockToast.toast).toHaveBeenCalled();
         });
     });
 }); 

@@ -16,6 +16,7 @@ import {
     Title,
     Tooltip,
 } from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import { useMemo, useState } from 'react';
 import { Line } from 'react-chartjs-2';
@@ -31,7 +32,8 @@ ChartJS.register(
     Tooltip,
     Legend,
     Filler,
-    zoomPlugin
+    zoomPlugin,
+    annotationPlugin
 );
 
 // Interfacce TypeScript per type safety
@@ -64,12 +66,21 @@ const options: ChartOptions<'line'> = {
                         const meta = chart.getDatasetMeta(index);
                         const hasGaps = dataset.data && dataset.data.filter(v => v === null).length > dataset.data.length * 0.1;
                         const label = dataset.label || `Dataset ${index}`;
+                        let legendLabel = label;
+                        let borderDash = (dataset as any).borderDash || [];
+                        if (label.toLowerCase().includes('rsi smussato')) {
+                            legendLabel = `RSI Smussato (${label.match(/\d+/)?.[0] || ''}) – Relative Strength Index, range 0-100`;
+                            borderDash = [6, 4];
+                        } else if (label.toLowerCase().includes('rsi')) {
+                            legendLabel = 'RSI – Relative Strength Index, range 0-100';
+                        }
                         return {
-                            text: hasGaps ? `⚠️ ${label}` : label,
+                            text: hasGaps ? `⚠️ ${legendLabel}` : legendLabel,
                             fillStyle: dataset.borderColor as string,
                             strokeStyle: dataset.borderColor as string,
                             lineWidth: 2,
                             pointStyle: 'circle',
+                            borderDash,
                             hidden: meta.hidden,
                             index: index,
                             datasetIndex: index,
@@ -112,8 +123,8 @@ const options: ChartOptions<'line'> = {
                     if (value === null || value === undefined || isNaN(value)) {
                         return `${label}: Dato mancante`;
                     }
-                    if (label.includes('RSI')) {
-                        return `${label}: ${Number(value).toFixed(2)}`;
+                    if (label.toLowerCase().includes('rsi')) {
+                        return `${label} (0-100): ${Number(value).toFixed(2)}\nIndice di forza relativa, range 0-100`;
                     } else if (label.includes('Volume')) {
                         return `${label}: ${Number(value).toLocaleString()}`;
                     } else {
@@ -137,6 +148,40 @@ const options: ChartOptions<'line'> = {
                 mode: 'xy',
             },
         },
+        annotation: {
+            annotations: {
+                rsi30: {
+                    type: 'line',
+                    yMin: 30,
+                    yMax: 30,
+                    borderColor: 'rgba(59,130,246,0.5)',
+                    borderWidth: 1,
+                    borderDash: [4, 4],
+                    label: {
+                        display: true,
+                        content: 'RSI 30',
+                        position: 'end',
+                        color: 'rgba(59,130,246,0.7)',
+                        font: { size: 10 },
+                    },
+                },
+                rsi70: {
+                    type: 'line',
+                    yMin: 70,
+                    yMax: 70,
+                    borderColor: 'rgba(245,158,11,0.5)',
+                    borderWidth: 1,
+                    borderDash: [4, 4],
+                    label: {
+                        display: true,
+                        content: 'RSI 70',
+                        position: 'end',
+                        color: 'rgba(245,158,11,0.7)',
+                        font: { size: 10 },
+                    },
+                },
+            },
+        } as any,
     },
     scales: {
         x: {
@@ -181,6 +226,33 @@ type LineDataset = ChartDataset<'line', number[]>;
 type BarDataset = ChartDataset<'bar', number[]>;
 type _MixedDataset = LineDataset | BarDataset;
 
+// Funzione rolling average per smoothing
+function rollingAverage(arr: (number | null)[], window: number): (number | null)[] {
+    const result: (number | null)[] = [];
+    for (let i = 0; i < arr.length; i++) {
+        if (i < window - 1 || arr.slice(i - window + 1, i + 1).some(v => v == null || isNaN(Number(v)))) {
+            result.push(null);
+        } else {
+            const windowSlice = arr.slice(i - window + 1, i + 1) as number[];
+            const avg = windowSlice.reduce((sum, v) => sum + (v ?? 0), 0) / window;
+            result.push(Number(avg.toFixed(2)));
+        }
+    }
+    return result;
+}
+
+// Palette colori accessibile per indicatori
+const indicatorColors = {
+    rsi: '#2563eb', // blu
+    rsiSmoothed: '#60a5fa', // blu chiaro
+    sma20: '#22c55e', // verde
+    sma50: '#f59e42', // arancione
+    sma200: '#a78bfa', // viola
+    macd: '#ef4444', // rosso
+    volume: '#64748b', // grigio
+    bollinger: '#38bdf8', // azzurro
+};
+
 const HistoricalChart = () => {
     const { analysisState, startAnalysis } = useAnalysis();
     const { isLoading, error, analysisResults } = analysisState;
@@ -193,6 +265,8 @@ const HistoricalChart = () => {
     const [showVolume, setShowVolume] = useState(false);
     const [showBollinger, setShowBollinger] = useState(false);
     const [showMACD, setShowMACD] = useState(false);
+    const [rsiSmoothing, setRsiSmoothing] = useState(false);
+    const [rsiSmoothingWindow, setRsiSmoothingWindow] = useState(5);
 
     // Funzioni per gestire i click sui bottoni
     const handleRefreshClick = async () => {
@@ -235,23 +309,95 @@ const HistoricalChart = () => {
         if (!rawChartData.datasets || rawChartData.datasets.length === 0) {
             return [];
         }
-
-        return rawChartData.datasets.filter((dataset) => {
-            const label = dataset.label?.toLowerCase() || '';
-
-            // Gestione indicatori tecnici
-            if (label.includes('sma20') || label.includes('20')) return showSMA20;
-            if (label.includes('sma50') || label.includes('50')) return showSMA50;
-            if (label.includes('sma200') || label.includes('200')) return showSMA200;
-            if (label.includes('rsi')) return showRSI;
-            if (label.includes('volume')) return showVolume;
-            if (label.includes('bollinger')) return showBollinger;
-            if (label.includes('macd')) return showMACD;
-
-            // Mostra sempre i dataset principali (prezzi, portafoglio, ecc.)
-            return true;
-        });
-    }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume, showBollinger, showMACD]);
+        return rawChartData.datasets
+            .filter((dataset) => {
+                const label = dataset.label?.toLowerCase() || '';
+                if (label.includes('sma20') || label.includes('20')) return showSMA20;
+                if (label.includes('sma50') || label.includes('50')) return showSMA50;
+                if (label.includes('sma200') || label.includes('200')) return showSMA200;
+                if (label.includes('rsi')) return showRSI;
+                if (label.includes('volume')) return showVolume;
+                if (label.includes('bollinger')) return showBollinger;
+                if (label.includes('macd')) return showMACD;
+                return true;
+            })
+            .map((dataset) => {
+                const label = dataset.label?.toLowerCase() || '';
+                // RSI Smussato
+                if (
+                    showRSI &&
+                    rsiSmoothing &&
+                    label.includes('rsi') &&
+                    Array.isArray(dataset.data)
+                ) {
+                    return {
+                        ...dataset,
+                        data: rollingAverage(dataset.data as (number | null)[], rsiSmoothingWindow),
+                        label: `${dataset.label} Smussato (${rsiSmoothingWindow})`,
+                        borderColor: indicatorColors.rsiSmoothed,
+                        borderDash: [6, 4],
+                    };
+                }
+                // RSI raw
+                if (label.includes('rsi')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.rsi,
+                        borderDash: [],
+                    };
+                }
+                // SMA 20
+                if (label.includes('sma20') || label.includes('20')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.sma20,
+                        borderDash: [],
+                    };
+                }
+                // SMA 50
+                if (label.includes('sma50') || label.includes('50')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.sma50,
+                        borderDash: [],
+                    };
+                }
+                // SMA 200
+                if (label.includes('sma200') || label.includes('200')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.sma200,
+                        borderDash: [],
+                    };
+                }
+                // MACD
+                if (label.includes('macd')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.macd,
+                        borderDash: [],
+                    };
+                }
+                // Volume
+                if (label.includes('volume')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.volume,
+                        borderDash: [],
+                    };
+                }
+                // Bollinger
+                if (label.includes('bollinger')) {
+                    return {
+                        ...dataset,
+                        borderColor: indicatorColors.bollinger,
+                        borderDash: [],
+                    };
+                }
+                // Default
+                return dataset;
+            });
+    }, [rawChartData.datasets, showSMA20, showSMA50, showSMA200, showRSI, showVolume, showBollinger, showMACD, rsiSmoothing, rsiSmoothingWindow]);
 
     // Calcola ticker con dati interrotti (es. ultimi punti null)
     // FALLBACK: Se una serie ha null negli ultimi 5 punti, viene considerata incompleta
@@ -563,9 +709,41 @@ const HistoricalChart = () => {
                             onCheckedChange={setShowRSI}
                             aria-label="Mostra/nascondi RSI"
                         />
-                        <Label htmlFor="rsi" className="text-sm text-slate-300">
+                        <Label htmlFor="rsi" className="text-sm text-slate-300 flex items-center gap-1">
                             RSI
+                            <span tabIndex={0} aria-label="Cos'è l'RSI" className="ml-1 cursor-pointer group relative">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-blue-400">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <span className="absolute left-1/2 top-full z-10 hidden group-focus:block group-hover:block bg-slate-800 text-xs text-slate-200 rounded p-2 w-56 shadow-lg">
+                                    RSI: Indice di forza relativa, misura la velocità e il cambiamento dei movimenti di prezzo, range 0-100. Sotto 30: ipervenduto, sopra 70: ipercomprato.
+                                </span>
+                            </span>
                         </Label>
+                        {showRSI && (
+                            <>
+                                <Switch
+                                    id="rsi-smoothing"
+                                    checked={rsiSmoothing}
+                                    onCheckedChange={setRsiSmoothing}
+                                    aria-label="Applica smoothing a RSI"
+                                />
+                                <Label htmlFor="rsi-smoothing" className="text-xs text-slate-400">Smussa</Label>
+                                <select
+                                    id="rsi-smoothing-window"
+                                    value={rsiSmoothingWindow}
+                                    onChange={e => setRsiSmoothingWindow(Number(e.target.value))}
+                                    aria-label="Seleziona finestra smoothing RSI"
+                                    className="ml-2 rounded px-1 py-0.5 text-xs bg-slate-700 text-slate-200"
+                                    disabled={!rsiSmoothing}
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                </select>
+                            </>
+                        )}
                     </div>
                     <div className="flex items-center space-x-2">
                         <Switch

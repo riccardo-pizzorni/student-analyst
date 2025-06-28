@@ -65,21 +65,16 @@ Object.defineProperty(global.window, 'sessionStorage', {
   writable: true,
 });
 
-// Mock window.setInterval
-Object.defineProperty(global.window, 'setInterval', {
-  value: (
-    callback: (...args: unknown[]) => void,
-    delay: number
-  ): NodeJS.Timeout => {
-    return setInterval(callback, delay);
-  },
-  writable: true,
-});
-
-// Mock window.clearInterval
-Object.defineProperty(global.window, 'clearInterval', {
-  value: (id: NodeJS.Timeout) => {
-    clearInterval(id);
+// Mock import.meta.env
+Object.defineProperty(global, 'import', {
+  value: {
+    meta: {
+      env: {
+        VITE_BACKEND_URL: 'http://localhost:3000',
+        VITE_API_KEY: 'test-api-key',
+        NODE_ENV: 'test',
+      },
+    },
   },
   writable: true,
 });

@@ -1,0 +1,2 @@
+const API_BASE_URL = process.env.VITE_BACKEND_URL || '';
+const API_URL = `${API_BASE_URL}/api/analysis`;

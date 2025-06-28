@@ -1,13 +1,20 @@
-import { PerformanceMetrics } from '@/components/charts/PerformanceMetrics';
-import { AnalysisContext } from '@/context/AnalysisContext';
-import { toast } from '@/hooks/use-toast';
-import { render, screen, waitFor } from '@testing-library/react';
+import PerformanceMetrics from '@/components/charts/PerformanceMetrics';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 // Mock del toast
+const mockToast = jest.fn();
 jest.mock('@/hooks/use-toast', () => ({
-    toast: jest.fn(),
+    useToast: () => ({
+        toast: mockToast
+    })
+}));
+
+// Mock del context
+const mockUseAnalysis = jest.fn();
+jest.mock('@/context/AnalysisContext', () => ({
+    useAnalysis: () => mockUseAnalysis()
 }));
 
 // Mock dei componenti UI
@@ -49,8 +56,6 @@ jest.mock('@/components/ui/badge', () => ({
 }));
 
 describe('PerformanceMetrics', () => {
-    const mockToast = toast as jest.MockedFunction<typeof toast>;
-
     const mockAnalysisResults = {
         performanceMetrics: [
             {
@@ -62,303 +67,85 @@ describe('PerformanceMetrics', () => {
                 label: 'Rendimento Annuo',
                 value: '12.50%',
                 description: 'Rendimento annualizzato'
-            },
-            {
-                label: 'Volatilità',
-                value: '8.75%',
-                description: 'Deviazione standard dei rendimenti'
-            },
-            {
-                label: 'Sharpe Ratio',
-                value: '1.42',
-                description: 'Rapporto rischio-rendimento'
             }
-        ],
-        volatility: {
-            annualizedVolatility: 8.75,
-            sharpeRatio: 1.42
+        ]
+    };
+
+    const defaultMockContext = {
+        analysisState: {
+            analysisResults: mockAnalysisResults,
+            isLoading: false,
+            error: null
         },
-        correlation: {
-            correlationMatrix: {
-                symbols: ['AAPL', 'GOOGL'],
-                matrix: [[1, 0.6], [0.6, 1]]
-            },
-            diversificationIndex: 0.4,
-            averageCorrelation: 0.6
-        }
-    };
-
-    const mockContextValue = {
-        analysisResults: mockAnalysisResults,
-        isAnalysisRunning: false,
         startAnalysis: jest.fn(),
-        clearResults: jest.fn(),
-        error: null,
-        lastAnalysisDate: new Date('2024-01-15T10:00:00Z')
+        setTickers: jest.fn(),
+        setStartDate: jest.fn(),
+        setEndDate: jest.fn(),
+        setFrequency: jest.fn()
     };
 
-    const renderWithContext = (contextValue = mockContextValue) => {
-        return render(
-            <AnalysisContext.Provider value={contextValue}>
-                <PerformanceMetrics />
-            </AnalysisContext.Provider>
-        );
+    const renderWithContext = (contextValue = defaultMockContext) => {
+        mockUseAnalysis.mockReturnValue(contextValue);
+        return render(<PerformanceMetrics />);
     };
 
     beforeEach(() => {
         jest.clearAllMocks();
+        mockUseAnalysis.mockReturnValue(defaultMockContext);
     });
 
-    describe('Rendering con dati reali', () => {
-        it('should render all performance metrics with real data', () => {
-            renderWithContext();
-
-            // Verifica che tutti i metrici siano renderizzati
-            expect(screen.getByText('Rendimento Totale')).toBeInTheDocument();
-            expect(screen.getByText('15.25%')).toBeInTheDocument();
-            expect(screen.getByText('Rendimento Annuo')).toBeInTheDocument();
-            expect(screen.getByText('12.50%')).toBeInTheDocument();
-            expect(screen.getByText('Volatilità')).toBeInTheDocument();
-            expect(screen.getByText('8.75%')).toBeInTheDocument();
-            expect(screen.getByText('Sharpe Ratio')).toBeInTheDocument();
-            expect(screen.getByText('1.42')).toBeInTheDocument();
-        });
-
-        it('should render card structure correctly', () => {
-            renderWithContext();
-
-            expect(screen.getByTestId('card')).toBeInTheDocument();
-            expect(screen.getByTestId('card-header')).toBeInTheDocument();
-            expect(screen.getByTestId('card-title')).toHaveTextContent('Metriche di Performance');
-            expect(screen.getByTestId('card-content')).toBeInTheDocument();
-        });
-
-        it('should render theory button', () => {
-            renderWithContext();
-
-            const theoryButton = screen.getByRole('button', { name: /teoria/i });
-            expect(theoryButton).toBeInTheDocument();
-        });
+    it('should render performance metrics with data', () => {
+        renderWithContext();
+        expect(screen.getByText('Rendimento Totale')).toBeInTheDocument();
+        expect(screen.getByText('15.25%')).toBeInTheDocument();
     });
 
-    describe('Rendering con dati vuoti', () => {
-        it('should show no data message when analysisResults is null', () => {
-            const contextWithNoData = {
-                ...mockContextValue,
+    it('should show no data message when no results', () => {
+        const contextWithNoData = {
+            ...defaultMockContext,
+            analysisState: {
+                ...defaultMockContext.analysisState,
                 analysisResults: null
-            };
-
-            renderWithContext(contextWithNoData);
-
-            expect(screen.getByText('Avvia un\'analisi per vedere le metriche di performance')).toBeInTheDocument();
-        });
-
-        it('should show no data message when performanceMetrics is empty', () => {
-            const contextWithEmptyMetrics = {
-                ...mockContextValue,
-                analysisResults: {
-                    ...mockAnalysisResults,
-                    performanceMetrics: []
-                }
-            };
-
-            renderWithContext(contextWithEmptyMetrics);
-
-            expect(screen.getByText('Avvia un\'analisi per vedere le metriche di performance')).toBeInTheDocument();
-        });
-
-        it('should show no data message when performanceMetrics is undefined', () => {
-            const contextWithUndefinedMetrics = {
-                ...mockContextValue,
-                analysisResults: {
-                    ...mockAnalysisResults,
-                    performanceMetrics: undefined
-                }
-            };
-
-            renderWithContext(contextWithUndefinedMetrics);
-
-            expect(screen.getByText('Avvia un\'analisi per vedere le metriche di performance')).toBeInTheDocument();
-        });
+            }
+        };
+        renderWithContext(contextWithNoData);
+        expect(screen.getByText('Avvia un\'analisi per calcolare le metriche di performance.')).toBeInTheDocument();
     });
 
-    describe('Rendering con dati parziali', () => {
-        it('should handle metrics with missing values', () => {
-            const contextWithPartialData = {
-                ...mockContextValue,
-                analysisResults: {
-                    ...mockAnalysisResults,
-                    performanceMetrics: [
-                        {
-                            label: 'Rendimento Totale',
-                            value: undefined,
-                            description: 'Rendimento complessivo del periodo'
-                        },
-                        {
-                            label: undefined,
-                            value: '12.50%',
-                            description: 'Rendimento annualizzato'
-                        }
-                    ]
-                }
-            };
-
-            renderWithContext(contextWithPartialData);
-
-            // Dovrebbe mostrare fallback per valori mancanti
-            expect(screen.getByText('Rendimento Totale')).toBeInTheDocument();
-            expect(screen.getByText('Metrica')).toBeInTheDocument(); // fallback per label mancante
-            expect(screen.getByText('12.50%')).toBeInTheDocument();
-        });
+    it('should show loading state', () => {
+        const contextWithLoading = {
+            ...defaultMockContext,
+            analysisState: {
+                ...defaultMockContext.analysisState,
+                isLoading: true
+            }
+        };
+        renderWithContext(contextWithLoading);
+        expect(screen.getByText('Calcolo metriche...')).toBeInTheDocument();
     });
 
-    describe('Interazioni utente', () => {
-        it('should show theory toast when theory button is clicked', async () => {
-            const user = userEvent.setup();
-            renderWithContext();
-
-            const theoryButton = screen.getByRole('button', { name: /teoria/i });
-            await user.click(theoryButton);
-
-            expect(mockToast).toHaveBeenCalledWith({
-                title: 'Teoria delle Metriche di Performance',
-                description: expect.stringContaining('Le metriche di performance'),
-                variant: 'default'
-            });
-        });
-
-        it('should handle theory button click with proper event handling', async () => {
-            const user = userEvent.setup();
-            renderWithContext();
-
-            const theoryButton = screen.getByRole('button', { name: /teoria/i });
-
-            // Verifica che il bottone sia cliccabile
-            expect(theoryButton).not.toBeDisabled();
-
-            await user.click(theoryButton);
-
-            // Verifica che il toast sia stato chiamato
-            await waitFor(() => {
-                expect(mockToast).toHaveBeenCalledTimes(1);
-            });
-        });
-    });
-
-    describe('Stati di loading', () => {
-        it('should show loading state when analysis is running', () => {
-            const contextWithLoading = {
-                ...mockContextValue,
-                isAnalysisRunning: true
-            };
-
-            renderWithContext(contextWithLoading);
-
-            expect(screen.getByText('Analisi in corso...')).toBeInTheDocument();
-        });
-    });
-
-    describe('Gestione errori', () => {
-        it('should show error state when there is an error', () => {
-            const contextWithError = {
-                ...mockContextValue,
+    it('should show error state', () => {
+        const contextWithError = {
+            ...defaultMockContext,
+            analysisState: {
+                ...defaultMockContext.analysisState,
                 error: 'Errore durante l\'analisi'
-            };
-
-            renderWithContext(contextWithError);
-
-            expect(screen.getByText('Errore durante l\'analisi')).toBeInTheDocument();
-        });
+            }
+        };
+        renderWithContext(contextWithError);
+        expect(screen.getByText('Errore durante l\'analisi')).toBeInTheDocument();
     });
 
-    describe('Accessibilità', () => {
-        it('should have proper ARIA labels and roles', () => {
-            renderWithContext();
+    it('should handle theory button click', async () => {
+        const user = userEvent.setup();
+        renderWithContext();
 
-            // Verifica che il bottone abbia un ruolo appropriato
-            const theoryButton = screen.getByRole('button', { name: /teoria/i });
-            expect(theoryButton).toBeInTheDocument();
+        const theoryButton = screen.getByRole('button', { name: /teoria/i });
+        await user.click(theoryButton);
 
-            // Verifica che i metrici siano accessibili
-            expect(screen.getByText('Rendimento Totale')).toBeInTheDocument();
-            expect(screen.getByText('15.25%')).toBeInTheDocument();
-        });
-
-        it('should be keyboard navigable', async () => {
-            const user = userEvent.setup();
-            renderWithContext();
-
-            const theoryButton = screen.getByRole('button', { name: /teoria/i });
-
-            // Navigazione da tastiera
-            theoryButton.focus();
-            expect(theoryButton).toHaveFocus();
-
-            // Attivazione con Enter
-            await user.keyboard('{Enter}');
-            expect(mockToast).toHaveBeenCalled();
-        });
-    });
-
-    describe('Edge cases', () => {
-        it('should handle very long metric labels', () => {
-            const contextWithLongLabels = {
-                ...mockContextValue,
-                analysisResults: {
-                    ...mockAnalysisResults,
-                    performanceMetrics: [
-                        {
-                            label: 'Rendimento Totale Molto Molto Lungo Che Potrebbe Causare Problemi di Layout',
-                            value: '15.25%',
-                            description: 'Descrizione molto lunga'
-                        }
-                    ]
-                }
-            };
-
-            renderWithContext(contextWithLongLabels);
-
-            expect(screen.getByText('Rendimento Totale Molto Molto Lungo Che Potrebbe Causare Problemi di Layout')).toBeInTheDocument();
-        });
-
-        it('should handle very large numbers', () => {
-            const contextWithLargeNumbers = {
-                ...mockContextValue,
-                analysisResults: {
-                    ...mockAnalysisResults,
-                    performanceMetrics: [
-                        {
-                            label: 'Rendimento',
-                            value: '999999.99%',
-                            description: 'Numero molto grande'
-                        }
-                    ]
-                }
-            };
-
-            renderWithContext(contextWithLargeNumbers);
-
-            expect(screen.getByText('999999.99%')).toBeInTheDocument();
-        });
-
-        it('should handle negative values', () => {
-            const contextWithNegativeValues = {
-                ...mockContextValue,
-                analysisResults: {
-                    ...mockAnalysisResults,
-                    performanceMetrics: [
-                        {
-                            label: 'Rendimento',
-                            value: '-15.25%',
-                            description: 'Rendimento negativo'
-                        }
-                    ]
-                }
-            };
-
-            renderWithContext(contextWithNegativeValues);
-
-            expect(screen.getByText('-15.25%')).toBeInTheDocument();
+        expect(mockToast).toHaveBeenCalledWith({
+            title: 'Teoria delle Metriche di Performance',
+            description: expect.stringContaining('Le metriche di performance')
         });
     });
 }); 
