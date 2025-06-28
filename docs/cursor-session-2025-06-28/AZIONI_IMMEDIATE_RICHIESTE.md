@@ -2,11 +2,11 @@
 
 > **Data**: 28 Giugno 2025  
 > **Priorità**: CRITICA  
-> **Status**: IN RISOLUZIONE
+> **Status**: RISOLUZIONE IN CORSO
 
 ---
 
-## 🔥 **PRIORITÀ 1 - CRITICA (RISOLTO)**
+## 🔥 **PRIORITÀ 1 - CRITICA**
 
 ### **✅ 1. Render Backend Failed Deploy - RISOLTO**
 
@@ -24,7 +24,7 @@ Cannot find module './networkResilienceService' or its corresponding type declar
 - **Sistema Retry**: Il servizio usa già il sistema di retry integrato (linee 270-295)
 - **Build Test**: ✅ `npm run build` ora funziona senza errori
 - **Commit**: `540c615` - fix(backend): resolve NetworkResilienceService import error
-- **Push**: ✅ Inviato su GitHub per trigger deploy Render
+- **Deploy**: ✅ Backend Render ora attivo e funzionante
 
 **🔍 VERIFICA NECESSARIA** (prossimi 10 minuti):
 
@@ -32,25 +32,50 @@ Cannot find module './networkResilienceService' or its corresponding type declar
 2. ✅ Testare health check: `https://student-analyst.onrender.com/health`
 3. ✅ Verificare API endpoint: `https://student-analyst.onrender.com/api/test`
 
+### **🔥 2. CORS Blocking Analysis Requests - IN RISOLUZIONE**
+
+**Problema**: Frontend Vercel bloccato da CORS quando fa richieste al backend
+
+```
+Access to fetch at 'https://student-analyst.onrender.com/api/analysis'
+from origin 'https://student-analyst-6e96mc166-riccar-pizzornis-projects.vercel.app'
+has been blocked by CORS policy
+```
+
+**🔧 RISOLUZIONE APPLICATA**:
+
+- **Causa**: URL Vercel dinamici (`student-analyst-6e96mc166-...`) non nella whitelist CORS
+- **Fix**: Aggiunto pattern regex per accettare tutti i preview URL Vercel
+- **Pattern**: `/^https:\/\/student-analyst-[a-z0-9]+-riccar-pizzornis-projects\.vercel\.app$/`
+- **Sicurezza**: Mantenuta - solo domini del progetto student-analyst
+- **Commit**: `f010802` - fix(cors): allow dynamic Vercel preview URLs
+- **Deploy**: ⏳ In corso su Render (2-5 minuti)
+
+**🔍 VERIFICA NECESSARIA** (prossimi 5 minuti):
+
+1. ⏳ Attendere deploy Render completato
+2. ⏳ Testare analisi dal frontend Vercel
+3. ⏳ Verificare che CORS non blocchi più le richieste
+
 ---
 
 ## ⚠️ **PRIORITÀ 2 - ALTA**
 
-### **⚠️ 2. Security - API Key Esposta**
+### **✅ 3. Security - API Key Esposta - CHIARITO**
 
 **Problema**: `W8EEE8B0TZMGIP1M` (Alpha Vantage) visibile negli screenshot
-**Status**: CHIARITO - Era intenzionale per dimostrazione
+**Status**: ✅ CHIARITO - Era intenzionale per dimostrazione
 
 **Action**: ✅ NESSUNA - Confermato dall'utente come non problematico
 
-### **⚠️ 3. Health Check Intermittente**
+### **⚠️ 4. Health Check Intermittente - MONITORAGGIO**
 
 **Problema**: GitHub Actions con fallimenti intermittenti
 **Status**: DA MONITORARE
 
 **Action Plan**:
 
-1. Verificare stabilità dopo fix Render
+1. Verificare stabilità dopo fix CORS
 2. Se persiste: analizzare logs GitHub Actions
 3. Ottimizzare timeout se necessario
 
@@ -58,28 +83,42 @@ Cannot find module './networkResilienceService' or its corresponding type declar
 
 ## 📊 **CHECKLIST VERIFICA DEPLOY**
 
-### **Render Backend - MONITORAGGIO ATTIVO**
+### **Render Backend - ✅ ATTIVO**
 
 ```bash
-# Test immediati da eseguire
+# Health check - FUNZIONANTE
 curl -f https://student-analyst.onrender.com/health
-curl -f https://student-analyst.onrender.com/api/test
+# Risposta: {"status":"ok","timestamp":"...","version":"1.0.0"}
 
-# Se funziona, test API finanziaria
-curl -f https://student-analyst.onrender.com/api/financial/AAPL
+# Logs Render mostrano:
+# GET /health 200 0.110 ms - 99 ✅
 ```
+
+### **CORS Fix - ⏳ IN DEPLOY**
 
 **Timeline Attesa**:
 
-- ⏱️ **0-5 min**: Build e deploy su Render
-- ⏱️ **5-10 min**: Servizio attivo e health check OK
-- ⏱️ **10+ min**: Se non funziona, escalation necessaria
+- ⏱️ **0-3 min**: Build e deploy CORS fix su Render
+- ⏱️ **3-5 min**: Test analisi dal frontend
+- ⏱️ **5+ min**: Se persiste, debug aggiuntivo
 
-### **Frontend Vercel - STATUS OK**
+**Test da eseguire dopo deploy**:
+
+```bash
+# Test CORS dal browser o:
+curl -H "Origin: https://student-analyst-6e96mc166-riccar-pizzornis-projects.vercel.app" \
+     -H "Access-Control-Request-Method: POST" \
+     -H "Access-Control-Request-Headers: Content-Type" \
+     -X OPTIONS \
+     https://student-analyst.onrender.com/api/analysis
+```
+
+### **Frontend Vercel - ✅ ATTIVO**
 
 ✅ **Frontend**: https://student-analyst.vercel.app (funzionante)
-✅ **Build**: Nessun problema identificato
-✅ **Environment Variables**: Configurate correttamente
+✅ **UI**: Interfaccia carica correttamente
+✅ **Input**: Form analisi funziona
+❌ **API Calls**: Bloccate da CORS (in risoluzione)
 
 ---
 
@@ -93,24 +132,30 @@ curl -f https://student-analyst.onrender.com/api/financial/AAPL
 
 ### **Health Checks**
 
-- **Backend Health**: https://student-analyst.onrender.com/health
-- **Frontend**: https://student-analyst.vercel.app
+- **Backend Health**: https://student-analyst.onrender.com/health ✅
+- **Frontend**: https://student-analyst.vercel.app ✅
+
+### **Test URLs**
+
+- **Analysis API**: https://student-analyst.onrender.com/api/analysis
+- **Current Frontend**: https://student-analyst-6e96mc166-riccar-pizzornis-projects.vercel.app
 
 ---
 
 ## 🚨 **ESCALATION PLAN**
 
-### **Se Render Deploy Fallisce Ancora**
+### **Se CORS Fix Non Funziona**
 
-1. **Verifica Logs**: Controllare nuovi errori nei logs Render
-2. **Rollback Option**: Commit precedente `f71ee9a` era funzionante
-3. **Alternative**: Considerare deploy manuale o configurazione diversa
+1. **Debug Pattern**: Verificare che il regex pattern sia corretto
+2. **Logs Check**: Controllare logs Render per errori CORS specifici
+3. **Fallback**: Aggiungere URL specifico temporaneamente
+4. **Alternative**: Considerare wildcard controllato per sottodomini
 
-### **Se Health Check Rimane Intermittente**
+### **Se Performance Issues**
 
-1. **GitHub Actions**: Disabilitare temporaneamente se bloccante
-2. **Monitoring**: Implementare health check interno più robusto
-3. **Timeout**: Aumentare timeout da 30s a 60s
+1. **Timeout**: Aumentare timeout richieste API
+2. **Retry Logic**: Verificare che retry mechanism funzioni
+3. **Monitoring**: Implementare logging più dettagliato
 
 ---
 
@@ -119,30 +164,44 @@ curl -f https://student-analyst.onrender.com/api/financial/AAPL
 **Quando tutto funziona, dovremmo vedere**:
 
 ```bash
-# Health check risponde
-$ curl https://student-analyst.onrender.com/health
-{
-  "status": "ok",
-  "timestamp": "2025-06-28T...",
-  "version": "1.0.0"
-}
+# Frontend Console (NO ERRORS)
+🚀 Avvio analisi con parametri: {tickers: Array(3), startDate: '2025-03-03', endDate: '2025-04-07', frequency: 'daily'}
+✅ Analisi completata con successo
 
-# API test risponde
-$ curl https://student-analyst.onrender.com/api/test
-{
-  "message": "API is working",
-  "timestamp": "..."
-}
+# Render Logs (NO CORS ERRORS)
+POST /api/analysis 200 1.234 ms - 1024
+GET /health 200 0.110 ms - 99
 ```
 
 **Applicazione completa funzionante**:
 
-- ✅ Frontend Vercel attivo
-- ✅ Backend Render attivo
+- ✅ Frontend Vercel attivo e carica
+- ✅ Backend Render attivo e risponde
 - ✅ Health checks OK
-- ✅ API endpoints funzionanti
-- ✅ Integrazione Alpha Vantage/Yahoo Finance OK
+- ⏳ CORS risolto (in deploy)
+- ⏳ Analisi finanziaria funzionante end-to-end
 
 ---
 
-**⚠️ NOTA**: Il problema principale (build failure) è stato risolto. Ora è questione di attendere che Render completi il deploy (~5-10 minuti).
+## 📈 **PROGRESSI FATTI**
+
+### **✅ RISOLTI**
+
+1. **Build Failure**: NetworkResilienceService import error
+2. **Backend Deploy**: Render ora attivo e stabile
+3. **Health Check**: Endpoint funzionante
+
+### **🔧 IN RISOLUZIONE**
+
+1. **CORS Policy**: Fix deployato, in attesa applicazione
+2. **Frontend-Backend Communication**: Dovrebbe risolversi con CORS fix
+
+### **⏳ DA TESTARE**
+
+1. **End-to-End Analysis**: Dopo CORS fix
+2. **Alpha Vantage Integration**: Test con dati reali
+3. **Yahoo Finance Fallback**: Verifica sistema dual-source
+
+---
+
+**⚠️ NOTA**: Problemi principali risolti. CORS fix in deploy - dovrebbe risolvere completamente la comunicazione frontend-backend entro 5 minuti.
