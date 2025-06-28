@@ -22,19 +22,31 @@ const allowedOrigins = [
   'https://student-analyst.vercel.app',
   'https://student-analyst-git-main.vercel.app',
   'https://student-analyst-git-feature.vercel.app',
-  'https://student-analyst-foxy8lbm8-riccar-pizzornis-projects.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
 ];
+
+// Pattern per Vercel preview deployments dinamici
+const vercelPreviewPattern =
+  /^https:\/\/student-analyst-[a-z0-9]+-riccar-pizzornis-projects\.vercel\.app$/;
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Consenti richieste senza origin (es. curl, health check)
     if (!origin) return callback(null, true);
+
+    // Controlla se è nella lista statica
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+
+    // Controlla se corrisponde al pattern Vercel preview
+    if (vercelPreviewPattern.test(origin)) {
+      return callback(null, true);
+    }
+
+    console.error(`CORS: Origin non permessa: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   optionsSuccessStatus: 200,
