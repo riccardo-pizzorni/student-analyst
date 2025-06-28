@@ -62,12 +62,8 @@ interface AnalysisParams {
 }
 
 // Configurazione API URL - SOLO process.env per compatibilità Jest/Vite
-const API_BASE_URL = process.env.VITE_BACKEND_URL;
-if (!API_BASE_URL) {
-  throw new Error(
-    'VITE_BACKEND_URL non definita! Configura la variabile su Vercel.'
-  );
-}
+const API_BASE_URL =
+  process.env.VITE_BACKEND_URL || 'https://student-analyst.onrender.com';
 console.log(
   '[DEBUG] API_BASE_URL:',
   API_BASE_URL,
