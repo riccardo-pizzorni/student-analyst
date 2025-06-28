@@ -17,8 +17,34 @@ import healthRouter from './routes/health';
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// CORS sicuro: consenti solo le origin Vercel (prod e preview)
+const allowedOrigins = [
+  'https://student-analyst.vercel.app',
+  'https://student-analyst-git-main.vercel.app',
+  'https://student-analyst-git-feature.vercel.app',
+  'https://student-analyst-foxy8lbm8-riccar-pizzornis-projects.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Consenti richieste senza origin (es. curl, health check)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
+// Gestione preflight OPTIONS globale (per sicurezza)
+app.options('*', cors(corsOptions));
+
 // Middleware essenziali
-app.use(cors()); // Abilita CORS per le richieste dal frontend
 app.use(helmet()); // Aggiunge header di sicurezza
 app.use(morgan('dev'));
 app.use(express.json()); // Per il parsing del body JSON delle richieste
