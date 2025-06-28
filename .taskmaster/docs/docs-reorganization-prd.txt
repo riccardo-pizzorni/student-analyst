@@ -1,0 +1,136 @@
+# STUDENT ANALYST - DOCS REORGANIZATION PRD
+
+## Overview
+La cartella `docs/` di Student Analyst è attualmente disorganizzata e confusionaria con documentazione falsa, file obsoleti e duplicazioni massive. L'obiettivo è riorganizzarla completamente per renderla utile, accurata e ben strutturata.
+
+## Current Problems
+- Documentazione falsa che descrive il progetto come "100% completo"
+- File giganteschi inutili (341KB di log)
+- Duplicazioni massive (3+ versioni di PROJECT_STATUS)
+- File temporanei e obsoleti
+- Struttura confusionaria senza logica
+
+## Core Features to Implement
+
+### 1. Audit e Pulizia
+- Analizzare ogni singolo file nella cartella docs/
+- Identificare file utili vs inutili
+- Rimuovere documentazione falsa/obsoleta
+- Eliminare duplicazioni
+
+### 2. Nuova Struttura Organizzata
+- Creare categorie logiche (development/, deployment/, testing/, etc.)
+- Definire naming convention consistente
+- Organizzare file per argomento e utilità
+
+### 3. Documentazione Accurata
+- Creare documentazione veritiera dello stato del progetto
+- Aggiornare guide tecniche con informazioni corrette
+- Mantenere solo documentazione utile e attuale
+
+## Technical Architecture
+
+### Current Structure Issues
+```
+docs/
+├── 25+ file disorganizzati
+├── cursor-session-2025-06-28/ (cartella temporanea)
+├── solutions/ (1 file vuoto)
+├── development/ (1 file)
+└── deployment/ (1 file)
+```
+
+### Target Structure
+```
+docs/
+├── project/
+│   ├── status.md (stato reale)
+│   └── roadmap.md
+├── development/
+│   ├── workflow.md
+│   └── testing.md
+├── deployment/
+│   ├── vercel.md
+│   └── render.md
+├── troubleshooting/
+│   └── common-issues.md
+└── archive/ (file obsoleti)
+```
+
+## Development Roadmap
+
+### Phase 1: Audit Completo
+- Analizzare tutti i 25+ file esistenti
+- Categorizzare: utile/inutile/obsoleto/falso
+- Creare report di analisi
+
+### Phase 2: Pulizia Drastica
+- Rimuovere file falsi/obsoleti
+- Eliminare duplicazioni
+- Archiviare file storici se necessario
+
+### Phase 3: Riorganizzazione
+- Creare nuova struttura di cartelle
+- Spostare file utili nelle categorie appropriate
+- Rinominare file con convention consistente
+
+### Phase 4: Documentazione Corretta
+- Riscrivere documentazione falsa con informazioni veritiere
+- Aggiornare guide tecniche
+- Creare documentazione mancante ma necessaria
+
+### Phase 5: Manutenzione
+- Definire linee guida per futura documentazione
+- Creare template per nuovi documenti
+- Implementare review process
+
+## Logical Dependency Chain
+
+1. **Audit First** - Impossibile riorganizzare senza sapere cosa c'è
+2. **Clean Before Organize** - Rimuovere il superfluo prima di strutturare
+3. **Structure Then Content** - Creare la struttura prima di scrivere contenuto
+4. **Accuracy Over Completeness** - Meglio poca documentazione vera che tanta falsa
+
+## Risks and Mitigations
+
+### Technical Challenges
+- **Risk**: Perdere informazioni utili durante la pulizia
+- **Mitigation**: Backup completo prima di iniziare, review accurato
+
+### Resource Constraints  
+- **Risk**: Sottovalutare il tempo necessario per l'audit
+- **Mitigation**: Iniziare con analisi automatizzata, poi review manuale
+
+### Scope Creep
+- **Risk**: Espandere oltre la riorganizzazione docs
+- **Mitigation**: Focus rigoroso solo sulla cartella docs/
+
+## Success Criteria
+
+### Quantitative
+- Riduzione da 25+ file a max 15 file utili
+- Eliminazione di almeno 70% dei file obsoleti
+- Struttura con max 5 categorie principali
+
+### Qualitative  
+- Documentazione accurata al 100%
+- Struttura logica e navigabile
+- Zero duplicazioni
+- Naming convention consistente
+
+## Appendix
+
+### Files to Definitely Remove
+- project_progress.txt (341KB di log inutili)
+- temp_doc.txt (2 righe vuote)
+- Multipli file task_d*.txt (log temporanei)
+
+### Files to Definitely Keep
+- Testing guides (dopo review e merge)
+- Deployment guides (dopo aggiornamento)
+- Development workflow (dopo correzione)
+
+### Files Requiring Review
+- PROJECT_STATUS_*.md (verificare quale versione è corretta)
+- CRITICAL_FIXES_SUMMARY.md (aggiornare o rimuovere)
+- Guide tecniche specifiche (validare accuratezza) 

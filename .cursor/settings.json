@@ -1,12 +1,40 @@
 {
+  "cursor.ai.enableInlineCompletion": true,
+  "cursor.ai.enableChatCompletion": true,
+  "cursor.ai.aiModel": "claude-3-5-sonnet-20241022",
+  "cursor.ai.aiTemperature": 0.7,
+  "cursor.ai.aiMaxTokens": 4000,
+  "cursor.general.enableGitIntegration": true,
+  "cursor.general.enableAutoCommit": false,
+  "cursor.general.autoCommitMessage": "feat: Student Analyst development progress",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "emmet.includeLanguages": {
+    "typescript": "typescriptreact",
+    "javascript": "javascriptreact"
+  },
+  "emmet.triggerExpansionOnTab": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "tailwindCSS.includeLanguages": {
+    "typescript": "typescript",
+    "typescriptreact": "typescriptreact"
+  },
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "files.autoSave": "onFocusChange",
+  "editor.minimap.enabled": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
   "onStartup": {
-    "commands": [
-      {
-        "command": "cmd",
-        "args": ["/c", "scripts\\auto-commit-push.bat"],
-        "cwd": "${workspaceFolder}",
-        "terminal": true
-      }
-    ]
+    "commands": []
   }
 }

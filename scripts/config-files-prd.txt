@@ -1,0 +1,125 @@
+# PRD - CONFIGURAZIONI CURSOR E VSCODE
+# ================================================================
+
+## OVERVIEW
+Ottimizzazione e standardizzazione dei file di configurazione per l'ambiente di sviluppo Student Analyst, con focus su produttività, sicurezza e integrazione Task Master.
+
+## OBIETTIVO
+Configurare correttamente i file di configurazione per:
+- Ambiente di sviluppo ottimale per React + TypeScript
+- Integrazione Task Master MCP funzionante
+- Workflow Git sicuro e produttivo
+- Estensioni VS Code/Cursor essenziali per il progetto
+
+## FILE TARGET
+1. `.cursor/settings.json` - Configurazioni specifiche Cursor
+2. `.cursor/mcp.json` - Task Master MCP server configuration
+3. `.vscode/settings.json` - Configurazioni VS Code condivise
+4. `.vscode/mcp.json` - Backup MCP configuration
+5. `.vscode/extensions.json` - Estensioni raccomandate
+6. `.husky/pre-commit` - Git hook pre-commit
+
+## REQUISITI FUNZIONALI
+
+### 1. CURSOR SETTINGS (.cursor/settings.json)
+**PROBLEMI ATTUALI:**
+- Auto-commit rimosso accidentalmente
+- Configurazioni AI aggiunte senza verifica impatto
+- Startup command potenzialmente problematico
+
+**REQUISITI:**
+- Ripristinare auto-commit sicuro se necessario per workflow
+- Configurazioni AI ottimali per Student Analyst
+- Startup commands non invasivi
+- Git integration configurata correttamente
+
+### 2. MCP CONFIGURATION (.cursor/mcp.json + .vscode/mcp.json)
+**PROBLEMI ATTUALI:**
+- API key OpenRouter esposta (ma funzionante)
+- Placeholder per altre API keys
+- Configurazione duplicata tra .cursor e .vscode
+
+**REQUISITI:**
+- Task Master MCP funzionante con OpenRouter
+- API keys sicure (environment variables dove possibile)
+- Configurazione unificata e non duplicata
+- Backup configuration per portabilità
+
+### 3. VSCODE SETTINGS (.vscode/settings.json)
+**PROBLEMI ATTUALI:**
+- File ricreato con configurazioni avanzate TypeScript
+- Possibile over-engineering per il progetto
+- Configurazioni che potrebbero confliggere con Cursor
+
+**REQUISITI:**
+- Configurazioni TypeScript ottimali per Student Analyst
+- Formatter settings per Prettier + ESLint
+- Jest e Playwright integration
+- TailwindCSS support
+- File nesting per organizzazione
+
+### 4. EXTENSIONS (.vscode/extensions.json)
+**STATO ATTUALE:**
+- Lista base di estensioni raccomandate
+- Mancano estensioni specifiche per financial analysis
+
+**REQUISITI:**
+- Estensioni essenziali per React + TypeScript
+- Tools per testing (Jest, Playwright)
+- TailwindCSS support
+- Git workflow tools
+- Productivity extensions per financial data
+
+### 5. HUSKY PRE-COMMIT (.husky/pre-commit)
+**PROBLEMA CRITICO:**
+- Hook bypassa tutti i controlli (`exit 0`)
+- Nessuna validazione pre-commit
+- Rischio di commit con errori
+
+**REQUISITI:**
+- TypeScript check obbligatorio
+- ESLint validation
+- Test execution per componenti critici
+- Prettier formatting
+- Commit message validation
+
+## IMPLEMENTAZIONE
+
+### FASE 1: ASSESSMENT E BACKUP
+- Backup configurazioni attuali
+- Test funzionalità ambiente attuale
+- Identificazione configurazioni critiche
+
+### FASE 2: CURSOR OPTIMIZATION
+- Ottimizzazione .cursor/settings.json per Student Analyst
+- Configurazione MCP sicura e funzionante
+- Test Task Master integration
+
+### FASE 3: VSCODE STANDARDIZATION
+- Pulizia .vscode/settings.json (rimozione over-engineering)
+- Estensioni essenziali per il progetto
+- Configurazioni condivise team
+
+### FASE 4: GIT WORKFLOW SECURITY
+- Pre-commit hook robusto
+- Quality gates obbligatori
+- Automated formatting e validation
+
+### FASE 5: DOCUMENTATION
+- Guida configurazione per team
+- Troubleshooting common issues
+- Best practices per maintenance
+
+## CRITERI DI SUCCESSO
+- ✅ Task Master MCP funzionante
+- ✅ TypeScript development experience ottimale
+- ✅ Git workflow sicuro con quality gates
+- ✅ Estensioni essenziali installate
+- ✅ Zero configurazioni ridondanti o conflittuali
+- ✅ Environment development stabile e produttivo
+
+## PRIORITÀ
+1. **CRITICO**: Task Master MCP configuration
+2. **ALTO**: Pre-commit hook security
+3. **MEDIO**: VS Code settings optimization
+4. **BASSO**: Extensions fine-tuning 

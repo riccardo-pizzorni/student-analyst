@@ -303,17 +303,28 @@ Response: {
 
 ## 📚 **Documentazione**
 
-### **Guide Tecniche**
+La documentazione è stata completamente riorganizzata e ottimizzata. Vedi [`docs/README.md`](docs/README.md) per la panoramica completa.
 
-- [📋 Project Status](docs/PROJECT_STATUS_ACTUAL.md) - Stato attuale
-- [🚨 Critical Fixes](docs/CRITICAL_FIXES_SUMMARY.md) - Fix implementati
-- [🧪 Testing Guide](docs/TESTING_GUIDE.md) - Testing strategies
-- [🚀 Deployment](docs/deployment/) - Deploy instructions
+### **📂 Struttura Documentazione**
 
-### **API Documentation**
+- **[`docs/configuration/`](docs/configuration/)** - Setup, environment, configurazioni
+- **[`docs/development/`](docs/development/)** - Workflow, API, best practices
+- **[`docs/deployment/`](docs/deployment/)** - Deploy, fixes, troubleshooting
+- **[`docs/project/`](docs/project/)** - Status, changelog, analisi progetto
+- **[`docs/testing/`](docs/testing/)** - Guide test, utilities, troubleshooting
+- **[`docs/solutions/`](docs/solutions/)** - Soluzioni esistenti
 
-- [📊 Analysis API](docs/api/analysis.md) - Endpoint documentation
-- [📈 Yahoo Finance Integration](docs/YAHOO_FINANCE_INTEGRATION.md)
+### **🎯 Guide Principali**
+
+- **Setup Iniziale**: [`docs/configuration/`](docs/configuration/)
+- **Sviluppo**: [`docs/development/DEVELOPMENT_WORKFLOW.md`](docs/development/DEVELOPMENT_WORKFLOW.md)
+- **Testing**: [`docs/testing/TESTING_GUIDE.md`](docs/testing/TESTING_GUIDE.md)
+- **API Integration**: [`docs/development/YAHOO_FINANCE_INTEGRATION.md`](docs/development/YAHOO_FINANCE_INTEGRATION.md)
+
+### **🔧 TaskMaster Integration**
+
+- **[`AGENTS.md`](AGENTS.md)** - TaskMaster/Claude Code integration guide
+- **[`BIBBIA_STUDENT_ANALYST.txt`](BIBBIA_STUDENT_ANALYST.txt)** - Complete project documentation
 
 ---
 

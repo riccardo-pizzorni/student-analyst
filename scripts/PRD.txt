@@ -1,0 +1,392 @@
+# STUDENT ANALYST - PRODUCT REQUIREMENTS DOCUMENT (PRD)
+# ================================================================
+
+<context>
+# Overview  
+Student Analyst è una piattaforma di analisi finanziaria educativa che trasforma l'apprendimento della finanza in un'esperienza interattiva e professionale. Risolve il problema dell'accesso limitato a strumenti di analisi finanziaria avanzati per studenti e professionisti in formazione, fornendo un ambiente completo per l'analisi di portafogli, la valutazione del rischio e l'ottimizzazione degli investimenti.
+
+La piattaforma è destinata a:
+- Studenti di economia e finanza
+- Giovani professionali del settore finanziario
+- Educatori e formatori
+- Investitori retail che vogliono migliorare le proprie competenze
+
+Il valore unico risiede nella combinazione di:
+- Interfaccia user-friendly con approccio didattico
+- Analisi finanziarie professionali in tempo reale
+- Architettura moderna e scalabile
+- Deployment cloud-native per accessibilità globale
+
+# Core Features  
+1. **INPUT & VALIDAZIONE DATI**
+   - Inserimento ticker symbols con validazione real-time
+   - Selezione range temporali flessibili
+   - Upload file CSV per dati personalizzati
+   - Validazione e sanitizzazione input utente
+
+2. **ANALISI STORICA**
+   - Grafici interattivi con Chart.js/Recharts
+   - Visualizzazione multi-ticker sincronizzata
+   - Zoom, pan e annotazioni sui grafici
+   - Export dati in formati standard
+
+3. **METRICHE DI PERFORMANCE**
+   - Calcolo rendimenti totali e annualizzati
+   - Sharpe ratio e metriche risk-adjusted
+   - Benchmark comparison
+   - Performance attribution analysis
+
+4. **ANALISI VOLATILITÀ**
+   - Volatilità annualizzata
+   - Value at Risk (VaR) calculations
+   - Rolling volatility analysis
+   - Stress testing scenarios
+
+5. **ANALISI CORRELAZIONI**
+   - Matrice di correlazione interattiva
+   - Diversification index
+   - Heat maps visualizzazioni
+   - Portfolio optimization hints
+
+6. **CACHE SYSTEM AVANZATO**
+   - Three-tier caching (Memory L1, IndexedDB L2, API L3)
+   - Automatic cleanup e monitoring
+   - Performance analytics
+   - Fallback mechanisms
+
+7. **SICUREZZA E SCALABILITÀ**
+   - Rate limiting intelligente
+   - CORS configuration avanzata
+   - Input sanitization
+   - Error handling robusto
+
+# User Experience  
+**USER PERSONAS:**
+- **Marco (Studente Universitario)**: 22 anni, Economia, cerca strumenti pratici per progetti
+- **Sara (Young Professional)**: 26 anni, Junior Analyst, vuole migliorare skills analitiche
+- **Prof. Rossi (Educatore)**: 45 anni, insegna finanza, cerca strumenti didattici
+
+**KEY USER FLOWS:**
+1. **Quick Analysis Flow**: Input ticker → Avvia analisi → Visualizza risultati (< 30 secondi)
+2. **Deep Dive Flow**: Input multipli → Configurazione avanzata → Analisi completa → Export
+3. **Educational Flow**: Tutorial integrato → Spiegazioni contestuali → Practice mode
+
+**UI/UX CONSIDERATIONS:**
+- Design responsive mobile-first
+- Accessibility WCAG 2.1 AA compliance
+- Progressive disclosure per complessità
+- Real-time feedback e loading states
+- Error messages educativi e actionable
+</context>
+
+<PRD>
+# Technical Architecture  
+
+## FRONTEND STACK
+- **Framework**: React 18.3.1 + TypeScript 5.5.3
+- **Build Tool**: Vite 5.4.1 con SWC per performance ottimali
+- **UI Library**: Radix UI + TailwindCSS per design system consistente
+- **State Management**: React Context + TanStack Query per server state
+- **Charts**: Chart.js 4.5.0 + Recharts 2.12.7 per visualizzazioni avanzate
+- **Forms**: React Hook Form + Zod per validazione type-safe
+- **Testing**: Jest + Playwright + React Testing Library
+
+## BACKEND STACK
+- **Runtime**: Node.js 18+ + TypeScript
+- **Framework**: Express.js con middleware di sicurezza
+- **APIs**: Yahoo Finance 2.13.3 + Alpha Vantage integration
+- **Database**: PostgreSQL per persistenza
+- **Security**: Helmet + CORS + Rate Limiting + Input Sanitization
+- **Monitoring**: Morgan logging + Custom analytics
+
+## DEPLOYMENT ARCHITECTURE
+- **Frontend**: Vercel con edge deployment globale
+- **Backend**: Render con auto-scaling
+- **CDN**: Vercel Edge Network per static assets
+- **Monitoring**: Integrated health checks + error tracking
+
+## DATA MODELS
+```typescript
+interface AnalysisRequest {
+  tickers: string[];
+  startDate: string;
+  endDate: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+}
+
+interface AnalysisResponse {
+  historicalData: ChartDataset[];
+  performanceMetrics: Metric[];
+  volatility: VolatilityData;
+  correlation: CorrelationMatrix;
+  marketPhases: MarketPhaseData;
+  metadata: AnalysisMetadata;
+}
+```
+
+## INTEGRATIONS
+- **Primary Data**: Yahoo Finance API (gratuita, reliable)
+- **Fallback**: Alpha Vantage API (premium features)
+- **Cache**: Three-tier system per performance
+- **Analytics**: Custom metrics collection
+
+# Development Roadmap  
+
+## PHASE 1: CONFIGURATION RECOVERY & STABILIZATION (IMMEDIATE PRIORITY)
+- 🚨 **CRITICO**: Valutazione impatto modifiche accidentali su file configurazione
+- 🚨 **CRITICO**: Backup e possibile rollback .vscode/settings.json e .cursor/settings.json
+- 🚨 **CRITICO**: Configurazione Task Master MCP con API key OpenRouter disponibile
+- 🚨 **CRITICO**: Diagnosi e fix backend Render deployment (attualmente FAILED)
+- 🔄 Verifica integrità pipeline CI/CD Vercel + Render
+- 🔄 Test funzionalità ambiente di sviluppo post-modifiche
+- ✅ Project setup con Vite + TypeScript (COMPLETATO)
+- ✅ UI Components con Radix + TailwindCSS (COMPLETATO)
+- ✅ Basic routing e navigation (COMPLETATO)
+- ✅ Input validation e ticker management (COMPLETATO)
+- ✅ Yahoo Finance API integration (COMPLETATO)
+- ✅ Basic charting con Chart.js (COMPLETATO)
+- ✅ Context state management (COMPLETATO)
+- ✅ Vercel frontend deployment (COMPLETATO e FUNZIONANTE)
+
+## PHASE 2: CORE ANALYTICS ENHANCEMENT
+- 🔄 Advanced performance metrics calculations
+- 🔄 Volatility analysis improvements
+- 🔄 Correlation matrix optimizations
+- ⏳ Market phases detection algorithms
+- ⏳ Risk metrics (VaR, CVaR, Maximum Drawdown)
+- ⏳ Benchmark comparison features
+
+## PHASE 3: USER EXPERIENCE POLISH
+- ⏳ Advanced charting features (annotations, technical indicators)
+- ⏳ Export functionality (PDF reports, CSV data)
+- ⏳ Tutorial system integrato
+- ⏳ Responsive design optimizations
+- ⏳ Accessibility improvements
+- ⏳ Performance optimizations
+
+## PHASE 4: ADVANCED FEATURES
+- ⏳ Portfolio optimization algorithms
+- ⏳ Monte Carlo simulations
+- ⏳ Custom indicators creation
+- ⏳ Social features (share analysis)
+- ⏳ Premium data sources integration
+- ⏳ Multi-language support
+
+## PHASE 5: ENTERPRISE READY
+- ⏳ User authentication system
+- ⏳ Multi-tenant architecture
+- ⏳ Advanced security features
+- ⏳ API rate limiting per user
+- ⏳ Premium subscription model
+- ⏳ Enterprise dashboard
+
+# Logical Dependency Chain
+
+## FOUNDATION LAYER (PRIORITY 1 - IMMEDIATE)
+1. **Configuration Impact Assessment** (CRITICO)
+   - Analisi modifiche accidentali su .vscode/settings.json (ricreato con configurazioni avanzate)
+   - Valutazione modifiche .cursor/settings.json (rimosso auto-commit, aggiunte configurazioni AI)
+   - Backup configurazioni attuali prima di ulteriori modifiche
+   - Test funzionalità ambiente sviluppo post-modifiche
+   - Rollback selettivo se necessario
+
+2. **Task Master MCP Activation** (CRITICO)
+   - Configurazione OpenRouter API key in .cursor/mcp.json
+   - Test connessione Task Master MCP
+   - Verifica parsing PRD funzionante
+   - Setup workflow Task Master ottimale
+
+3. **Backend Infrastructure Recovery** (CRITICO)
+   - Diagnosi Render deployment failure (https://student-analyst.onrender.com)
+   - Analisi logs backend per identificare causa failure
+   - Restart deployment con fix necessari
+   - Verifica health check endpoints
+   - Test API endpoints funzionalità
+
+4. **Development Environment Stabilization**
+   - Verifica pipeline Vercel + Render sincronizzazione
+   - Test build e deployment automatici
+   - Monitoring error rates e performance
+   - Documentazione configurazione finale
+
+## FEATURE LAYER (PRIORITY 2)
+5. **Data Processing Pipeline Optimization**
+   - Historical data normalization improvements
+   - Real-time data validation enhancements
+   - Advanced calculations engine refinement
+   - Performance metrics accuracy verification
+
+6. **Visualization Engine Enhancement**
+   - Chart performance optimization
+   - Interactive features enhancement
+   - Mobile responsiveness improvements
+   - Accessibility compliance verification
+
+## POLISH LAYER (PRIORITY 3)
+7. **User Experience Refinement**
+   - Tutorial system implementation
+   - Error message improvements
+   - Loading state optimizations
+   - Progressive disclosure implementation
+
+8. **Advanced Analytics Implementation**
+   - Portfolio optimization algorithms
+   - Risk management tools
+   - Predictive analytics
+   - Custom reporting features
+
+# Risks and Mitigations  
+
+## IMMEDIATE CRITICAL RISKS
+**Risk**: Modifiche accidentali configurazioni potrebbero causare regressioni sviluppo
+**Mitigation**: Assessment immediato impatto, backup preventivo, rollback controllato se necessario
+
+**Risk**: Task Master MCP non funzionante senza API key OpenRouter configurata
+**Mitigation**: Configurazione immediata API key disponibile, test funzionalità completa
+
+**Risk**: Backend Render in stato FAILED compromette funzionalità core applicazione
+**Mitigation**: Diagnosi immediata logs, restart deployment, verifica API endpoints
+
+**Risk**: Perdita sincronizzazione frontend-backend per deployment issues
+**Mitigation**: Test end-to-end pipeline, monitoring health checks, rollback procedure
+
+## TECHNICAL CHALLENGES
+**Risk**: API rate limiting da Yahoo Finance
+**Mitigation**: Three-tier caching + Alpha Vantage fallback + request batching
+
+**Risk**: Frontend performance con large datasets
+**Mitigation**: Virtual scrolling + data pagination + progressive loading
+
+**Risk**: TypeScript configuration conflicts da modifiche recenti
+**Mitigation**: Strict mode graduale + comprehensive testing + proper interfaces
+
+## MVP DEFINITION
+**Core MVP Features**:
+- Ticker input con validazione
+- Basic historical charts
+- Essential performance metrics
+- Simple correlation analysis
+- Working deployment pipeline (FRONTEND OK, BACKEND DA FIXARE)
+
+**MVP Success Criteria**:
+- < 3 second load time
+- Mobile responsive
+- 99% uptime (attualmente compromesso da backend)
+- Accurate financial calculations
+- Error-free user flows
+
+## RESOURCE CONSTRAINTS
+**Risk**: API costs scaling
+**Mitigation**: Intelligent caching + usage monitoring + cost alerts
+
+**Risk**: Development complexity aumentata da configuration issues
+**Mitigation**: Modular architecture + comprehensive testing + documentation + configuration management
+
+**Risk**: Deployment reliability compromessa
+**Mitigation**: Multiple environment testing + health checks + rollback procedures + monitoring
+
+# Appendix  
+
+## CURRENT SITUATION ASSESSMENT (UPDATED)
+
+### STATO ATTUALE PROGETTO
+- **Completamento**: 85% Phase 1 (con issues critici da risolvere)
+- **Frontend**: ✅ Vercel deployment FUNZIONANTE (https://student-analyst.vercel.app)
+- **Backend**: ❌ Render deployment FAILED (https://student-analyst.onrender.com)
+- **Repository**: ✅ GitHub sincronizzato (https://github.com/riccardo-pizzorni/student-analyst)
+
+### MODIFICHE RECENTI DA VALUTARE
+- **File Modificato**: .vscode/settings.json 
+  - **Stato**: Ricreato con configurazioni TypeScript avanzate
+  - **Contenuto**: Auto-imports, format on save, ESLint integration, TailwindCSS support
+  - **Impatto**: Da valutare se migliora o compromette workflow sviluppo
+  
+- **File Modificato**: .cursor/settings.json
+  - **Stato**: Rimosso auto-commit problematico, aggiunte configurazioni AI
+  - **Contenuto**: Disabilitato auto-commit, abilitato AI completion
+  - **Impatto**: Probabilmente positivo, ma da verificare
+
+### API KEYS E CONFIGURAZIONI
+- **OpenRouter API Key**: ✅ DISPONIBILE (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)
+- **MCP Configuration**: ❌ NON CONFIGURATA in .cursor/mcp.json
+- **Task Master Status**: ❌ Installato ma non funzionante senza API key
+- **Alpha Vantage**: ✅ Configurata (W8EEE8B0TZMGIP1M)
+
+### DEPLOYMENT STATUS
+- **Vercel Frontend**: ✅ LIVE e FUNZIONANTE
+- **Render Backend**: ❌ FAILED deployment
+- **GitHub Actions**: ✅ Sincronizzazione attiva
+- **Health Checks**: ❌ Backend non raggiungibile
+
+## IMMEDIATE ACTION PLAN (PRIORITIZED)
+
+### STEP 1: CONFIGURATION IMPACT ASSESSMENT (IMMEDIATE)
+1. ✅ Backup current .vscode/settings.json e .cursor/settings.json (GIÀ FATTO)
+2. 🔄 Test current development environment functionality
+3. 🔄 Identify any regressions caused by recent changes
+4. 🔄 Document baseline performance pre/post modifiche
+
+### STEP 2: TASK MASTER ACTIVATION (IMMEDIATE)
+1. 🚨 Configure OpenRouter API key in .cursor/mcp.json
+2. 🚨 Test Task Master MCP connection e funzionalità
+3. 🚨 Parse current PRD with Task Master
+4. 🚨 Generate initial task list per workflow ottimale
+
+### STEP 3: BACKEND RECOVERY (IMMEDIATE)
+1. 🚨 Diagnose Render deployment failure logs
+2. 🚨 Identify root cause backend deployment issue
+3. 🚨 Restart deployment con fix necessari
+4. 🚨 Verify API endpoints functionality e health checks
+
+### STEP 4: DEVELOPMENT WORKFLOW STABILIZATION (SUCCESSIVO)
+1. ⏳ Establish proper git workflow post-configurazioni
+2. ⏳ Configure CI/CD pipeline monitoring
+3. ⏳ Setup development environment best practices
+4. ⏳ Document standard operating procedures
+
+## TECHNICAL SPECIFICATIONS
+
+### CURRENT CONFIGURATION STATUS
+```json
+// .cursor/mcp.json - NEEDS IMMEDIATE OPENROUTER API KEY
+{
+  "mcpServers": {
+    "task-master-ai": {
+      "command": "npx",
+      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
+      "env": {
+        "OPENROUTER_API_KEY": "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"
+      }
+    }
+  }
+}
+
+// MODIFIED FILES STATUS
+.vscode/settings.json: RICREATO - Enhanced TypeScript + development settings
+.cursor/settings.json: MODIFICATO - Removed auto-commit, added AI settings
+```
+
+### PERFORMANCE TARGETS
+- **First Contentful Paint**: < 1.5s
+- **Largest Contentful Paint**: < 2.5s
+- **Time to Interactive**: < 3.5s
+- **Cumulative Layout Shift**: < 0.1
+- **API Response Time**: < 500ms (cached), < 2s (fresh) - ATTUALMENTE NON RAGGIUNGIBILE
+
+### BROWSER SUPPORT
+- **Modern Browsers**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+- **Mobile**: iOS Safari 14+, Chrome Mobile 90+
+- **Progressive Enhancement**: Graceful degradation per older browsers
+
+### SECURITY REQUIREMENTS
+- **Input Validation**: Comprehensive sanitization
+- **API Security**: Rate limiting + CORS + authentication
+- **Data Protection**: No sensitive data storage
+- **Compliance**: GDPR ready architecture
+
+## IMMEDIATE ACTION ITEMS (PRIORITY ORDER)
+1. **🚨 CONFIGURE TASK MASTER**: Add OpenRouter API key to .cursor/mcp.json
+2. **🚨 FIX BACKEND DEPLOYMENT**: Diagnose and resolve Render deployment failure
+3. **🔄 ASSESS CONFIGURATION IMPACT**: Verify recent modifications don't cause regressions
+4. **🔄 TEST TASK MASTER**: Verify parsing e task generation funzionanti
+5. **⏳ ESTABLISH STABLE WORKFLOW**: Document e optimize development process
