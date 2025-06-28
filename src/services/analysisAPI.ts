@@ -61,18 +61,25 @@ interface AnalysisParams {
   frequency: 'daily' | 'weekly' | 'monthly';
 }
 
-// Configurazione API URL - SOLO process.env per compatibilità Jest/Vite
-const API_BASE_URL = process.env.VITE_BACKEND_URL || 'http://localhost:3000';
+// Funzione helper per determinare la base URL dell'API
+const getApiBaseUrl = (): string => {
+  if (typeof process !== 'undefined' && process.env && process.env.VITE_BACKEND_URL) {
+    return process.env.VITE_BACKEND_URL;
+  }
+  // @ts-expect-error
+  if (typeof import !== 'undefined' && typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL) {
+    // @ts-expect-error
+    return import.meta.env.VITE_BACKEND_URL;
+  }
+  return 'http://localhost:3000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const fetchAnalysisData = async (
   params: AnalysisParams
 ): Promise<AnalysisApiResponse> => {
-  console.log('Frontend: Avvio chiamata API REALE con parametri:', params);
-
   const API_URL = `${API_BASE_URL}/api/analysis`;
-
-  console.log(`Frontend: Eseguo la chiamata a: ${API_URL}`);
-
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -81,25 +88,15 @@ export const fetchAnalysisData = async (
       },
       body: JSON.stringify(params),
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
         error: 'La risposta del server non è un JSON valido.',
       }));
-      console.error('Errore API dal backend:', response.status, errorData);
-      throw new Error(
-        errorData.error || `Errore del server: ${response.status}`
-      );
+      throw new Error(errorData.error || `Errore del server: ${response.status}`);
     }
-
     const results: AnalysisApiResponse = await response.json();
-    console.log(
-      'Frontend: Dati REALI ricevuti con successo dal backend:',
-      results
-    );
     return results;
   } catch (error) {
-    console.error('Errore catastrofico durante la chiamata fetch:', error);
     throw error;
   }
 };
