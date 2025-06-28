@@ -1,9 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { ErrorCodeHandler } from './errorCodeHandler';
-import {
-  NetworkResilienceConfig,
-  NetworkResilienceService,
-} from './networkResilienceService';
 
 /**
  * Interface per i dati standard OHLCV (Open, High, Low, Close, Volume)
@@ -151,7 +147,6 @@ export class AlphaVantageService {
     { data: AlphaVantageResponse; timestamp: number }
   >;
   private readonly errorHandler: ErrorCodeHandler;
-  private readonly resilienceService: NetworkResilienceService;
 
   constructor(config?: Partial<AlphaVantageConfig>) {
     // Forza endpoint pubblico Alpha Vantage in produzione
@@ -183,28 +178,6 @@ export class AlphaVantageService {
 
     this.cache = new Map();
     this.errorHandler = ErrorCodeHandler.getInstance();
-
-    // Inizializza servizio di resilienza di rete
-    const resilienceConfig: NetworkResilienceConfig = {
-      timeout: this.config.timeout,
-      maxRetries: this.config.retryAttempts,
-      baseDelay: this.config.retryDelay,
-      maxDelay: 30000,
-      backoffMultiplier: 2.0,
-      jitter: true,
-      circuitBreaker: {
-        failureThreshold: 5,
-        recoveryTimeout: 60000,
-        monitoringPeriod: 300000,
-        halfOpenMaxCalls: 3,
-        halfOpenSuccessThreshold: 2,
-      },
-      healthCheckInterval: 30000,
-      enableFallback: true,
-    };
-
-    this.resilienceService =
-      NetworkResilienceService.getInstance(resilienceConfig);
   }
 
   /**
