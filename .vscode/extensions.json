@@ -3,11 +3,24 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "ms-vscode.vscode-typescript-next",
-    "bradlc.vscode-tailwindcss",
     "ms-vscode.vscode-json",
+    "dsznajder.es7-react-js-snippets",
+    "xabikos.reactsnippets",
+    "bradlc.vscode-tailwindcss",
     "formulahendry.auto-rename-tag",
-    "christian-kohler.path-intellisense",
+    "eamodio.gitlens",
+    "ms-vscode.vscode-pull-request-github",
     "ms-vscode.vscode-jest",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "vega.vega",
+    "mechatroner.rainbow-csv",
+    "ms-toolsai.jupyter",
+    "ms-python.python",
+    "christian-kohler.path-intellisense",
+    "usernamehw.errorlens",
+    "tabnine.tabnine-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.hexeditor",
+    "ms-vscode.vscode-yaml"
   ]
 } 
