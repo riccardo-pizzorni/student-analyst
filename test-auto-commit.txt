@@ -1,2 +1,0 @@
-Test file per verificare il funzionamento dell'auto-commit e push
-Timestamp: 20/06/2025 22:45:00 

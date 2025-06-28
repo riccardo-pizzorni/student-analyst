@@ -6,15 +6,19 @@
 [![Prettier](https://img.shields.io/badge/Prettier-Enabled-orange.svg)](https://prettier.io/)
 [![ESLint](https://img.shields.io/badge/ESLint-No%20Errors-green.svg)](https://eslint.org/)
 [![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen.svg)](https://jestjs.io/)
-[![Progress](https://img.shields.io/badge/Progress-75%25-yellow.svg)](https://github.com/riccardo-pizzorni/student-analyst)
+[![Progress](https://img.shields.io/badge/Progress-85%25-yellow.svg)](https://github.com/riccardo-pizzorni/student-analyst)
+[![Deploy](https://img.shields.io/badge/Deploy-Vercel%20%7C%20Render-blue.svg)](https://student-analyst.vercel.app)
 
 > **✅ COMPLETATO**: Analisi Storica implementata e testata (STEP 1-6)
-> **🔄 IN CORSO**: Documentazione (STEP 7)
-> **📊 PROGRESSO**: 75% completato (6/8 step)
+> **✅ COMPLETATO**: Deployment e configurazione backend (STEP 7)
+> **🔄 IN CORSO**: Documentazione finale (STEP 8)
+> **📊 PROGRESSO**: 85% completato (7/8 step)
 
-> **⚠️ IMPORTANTE**: Questo progetto ha subito critiche ottimizzazioni il 2024-12-19. Leggi la [documentazione dei fix critici](docs/CRITICAL_FIXES_SUMMARY.md) prima di iniziare.
+> **⚠️ IMPORTANTE**: Questo progetto ha subito critiche ottimizzazioni il 2025-06-27. Leggi la [documentazione dei fix critici](docs/CRITICAL_FIXES_SUMMARY.md) prima di iniziare.
 
 > **🆕 NUOVO**: Integrazione Yahoo Finance come sorgente primaria per dati storici (2025-06-27). Supporto per dati storici profondi (15+ anni) senza limiti artificiali.
+
+> **🚀 LIVE**: Frontend deployato su Vercel, Backend deployato su Render. Configurazione completa e funzionante.
 
 ---
 
@@ -67,6 +71,30 @@ student-analyst/
 
 ---
 
+## 🌐 Deployment Status
+
+### **Frontend (Vercel)**
+
+- **URL**: https://student-analyst.vercel.app
+- **Status**: ✅ LIVE e funzionante
+- **Build**: Automatico da GitHub
+- **Environment**: Configurato con VITE_BACKEND_URL
+
+### **Backend (Render)**
+
+- **URL**: https://student-analyst.onrender.com
+- **Status**: ✅ LIVE e funzionante
+- **Health Check**: https://student-analyst.onrender.com/health
+- **API Endpoint**: https://student-analyst.onrender.com/api/analysis
+
+### **Configurazione Critica**
+
+- **VITE_BACKEND_URL**: Configurato su Vercel con fallback a Render
+- **CORS**: Configurato per comunicazione frontend-backend
+- **Rate Limiting**: Attivo per protezione API
+
+---
+
 ## 🎯 Funzionalità Implementate
 
 ### **✅ STEP 1-6: Analisi Storica COMPLETATA**
@@ -99,15 +127,54 @@ student-analyst/
 - **Toast notifications** per feedback
 - **Keyboard navigation** completa
 
+### **✅ STEP 7: Deployment e Configurazione COMPLETATA**
+
+#### **🚀 Frontend (Vercel)**
+
+- **Deploy automatico** da GitHub
+- **Environment variables** configurate
+- **Build optimization** attiva
+- **CDN globale** per performance
+
+#### **🖥️ Backend (Render)**
+
+- **Server Express.js** con TypeScript
+- **Health check endpoint** funzionante
+- **CORS configuration** per frontend
+- **Rate limiting** e sicurezza
+
+#### **🔗 Integrazione**
+
+- **API communication** funzionante
+- **Error handling** robusto
+- **Fallback system** per variabili d'ambiente
+- **Monitoring** e logging
+
 ---
 
 ## 🔧 Configurazione Critica
 
 ### **Porte del Sistema**
 
-- **Frontend**: 8080
+- **Frontend**: 8080 (development)
 - **Backend**: 10000 ⚠️ **CRITICO**
 - **Test**: 10000 ⚠️ **CRITICO**
+
+### **Environment Variables**
+
+#### **Frontend (Vercel)**
+
+```bash
+VITE_BACKEND_URL=https://student-analyst.onrender.com
+```
+
+#### **Backend (Render)**
+
+```bash
+NODE_ENV=production
+PORT=10000
+CORS_ORIGIN=https://student-analyst.vercel.app
+```
 
 ### **TypeScript Safety**
 
@@ -162,7 +229,7 @@ npm test
 npm test -- --testPathPattern='PerformanceMetrics'
 
 # Test backend
-cd backend && npm run test:backend
+cd backend && npm run test:complete
 
 # Test E2E
 npm run test:e2e
@@ -179,6 +246,19 @@ Tests: 5 passed, 0 failed
 Coverage: 100% statements, 54.54% branches, 100% functions, 100% lines
 ```
 
+### **Backend Testing**
+
+```bash
+# Test completo backend
+cd backend && node test-backend.js
+
+# Risultati attesi:
+# ✅ Health check: OK
+# ✅ API endpoints: OK
+# ✅ CORS: OK
+# ✅ Performance: 1-7ms response time
+```
+
 ---
 
 ## 📚 Documentazione
@@ -187,12 +267,18 @@ Coverage: 100% statements, 54.54% branches, 100% functions, 100% lines
 
 - [📋 Processo Completo](docs/ANALISI_STORICA_PROCESS.md) - Documentazione del processo di sviluppo
 - [🧪 Testing e Accessibilità](docs/STEP6_TESTING_ACCESSIBILITY.md) - STEP 6 completato
-- [📊 Status Progetto](docs/PROJECT_STATUS.md) - Stato attuale (75% completato)
+- [📊 Status Progetto](docs/PROJECT_STATUS.md) - Stato attuale (85% completato)
 - [🎯 Riepilogo STEP 6](docs/STEP6_SUMMARY.md) - Risultati finali
+
+### **Deployment e Configurazione (STEP 7)**
+
+- [🚀 Production Config](docs/PRODUCTION_CONFIG.md) - Configurazione produzione
+- [🖥️ Backend Testing](docs/BACKEND_TEST_FIXES.md) - Test backend completi
+- [🔗 Integration Guide](docs/FALLBACK_SYSTEM.md) - Sistema di fallback
 
 ### **Fix Critici e Ottimizzazioni**
 
-- [📋 Riassunto Esecutivo](docs/CRITICAL_FIXES_SUMMARY.md) - Fix critici del 2024-12-19
+- [📋 Riassunto Esecutivo](docs/CRITICAL_FIXES_SUMMARY.md) - Fix critici del 2025-06-27
 - [🔧 Fix Dettagliati](docs/PRETTIER_INTEGRATION_AND_TYPE_SAFETY_FIXES.md) - Documentazione completa
 - [🤖 Guida AI](docs/AI_ASSISTANT_GUIDE.md) - Regole per AI Assistant
 - [🔄 Workflow](docs/DEVELOPMENT_WORKFLOW.md) - Processo di sviluppo
@@ -245,6 +331,17 @@ const PORT = 10000;
 npm run format
 ```
 
+### **❌ MAI rimuovere fallback sicuri**
+
+```typescript
+// SBAGLIATO: Crash se variabile non definita
+const API_BASE_URL = process.env.VITE_BACKEND_URL;
+
+// CORRETTO: Fallback sicuro
+const API_BASE_URL =
+  process.env.VITE_BACKEND_URL || 'https://student-analyst.onrender.com';
+```
+
 ---
 
 ## 🔄 Workflow di Sviluppo
@@ -274,13 +371,17 @@ npm test -- --coverage # Coverage report
 npm run dev           # Frontend development
 npm run build         # Build produzione
 npm run preview       # Preview build
+
+# Backend
+cd backend && npm run dev  # Backend development
+cd backend && npm run test:complete  # Test backend
 ```
 
 ---
 
 ## 📈 Roadmap
 
-### **✅ COMPLETATO (STEP 1-6)**
+### **✅ COMPLETATO (STEP 1-7)**
 
 - [x] Setup iniziale e architettura
 - [x] Analisi storica con indicatori tecnici
@@ -288,20 +389,14 @@ npm run preview       # Preview build
 - [x] Correlazione e diversificazione
 - [x] Ottimizzazione e performance
 - [x] Testing e accessibilità
+- [x] Deployment e configurazione
 
-### **🔄 IN CORSO (STEP 7)**
+### **🔄 IN CORSO (STEP 8)**
 
-- [ ] Documentazione completa
-- [ ] Guide utente
+- [ ] Documentazione finale
+- [ ] Guide utente complete
 - [ ] Esempi pratici
 - [ ] Tutorial interattivi
-
-### **⏳ PENDING (STEP 8)**
-
-- [ ] Deployment produzione
-- [ ] Configurazione server
-- [ ] Monitoraggio e analytics
-- [ ] CI/CD pipeline
 
 ---
 
@@ -331,6 +426,7 @@ npm run preview       # Preview build
 1. **Porte occupate**: Verifica che 8080 e 10000 siano libere
 2. **Test falliscono**: Esegui `npm run lint` e `npm run format`
 3. **Build error**: Verifica TypeScript con `npm run lint`
+4. **Deploy issues**: Verifica environment variables su Vercel/Render
 
 ### **Documentazione**
 
@@ -346,7 +442,7 @@ MIT License - Vedi [LICENSE](LICENSE) per dettagli.
 
 ---
 
-**🎯 STATUS: 75% COMPLETATO - Pronto per STEP 7: Documentazione**
+**🎯 STATUS: 85% COMPLETATO - Pronto per STEP 8: Documentazione Finale**
 
 <!-- Trigger Vercel Redeploy -->
 
@@ -359,19 +455,22 @@ MIT License - Vedi [LICENSE](LICENSE) per dettagli.
 - ⚡ **Caching Intelligente**: Pulizia automatica LRU e gestione storage
 - 🌐 **Yahoo Finance API**: Integrazione per dati finanziari real-time
 - 🧪 **Test Coverage**: Suite completa di test unitari Jest + jsdom
+- 🚀 **Deployment**: Frontend Vercel + Backend Render completamente funzionanti
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19.1.0 + TypeScript 5.8.3
-- **Build Tool**: Vite 6.3.5
-- **Testing**: Jest 29.7.0 + jsdom + Playwright
+- **Frontend**: React 18.3.1 + TypeScript 5.5.3
+- **Build Tool**: Vite 5.4.1
+- **Testing**: Jest 30.0.2 + jsdom + Playwright
 - **UI**: TailwindCSS + Radix UI
-- **Visualizzazioni**: Recharts
+- **Visualizzazioni**: Recharts + Chart.js
 - **Animazioni**: tailwindcss-animate
 - **Icone**: lucide-react
 - **Gestione classi**: clsx, tailwind-merge, class-variance-authority
 - **Math rendering**: KaTeX
 - **Monitoring**: web-vitals, @vercel/analytics, @vercel/speed-insights
+- **Backend**: Node.js + Express + TypeScript
+- **Deployment**: Vercel (Frontend) + Render (Backend)
 
 ## 📦 Dipendenze principali effettivamente usate
 
@@ -387,6 +486,8 @@ MIT License - Vedi [LICENSE](LICENSE) per dettagli.
 - `tailwind-merge` — Merge classi Tailwind
 - `tailwindcss-animate` — Animazioni Tailwind
 - `web-vitals` — Metriche performance web
+- `chart.js` — Grafici avanzati
+- `react-chartjs-2` — Wrapper React per Chart.js
 
 ## 🗃️ Automazioni e script
 
@@ -403,15 +504,15 @@ Vedi `scripts/README.md` per dettagli e uso.
 
 Vedi `.env.example` per tutte le variabili richieste e opzionali. Le principali:
 
-- `VITE_APIkey_ALPHA_VANTAGE` — API key Alpha Vantage
-- `VITE_BACKEND_URL` — URL backend (es. Render)
+- `VITE_BACKEND_URL` — URL backend (es. https://student-analyst.onrender.com)
 - `VITE_DEBUG` — Abilita modalità debug (opzionale)
 
 ## 🚀 Deploy
 
-- Deploy automatico su Vercel collegato a GitHub branch `master`
-- Variabili d'ambiente configurate su Vercel
-- Forzare redeploy in caso di problemi tramite dashboard Vercel
+- **Frontend**: Deploy automatico su Vercel collegato a GitHub branch `master`
+- **Backend**: Deploy automatico su Render collegato a GitHub branch `master`
+- **Variabili d'ambiente**: Configurate su Vercel e Render
+- **Health Check**: https://student-analyst.onrender.com/health
 
 ## ♿ Accessibilità e best practice
 
@@ -489,6 +590,7 @@ cd backend && npm run test:monitoring
 - Nessuna dipendenza non usata (Dexie rimossa)
 - Codebase periodicamente scansionata per errori comuni
 - Documentazione aggiornata e dettagliata
+- Fallback sicuri per tutte le variabili d'ambiente
 
 ## 📄 Altra documentazione
 
@@ -546,68 +648,4 @@ npm run test:all
 Or run specific test suites:
 
 - Unit/Integration tests: `npm run test:unit`
-- E2E tests: `npm run test:e2e`
-- Watch mode: `npm run test:watch`
-- Coverage report: `npm run test:coverage`
-
-### Test Structure
-
-- `tests/unit/`: Unit and integration tests
-- `tests/e2e/`: End-to-end tests with Playwright
-- `tests/performance/`: Performance tests
-
-### Test Reports
-
-After running tests, reports are available in:
-
-- Unit Tests: `test-results/unit/junit.xml`
-- E2E Tests: `test-results/e2e/test-results.json`
-- Coverage: `coverage/index.html`
-- Combined Report: `test-results/combined-report.json`
-
-### Continuous Integration
-
-Tests are automatically run on GitHub Actions for:
-
-- Every push to `main` and `develop` branches
-- Every pull request to these branches
-
-### Writing Tests
-
-#### Unit Tests (Jest)
-
-```typescript
-import { describe, it, expect } from '@jest/globals';
-
-describe('MyComponent', () => {
-  it('should work correctly', () => {
-    // Your test here
-  });
-});
-```
-
-#### E2E Tests (Playwright)
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test('should work in browser', async ({ page }) => {
-  await page.goto('/');
-  // Your test here
-});
-```
-
-### Debugging Tests
-
-1. Unit Tests:
-
-   ```bash
-
-   ```
-
-   #   T r i g g e r   d e p l o y 
-    
-    
-   #   T r i g g e r   d e p l o y   v i a   w e b h o o k 
-    
-    
+- E2E tests: `

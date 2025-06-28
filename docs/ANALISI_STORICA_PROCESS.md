@@ -57,7 +57,18 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 ```typescript
 // FUNZIONA
-const API_BASE_URL = process.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.VITE_BACKEND_URL;
+if (!API_BASE_URL) {
+  throw new Error(
+    'VITE_BACKEND_URL non definita! Configura la variabile su Vercel.'
+  );
+}
+console.log(
+  '[DEBUG] API_BASE_URL:',
+  API_BASE_URL,
+  'NODE_ENV:',
+  process.env.NODE_ENV
+);
 ```
 
 ### **2. Context Mocking**
