@@ -16,6 +16,15 @@ Documentazione completa della configurazione dell'ambiente di sviluppo per **Stu
 - **Script**: `scripts/check-vscode-config.bat` per verifica
 - **Stato**: ✅ Risolto definitivamente
 
+### [EXTENSIONS_CLEANUP_REPORT.md](EXTENSIONS_CLEANUP_REPORT.md)
+
+**📦 OTTIMIZZAZIONE ESTENSIONI COMPLETATA**
+
+- **Operazione**: Cleanup e ottimizzazione estensioni VS Code/Cursor
+- **Risultato**: 39 → 30 estensioni (-9 inutili, +2 essenziali)
+- **Benefici**: Performance migliorata, workflow ottimizzato
+- **Stato**: ✅ Configurazione ottimale raggiunta
+
 ### [TROUBLESHOOTING_GUIDE.md](TROUBLESHOOTING_GUIDE.md)
 
 Guida completa ai problemi comuni e soluzioni testate

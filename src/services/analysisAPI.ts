@@ -61,15 +61,10 @@ interface AnalysisParams {
   frequency: 'daily' | 'weekly' | 'monthly';
 }
 
-// Configurazione API URL - SOLO process.env per compatibilità Jest/Vite
+// Configurazione API URL - Uso import.meta.env per Vite
 const API_BASE_URL =
-  process.env.VITE_BACKEND_URL || 'https://student-analyst.onrender.com';
-console.log(
-  '[DEBUG] API_BASE_URL:',
-  API_BASE_URL,
-  'NODE_ENV:',
-  process.env.NODE_ENV
-);
+  import.meta.env.VITE_BACKEND_URL || 'http://localhost:10000';
+console.log('[DEBUG] API_BASE_URL:', API_BASE_URL);
 
 export const fetchAnalysisData = async (
   params: AnalysisParams
