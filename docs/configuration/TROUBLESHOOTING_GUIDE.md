@@ -8,9 +8,46 @@ Tutti i problemi documentati sono stati risolti durante l'ottimizzazione reale d
 
 ---
 
-## 🚨 Problemi Comuni e Soluzioni
+## 🚨 Problemi Critici e Soluzioni
 
-### 1. 📝 JSON Configuration Issues
+### 1. 🚨 VS Code Workspace Recognition Issues - **PROBLEMA CRITICO**
+
+#### ❌ **Problema CRITICO**: Cartella progetto non riconosciuta come workspace
+
+**Sintomi**:
+
+- VS Code non riesce ad aprire la cartella come workspace
+- Messaggio: **"The file is not displayed in the text editor because it is a directory"**
+- Explorer non funziona correttamente
+- Impossibile navigare nei file del progetto
+
+**Causa Identificata**: Sezione `explorer.fileNesting.patterns` in `.vscode/settings.json`
+
+**Soluzione Immediata**:
+
+```bash
+# 1. Backup configurazione corrente
+cp .vscode/settings.json .vscode/settings.json.backup
+
+# 2. Rimuovere sezione problematica dal file settings.json
+# Eliminare completamente la sezione "explorer.fileNesting.patterns"
+
+# 3. Riavviare VS Code
+# 4. Verificare che workspace funzioni correttamente
+```
+
+**Script di Verifica**:
+
+```bash
+# Eseguire per controllare configurazione sicura
+scripts/check-vscode-config.bat
+```
+
+**Documentazione Completa**: `docs/configuration/VSCODE_WORKSPACE_CRITICAL_FIX.md`
+
+---
+
+### 2. 📝 JSON Configuration Issues
 
 #### ❌ **Problema**: Commenti in file JSON
 
