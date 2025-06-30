@@ -1,0 +1,71 @@
+﻿---
+description: 
+globs: 
+alwaysApply: true
+---
+- **Struttura del Progetto**
+  - Frontend ([package.json](mdc:package.json))
+    - Vite + React su porta 8080/8081
+    - Identificabile da `"type": "module"` e dipendenze React/Vite
+  - Backend ([package.json](mdc:backend/package.json))
+    - Node.js + Express su porta 10000
+    - Identificabile da dipendenze `nodemon` e `ts-node`
+
+- **Regole di Sicurezza**
+  ```typescript
+  // ✅ DO: Verificare sempre la directory corrente
+  if (process.cwd().endsWith('backend')) {
+    // Comandi backend
+  } else {
+    // Comandi frontend
+  }
+  ```
+
+- **Comandi PowerShell**
+  ```powershell
+  # ✅ DO: Usare ; per separare i comandi
+  cd backend ; npm run dev
+
+  # ❌ DON'T: Non usare && (non funziona in PowerShell)
+  cd backend && npm run dev  # NON FUNZIONA
+  ```
+
+- **Avvio Servizi**
+  ```bash
+  # I due servizi devono essere avviati in due terminali separati
+
+  # BACKEND (dalla root del progetto, primo terminale)
+  cd backend ; npm run dev
+
+  # FRONTEND (dalla root del progetto, secondo terminale)
+  npm run dev
+  ```
+
+- **Best Practices**
+  - **Verifica Porta**
+    - Backend: 10000
+    - Frontend: 8080/8081
+    - Controlla i log di avvio
+  
+  - **Comandi Distruttivi**
+    ```bash
+    # ✅ DO: Verificare sempre la directory
+    pwd  # controlla dove sei
+    npm clean  # solo se directory corretta
+    
+    # ❌ DON'T: Mai senza verifica
+    rm -rf node_modules  # PERICOLOSO
+    ```
+  
+  - **Gestione Dipendenze**
+    - ✅ DO: Installare nella directory corretta
+    - ❌ DON'T: Mischiare dipendenze frontend/backend
+    - Usa `npm list` per verificare
+
+
+
+
+
+
+
+

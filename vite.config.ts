@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       // Proxy per tutte le richieste /api al nostro server backend
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:10000',
         changeOrigin: true, // Necessario per i virtual host
         secure: false, // Non verificare il certificato SSL (per sviluppo)
       },
