@@ -382,4 +382,17 @@ Per bug reports o feature requests, apri un issue su GitHub.
 
 ---
 
+## Future Improvements
+
+### Yahoo Finance API Update
+
+- **Current Status**: L'applicazione usa il metodo `historical()` di Yahoo Finance, che è deprecato ma funzionante
+- **Future Change**: Aggiornare a `chart()` (il nuovo metodo ufficiale)
+- **Impact**: Richiede test approfonditi perché:
+  - Cambia la struttura dei dati ricevuti
+  - Potrebbe impattare il parsing dei dati
+  - Richiede verifica di tutte le metriche
+- **Reference**: [Issue #795](https://github.com/gadicc/node-yahoo-finance2/issues/795)
+- **Priority**: Media - Il sistema funziona correttamente con il metodo attuale
+
 **🎯 Student Analyst - Analisi finanziaria professionale per il futuro degli investimenti**
