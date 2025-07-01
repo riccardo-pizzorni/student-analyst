@@ -6,8 +6,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAnalysis } from '@/context/AnalysisContext';
-import React, { useState } from 'react';
-import TradingViewWidget from 'react-tradingview-widget';
+import { useState } from 'react';
+import NewTradingViewWidget from './NewTradingViewWidget';
 
 // Mappa frequenza -> intervallo TradingView
 const freqToInterval: Record<string, string> = {
@@ -21,118 +21,43 @@ const iconStyle =
 const iconInnerStyle =
   'w-full h-full flex items-center justify-center pl-1 pr-1 pt-1 pb-[0.32rem] font-mono leading-none text-2xl';
 
-const TradingViewChart: React.FC = () => {
-  // Prendi tickers e frequenza dal context
+export const TradingViewChart = () => {
   const { analysisState } = useAnalysis();
-  const tickers: string[] = analysisState.tickers || [];
-  const freq: string = analysisState.frequency || 'daily';
-  const interval = freqToInterval[freq] || 'D';
-
-  // Stato: simbolo selezionato dal dropdown (solo per cambio guidato)
-  const [dropdownSymbol, setDropdownSymbol] = useState<string>(
-    tickers[0] ? `NASDAQ:${tickers[0]}` : 'NASDAQ:AAPL'
-  );
-  // Stato: forza il reset del widget solo quando cambi dal dropdown
-  const [widgetKey, setWidgetKey] = useState<number>(0);
-
-  // Stato separato per le due toolbar
-  const [showTopToolbar, setShowTopToolbar] = useState(false);
-  const [showSideToolbar, setShowSideToolbar] = useState(false);
-
-  // Handler cambio ticker dal dropdown
-  const handleDropdownChange = (val: string) => {
-    setDropdownSymbol(val);
-    setWidgetKey(prev => prev + 1); // forza remount per aggiornare il simbolo
-  };
+  const [interval, setInterval] = useState('daily');
 
   return (
-    <div className="relative">
-      {/* Dropdown solo, senza label, allineato al ticker TradingView */}
-      <div className="mb-2 flex items-center gap-4">
-        {tickers.length > 1 && (
-          <Select value={dropdownSymbol} onValueChange={handleDropdownChange}>
-            <SelectTrigger
-              className="w-24 mt-2 px-3 py-1 text-base"
-              id="tv-ticker-select"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {tickers.map((tk: string) => (
-                <SelectItem key={tk} value={`NASDAQ:${tk}`}>
-                  {tk}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+    <div className="flex flex-col gap-4 h-full">
+      <div className="flex items-center justify-between">
+        <Select value={interval} onValueChange={setInterval}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Seleziona frequenza" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="daily">Giornaliero</SelectItem>
+            <SelectItem value="weekly">Settimanale</SelectItem>
+            <SelectItem value="monthly">Mensile</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      {/* Switch toolbar superiore: centrato orizzontalmente rispetto al grafico */}
-      <div
-        className="absolute left-1/2 -translate-x-1/2 top-[32px] -translate-y-1/2 z-10"
-        title={
-          showTopToolbar
-            ? 'Nascondi toolbar superiore'
-            : 'Mostra toolbar superiore'
-        }
-      >
-        <button
-          aria-label={
-            showTopToolbar
-              ? 'Nascondi toolbar superiore'
-              : 'Mostra toolbar superiore'
+
+      <div className="flex-1">
+        <NewTradingViewWidget
+          symbol={
+            analysisState.tickers[0]
+              ? `NASDAQ:${analysisState.tickers[0]}`
+              : 'NASDAQ:AAPL'
           }
-          className={iconStyle}
-          onClick={() => setShowTopToolbar(v => !v)}
-          tabIndex={0}
-        >
-          <span className={iconInnerStyle}>{showTopToolbar ? '−' : '+'}</span>
-        </button>
-      </div>
-      {/* Switch toolbar laterale: centrato verticalmente rispetto al grafico */}
-      <div
-        className="absolute left-[-39px] top-1/2 -translate-y-1/2 z-10"
-        title={
-          showSideToolbar
-            ? 'Nascondi toolbar laterale'
-            : 'Mostra toolbar laterale'
-        }
-      >
-        <button
-          aria-label={
-            showSideToolbar
-              ? 'Nascondi toolbar laterale'
-              : 'Mostra toolbar laterale'
-          }
-          className={iconStyle}
-          onClick={() => setShowSideToolbar(v => !v)}
-          tabIndex={0}
-        >
-          <span className={iconInnerStyle}>{showSideToolbar ? '−' : '+'}</span>
-        </button>
-      </div>
-      {/* Widget TradingView */}
-      <div style={{ width: '100%', height: 500 }}>
-        <TradingViewWidget
-          key={widgetKey}
-          symbol={dropdownSymbol}
-          theme={'Dark' as any}
-          autosize={true}
-          height={500}
-          interval={interval}
-          style={'3' as any} // linea
-          locale="it"
-          allow_symbol_change={true}
-          enable_publishing={false}
-          save_image={true}
-          hide_top_toolbar={!showTopToolbar}
-          hide_side_toolbar={!showSideToolbar}
-          toolbar_bg="#131722"
-          container_id="tradingview_widget"
+          interval={freqToInterval[interval]}
+          theme="dark"
+          autosize
+          allow_symbol_change={false}
+          hide_side_toolbar
+          save_image
+          studies={['RSI@tv-basicstudies', 'MASimple@tv-basicstudies']}
+          onChartReady={() => console.log('Chart pronto')}
+          onLoadError={error => console.error('Errore:', error)}
         />
       </div>
     </div>
   );
 };
-
-export default TradingViewChart;

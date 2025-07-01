@@ -52,6 +52,18 @@
 - ✅ **7 Indicatori tecnici**: SMA 20/50/200, RSI, Volume, Bollinger, MACD
 - ✅ **Controlli dinamici** per toggle indicatori
 - ✅ **Tabelle dati** complete e responsive
+- ✅ **TradingView Charts**: Grafici professionali con widget TradingView integrato
+
+#### **2.1. TradingView Widget Integration (NUOVO)**
+
+- ✅ **Caricamento Dinamico**: Script loading asincrono sicuro
+- ✅ **Multi-Exchange Support**: NASDAQ, NYSE, MIL (Borsa Italiana), BINANCE, FX
+- ✅ **Indicatori Avanzati**: RSI, MACD, SMA, EMA, Bollinger Bands
+- ✅ **Gestione Errori Completa**: Timeout, network errors, fallback UI
+- ✅ **Responsive Design**: Adattamento automatico alle dimensioni
+- ✅ **Localizzazione**: Interfaccia in italiano con supporto multi-lingua
+- ✅ **Performance Monitoring**: Timeout configurabile e cleanup automatico
+- ✅ **Accessibilità**: Loading states, error messages, retry functionality
 
 #### **3. Performance Metrics**
 
@@ -131,6 +143,162 @@
 - **Vercel** - Frontend hosting
 - **Render** - Backend hosting
 - **GitHub Actions** - CI/CD
+
+---
+
+## 📈 **TradingView Integration**
+
+### **NewTradingViewWidget Component**
+
+**Student Analyst** integra un widget TradingView avanzato che fornisce grafici professionali in tempo reale.
+
+#### **✨ Caratteristiche Principali**
+
+- **🔄 Caricamento Dinamico**: Script TradingView caricato solo quando necessario
+- **🌍 Multi-Exchange**: Supporto per NASDAQ, NYSE, MIL, BINANCE, FX, e altri
+- **📊 Indicatori Tecnici**: RSI, MACD, Moving Averages, Bollinger Bands integrati
+- **🎨 Temi**: Supporto light/dark mode con integrazione automatica app
+- **📱 Responsive**: Adattamento automatico a tutte le dimensioni schermo
+- **🌐 Localizzazione**: Interfaccia italiana con supporto multi-lingua
+- **⚡ Performance**: Timeout configurabile e cleanup automatico memoria
+- **♿ Accessibilità**: Loading states, error messages, retry functionality
+
+#### **🔧 Utilizzo Base**
+
+```tsx
+import { NewTradingViewWidget } from '@/components/charts/NewTradingViewWidget';
+
+// Utilizzo semplice
+<NewTradingViewWidget
+  symbol="NASDAQ:AAPL"
+  theme="dark"
+/>
+
+// Configurazione avanzata
+<NewTradingViewWidget
+  symbol="MIL:ENEL"
+  theme="dark"
+  interval="D"
+  locale="it"
+  studies={["RSI", "MACD"]}
+  allow_symbol_change={true}
+  save_image={true}
+  onChartReady={() => console.log('Chart loaded!')}
+  onSymbolChange={(symbol) => console.log('Symbol changed:', symbol)}
+  onLoadError={(error) => console.error('Chart error:', error)}
+/>
+```
+
+#### **📚 Parametri Configurabili**
+
+| Parametro             | Tipo              | Default         | Descrizione                                      |
+| --------------------- | ----------------- | --------------- | ------------------------------------------------ |
+| `symbol`              | string            | `"NASDAQ:AAPL"` | Simbolo finanziario formato EXCHANGE:TICKER      |
+| `theme`               | 'light' \| 'dark' | `"dark"`        | Tema visivo del widget                           |
+| `interval`            | string            | `"D"`           | Intervallo temporale (1, 5, 15, 30, 60, D, W, M) |
+| `locale`              | string            | `"it"`          | Lingua interfaccia (it, en, de, fr, es, etc.)    |
+| `width`               | string \| number  | `"100%"`        | Larghezza widget                                 |
+| `height`              | string \| number  | `500`           | Altezza widget                                   |
+| `autosize`            | boolean           | `true`          | Ridimensionamento automatico                     |
+| `studies`             | string[]          | `[]`            | Indicatori tecnici da visualizzare               |
+| `allow_symbol_change` | boolean           | `true`          | Permette cambio simbolo da UI                    |
+| `save_image`          | boolean           | `true`          | Abilita salvataggio immagine                     |
+| `hide_top_toolbar`    | boolean           | `false`         | Nasconde toolbar superiore                       |
+| `hide_side_toolbar`   | boolean           | `false`         | Nasconde toolbar laterale                        |
+| `show_popup_button`   | boolean           | `false`         | Mostra bottone popup                             |
+| `initTimeout`         | number            | `10000`         | Timeout inizializzazione (ms)                    |
+
+#### **🎯 Callback Events**
+
+```tsx
+// Gestione eventi del widget
+<NewTradingViewWidget
+  onChartReady={() => {
+    console.log('Widget completamente caricato');
+    setIsLoading(false);
+  }}
+  onSymbolChange={newSymbol => {
+    console.log('Simbolo cambiato:', newSymbol);
+    updateRelatedComponents(newSymbol);
+  }}
+  onIntervalChange={newInterval => {
+    console.log('Intervallo cambiato:', newInterval);
+    syncWithOtherCharts(newInterval);
+  }}
+  onLoadError={error => {
+    console.error('Errore caricamento:', error);
+    showFallbackUI();
+    trackError(error);
+  }}
+/>
+```
+
+#### **🔒 Gestione Errori & Sicurezza**
+
+Il widget implementa una strategia di gestione errori su 4 livelli:
+
+1. **Validation Errors**: Controllo parametri pre-caricamento
+2. **Network Errors**: Gestione fallimenti CDN/rete
+3. **Initialization Errors**: Problemi creazione widget
+4. **Timeout Errors**: Protezione da blocchi infiniti
+
+```tsx
+// Esempio gestione errori custom
+<NewTradingViewWidget
+  symbol="INVALID:SYMBOL" // Trigger validation error
+  initTimeout={5000} // Timeout ridotto per test
+  onLoadError={error => {
+    if (error.message.includes('validation')) {
+      setValidationError(error.message);
+    } else if (error.message.includes('timeout')) {
+      setTimeoutError(true);
+      // Implementa retry con timeout incrementale
+    } else {
+      setGenericError(error.message);
+      // Mostra fallback widget
+    }
+  }}
+/>
+```
+
+#### **♻️ Memory Management**
+
+Il componente implementa un cleanup automatico completo:
+
+- **Timeout Cleanup**: Cancellazione timer su success/unmount
+- **Widget Cleanup**: Rimozione istanza TradingView
+- **Script Cleanup**: Rimozione script DOM
+- **Event Listeners**: Cleanup automatico handlers
+
+#### **🌍 Exchange Support**
+
+| Exchange | Codice     | Esempi                       | Descrizione             |
+| -------- | ---------- | ---------------------------- | ----------------------- |
+| NASDAQ   | `NASDAQ:`  | `NASDAQ:AAPL`, `NASDAQ:MSFT` | Mercato azionario USA   |
+| NYSE     | `NYSE:`    | `NYSE:IBM`, `NYSE:GE`        | New York Stock Exchange |
+| MIL      | `MIL:`     | `MIL:ENEL`, `MIL:ENI`        | Borsa Italiana          |
+| BINANCE  | `BINANCE:` | `BINANCE:BTCUSDT`            | Cryptocurrency          |
+| FX       | `FX:`      | `FX:EURUSD`, `FX:GBPJPY`     | Forex pairs             |
+
+#### **🧪 Testing & Debugging**
+
+```bash
+# Test componente
+npm test -- NewTradingViewWidget
+
+# Debug mode con logging
+REACT_APP_DEBUG_TRADINGVIEW=true npm run dev
+
+# Test errori di rete
+# Disconnetti internet mentre widget carica
+```
+
+#### **📁 File Backup**
+
+Il precedente widget è stato salvato in:
+
+- `src/components/charts/backup/` - Backup completo componenti
+- Procedure di rollback documentate in sezione troubleshooting
 
 ---
 
@@ -364,7 +532,160 @@ MIT License - vedi [LICENSE](LICENSE) per dettagli.
 - **Yahoo Finance** - API dati finanziari
 - **Shadcn/UI** - Component library
 - **Recharts** - Grafici React
+- **TradingView** - Widget grafici professionali
 - **Vercel & Render** - Hosting platforms
+
+---
+
+## 🔧 **Troubleshooting & Backup**
+
+### **TradingView Widget Issues**
+
+#### **Problema: Widget non si carica**
+
+```bash
+# Sintomi
+- Loading infinito
+- Messaggio "Errore durante il caricamento del widget"
+- Console errors
+
+# Soluzioni
+1. Verifica connessione internet
+2. Controlla adblocker (disabilita temporaneamente)
+3. Verifica simbolo formato corretto (EXCHANGE:TICKER)
+4. Controlla firewall aziendale/proxy
+5. Riprova con timeout maggiore:
+   <NewTradingViewWidget initTimeout={15000} />
+```
+
+#### **Problema: Simbolo non valido**
+
+```bash
+# Errori comuni
+❌ "AAPL"          → ✅ "NASDAQ:AAPL"
+❌ "ENEL"          → ✅ "MIL:ENEL"
+❌ "BTCUSD"        → ✅ "BINANCE:BTCUSDT"
+❌ "EURUSD"        → ✅ "FX:EURUSD"
+
+# Verifica exchange supportati
+- NASDAQ: azioni tech USA
+- NYSE: azioni tradizionali USA
+- MIL: azioni italiane
+- BINANCE: cryptocurrency
+- FX: forex pairs
+```
+
+#### **Problema: Widget troppo lento**
+
+```tsx
+// Ottimizza performance
+<NewTradingViewWidget
+  initTimeout={20000} // Aumenta timeout
+  studies={[]} // Rimuovi indicatori pesanti
+  hide_side_toolbar={true} // Riduci UI complexity
+/>
+```
+
+#### **Problema: Errori di memoria**
+
+```tsx
+// Il componente implementa auto-cleanup, ma se persistono:
+useEffect(() => {
+  return () => {
+    // Force cleanup manuale se necessario
+    window.TradingView = undefined;
+  };
+}, []);
+```
+
+### **Procedura Rollback**
+
+Se il nuovo widget TradingView causa problemi critici:
+
+#### **1. Rollback Immediato**
+
+```bash
+# Step 1: Backup current
+mv src/components/charts/NewTradingViewWidget.tsx src/components/charts/NewTradingViewWidget.tsx.backup
+mv src/components/charts/TradingViewChart.tsx src/components/charts/TradingViewChart.tsx.backup
+
+# Step 2: Restore from backup
+cp src/components/charts/backup/TradingViewWidget.tsx src/components/charts/
+cp src/components/charts/backup/react-tradingview-widget.d.ts src/components/charts/
+
+# Step 3: Reinstall old library
+npm install react-tradingview-widget@1.3.2
+
+# Step 4: Update imports in MainTabs.tsx
+# Cambia da: import { TradingViewChart } from './charts/TradingViewChart';
+# A: import TradingViewWidget from 'react-tradingview-widget';
+```
+
+#### **2. Verifica Rollback**
+
+```bash
+# Test quick
+npm run dev
+# Naviga a http://localhost:5173
+# Verifica che il grafico si carica correttamente
+
+# Test completo
+npm test
+npm run build
+```
+
+#### **3. Backup Locations**
+
+```bash
+📁 Backup Files:
+├── src/components/charts/backup/
+│   ├── TradingViewWidget.tsx           # Widget originale
+│   ├── react-tradingview-widget.d.ts   # Type definitions
+│   └── integration-notes.md            # Note implementazione
+│
+├── .taskmaster/docs/
+│   └── tradingview-migration-log.md    # Log migrazione completo
+│
+└── package.json.backup                 # Dependencies originali
+```
+
+### **Performance Optimization**
+
+#### **Lazy Loading**
+
+```tsx
+// Carica widget solo quando necessario
+const LazyTradingViewWidget = lazy(
+  () => import('@/components/charts/NewTradingViewWidget')
+);
+
+function ChartSection() {
+  return (
+    <Suspense fallback={<div>Caricamento grafico...</div>}>
+      <LazyTradingViewWidget symbol="NASDAQ:AAPL" />
+    </Suspense>
+  );
+}
+```
+
+#### **Memory Optimization**
+
+```tsx
+// Evita re-render inutili
+const MemoizedChart = memo(NewTradingViewWidget);
+
+// Ottimizza callback
+const handleChartReady = useCallback(() => {
+  setIsLoading(false);
+}, []);
+
+const handleSymbolChange = useCallback(
+  (symbol: string) => {
+    updateAppState(symbol);
+  },
+  [updateAppState]
+);
+```
 
 ---
 

@@ -11,7 +11,7 @@ import {
 import React from 'react';
 import CorrelationMatrix from './charts/CorrelationMatrix';
 import PerformanceMetrics from './charts/PerformanceMetrics';
-import TradingViewChart from './charts/TradingViewChart';
+import { TradingViewChart } from './charts/TradingViewChart';
 import VolatilityChart from './charts/VolatilityChart';
 import UnifiedInputSection from './input/UnifiedInputSection';
 
@@ -103,6 +103,8 @@ export default function MainTabs({
           { key: 'capm', label: 'CAPM', icon: TrendingUp },
           { key: 'fattori', label: 'Fattori', icon: BarChart3 },
         ];
+      case 'chart':
+        return [{ key: 'chart', label: 'Grafico', icon: BarChart3 }];
       default:
         return [
           { key: 'grafici', label: 'Grafici', icon: BarChart3 },
@@ -289,13 +291,13 @@ export default function MainTabs({
         {activeStep === 'storica' && (
           <>
             <TabsContent value="grafici" className="mt-6">
-              <TradingViewChart
-                symbol="NASDAQ:AAPL"
-                theme="dark"
-                width="100%"
-                height={500}
-                interval="D"
-              />
+              {/* <TradingViewChart /> */}
+              <div className="flex items-center justify-center h-full bg-muted/10 rounded-lg">
+                <p className="text-muted-foreground">
+                  TradingView Chart temporaneamente disabilitato durante la
+                  migrazione
+                </p>
+              </div>
             </TabsContent>
 
             <TabsContent value="tabella" className="mt-6">
@@ -409,6 +411,21 @@ export default function MainTabs({
               </TabsContent>
             )}
           </>
+        )}
+
+        {/* Chart Step */}
+        {activeStep === 'chart' && (
+          <TabsContent value="chart" className="mt-6">
+            <div className="dark-card rounded-xl p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
+                  <TrendingUp size={24} />
+                  Grafico TradingView
+                </h3>
+              </div>
+              <TradingViewChart />
+            </div>
+          </TabsContent>
         )}
       </Tabs>
     </div>
