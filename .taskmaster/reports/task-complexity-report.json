@@ -1,37 +1,61 @@
 {
   "meta": {
-    "generatedAt": "2025-06-28T10:35:03.939Z",
-    "tasksAnalyzed": 3,
-    "totalTasks": 4,
-    "analysisCount": 3,
+    "generatedAt": "2025-07-01T07:12:24.921Z",
+    "tasksAnalyzed": 6,
+    "totalTasks": 6,
+    "analysisCount": 6,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
     "usedResearch": false
   },
   "complexityAnalysis": [
     {
-      "taskId": 2,
-      "taskTitle": "Phase 1 Critical Cleanup",
-      "complexityScore": 3,
+      "taskId": 1,
+      "taskTitle": "Analyze and Backup Existing Component",
+      "complexityScore": 4,
       "recommendedSubtasks": 3,
-      "expansionPrompt": "Break down the 19 files into smaller groups based on type or issue.  For example, group by file extension, error type, or severity.",
-      "reasoning": "Deleting files is a relatively straightforward task, but 19 files could benefit from categorization for more efficient processing."
+      "expansionPrompt": "Break down the backup process into specific steps: file analysis, backup directory creation, file copying, and quality check execution.",
+      "reasoning": "Requires understanding the component and performing file system operations. The quality checks add a layer of complexity."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Remove Old Library",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Detail the steps for uninstalling the package, searching for references, removing references, and running quality checks. Specify which files need to be checked.",
+      "reasoning": "Involves package management and codebase modification. Identifying all references can be time-consuming."
     },
     {
       "taskId": 3,
-      "taskTitle": "Phase 2 Organization Structure",
-      "complexityScore": 5,
+      "taskTitle": "Integrate TradingView Script",
+      "complexityScore": 8,
       "recommendedSubtasks": 5,
-      "expansionPrompt": "Define clear naming conventions for folders and subfolders.  Consider using a hierarchical structure that reflects the project's content.",
-      "reasoning": "Creating a logical folder structure requires planning and decision-making about categorization and naming conventions."
+      "expansionPrompt": "Elaborate on the steps for studying the TradingView documentation, creating the React component, managing the script lifecycle with useEffect, passing parameters dynamically, and handling fallbacks/errors. Include details about styling.",
+      "reasoning": "This is the most complex task, requiring deep understanding of React lifecycle, external API integration, and error handling."
     },
     {
       "taskId": 4,
-      "taskTitle": "Phase 3 Content Optimization",
-      "complexityScore": 7,
-      "recommendedSubtasks": 7,
-      "expansionPrompt": "Develop a strategy for identifying and merging duplicate files.  Consider using tools or scripts to automate this process.",
-      "reasoning": "Merging duplicate files can be complex, requiring careful comparison and handling of potential conflicts."
+      "taskTitle": "Test and Validate Integration",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Specify the different types of tests needed: manual testing with parameter changes, fallback mechanism testing, automated test execution, and production build verification. Include specific scenarios for each.",
+      "reasoning": "Requires thorough testing of the new component and ensuring no regressions are introduced."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Document Implementation",
+      "complexityScore": 3,
+      "recommendedSubtasks": 2,
+      "expansionPrompt": "Detail the specific aspects of the component that need to be documented and the structure of the documentation file.",
+      "reasoning": "Straightforward task, but requires attention to detail and clear communication."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Commit, Push, and Deploy",
+      "complexityScore": 4,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Break down the deployment process into commit creation, push to GitHub, build verification on Vercel/GitHub Actions, and final production testing. Specify the checks to perform at each stage.",
+      "reasoning": "Involves version control and deployment procedures. Requires monitoring and verification at each stage."
     }
   ]
 }

@@ -1,0 +1,126 @@
+# PRD: Migrazione TradingView Widget da NPM a Script Integration
+
+## Obiettivo
+Sostituire completamente la libreria NPM `react-tradingview-widget` (incompatibile con React 18) con l'integrazione diretta via script TradingView ufficiale.
+
+## Background
+- **Problema**: `react-tradingview-widget` richiede React 16, ma il progetto usa React 18.3.1
+- **Impatto**: Build failures su Vercel e GitHub Actions
+- **Soluzione**: Usare TradingView script ufficiale invece della libreria NPM
+
+## Requisiti Funzionali
+
+### RF1: Mantenimento Funzionalità Esistenti
+- Ticker dinamico (props symbol)
+- Controlli toolbar
+- Tema scuro/chiaro
+- Integrazione con AnalysisContext
+- Responsive design
+
+### RF2: Compatibilità React 18
+- Nessuna dipendenza da React 16
+- TypeScript strict compliance
+- Hook moderni (useEffect, useRef)
+
+### RF3: Performance
+- Caricamento lazy del widget
+- Cleanup corretto su unmount
+- No memory leaks
+
+## Requisiti Tecnici
+
+### RT1: Dipendenze
+- Rimuovere `react-tradingview-widget`
+- Nessuna nuova dipendenza NPM
+- Solo script TradingView ufficiale
+
+### RT2: Build Process
+- TypeScript check passa
+- ESLint passa
+- Vite build passa
+- Vercel deploy passa
+
+### RT3: Testing
+- Component rendering
+- Props handling
+- Cleanup on unmount
+
+## Tasks Principali
+
+### Task 1: Analisi e Backup
+**Priorità**: Alta
+**Dipendenze**: Nessuna
+**Descrizione**: Analizzare l'implementazione attuale e creare backup completo
+**Criteri di Accettazione**:
+- File di backup creati in `.backup/tradingview-integrazione-YYYYMMDD/`
+- Analisi delle funzionalità correnti documentata
+- Lista delle props e comportamenti identificata
+
+### Task 2: Rimozione Libreria NPM
+**Priorità**: Alta  
+**Dipendenze**: Task 1
+**Descrizione**: Rimuovere completamente `react-tradingview-widget`
+**Criteri di Accettazione**:
+- Libreria disinstallata con `npm uninstall`
+- Import rimossi da tutti i file
+- TypeScript errors risolti
+- Build locale passa
+
+### Task 3: Implementazione Script Integration
+**Priorità**: Alta
+**Dipendenze**: Task 2
+**Descrizione**: Creare nuovo componente con script TradingView diretto
+**Criteri di Accettazione**:
+- Nuovo componente TradingViewChart funzionante
+- Script loading tramite useEffect
+- Cleanup su unmount implementato
+- Props mapping completo
+
+### Task 4: Testing e Integrazione
+**Priorità**: Media
+**Dipendenze**: Task 3
+**Descrizione**: Testare nuovo componente e integrare nell'app
+**Criteri di Accettazione**:
+- Unit tests per nuovo componente
+- Integration test con AnalysisContext
+- Manual testing su ticker diversi
+- Performance verificata
+
+### Task 5: Deploy e Verifica
+**Priorità**: Media
+**Dipendenze**: Task 4
+**Descrizione**: Deploy su Vercel e verifica produzione
+**Criteri di Accettazione**:
+- Build Vercel passa
+- Widget funziona in produzione
+- Performance accettabile
+- Nessun errore console
+
+### Task 6: Documentazione
+**Priorità**: Bassa
+**Dipendenze**: Task 5
+**Descrizione**: Aggiornare documentazione e cleanup
+**Criteri di Accettazione**:
+- README aggiornato
+- Commenti nel codice
+- Backup cleanup
+- Task Taskmaster completati
+
+## Criteri di Successo
+1. ✅ Build passa su Vercel senza errori React version
+2. ✅ Widget TradingView funziona identicamente a prima
+3. ✅ Performance mantenuta o migliorata
+4. ✅ Zero breaking changes per utenti
+5. ✅ Codice più maintainable e futuro-proof
+
+## Rollback Plan
+- Ripristino da backup in `.backup/tradingview-integrazione-YYYYMMDD/`
+- Reinstallazione libreria NPM con `--legacy-peer-deps`
+- Revert dei commit se necessario
+
+## Timeline Stimato
+- **Task 1-2**: 1 ora (analisi + rimozione)
+- **Task 3**: 2-3 ore (implementazione)
+- **Task 4-5**: 1-2 ore (testing + deploy)
+- **Task 6**: 30 min (documentazione)
+- **Totale**: 4.5-6.5 ore 

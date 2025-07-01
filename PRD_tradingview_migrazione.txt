@@ -1,0 +1,64 @@
+# PRD Migrazione TradingView: Integrazione Sicura via Script Diretto
+
+## Obiettivo
+Sostituire la libreria NPM `react-tradingview-widget` con l'integrazione ufficiale TradingView via script diretto, per eliminare conflitti di dipendenze, garantire build pulite, massima compatibilità futura e controllo totale sul widget.
+
+## Motivazione
+- Attualmente la build fallisce su Vercel e GitHub Actions a causa di conflitti tra la versione di React (18.x) e la libreria `react-tradingview-widget` (che richiede React 16).
+- L'uso del flag `--legacy-peer-deps` è solo un workaround temporaneo e non è una soluzione professionale.
+- L'integrazione via script diretto TradingView è la soluzione raccomandata da TradingView stessa, garantisce aggiornabilità, nessun conflitto e massima flessibilità.
+
+## Requisiti Tecnici e di Sicurezza
+- **Backup obbligatorio** di tutti i file coinvolti (componenti, package.json, package-lock.json) in una sottocartella dedicata di `.backup` (es: `.backup/tradingview-integrazione-YYYYMMDD/`).
+- **Rollback facile**: ogni modifica deve poter essere annullata in meno di 2 minuti.
+- **Test step-by-step**: dopo ogni macro-step, eseguire `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`.
+- **Documentazione**: ogni passaggio deve essere commentato e documentato.
+- **Nessuna modifica ai dati o alla logica di business**: solo la visualizzazione del grafico viene toccata.
+
+## Percorso Operativo (Task e Sub-task)
+
+### Task 1: Analisi e Backup
+- 1.1 Analisi stato attuale del componente TradingViewChart.tsx e dei punti di utilizzo.
+- 1.2 Backup di TradingViewChart.tsx, package.json, package-lock.json e altri file coinvolti in `.backup/tradingview-integrazione-YYYYMMDD/`.
+- 1.3 Verifica stato progetto con tutti i check di qualità.
+
+### Task 2: Rimozione Sicura della Vecchia Libreria
+- 2.1 Disinstallazione di `react-tradingview-widget`.
+- 2.2 Pulizia di tutti gli import e riferimenti nel codice.
+- 2.3 Verifica integrità progetto con tutti i check.
+
+### Task 3: Integrazione Script TradingView
+- 3.1 Studio della documentazione ufficiale TradingView.
+- 3.2 Creazione nuovo componente React che monta lo script TradingView in modo sicuro, con gestione ciclo di vita React (`useEffect`).
+- 3.3 Passaggio dinamico dei parametri (ticker, tema, lingua, ecc.) dal context/props.
+- 3.4 Gestione fallback e errori (messaggio didattico se il widget non si carica).
+- 3.5 Styling e posizionamento identico o migliorato rispetto al vecchio componente.
+
+### Task 4: Test e Validazione
+- 4.1 Test locale del widget (cambio ticker, tema, lingua).
+- 4.2 Test di fallback e compatibilità UI.
+- 4.3 Test automatici e build finale.
+
+### Task 5: Documentazione e Didattica
+- 5.1 Commenti chiari nel nuovo componente.
+- 5.2 Aggiornamento README o file dedicato.
+- 5.3 Guida alle modifiche future e troubleshooting.
+
+### Task 6: Commit, Push e Deploy
+- 6.1 Commit convenzionale dettagliato.
+- 6.2 Push su GitHub.
+- 6.3 Verifica build su Vercel e GitHub Actions.
+- 6.4 Test finale in produzione.
+
+## Criteri di Successo e Checklist Finale
+- [ ] Tutti i backup sono presenti in `.backup/tradingview-integrazione-YYYYMMDD/`.
+- [ ] Il widget TradingView funziona correttamente in locale e in produzione.
+- [ ] Nessun conflitto di dipendenze in build/test/deploy.
+- [ ] Tutti i test automatici e manuali passano.
+- [ ] Documentazione aggiornata e chiara.
+- [ ] Rollback possibile in meno di 2 minuti.
+
+## Regole di Backup e Rollback
+- Ogni file modificato viene salvato in `.backup/tradingview-integrazione-YYYYMMDD/` prima di ogni step critico.
+- In caso di errore, si ripristina il file originale dalla cartella di backup.
+- Nessuna modifica viene committata senza aver superato tutti i check di qualità. 
