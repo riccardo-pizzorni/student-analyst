@@ -4,6 +4,8 @@
 > **Progetto**: Analisi finanziaria professionale per studenti  
 > **Stack**: React + TypeScript + Node.js + Yahoo Finance API
 
+pavimento
+
 [![Vercel Deploy](https://img.shields.io/badge/Vercel-✅%20Live-brightgreen)](https://student-analyst.vercel.app)
 [![Render Backend](https://img.shields.io/badge/Render-✅%20Active-brightgreen)](https://student-analyst.onrender.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue)](https://www.typescriptlang.org/)
