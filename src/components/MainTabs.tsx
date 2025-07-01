@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import CorrelationMatrix from './charts/CorrelationMatrix';
-import HistoricalChart from './charts/HistoricalChart';
 import PerformanceMetrics from './charts/PerformanceMetrics';
+import TradingViewChart from './charts/TradingViewChart';
 import VolatilityChart from './charts/VolatilityChart';
 import UnifiedInputSection from './input/UnifiedInputSection';
 
@@ -289,7 +289,13 @@ export default function MainTabs({
         {activeStep === 'storica' && (
           <>
             <TabsContent value="grafici" className="mt-6">
-              <HistoricalChart />
+              <TradingViewChart
+                symbol="NASDAQ:AAPL"
+                theme="dark"
+                width="100%"
+                height={500}
+                interval="D"
+              />
             </TabsContent>
 
             <TabsContent value="tabella" className="mt-6">
