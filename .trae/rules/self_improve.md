@@ -1,5 +1,5 @@
 ---
-description: Guidelines for continuously improving Cline rules based on emerging code patterns and best practices.
+description: Guidelines for continuously improving Trae rules based on emerging code patterns and best practices.
 globs: **/*
 alwaysApply: true
 ---
@@ -40,7 +40,7 @@ alwaysApply: true
     where: { status: 'ACTIVE' },
   });
 
-  // Consider adding to [prisma.md](.clinerules/prisma.md):
+  // Consider adding to [prisma.md](.trae/rules/prisma.md):
   // - Standard select fields
   // - Common where conditions
   // - Performance optimization patterns
@@ -70,4 +70,4 @@ alwaysApply: true
   - Update references to external docs
   - Maintain links between related rules
   - Document breaking changes
-    Follow [cline_rules.md](.clinerules/cline_rules.md) for proper rule formatting and structure.
+    Follow [trae_rules.md](.trae/rules/trae_rules.md) for proper rule formatting and structure.

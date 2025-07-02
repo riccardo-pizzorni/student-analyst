@@ -1,12 +1,12 @@
 {
   "meta": {
-    "generatedAt": "2025-07-01T07:12:24.921Z",
-    "tasksAnalyzed": 6,
-    "totalTasks": 6,
-    "analysisCount": 6,
+    "generatedAt": "2025-07-02T00:45:19.503Z",
+    "tasksAnalyzed": 15,
+    "totalTasks": 15,
+    "analysisCount": 21,
     "thresholdScore": 5,
     "projectName": "Taskmaster",
-    "usedResearch": false
+    "usedResearch": true
   },
   "complexityAnalysis": [
     {
@@ -56,6 +56,126 @@
       "recommendedSubtasks": 3,
       "expansionPrompt": "Break down the deployment process into commit creation, push to GitHub, build verification on Vercel/GitHub Actions, and final production testing. Specify the checks to perform at each stage.",
       "reasoning": "Involves version control and deployment procedures. Requires monitoring and verification at each stage."
+    },
+    {
+      "taskId": 17,
+      "taskTitle": "Initialize React TypeScript Project",
+      "complexityScore": 4,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Project setup with CRA/Vite. 2. ESLint and Prettier configuration. 3. Testing library setup (Jest/RTL).",
+      "reasoning": "Standard project setup, but requires configuring multiple tools. Splitting into subtasks makes it easier to manage."
+    },
+    {
+      "taskId": 18,
+      "taskTitle": "Create Core Widget Component",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Create the basic component structure and props interface. 2. Implement dynamic script loading using useEffect. 3. Manage script loading state. 4. Initial rendering of the TradingView widget container.",
+      "reasoning": "Involves React component creation, dynamic script loading, and state management. Subtasks help break down the process."
+    },
+    {
+      "taskId": 19,
+      "taskTitle": "Implement Dynamic Script Loading",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Create script element and set the src attribute. 2. Append the script to the document body. 3. Implement onload and onerror event handlers. 4. Implement retry mechanism with exponential backoff. 5. Handle potential CORS issues.",
+      "reasoning": "Dynamic script loading with retry and error handling adds complexity. Subtasks address each aspect of the implementation."
+    },
+    {
+      "taskId": 20,
+      "taskTitle": "Support Dynamic Configuration",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Accept symbol and interval props. 2. Configure the TradingView widget with the props. 3. Implement input validation for symbol and interval. 4. Handle invalid input values gracefully.",
+      "reasoning": "Requires prop handling, widget configuration, and input validation. Subtasks clarify each step."
+    },
+    {
+      "taskId": 21,
+      "taskTitle": "Implement Theme Customization",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Add a theme prop to the component. 2. Set the theme of the TradingView widget based on the prop. 3. Use CSS variables to customize the widget's appearance.",
+      "reasoning": "Theme customization involves prop handling and CSS styling. Subtasks outline the key steps."
+    },
+    {
+      "taskId": 22,
+      "taskTitle": "Enable Responsive Dimensions",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Add width and height props to the component. 2. Allow props to be specified in pixels or percentages. 3. Use CSS to make the widget responsive. 4. Handle cases where width or height is not provided.",
+      "reasoning": "Responsive dimensions require prop handling and CSS styling. Subtasks break down the implementation."
+    },
+    {
+      "taskId": 23,
+      "taskTitle": "Implement Input Validation",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Install and configure Zod. 2. Define schemas for all configurable options. 3. Validate the props using the schemas. 4. Display user-friendly error messages. 5. Handle default values for missing props.",
+      "reasoning": "Comprehensive input validation using Zod requires defining schemas and handling errors. Subtasks clarify the process."
+    },
+    {
+      "taskId": 24,
+      "taskTitle": "Handle CSP Restrictions",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Add a nonce attribute to the script tag. 2. Allow users to pass a nonce value as a prop. 3. Document how to configure CSP. 4. Handle cases where CSP prevents script loading.",
+      "reasoning": "Handling CSP restrictions involves adding a nonce and providing documentation. Subtasks outline the key steps."
+    },
+    {
+      "taskId": 25,
+      "taskTitle": "Implement Error Logging and Tracking",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Choose and configure a logging library. 2. Integrate with an error tracking service. 3. Log initialization errors. 4. Log runtime errors. 5. Include relevant information in the error logs.",
+      "reasoning": "Error logging and tracking require integrating with external services and handling different error scenarios. Subtasks clarify the process."
+    },
+    {
+      "taskId": 26,
+      "taskTitle": "Optimize Script Loading and Initialization",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Use React.memo to prevent unnecessary re-renders. 2. Use useCallback to memoize event handlers. 3. Use useMemo to memoize expensive calculations. 4. Profile the component to identify performance bottlenecks.",
+      "reasoning": "Optimization involves using React's memoization techniques and profiling. Subtasks outline the key steps."
+    },
+    {
+      "taskId": 27,
+      "taskTitle": "Ensure Resource Cleanup",
+      "complexityScore": 5,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Remove the TradingView widget script on unmount. 2. Clear any timers or event listeners. 3. Test for memory leaks.",
+      "reasoning": "Resource cleanup involves removing the script and clearing timers. Subtasks clarify the process."
+    },
+    {
+      "taskId": 28,
+      "taskTitle": "Support Lazy Loading",
+      "complexityScore": 4,
+      "recommendedSubtasks": 3,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Use React.lazy and Suspense to lazy load the component. 2. Measure the initial page load time. 3. Handle potential loading errors.",
+      "reasoning": "Lazy loading involves using React's lazy loading features. Subtasks outline the key steps."
+    },
+    {
+      "taskId": 29,
+      "taskTitle": "Support Multiple Instances",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Ensure unique IDs for each widget instance. 2. Avoid using global variables. 3. Test multiple instances on a single page. 4. Handle potential conflicts between instances.",
+      "reasoning": "Supporting multiple instances requires ensuring unique IDs and avoiding conflicts. Subtasks clarify the process."
+    },
+    {
+      "taskId": 30,
+      "taskTitle": "Write Unit and Integration Tests",
+      "complexityScore": 8,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Write unit tests for validation functions. 2. Write integration tests for script loading. 3. Write integration tests for error handling. 4. Write integration tests for component rendering. 5. Achieve 90%+ test coverage.",
+      "reasoning": "Writing comprehensive tests requires covering different aspects of the component. Subtasks clarify the process."
+    },
+    {
+      "taskId": 31,
+      "taskTitle": "Create Documentation",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Expand the task into subtasks for: 1. Set up Storybook or Docz. 2. Document all props, events, and methods. 3. Provide examples of how to use the component. 4. Document error handling and CSP configuration.",
+      "reasoning": "Creating comprehensive documentation requires documenting different aspects of the component. Subtasks clarify the process."
     }
   ]
 }
