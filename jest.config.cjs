@@ -40,6 +40,7 @@ module.exports = {
     '/tests/unit/algorithm-optimization-engine.test.ts', // Missing service files
     '/tests/unit/components/HistoricalChart.test.tsx', // Chart.js plugin issues
     '/tests/unit/components/HistoricalTable.test.tsx', // Component not implemented (empty file)
+    '/src/components/charts/__tests__/NewTradingViewWidget.test.tsx', // Memory leak issues with TradingView widget mocking
   ],
 
   // Includi test frontend e unit
