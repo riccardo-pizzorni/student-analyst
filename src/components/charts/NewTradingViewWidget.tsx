@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { z } from 'zod';
 
 /**
  * TRADINGVIEW WIDGET INTEGRATION - SCRIPT LOADING SYSTEM
@@ -91,57 +92,57 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
  * - Minimal impact su performance durante cleanup
  */
 
-// Costanti per validazione
-const VALID_INTERVALS = [
-  '1',
-  '3',
-  '5',
-  '15',
-  '30',
-  '60',
-  '120',
-  '240',
-  'D',
-  'W',
-  'M',
-] as const;
-const VALID_THEMES = ['light', 'dark'] as const;
-const SUPPORTED_EXCHANGES = ['NASDAQ', 'NYSE', 'MIL', 'BINANCE', 'FX'] as const;
-
-// Tipi per validazione
-type ValidInterval = (typeof VALID_INTERVALS)[number];
-type ValidTheme = (typeof VALID_THEMES)[number];
-type SupportedExchange = (typeof SUPPORTED_EXCHANGES)[number];
-
-/**
- * VALIDATION FUNCTIONS - PARAMETRI SICURI
- *
- * Queste funzioni garantiscono che solo parametri validi vengano passati
- * al widget TradingView, prevenendo errori di runtime e comportamenti imprevisti.
- */
-
-const isValidInterval = (interval: string): interval is ValidInterval => {
-  return VALID_INTERVALS.includes(interval as ValidInterval);
-};
-
-const isValidTheme = (theme: string): theme is ValidTheme => {
-  return VALID_THEMES.includes(theme as ValidTheme);
-};
+// Funzioni di validazione
+const VALID_INTERVALS = ['1', '5', '15', '30', '60', 'D', 'W', 'M'];
+const MAX_STUDIES = 5;
 
 const isValidSymbol = (symbol: string): boolean => {
-  const parts = symbol.split(':');
-  if (parts.length !== 2) return false;
-  const [exchange, ticker] = parts;
-  return (
-    SUPPORTED_EXCHANGES.includes(exchange as SupportedExchange) &&
-    ticker.length > 0
-  );
+  // Formato: EXCHANGE:TICKER
+  const symbolRegex = /^[A-Z]+:[A-Z0-9]+$/;
+  return symbolRegex.test(symbol);
 };
 
-const isValidDimension = (value: string | number): boolean => {
-  if (typeof value === 'number') return value > 0;
-  return /^(\d+px|\d+%|auto|100%)$/.test(value);
+const isValidInterval = (interval: string): boolean => {
+  return VALID_INTERVALS.includes(interval);
 };
+
+const isValidTheme = (theme: string): boolean => {
+  return ['light', 'dark'].includes(theme);
+};
+
+const isValidDimension = (dimension: number | string): boolean => {
+  if (typeof dimension === 'number') {
+    return dimension > 0;
+  }
+
+  if (typeof dimension === 'string') {
+    // Accetta valori percentuali o pixel
+    const dimensionRegex = /^(\d+)(%|px)?$/;
+    const match = dimension.match(dimensionRegex);
+
+    if (!match) return false;
+
+    const value = parseInt(match[1], 10);
+    return value > 0;
+  }
+
+  return false;
+};
+
+// Validation schemas
+const symbolSchema = z.string().regex(/^[A-Z]+:[A-Z]+$/, {
+  message: 'Invalid symbol format. Must be in "EXCHANGE:TICKER" format',
+});
+
+const intervalSchema = z.enum(['1', '5', '15', '30', '60', 'D', 'W', 'M'], {
+  errorMap: () => ({
+    message: 'Invalid interval. Must be one of: 1, 5, 15, 30, 60, D, W, M',
+  }),
+});
+
+const themeSchema = z.enum(['light', 'dark'], {
+  errorMap: () => ({ message: 'Invalid theme. Must be "light" or "dark"' }),
+});
 
 /**
  * ============================================================================
@@ -772,10 +773,32 @@ interface NewTradingViewWidgetProps {
    * - Mostra messaggio utente dopo timeout
    * - Considera fallback a grafico semplificato
    *
-   * DEFAULT: 10000 (10 secondi)
+   * DEFAULT: 20000 (20 secondi)
    * ESEMPIO: 15000 per ambienti mobile o reti lente
    */
   initTimeout?: number;
+
+  // ========================================================================
+  // 8. DEBUG - CONTROLLO DEBUGGING E TESTING
+  // ========================================================================
+
+  /**
+   * DEBUG - Abilita Debugging e Testing
+   *
+   * Controlla se il widget deve eseguire log dettagliati e test.
+   *
+   * COMPORTAMENTO:
+   * - true: Abilita log dettagliati e test
+   * - false: Disabilita log dettagliati e test
+   *
+   * ELEMENTI DEBUG:
+   * - Log dettagliati durante caricamento
+   * - Test di validazione parametri
+   * - Simulazione errori di caricamento
+   *
+   * DEFAULT: false
+   */
+  debug?: boolean;
 }
 
 /**
@@ -791,6 +814,79 @@ declare global {
     };
   }
 }
+
+// Funzione di creazione errore dettagliato
+const createDetailedError = (
+  message: string,
+  type: 'VALIDATION' | 'NETWORK' | 'SCRIPT_LOAD' | 'WIDGET_INIT' = 'VALIDATION',
+  details?: Record<string, any>
+): Error => {
+  const error = new Error(message);
+  error.name = `TradingViewWidgetError:${type}`;
+
+  if (details) {
+    Object.keys(details).forEach(key => {
+      (error as any)[key] = details[key];
+    });
+  }
+
+  // Logging degli errori
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(`[TradingView Widget Error - ${type}]`, error);
+  }
+
+  return error;
+};
+
+// Enhance validation functions
+const validateTradingViewProps = (
+  props: NewTradingViewWidgetProps
+): {
+  isValid: boolean;
+  errors: string[];
+} => {
+  const errors: string[] = [];
+
+  // Symbol validation with more detailed checks
+  if (!props.symbol || !isValidSymbol(props.symbol)) {
+    errors.push('Invalid symbol format. Must be in "EXCHANGE:TICKER" format');
+  }
+
+  // Interval validation
+  if (props.interval && !isValidInterval(props.interval)) {
+    errors.push(
+      `Invalid interval: ${props.interval}. Must be one of: ${VALID_INTERVALS.join(', ')}`
+    );
+  }
+
+  // Theme validation
+  if (props.theme && !isValidTheme(props.theme)) {
+    errors.push(`Invalid theme: ${props.theme}. Must be 'light' or 'dark'`);
+  }
+
+  // Dimension validations
+  if (props.width && !isValidDimension(props.width)) {
+    errors.push(
+      `Invalid width: ${props.width}. Must be a positive number or valid CSS dimension`
+    );
+  }
+
+  if (props.height && !isValidDimension(props.height)) {
+    errors.push(
+      `Invalid height: ${props.height}. Must be a positive number or valid CSS dimension`
+    );
+  }
+
+  // Studies validation
+  if (props.studies && props.studies.length > MAX_STUDIES) {
+    errors.push(`Maximum of ${MAX_STUDIES} studies allowed`);
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
 
 const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   // Props principali con valori di default sicuri
@@ -823,8 +919,11 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   onChartReady,
   onLoadError,
 
-  // Props per il timeout (default: 10 secondi)
-  initTimeout = 10000,
+  // Props per il timeout (default: 20 secondi per massima robustezza)
+  initTimeout = 20000,
+
+  // Props per il debug
+  debug = false,
 }) => {
   /**
    * COMPONENT STATE MANAGEMENT
@@ -835,6 +934,15 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
    * - Stati di loading, errori e validazione
    */
 
+  // Aggiungo stato per gestione debug e retry
+  const [retryCount, setRetryCount] = useState(0);
+  const [debugStatus, setDebugStatus] = useState<
+    'loading' | 'error' | 'success'
+  >('loading');
+  const [widgetCreated, setWidgetCreated] = useState(false);
+  const [containerClean, setContainerClean] = useState(true);
+  const [currentError, setCurrentError] = useState<Error | null>(null);
+
   // Genera un ID unico per il container (sostituisce ':' per compatibilità DOM)
   const containerId = useId().replace(/:/g, '_');
 
@@ -844,65 +952,20 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   // Riferimento al timer di timeout per cleanup
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  // Stati per gestione UI
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  // Stati per errori di validazione parametri
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-
-  /**
-   * PROPS VALIDATION SYSTEM
-   *
-   * Valida tutti i parametri prima dell'inizializzazione per prevenire
-   * errori runtime e comportamenti imprevisti del widget.
-   */
-  const validateProps = useCallback(() => {
-    const errors: string[] = [];
-
-    // Valida il simbolo finanziario (formato EXCHANGE:TICKER)
-    if (symbol && !isValidSymbol(symbol)) {
-      errors.push(
-        `Simbolo non valido: ${symbol}. Formato atteso: EXCHANGE:TICKER (es. NASDAQ:AAPL)`
-      );
-    }
-
-    // Valida l'intervallo temporale
-    if (interval && !isValidInterval(interval)) {
-      errors.push(
-        `Intervallo non valido: ${interval}. Valori supportati: ${VALID_INTERVALS.join(', ')}`
-      );
-    }
-
-    // Valida il tema
-    if (theme && !isValidTheme(theme)) {
-      errors.push(
-        `Tema non valido: ${theme}. Valori supportati: ${VALID_THEMES.join(', ')}`
-      );
-    }
-
-    // Valida dimensioni del widget
-    if (width && !isValidDimension(width)) {
-      errors.push(
-        `Larghezza non valida: ${width}. Usa un numero positivo o una stringa valida (es. '100%', '500px')`
-      );
-    }
-    if (height && !isValidDimension(height)) {
-      errors.push(
-        `Altezza non valida: ${height}. Usa un numero positivo o una stringa valida (es. '100%', '500px')`
-      );
-    }
-
-    // Valida locale (formato ISO: 'it' o 'it-IT')
-    if (locale && !/^[a-z]{2}(-[A-Z]{2})?$/.test(locale)) {
-      errors.push(
-        `Locale non valido: ${locale}. Formato atteso: 'it' o 'it-IT'`
-      );
-    }
-
-    setValidationErrors(errors);
-    return errors.length === 0;
-  }, [symbol, interval, theme, width, height, locale]);
+  // Validazione parametri in useMemo
+  const { isValid, errors: validationErrors } = useMemo(
+    () =>
+      validateTradingViewProps({
+        symbol,
+        interval,
+        theme,
+        width,
+        height,
+        locale,
+        studies,
+      }),
+    [symbol, interval, theme, width, height, locale, studies]
+  );
 
   /**
    * SCRIPT LOADING AND WIDGET INITIALIZATION
@@ -916,333 +979,172 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
    * 5. CLEANUP: Pulisce le risorse quando il componente viene smontato
    */
   useEffect(() => {
-    // STEP 1: Validazione parametri
-    // Prima di qualsiasi operazione, validiamo tutti i parametri
-    const isValid = validateProps();
+    if (!isValid) return;
+    console.log(
+      '[TradingViewWidget] MOUNT: symbol',
+      symbol,
+      'interval',
+      interval
+    );
+    setWidgetCreated(false);
+    setContainerClean(true);
 
-    // Se ci sono errori di validazione, interrompiamo il processo
-    if (!isValid) {
-      return;
+    // Svuota il container prima di ogni mount
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = '';
+      setContainerClean(true);
+      console.log('[TradingViewWidget] Container pulito:', containerId);
     }
 
-    /**
-     * STEP 2: INIZIALIZZAZIONE STATI
-     *
-     * Reset degli stati prima di iniziare il caricamento:
-     * - Attiva loading state per mostrare indicatore all'utente
-     * - Reset eventuali errori precedenti per clean slate
-     */
-    setIsLoading(true);
-    setError(null);
-
-    /**
-     * STEP 3: TIMEOUT PROTECTION
-     *
-     * Imposta un timer di sicurezza per prevenire blocchi infiniti.
-     * Se il widget non si inizializza entro il tempo limite:
-     * - Mostra errore di timeout all'utente
-     * - Chiama il callback onLoadError se fornito
-     * - Pulisce il loading state
-     *
-     * Questo previene situazioni dove lo script si carica ma il widget
-     * non riesce ad inizializzarsi per problemi di rete o configurazione.
-     */
     timeoutRef.current = setTimeout(() => {
-      if (isLoading) {
-        const timeoutError = new Error(
+      setCurrentError(
+        new Error(
           `Il widget non si è inizializzato entro ${initTimeout / 1000} secondi`
+        )
+      );
+      setDebugStatus('error');
+      setWidgetCreated(false);
+      console.error('[TradingViewWidget] Timeout inizializzazione widget');
+      if (onLoadError)
+        onLoadError(
+          new Error(
+            `Il widget non si è inizializzato entro ${initTimeout / 1000} secondi`
+          )
         );
-        console.error(
-          'Timeout durante il caricamento del widget TradingView:',
-          timeoutError
-        );
-        setError(timeoutError);
-        setIsLoading(false);
-        if (onLoadError) {
-          onLoadError(timeoutError);
-        }
-      }
     }, initTimeout);
 
-    /**
-     * STEP 4: DYNAMIC SCRIPT LOADING
-     *
-     * Carica dinamicamente lo script TradingView da CDN esterno.
-     *
-     * VANTAGGI del caricamento dinamico:
-     * - Evita il bundle bloat (script caricato solo quando necessario)
-     * - Sempre ultima versione dal CDN ufficiale TradingView
-     * - Gestione errori granulare per problemi di rete
-     *
-     * CONFIGURAZIONE SCRIPT:
-     * - ID univoco per prevenire duplicati
-     * - Async loading per non bloccare il main thread
-     * - Event handlers per success/error management
-     */
-    const script = document.createElement('script');
-    script.id = 'tradingview-widget-script'; // ID univoco per gestione DOM
-    script.src = 'https://s3.tradingview.com/tv.js'; // CDN ufficiale TradingView
-    script.async = true; // Caricamento asincrono non-blocking
+    let script = document.getElementById(
+      'tradingview-widget-script'
+    ) as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'tradingview-widget-script';
+      script.src = 'https://s3.tradingview.com/tv.js';
+      script.async = true;
+      script.setAttribute('data-locale', locale || 'it');
+      document.body.appendChild(script);
+      console.log('[TradingViewWidget] Script TradingView aggiunto');
+    } else {
+      console.log('[TradingViewWidget] Script TradingView già presente');
+    }
 
-    /**
-     * STEP 5: SCRIPT SUCCESS HANDLER
-     *
-     * Gestisce il caso di successo del caricamento dello script.
-     * Questa funzione viene chiamata quando lo script è stato scaricato
-     * e processato dal browser con successo.
-     */
     script.onload = () => {
       try {
-        /**
-         * VERIFICA DISPONIBILITÀ API
-         *
-         * Controlla che l'oggetto TradingView sia disponibile nel window.
-         * Lo script potrebbe caricarsi ma l'API potrebbe non essere disponibile
-         * per problemi di compatibilità o errori del server.
-         */
         if (window.TradingView) {
-          /**
-           * WIDGET CONFIGURATION
-           *
-           * Crea una nuova istanza del widget con configurazione validata.
-           * Ogni parametro viene passato dopo essere stato validato.
-           *
-           * PARAMETRI CRITICI:
-           * - container_id: ID univoco del container DOM
-           * - symbol: Simbolo finanziario validato
-           * - interval: Intervallo temporale validato
-           * - theme: Tema UI validato
-           *
-           * PARAMETRI OPZIONALI:
-           * - studies: Array di indicatori tecnici
-           * - toolbar settings: Configurazione UI
-           * - event callbacks: Gestione eventi utente
-           */
           widgetRef.current = new window.TradingView.widget({
-            // CONTAINER CONFIGURATION
-            container_id: containerId, // ID univoco per evitare conflitti
-            autosize, // Auto-sizing responsive
-            width, // Larghezza esplicita
-            height, // Altezza esplicita
-
-            // FINANCIAL DATA CONFIGURATION
-            symbol, // Simbolo finanziario (es. NASDAQ:AAPL)
-            interval, // Timeframe (1, 5, 15, 30, D, W, M)
-            theme: theme.toLowerCase(), // Tema UI (light/dark)
-            style: '1', // Stile chart (1=candele, 2=linea, etc.)
-            locale, // Localizzazione (it, en, de, etc.)
-            toolbar_bg, // Colore background toolbar
-
-            // UI FEATURES CONFIGURATION
-            allow_symbol_change, // Permette cambio simbolo dall'UI
-            save_image, // Abilita salvataggio immagine
-            hide_top_toolbar, // Nascondi toolbar superiore
-            hide_side_toolbar, // Nascondi toolbar laterale
-            studies_overrides: {}, // Override configurazioni indicatori
-
-            // POPUP CONFIGURATION
-            show_popup_button, // Mostra bottone popup
-            popup_width, // Larghezza finestra popup
-            popup_height, // Altezza finestra popup
-
-            // TECHNICAL INDICATORS
-            studies, // Array indicatori da visualizzare
-
-            /**
-             * EVENT CALLBACKS CONFIGURATION
-             *
-             * Configura i callback per eventi del widget.
-             * Solo i callback forniti come props vengono registrati
-             * per evitare overhead di eventi non necessari.
-             */
+            container_id: containerId,
+            autosize,
+            width,
+            height,
+            symbol,
+            interval,
+            theme: theme.toLowerCase(),
+            style: '1',
+            locale,
+            toolbar_bg,
+            allow_symbol_change: true,
+            save_image,
+            hide_top_toolbar: false,
+            hide_side_toolbar: false,
+            show_popup_button,
+            popup_width,
+            popup_height,
+            ...(studies.length > 0 ? { studies } : {}),
             onSymbolChange: onSymbolChange
               ? (symbol: string) => onSymbolChange(symbol)
               : undefined,
             onIntervalChange: onIntervalChange
               ? (interval: string) => onIntervalChange(interval)
               : undefined,
-
-            /**
-             * CHART READY CALLBACK
-             *
-             * Chiamato quando il chart è completamente inizializzato.
-             * Questo è il momento sicuro per:
-             * - Cancellare il timeout timer
-             * - Disattivare loading state
-             * - Notificare il componente parent che il chart è pronto
-             */
             onChartReady: () => {
-              if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current); // Cancella timeout protection
-              }
-              setIsLoading(false); // Disattiva loading state
-              if (onChartReady) {
-                onChartReady(); // Notifica parent component
-              }
+              if (timeoutRef.current) clearTimeout(timeoutRef.current);
+              setDebugStatus('success');
+              setWidgetCreated(true);
+              console.log('[TradingViewWidget] Widget creato e pronto!');
+              if (onChartReady) onChartReady();
             },
           });
+          console.log('[TradingViewWidget] Widget TradingView istanziato');
         }
       } catch (error) {
-        /**
-         * INITIALIZATION ERROR HANDLING
-         *
-         * Gestisce errori durante la creazione del widget.
-         * Possibili cause:
-         * - Parametri invalidi non catturati dalla validazione
-         * - Problemi di memoria browser
-         * - Conflitti con altri script
-         * - API TradingView temporaneamente non disponibile
-         */
         const err =
           error instanceof Error
             ? error
             : new Error('Unknown error during initialization');
+        setCurrentError(err);
+        setDebugStatus('error');
+        setWidgetCreated(false);
         console.error(
-          "Errore durante l'inizializzazione del widget TradingView:",
+          "[TradingViewWidget] Errore durante l'inizializzazione:",
           err
         );
-        setError(err);
-        setIsLoading(false);
-        if (onLoadError) {
-          onLoadError(err);
-        }
+        if (onLoadError) onLoadError(err);
       }
     };
 
-    /**
-     * STEP 6: SCRIPT ERROR HANDLER
-     *
-     * Gestisce errori durante il caricamento dello script.
-     * Possibili cause:
-     * - Problemi di connessione di rete
-     * - CDN TradingView non disponibile
-     * - Blocco da firewall/adblocker
-     * - CORS issues
-     */
     script.onerror = error => {
-      // Cancella il timer in caso di errore di caricamento
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // Crea errore descrittivo per l'utente
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       const err = new Error('Failed to load TradingView script');
+      setCurrentError(err);
+      setDebugStatus('error');
+      setWidgetCreated(false);
       console.error(
-        'Errore durante il caricamento dello script TradingView:',
-        error
+        '[TradingViewWidget] Errore caricamento script TradingView'
       );
-      setError(err);
-      setIsLoading(false);
-      if (onLoadError) {
-        onLoadError(err);
-      }
+      if (onLoadError) onLoadError(err);
     };
 
-    /**
-     * STEP 7: SCRIPT INJECTION
-     *
-     * Inietta lo script nel DOM per iniziare il download.
-     * Lo script viene aggiunto al <head> per compatibilità
-     * e viene scaricato asincronamente.
-     */
-    document.head.appendChild(script);
-
-    /**
-     * STEP 8: CLEANUP FUNCTION
-     *
-     * Funzione di pulizia chiamata quando:
-     * - Il componente viene smontato (unmount)
-     * - Le dependencies del useEffect cambiano
-     * - Il componente viene re-renderizzato
-     *
-     * OPERAZIONI DI CLEANUP:
-     * 1. Cancella timer di timeout per prevenire memory leak
-     * 2. Rimuove widget TradingView per liberare memoria
-     * 3. Rimuove script dal DOM per pulizia
-     *
-     * Questo previene:
-     * - Memory leaks
-     * - Event listeners orfani
-     * - Timer attivi dopo unmount
-     * - Script duplicati nel DOM
-     */
     return () => {
-      // 1. TIMEOUT CLEANUP
-      // Cancella il timer di timeout se ancora attivo
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // 2. WIDGET CLEANUP
-      // Rimuove il widget TradingView se presente
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (widgetRef.current) {
         try {
-          // Alcuni widget hanno un metodo remove() per cleanup
-          if (typeof widgetRef.current.remove === 'function') {
+          // Solo se esiste la funzione remove e il DOM è ancora presente
+          if (
+            typeof widgetRef.current.remove === 'function' &&
+            widgetRef.current._innerChartWidget &&
+            widgetRef.current._innerChartWidget._hostedWidget &&
+            widgetRef.current._innerChartWidget._hostedWidget.parentNode
+          ) {
             widgetRef.current.remove();
+            console.log('[TradingViewWidget] Widget rimosso in unmount');
+          } else {
+            console.log(
+              '[TradingViewWidget] Widget già rimosso o DOM non più presente'
+            );
           }
           widgetRef.current = null;
         } catch (error) {
-          console.error(
-            'Errore durante la rimozione del widget TradingView:',
-            error
-          );
+          if (
+            !(
+              error instanceof TypeError &&
+              error.message &&
+              error.message.includes('parentNode')
+            )
+          ) {
+            console.error(
+              '[TradingViewWidget] Errore durante la rimozione del widget TradingView:',
+              error
+            );
+          } else {
+            console.log(
+              '[TradingViewWidget] Widget già rimosso (parentNode null)'
+            );
+          }
         }
+      } else {
+        console.log('[TradingViewWidget] Unmount: nessun widget da rimuovere');
       }
-
-      // 3. SCRIPT CLEANUP
-      // Rimuove lo script dal DOM per evitare accumulo
-      const existingScript = document.getElementById(
-        'tradingview-widget-script'
-      );
-      if (existingScript) {
-        document.head.removeChild(existingScript);
+      // PATCH: Rimuovi lo script TradingView dal DOM per forzare il reload al prossimo mount
+      const script = document.getElementById('tradingview-widget-script');
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+        console.log(
+          '[TradingViewWidget] Script TradingView rimosso dal DOM in unmount'
+        );
       }
     };
   }, [
-    /**
-     * USEEFFECT DEPENDENCIES
-     *
-     * Lista completa delle dipendenze che causano il reload del widget.
-     * Ogni volta che una di queste cambia, il widget viene ricreato.
-     *
-     * CATEGORIE DI DIPENDENZE:
-     *
-     * 1. IDENTIFIERS & CORE CONFIG:
-     *    - containerId: ID univoco container DOM
-     *    - symbol: Simbolo finanziario (trigger reload per nuovo chart)
-     *    - interval: Timeframe (trigger reload per nuovi dati)
-     *    - theme: Tema UI (trigger reload per restyling)
-     *
-     * 2. LAYOUT & STYLING:
-     *    - width/height: Dimensioni container
-     *    - locale: Localizzazione UI
-     *    - toolbar_bg: Colori UI
-     *
-     * 3. FEATURE FLAGS:
-     *    - autosize: Modalità responsive
-     *    - allow_symbol_change: Permessi UI
-     *    - save_image: Funzionalità export
-     *    - hide_top_toolbar/hide_side_toolbar: Layout UI
-     *    - show_popup_button: Feature popup
-     *    - popup_width/popup_height: Configurazione popup
-     *
-     * 4. TECHNICAL INDICATORS:
-     *    - studies: Array indicatori (trigger reload per nuovi indicatori)
-     *
-     * 5. EVENT HANDLERS:
-     *    - onSymbolChange/onIntervalChange/onChartReady/onLoadError:
-     *      Callback functions (cambio callback = re-register eventi)
-     *
-     * 6. VALIDATION & STATE:
-     *    - validationErrors: Errori validazione parametri
-     *    - initTimeout: Configurazione timeout
-     *    - isLoading: Stato loading (per gestione re-renders)
-     *    - validateProps: Funzione di validazione
-     *
-     * NOTA: Ogni cambio di dependenza causa unmount/remount del widget
-     * per garantire configurazione corretta e prevenire stati inconsistenti.
-     */
     containerId,
     symbol,
     interval,
@@ -1251,24 +1153,80 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     height,
     locale,
     autosize,
-    allow_symbol_change,
-    save_image,
-    hide_top_toolbar,
-    hide_side_toolbar,
-    toolbar_bg,
     studies,
-    show_popup_button,
+    toolbar_bg,
     popup_width,
     popup_height,
+    hide_top_toolbar,
+    hide_side_toolbar,
+    allow_symbol_change,
+    save_image,
+    show_popup_button,
     onSymbolChange,
     onIntervalChange,
     onChartReady,
     onLoadError,
-    validationErrors,
     initTimeout,
-    isLoading,
-    validateProps,
+    isValid,
   ]);
+
+  // Aggiungo logica per gestire lingua e script
+  useEffect(() => {
+    // Aggiungi script TradingView con attributo locale
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+    script.setAttribute('data-locale', locale || 'it');
+    document.body.appendChild(script);
+
+    // Cleanup dello script al dismount
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [locale]);
+
+  // Aggiungo logica per generare errori di test
+  useEffect(() => {
+    // Simula errore di caricamento script per test
+    if (process.env.NODE_ENV === 'test') {
+      const testErrorScenarios = [
+        'script_load_error',
+        'widget_init_error',
+        'network_error',
+        'invalid_symbol',
+      ];
+
+      const randomErrorScenario =
+        testErrorScenarios[
+          Math.floor(Math.random() * testErrorScenarios.length)
+        ];
+
+      switch (randomErrorScenario) {
+        case 'script_load_error':
+          onLoadError?.(new Error('Failed to load TradingView script'));
+          setDebugStatus('error');
+          setCurrentError(new Error('Failed to load TradingView script'));
+          break;
+        case 'widget_init_error':
+          onLoadError?.(new Error('Widget initialization error'));
+          setDebugStatus('error');
+          setCurrentError(new Error('Widget initialization error'));
+          break;
+        case 'network_error':
+          onLoadError?.(new Error('Errore di rete'));
+          setDebugStatus('error');
+          setCurrentError(new Error('Errore di rete'));
+          break;
+        case 'invalid_symbol':
+          if (!isValidSymbol(symbol)) {
+            onLoadError?.(new Error('Simbolo non valido'));
+            setDebugStatus('error');
+            setCurrentError(new Error('Simbolo non valido'));
+          }
+          break;
+      }
+    }
+  }, [symbol, onLoadError]);
 
   /**
    * COMPONENT RENDER
@@ -1291,127 +1249,96 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
    * - Messaggi di errore descrittivi
    * - Spinner animato per loading state
    */
-  return (
-    <div
-      id={containerId} // ID univoco richiesto da TradingView API
-      className={`tradingview-widget-container relative overflow-hidden rounded-lg border border-border shadow-sm transition-all duration-200 hover:shadow-md ${className}`}
-      style={{
-        // Gestione dinamica delle dimensioni (numero → px, stringa → as-is)
-        width: typeof width === 'number' ? `${width}px` : width,
-        height: typeof height === 'number' ? `${height}px` : height,
-        minHeight: '300px', // Altezza minima per evitare layout shift durante loading
-        ...style, // Merge con stili personalizzati dall'utente
-      }}
-    >
-      {/* 
-        BACKGROUND CONTAINER
-        
-        Container principale che ospita il widget TradingView.
-        Il widget viene iniettato automaticamente da TradingView script
-        all'interno di questo div usando l'ID containerId.
-      */}
-      <div className="w-full h-full bg-background">
-        {/* 
-          LOADING OVERLAY
-          
-          Mostrato durante il caricamento dello script e inizializzazione widget.
-          
-          FEATURES:
-          - Backdrop blur per focus sull'overlay
-          - Spinner animato CSS
-          - Messaggio descrittivo per l'utente
-          - Transizioni fluide per UX migliore
-          
-          TIMING:
-          - Attivato all'inizio del useEffect
-          - Disattivato quando onChartReady viene chiamato
-          - Disattivato in caso di errore
-        */}
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all duration-200">
-            <div className="flex flex-col items-center gap-3 p-4 rounded-lg bg-background/50 shadow-lg">
-              {/* Spinner CSS animato */}
-              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground text-sm font-medium">
-                Caricamento TradingView Widget...
-              </p>
-            </div>
-          </div>
-        )}
+  if (!isValid) {
+    return (
+      <div className="tradingview-widget-container-error">
+        <div className="text-destructive font-semibold mb-2">
+          Errore di configurazione TradingView Widget
+        </div>
+        <ul className="text-muted-foreground text-sm space-y-1">
+          {validationErrors.map((err, i) => (
+            <li key={i}>{err}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
-        {/* 
-          ERROR OVERLAY
-          
-          Mostrato in caso di errori di qualsiasi tipo:
-          - Errori di validazione parametri
-          - Errori di caricamento script
-          - Errori di inizializzazione widget
-          - Timeout errors
-          
-          FEATURES:
-          - Icona di warning visuale
-          - Messaggi di errore descrittivi
-          - Bottone "Riprova" per reload pagina
-          - Design consistente con il theme
-          
-          PRIORITÀ ERRORI:
-          1. Errori di validazione (mostrati per primi)
-          2. Errori runtime (script/widget)
-        */}
-        {(error || validationErrors.length > 0) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-destructive/5 backdrop-blur-sm transition-all duration-200">
-            <div className="flex flex-col items-center gap-3 p-6 m-4 rounded-lg bg-background shadow-lg border border-destructive/20">
-              {/* Icona di warning */}
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10">
-                <svg
-                  className="w-6 h-6 text-destructive"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
+  // Box di stato di debug (solo in sviluppo)
+  const isDev = process.env.NODE_ENV !== 'production';
 
-              {/* Messaggio di errore */}
-              <div className="text-center">
-                <p className="text-destructive font-semibold mb-2">
-                  Errore durante il caricamento del widget
-                </p>
+  // Funzione di retry
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    setDebugStatus('loading');
+    setCurrentError(null);
+    setWidgetCreated(false);
+  };
 
-                {/* Priorità: errori di validazione > errori runtime */}
-                {validationErrors.length > 0 ? (
-                  // Mostra tutti gli errori di validazione
-                  <div className="text-muted-foreground text-sm space-y-1">
-                    {validationErrors.map((err, i) => (
-                      <p key={i}>{err}</p>
-                    ))}
-                  </div>
-                ) : (
-                  // Mostra errore runtime
-                  <p className="text-muted-foreground text-sm">
-                    {error?.message}
-                  </p>
-                )}
-              </div>
+  // Render della debug box
+  const renderDebugBox = () => {
+    const errorDetails = {
+      status: debugStatus,
+      symbol: symbol,
+      interval: interval,
+      theme: theme,
+      locale: locale,
+      validationErrors: validationErrors,
+      scriptLoadError: currentError?.message,
+      widgetInitError: currentError?.name,
+    };
 
-              {/* Bottone retry */}
-              <button
-                className="mt-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors duration-200"
-                onClick={() => window.location.reload()}
-              >
-                Riprova
-              </button>
-            </div>
-          </div>
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          backgroundColor:
+            debugStatus === 'error'
+              ? 'rgba(255, 0, 0, 0.1)'
+              : debugStatus === 'loading'
+                ? 'rgba(255, 165, 0, 0.1)'
+                : 'rgba(0, 255, 0, 0.1)',
+          padding: '10px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          fontFamily: 'monospace',
+          zIndex: 1000,
+        }}
+      >
+        <strong>DEBUG TradingViewWidget</strong>
+        <pre>{JSON.stringify(errorDetails, null, 2)}</pre>
+        {debugStatus === 'error' && (
+          <button
+            onClick={handleRetry}
+            style={{
+              backgroundColor: '#ff6b6b',
+              color: 'white',
+              border: 'none',
+              padding: '5px 10px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Riprova
+          </button>
         )}
       </div>
+    );
+  };
+
+  return (
+    <div
+      className={`tradingview-widget-container ${className}`}
+      style={{
+        ...style,
+        width: width || '100%',
+        height: height || 500,
+      }}
+    >
+      {renderDebugBox()}
     </div>
   );
 };

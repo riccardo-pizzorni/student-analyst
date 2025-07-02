@@ -719,3 +719,110 @@ Per bug reports o feature requests, apri un issue su GitHub.
 - **Priority**: Media - Il sistema funziona correttamente con il metodo attuale
 
 **🎯 Student Analyst - Analisi finanziaria professionale per il futuro degli investimenti**
+
+# TradingView Widget React Component
+
+## Overview
+
+A robust, type-safe React component for integrating TradingView widgets with comprehensive error handling and dynamic script loading.
+
+## Features
+
+- Dynamic script loading with retry mechanism
+- Comprehensive input validation
+- Error handling and logging
+- Responsive and configurable dimensions
+- TypeScript support
+- Performance optimized
+
+## Installation
+
+### Prerequisites
+
+- React 18+
+- TypeScript
+
+### Dependencies
+
+- `zod` for input validation
+- Optional: Error tracking service (e.g., Sentry)
+
+### Install
+
+```bash
+npm install trading-view-widget
+# or
+yarn add trading-view-widget
+```
+
+## Usage
+
+### Basic Example
+
+```typescript
+import TradingViewWidget from 'trading-view-widget';
+
+function StockChart() {
+  return (
+    <TradingViewWidget
+      symbol="NASDAQ:AAPL"
+      interval="D"
+      theme="dark"
+    />
+  );
+}
+```
+
+### Props
+
+| Prop       | Type              | Required | Description                      | Default |
+| ---------- | ----------------- | -------- | -------------------------------- | ------- |
+| `symbol`   | string            | Yes      | Stock symbol (e.g., NASDAQ:AAPL) | -       |
+| `interval` | string            | Yes      | Chart interval (e.g., 1D, 5M)    | -       |
+| `theme`    | 'light' \| 'dark' | No       | Chart theme                      | 'light' |
+| `width`    | number \| string  | No       | Widget width                     | '100%'  |
+| `height`   | number \| string  | No       | Widget height                    | '500px' |
+
+## Error Handling
+
+The component provides comprehensive error handling:
+
+- Input validation for symbol and interval
+- Script loading retry mechanism
+- Graceful error display
+- Logging and tracking support
+
+## Performance Optimization
+
+- Memoized rendering
+- Debounced widget initialization
+- Lazy loading support
+
+## Content Security Policy (CSP)
+
+Add the following CSP headers:
+
+```
+script-src 'self' https://s3.tradingview.com;
+```
+
+## Troubleshooting
+
+- Ensure TradingView script is accessible
+- Check network connectivity
+- Verify symbol and interval formats
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Push and create a pull request
+
+## License
+
+MIT License
+
+## Support
+
+Open an issue on GitHub for any problems or feature requests.

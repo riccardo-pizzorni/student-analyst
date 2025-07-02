@@ -53,7 +53,6 @@ export const TradingViewChart = () => {
           allow_symbol_change={false}
           hide_side_toolbar
           save_image
-          studies={['RSI@tv-basicstudies', 'MASimple@tv-basicstudies']}
           onChartReady={() => console.log('Chart pronto')}
           onLoadError={error => console.error('Errore:', error)}
         />

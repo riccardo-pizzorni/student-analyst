@@ -253,13 +253,14 @@ export class DataSourceManager {
   private mapTimeframeToYahoo(timeframe: string): YahooFinanceTimeframe {
     switch (timeframe.toLowerCase()) {
       case 'daily':
-        return YahooFinanceTimeframe['1y'];
+        // Per dati daily con date personalizzate, usiamo max per ottenere l'intervallo giornaliero
+        return YahooFinanceTimeframe['max'];
       case 'weekly':
-        return YahooFinanceTimeframe['5y'];
+        return YahooFinanceTimeframe['max'];
       case 'monthly':
-        return YahooFinanceTimeframe['10y'];
+        return YahooFinanceTimeframe['max'];
       default:
-        return YahooFinanceTimeframe['1y'];
+        return YahooFinanceTimeframe['max'];
     }
   }
 

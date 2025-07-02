@@ -291,13 +291,7 @@ export default function MainTabs({
         {activeStep === 'storica' && (
           <>
             <TabsContent value="grafici" className="mt-6">
-              {/* <TradingViewChart /> */}
-              <div className="flex items-center justify-center h-full bg-muted/10 rounded-lg">
-                <p className="text-muted-foreground">
-                  TradingView Chart temporaneamente disabilitato durante la
-                  migrazione
-                </p>
-              </div>
+              <TradingViewChart />
             </TabsContent>
 
             <TabsContent value="tabella" className="mt-6">

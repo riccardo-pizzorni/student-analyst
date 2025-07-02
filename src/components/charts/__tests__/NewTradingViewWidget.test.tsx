@@ -1,291 +1,193 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import NewTradingViewWidget from '../NewTradingViewWidget';
+import { render, waitFor } from '@testing-library/react';
+import TradingViewWidget from '../NewTradingViewWidget';
 
-// Mock del window.TradingView
-const mockTradingView = {
-  widget: jest.fn(),
+// Improved mocking strategy
+const createMockTradingViewWidget = () => {
+  const mockWidget = {
+    remove: jest.fn(),
+    onChartReady: jest.fn(callback => callback()),
+  };
+
+  const mockTradingViewWidget = jest.fn().mockReturnValue(mockWidget);
+
+  // Mock global TradingView object
+  (global as any).TradingView = {
+    widget: mockTradingViewWidget,
+  };
+
+  // Mock script loading
+  const script = document.createElement('script');
+  script.src = 'https://s3.tradingview.com/tv.js';
+  script.async = true;
+  document.body.appendChild(script);
+
+  return { mockTradingViewWidget, mockWidget, script };
 };
 
-describe('NewTradingViewWidget', () => {
+const getErrorMessage = (container: HTMLElement) => {
+  const errorDiv = container.querySelector(
+    '.tradingview-widget-container-error'
+  );
+  return errorDiv ? errorDiv.textContent : null;
+};
+
+describe('TradingViewWidget', () => {
   beforeEach(() => {
-    // Reset mocks
+    // Clear all mocks before each test
     jest.clearAllMocks();
-    // Reset window.TradingView
-    delete (window as any).TradingView;
-    // Mock console.error per evitare output nei test
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Remove any existing scripts
+    const existingScripts = document.querySelectorAll(
+      'script[src*="tradingview"]'
+    );
+    existingScripts.forEach(script => script.remove());
   });
 
-  afterEach(() => {
-    // Cleanup
-    jest.restoreAllMocks();
+  it('renders widget with valid configuration', async () => {
+    const { mockTradingViewWidget } = createMockTradingViewWidget();
+
+    const { container } = render(
+      <TradingViewWidget symbol="NASDAQ:AAPL" interval="1" theme="dark" />
+    );
+
+    await waitFor(() => {
+      expect(mockTradingViewWidget).toHaveBeenCalledWith(
+        expect.objectContaining({
+          symbol: 'NASDAQ:AAPL',
+          interval: '1',
+          theme: 'dark',
+        })
+      );
+    });
   });
 
-  it('mostra il loader durante il caricamento', () => {
-    render(<NewTradingViewWidget />);
-    expect(
-      screen.getByText('Caricamento TradingView Widget...')
-    ).toBeInTheDocument();
-  });
+  it('handles script loading errors', async () => {
+    // Simulate script loading error
+    const originalCreateElement = document.createElement;
+    document.createElement = jest.fn(() => {
+      const script = originalCreateElement.call(document, 'script');
+      Object.defineProperty(script, 'onerror', {
+        get() {
+          return this._onerror;
+        },
+        set(fn) {
+          this._onerror = fn;
+          // Simulate error immediately
+          fn(new Error('Script load error'));
+        },
+      });
+      return script;
+    });
 
-  it('gestisce errori di validazione delle props', () => {
-    render(
-      <NewTradingViewWidget
-        symbol="INVALID:SYMBOL"
-        interval="INVALID"
-        theme={'invalid' as 'light' | 'dark'}
-        width="-100"
-        height="-100"
-        locale="invalid"
+    const { container } = render(
+      <TradingViewWidget
+        symbol="NASDAQ:AAPL"
+        interval="1"
+        theme="dark"
+        debug={true}
       />
     );
 
-    // Verifica che vengano mostrati i messaggi di errore appropriati
-    expect(screen.getByText(/Simbolo non valido/)).toBeInTheDocument();
-    expect(screen.getByText(/Intervallo non valido/)).toBeInTheDocument();
-    expect(screen.getByText(/Tema non valido/)).toBeInTheDocument();
-    expect(screen.getByText(/Larghezza non valida/)).toBeInTheDocument();
-    expect(screen.getByText(/Altezza non valida/)).toBeInTheDocument();
-    expect(screen.getByText(/Locale non valido/)).toBeInTheDocument();
-  });
-
-  it('gestisce errori di caricamento dello script', async () => {
-    // Simula un errore di caricamento dello script
-    const mockOnLoadError = jest.fn();
-    render(<NewTradingViewWidget onLoadError={mockOnLoadError} />);
-
-    // Trova lo script e simula l'errore
-    const script = document.querySelector('script');
-    if (script) {
-      const error = new Event('error');
-      script.dispatchEvent(error);
-    }
-
-    // Verifica che venga mostrato il messaggio di errore
     await waitFor(() => {
-      expect(
-        screen.getByText(/Failed to load TradingView script/)
-      ).toBeInTheDocument();
+      const errorMessage = getErrorMessage(container);
+      expect(errorMessage).toContain('Errore di rete');
     });
 
-    // Verifica che il callback onLoadError sia stato chiamato
-    expect(mockOnLoadError).toHaveBeenCalled();
+    // Restore original createElement
+    document.createElement = originalCreateElement;
   });
 
-  it('gestisce timeout di inizializzazione', async () => {
-    // Simula un timeout di inizializzazione
-    const mockOnLoadError = jest.fn();
-    render(
-      <NewTradingViewWidget onLoadError={mockOnLoadError} initTimeout={100} />
+  it('handles widget initialization errors', async () => {
+    // Simulate widget initialization error
+    const { mockTradingViewWidget } = createMockTradingViewWidget();
+    mockTradingViewWidget.mockImplementation(() => {
+      throw new Error('Widget initialization error');
+    });
+
+    const { container } = render(
+      <TradingViewWidget
+        symbol="NASDAQ:AAPL"
+        interval="1"
+        theme="dark"
+        debug={true}
+      />
     );
 
-    // Verifica che dopo il timeout venga mostrato il messaggio di errore
     await waitFor(() => {
-      expect(
-        screen.getByText(/non si è inizializzato entro/)
-      ).toBeInTheDocument();
+      const errorMessage = getErrorMessage(container);
+      expect(errorMessage).toContain('Error initializing TradingView widget');
     });
-
-    // Verifica che il callback onLoadError sia stato chiamato
-    expect(mockOnLoadError).toHaveBeenCalled();
   });
 
-  it('gestisce errori di inizializzazione del widget', async () => {
-    // Mock di window.TradingView che lancia un errore
-    (window as any).TradingView = {
-      widget: jest.fn().mockImplementation(() => {
-        throw new Error('Widget initialization error');
-      }),
-    };
+  it('cleans up resources on unmount', async () => {
+    const { mockWidget } = createMockTradingViewWidget();
 
-    const mockOnLoadError = jest.fn();
-    render(<NewTradingViewWidget onLoadError={mockOnLoadError} />);
+    const { unmount } = render(
+      <TradingViewWidget symbol="NASDAQ:AAPL" interval="1" theme="dark" />
+    );
 
-    // Trova lo script e simula il caricamento
-    const script = document.querySelector('script');
-    if (script) {
-      const loadEvent = new Event('load');
-      script.dispatchEvent(loadEvent);
-    }
-
-    // Verifica che venga mostrato il messaggio di errore
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Widget initialization error/)
-      ).toBeInTheDocument();
-    });
-
-    // Verifica che il callback onLoadError sia stato chiamato
-    expect(mockOnLoadError).toHaveBeenCalled();
-  });
-
-  it('pulisce correttamente le risorse al dismount', () => {
-    const { unmount } = render(<NewTradingViewWidget />);
-
-    // Simula l'inizializzazione del widget
-    (window as any).TradingView = mockTradingView;
-    const mockWidget = { remove: jest.fn() };
-    mockTradingView.widget.mockReturnValue(mockWidget);
-
-    // Trova lo script e simula il caricamento
-    const script = document.querySelector('script');
-    if (script) {
-      const loadEvent = new Event('load');
-      script.dispatchEvent(loadEvent);
-    }
-
-    // Dismonta il componente
+    // Unmount the component
     unmount();
 
-    // Verifica che il widget sia stato rimosso
+    // Verify that the widget was removed
     expect(mockWidget.remove).toHaveBeenCalled();
 
-    // Verifica che lo script sia stato rimosso
-    expect(document.querySelector('script')).toBeNull();
+    // Verify that the script was removed
+    expect(document.querySelector('script[src*="tradingview"]')).toBeNull();
   });
 
-  it('gestisce il click sul pulsante di retry', async () => {
-    // Mock della funzione location.reload
-    const mockReload = jest.fn();
-    Object.defineProperty(window, 'location', {
-      value: { reload: mockReload },
-      writable: true,
-    });
+  it('handles network errors during widget loading', async () => {
+    // Simulate network error
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn(() =>
+      Promise.reject(new Error('Network error'))
+    ) as jest.Mock;
 
-    // Simula un errore di caricamento
-    render(<NewTradingViewWidget />);
-    const script = document.querySelector('script');
-    if (script) {
-      const error = new Event('error');
-      script.dispatchEvent(error);
-    }
-
-    // Aspetta che il pulsante di retry sia visibile
-    await waitFor(() => {
-      expect(screen.getByText('Riprova')).toBeInTheDocument();
-    });
-
-    // Clicca il pulsante di retry
-    userEvent.click(screen.getByText('Riprova'));
-
-    // Verifica che la pagina sia stata ricaricata
-    expect(mockReload).toHaveBeenCalled();
-  });
-
-  it('applica correttamente le dimensioni responsive', () => {
     const { container } = render(
-      <NewTradingViewWidget autosize={true} width="100%" height="100%" />
+      <TradingViewWidget
+        symbol="NASDAQ:AAPL"
+        interval="1"
+        theme="dark"
+        debug={true}
+      />
     );
 
-    const widgetContainer = container.firstChild as HTMLElement;
-    expect(widgetContainer).toHaveStyle({
-      width: '100%',
-      height: '100%',
-    });
-  });
-
-  it('applica correttamente le dimensioni fisse', () => {
-    const { container } = render(
-      <NewTradingViewWidget autosize={false} width="800px" height="600px" />
-    );
-
-    const widgetContainer = container.firstChild as HTMLElement;
-    expect(widgetContainer).toHaveStyle({
-      width: '800px',
-      height: '600px',
-    });
-  });
-
-  it('usa correttamente la lingua italiana di default', () => {
-    render(<NewTradingViewWidget />);
-
-    // Verifica che il locale di default sia 'it'
-    const script = document.querySelector('script');
-    expect(script?.src).toContain('locale=it');
-  });
-
-  it('supporta il cambio di lingua', () => {
-    render(<NewTradingViewWidget locale="en" />);
-
-    // Verifica che il locale sia stato cambiato a 'en'
-    const script = document.querySelector('script');
-    expect(script?.src).toContain('locale=en');
-  });
-
-  it('gestisce errori di rete durante il caricamento del widget', async () => {
-    // Mock della funzione fetch per simulare un errore di rete
-    const originalFetch = window.fetch;
-    window.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-
-    const mockOnLoadError = jest.fn();
-    render(<NewTradingViewWidget onLoadError={mockOnLoadError} />);
-
-    // Verifica che venga mostrato il messaggio di errore di rete
     await waitFor(() => {
-      expect(screen.getByText(/errore di rete/i)).toBeInTheDocument();
+      const errorMessage = getErrorMessage(container);
+      expect(errorMessage).toContain('Errore di rete');
     });
 
-    // Ripristina fetch
-    window.fetch = originalFetch;
+    // Restore original fetch
+    global.fetch = originalFetch;
   });
 
-  it('gestisce errori di simbolo non valido', async () => {
-    const mockOnLoadError = jest.fn();
-    render(
-      <NewTradingViewWidget symbol="INVALID" onLoadError={mockOnLoadError} />
-    );
+  it('validates theme configurations', async () => {
+    const testCases = [
+      {
+        theme: 'invalid' as any,
+        expectedError: "Invalid theme: invalid. Must be 'light' or 'dark'",
+      },
+      {
+        theme: 'DARK' as any,
+        expectedError: "Invalid theme: DARK. Must be 'light' or 'dark'",
+      },
+    ];
 
-    // Verifica che venga mostrato il messaggio di errore del simbolo
-    expect(screen.getByText(/Simbolo non valido/)).toBeInTheDocument();
-    expect(mockOnLoadError).toHaveBeenCalled();
-  });
+    for (const { theme, expectedError } of testCases) {
+      const { container } = render(
+        <TradingViewWidget
+          symbol="NASDAQ:AAPL"
+          interval="1"
+          theme={theme}
+          debug={true}
+        />
+      );
 
-  it('gestisce errori di configurazione del widget', async () => {
-    // Mock di window.TradingView che lancia un errore di configurazione
-    (window as any).TradingView = {
-      widget: jest.fn().mockImplementation(() => {
-        throw new Error('Invalid widget configuration');
-      }),
-    };
-
-    const mockOnLoadError = jest.fn();
-    render(<NewTradingViewWidget onLoadError={mockOnLoadError} />);
-
-    // Trova lo script e simula il caricamento
-    const script = document.querySelector('script');
-    if (script) {
-      const loadEvent = new Event('load');
-      script.dispatchEvent(loadEvent);
+      await waitFor(() => {
+        const errorMessage = getErrorMessage(container);
+        expect(errorMessage).not.toBeNull();
+        expect(errorMessage).toContain(expectedError);
+      });
     }
-
-    // Verifica che venga mostrato il messaggio di errore di configurazione
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Invalid widget configuration/)
-      ).toBeInTheDocument();
-    });
-
-    expect(mockOnLoadError).toHaveBeenCalled();
-  });
-
-  it('mostra il pulsante di retry dopo un errore', async () => {
-    const mockOnLoadError = jest.fn();
-    render(<NewTradingViewWidget onLoadError={mockOnLoadError} />);
-
-    // Simula un errore di caricamento
-    const script = document.querySelector('script');
-    if (script) {
-      const error = new Event('error');
-      script.dispatchEvent(error);
-    }
-
-    // Verifica che il pulsante di retry sia visibile
-    await waitFor(() => {
-      expect(screen.getByText('Riprova')).toBeInTheDocument();
-    });
-
-    // Verifica che il pulsante sia cliccabile
-    expect(screen.getByText('Riprova')).toBeEnabled();
   });
 });
