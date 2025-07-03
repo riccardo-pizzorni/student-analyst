@@ -1170,64 +1170,6 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     isValid,
   ]);
 
-  // Aggiungo logica per gestire lingua e script
-  useEffect(() => {
-    // Aggiungi script TradingView con attributo locale
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.setAttribute('data-locale', locale || 'it');
-    document.body.appendChild(script);
-
-    // Cleanup dello script al dismount
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [locale]);
-
-  // Aggiungo logica per generare errori di test
-  useEffect(() => {
-    // Simula errore di caricamento script per test
-    if (process.env.NODE_ENV === 'test') {
-      const testErrorScenarios = [
-        'script_load_error',
-        'widget_init_error',
-        'network_error',
-        'invalid_symbol',
-      ];
-
-      const randomErrorScenario =
-        testErrorScenarios[
-          Math.floor(Math.random() * testErrorScenarios.length)
-        ];
-
-      switch (randomErrorScenario) {
-        case 'script_load_error':
-          onLoadError?.(new Error('Failed to load TradingView script'));
-          setDebugStatus('error');
-          setCurrentError(new Error('Failed to load TradingView script'));
-          break;
-        case 'widget_init_error':
-          onLoadError?.(new Error('Widget initialization error'));
-          setDebugStatus('error');
-          setCurrentError(new Error('Widget initialization error'));
-          break;
-        case 'network_error':
-          onLoadError?.(new Error('Errore di rete'));
-          setDebugStatus('error');
-          setCurrentError(new Error('Errore di rete'));
-          break;
-        case 'invalid_symbol':
-          if (!isValidSymbol(symbol)) {
-            onLoadError?.(new Error('Simbolo non valido'));
-            setDebugStatus('error');
-            setCurrentError(new Error('Simbolo non valido'));
-          }
-          break;
-      }
-    }
-  }, [symbol, onLoadError]);
-
   /**
    * COMPONENT RENDER
    *
@@ -1336,9 +1278,114 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         ...style,
         width: width || '100%',
         height: height || 500,
+        position: 'relative',
       }}
     >
-      {renderDebugBox()}
+      {/* Debug box overlay (solo in development) */}
+      {debug && isDev && renderDebugBox()}
+
+      {/* Container principale per il widget TradingView */}
+      <div
+        id={containerId}
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: '300px',
+        }}
+      />
+
+      {/* Loading overlay */}
+      {!widgetCreated && !currentError && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 10,
+          }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #3498db',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto 10px',
+              }}
+            />
+            <p style={{ color: '#666', fontSize: '14px' }}>
+              Caricamento grafico TradingView...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Error overlay */}
+      {currentError && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 10,
+          }}
+        >
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>⚠️</div>
+            <h3 style={{ color: '#d32f2f', marginBottom: '10px' }}>
+              Errore caricamento grafico
+            </h3>
+            <p
+              style={{ color: '#666', marginBottom: '15px', fontSize: '14px' }}
+            >
+              {currentError.message}
+            </p>
+            <button
+              onClick={handleRetry}
+              style={{
+                backgroundColor: '#3498db',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              Riprova
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* CSS per l'animazione di caricamento */}
+      <style jsx>{`
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 };
