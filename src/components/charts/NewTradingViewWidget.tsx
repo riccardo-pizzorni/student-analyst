@@ -773,7 +773,7 @@ interface NewTradingViewWidgetProps {
    * - Mostra messaggio utente dopo timeout
    * - Considera fallback a grafico semplificato
    *
-   * DEFAULT: 20000 (20 secondi)
+   * DEFAULT: 30000 (30 secondi)
    * ESEMPIO: 15000 per ambienti mobile o reti lente
    */
   initTimeout?: number;
@@ -919,8 +919,8 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   onChartReady,
   onLoadError,
 
-  // Props per il timeout (default: 20 secondi per massima robustezza)
-  initTimeout = 20000,
+  // Props per il timeout (default: 30 secondi per massima robustezza)
+  initTimeout = 30000,
 
   // Props per il debug
   debug = false,
@@ -1065,6 +1065,24 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
               if (onChartReady) onChartReady();
             },
           });
+
+          // Se il widget è stato creato con successo, consideriamolo come inizializzato
+          // anche se onChartReady non viene chiamato immediatamente
+          if (widgetRef.current) {
+            // Breve delay per permettere al widget di renderizzare
+            setTimeout(() => {
+              if (timeoutRef.current && !widgetCreated) {
+                clearTimeout(timeoutRef.current);
+                setDebugStatus('success');
+                setWidgetCreated(true);
+                console.log(
+                  '[TradingViewWidget] Widget considerato pronto dopo creazione'
+                );
+                if (onChartReady) onChartReady();
+              }
+            }, 3000); // 3 secondi dovrebbero essere sufficienti per il rendering
+          }
+
           console.log('[TradingViewWidget] Widget TradingView istanziato');
         }
       } catch (error) {
