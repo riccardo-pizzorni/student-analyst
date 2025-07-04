@@ -65,14 +65,14 @@ interface TradingViewConfig {
   onIntervalChange?: ((interval: string) => void) | undefined;
 }
 
-// Tipizzazione delle props (senza commenti)
-interface NewTradingViewWidgetProps {
-  symbol?: string;
-  interval?: string;
-  locale?: string;
+// Definisco un tipo completo per le props del widget
+interface TradingViewWidgetProps {
+  symbol: string;
+  interval: string;
   theme?: 'light' | 'dark';
   width?: string | number;
   height?: string | number;
+  locale?: string;
   autosize?: boolean;
   toolbar_bg?: string;
   allow_symbol_change?: boolean;
@@ -84,11 +84,11 @@ interface NewTradingViewWidgetProps {
   popup_height?: string | number;
   studies?: string[];
   className?: string;
-  style?: CSSProperties;
-  onSymbolChange?: ((symbol: string) => void) | undefined;
-  onIntervalChange?: ((interval: string) => void) | undefined;
-  onChartReady?: (() => void) | undefined;
-  onLoadError?: ((error: Error) => void) | undefined;
+  style?: React.CSSProperties;
+  onSymbolChange?: (symbol: string) => void;
+  onIntervalChange?: (interval: string) => void;
+  onChartReady?: () => void;
+  onLoadError?: (error: Error) => void;
   initTimeout?: number;
   debug?: boolean;
 }
@@ -123,9 +123,7 @@ const TradingViewPropsSchema = z.object({
 });
 
 // Funzione di validazione
-const validateTradingViewProps = (
-  props: Partial<NewTradingViewWidgetProps>
-) => {
+const validateTradingViewProps = (props: Partial<TradingViewWidgetProps>) => {
   try {
     TradingViewPropsSchema.parse(props);
     return { isValid: true, errors: [] };
@@ -140,7 +138,7 @@ const validateTradingViewProps = (
   }
 };
 
-const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
+const NewTradingViewWidget: React.FC<TradingViewWidgetProps> = ({
   symbol = 'NASDAQ:AAPL',
   interval = 'D',
   locale = 'it',
@@ -177,6 +175,18 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   const widgetRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+
+  const [debugInfo, setDebugInfo] = useState({
+    mountCount: 0,
+    unmountCount: 0,
+    propChanges: [] as Array<{
+      timestamp: string;
+      props: Partial<TradingViewWidgetProps>;
+    }>,
+    widgetCreationAttempts: 0,
+  });
+
+  const prevPropsRef = useRef<TradingViewWidgetProps | null>(null);
 
   // Validazione props
   const { isValid, errors: validationErrors } = useMemo(
@@ -602,6 +612,113 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
       console.log(`[NewTradingViewWidget][DEBUG][${now}] UNMOUNT`);
     };
   }, []);
+
+  // Log dettagliato delle props
+  const logPropChanges = (currentProps: TradingViewWidgetProps) => {
+    if (prevPropsRef.current) {
+      const changedProps = Object.keys(currentProps).filter(
+        key =>
+          JSON.stringify(currentProps[key as keyof TradingViewWidgetProps]) !==
+          JSON.stringify(
+            prevPropsRef.current[key as keyof TradingViewWidgetProps]
+          )
+      );
+
+      if (changedProps.length > 0) {
+        console.log(
+          `[NewTradingViewWidget][PROPS_CHANGE][${new Date().toISOString()}]`,
+          {
+            changedProps,
+            oldProps: prevPropsRef.current,
+            newProps: currentProps,
+          }
+        );
+      }
+    }
+    prevPropsRef.current = { ...currentProps };
+  };
+
+  useEffect(() => {
+    const now = new Date().toISOString();
+    const currentMountCount = debugInfo.mountCount + 1;
+
+    console.log(
+      `[NewTradingViewWidget][DEEP_DEBUG][${now}] MOUNT Attempt #${currentMountCount}`,
+      {
+        props,
+        stackTrace: new Error().stack,
+      }
+    );
+
+    // Log dettagliato delle props
+    logPropChanges(props);
+
+    setDebugInfo(prev => ({
+      ...prev,
+      mountCount: currentMountCount,
+      propChanges: [...prev.propChanges, { timestamp: now, props }],
+    }));
+
+    // Debug del processo di creazione widget
+    const createWidgetWithLogging = () => {
+      const creationAttempt = debugInfo.widgetCreationAttempts + 1;
+      console.log(
+        `[NewTradingViewWidget][WIDGET_CREATION][${now}] Attempt #${creationAttempt}`,
+        {
+          props,
+          widgetExists: !!widgetRef.current,
+        }
+      );
+
+      try {
+        // Logica originale di creazione widget
+        // ... (codice originale di creazione widget)
+
+        setDebugInfo(prev => ({
+          ...prev,
+          widgetCreationAttempts: creationAttempt,
+        }));
+      } catch (error: unknown) {
+        console.error(`[NewTradingViewWidget][WIDGET_CREATION_ERROR][${now}]`, {
+          error,
+          props,
+          stackTrace:
+            error instanceof Error ? error.stack : 'No stack trace available',
+        });
+      }
+    };
+
+    createWidgetWithLogging();
+
+    return () => {
+      const unmountNow = new Date().toISOString();
+      const currentUnmountCount = debugInfo.unmountCount + 1;
+
+      console.log(
+        `[NewTradingViewWidget][DEEP_DEBUG][${unmountNow}] UNMOUNT Attempt #${currentUnmountCount}`,
+        {
+          props,
+          stackTrace: new Error().stack,
+        }
+      );
+
+      setDebugInfo(prev => ({
+        ...prev,
+        unmountCount: currentUnmountCount,
+      }));
+
+      // Logica originale di cleanup del widget
+      // ... (codice originale di cleanup)
+    };
+  }, [props]); // Dipendenza da props per catturare ogni cambiamento
+
+  // Log finale per tracciare lo stato complessivo
+  useEffect(() => {
+    console.log(
+      `[NewTradingViewWidget][STATE_SUMMARY][${new Date().toISOString()}]`,
+      debugInfo
+    );
+  }, [debugInfo]);
 
   return (
     <div
