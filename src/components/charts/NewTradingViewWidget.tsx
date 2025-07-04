@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
 
 type CSSProperties = Record<string, string | number>;
@@ -42,7 +42,7 @@ interface NewTradingViewWidgetProps {
 
 // Funzione per generare un ID fallback
 const generateFallbackId = () => {
-  return `tradingview-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `tradingview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
 // Schema di validazione Zod
@@ -113,9 +113,8 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   initTimeout = 30000,
   debug = false,
 }) => {
-  // Id compatibile con tutte le versioni di React
-  const reactId = useId();
-  const internalId = reactId || generateFallbackId();
+  // Genera un ID sicuro per il container
+  const containerId = useMemo(() => generateFallbackId(), []);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -205,15 +204,19 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     if (
       !scriptLoaded ||
       !isValid ||
-      typeof window.TradingView === 'undefined'
+      typeof window.TradingView === 'undefined' ||
+      !containerRef.current
     ) {
       return;
     }
 
-    console.log('[TradingViewWidget] Inizializzazione widget:', {
-      symbol,
-      interval,
-    });
+    if (debug) {
+      console.log('[TradingViewWidget] Inizializzazione widget:', {
+        symbol,
+        interval,
+        containerId,
+      });
+    }
 
     // Pulisci il container
     if (containerRef.current) {
@@ -227,7 +230,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           widgetRef.current.remove();
         }
       } catch (e) {
-        console.log('[TradingViewWidget] Cleanup widget precedente');
+        if (debug) {
+          console.log('[TradingViewWidget] Cleanup widget precedente');
+        }
       }
       widgetRef.current = null;
     }
@@ -244,7 +249,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     try {
       // Crea il widget
       widgetRef.current = new window.TradingView.widget({
-        container_id: internalId,
+        container_id: containerId,
         symbol: symbol,
         interval: interval,
         timezone: 'Etc/UTC',
@@ -300,7 +305,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     locale,
     hide_top_toolbar,
     hide_side_toolbar,
-    internalId,
+    containerId,
     initTimeout,
     onChartReady,
     onLoadError,
@@ -353,7 +358,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   return (
     <div className={`tradingview-widget-container ${className}`} style={style}>
       <div
-        id={internalId}
+        id={containerId}
         ref={containerRef}
         style={{
           width: '100%',
