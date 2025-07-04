@@ -14,9 +14,6 @@ declare global {
 
 interface TradingViewWidget {
   remove: () => void;
-  onChartReady: (callback: () => void) => void;
-  onSymbolChange: (callback: (symbol: string) => void) => void;
-  onIntervalChange: (callback: (interval: string) => void) => void;
 }
 
 interface TradingViewConfig {
@@ -40,6 +37,10 @@ interface TradingViewConfig {
   studies?: string[];
   width?: string | number;
   height?: string | number;
+  // Eventi come parte della configurazione
+  onChartReady?: (() => void) | undefined;
+  onSymbolChange?: ((symbol: string) => void) | undefined;
+  onIntervalChange?: ((interval: string) => void) | undefined;
 }
 
 // Tipizzazione delle props (senza commenti)
@@ -270,6 +271,17 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     setIsLoading(true);
     setError(null);
 
+    // Imposta timeout per l'inizializzazione
+    timeoutRef.current = setTimeout(() => {
+      if (isLoading) {
+        setError('Timeout: il widget non si è caricato entro 30 secondi');
+        setIsLoading(false);
+        if (onLoadError) {
+          onLoadError(new Error('Widget initialization timeout'));
+        }
+      }
+    }, initTimeout);
+
     try {
       // Crea il widget con configurazione tipizzata
       const widgetConfig: TradingViewConfig = {
@@ -293,43 +305,21 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         studies: studies,
         width: width,
         height: height,
+        // Eventi come parte della configurazione
+        onChartReady: onChartReady
+          ? () => {
+              setIsLoading(false);
+              if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+              }
+              onChartReady();
+            }
+          : undefined,
+        onSymbolChange: onSymbolChange || undefined,
+        onIntervalChange: onIntervalChange || undefined,
       };
 
       widgetRef.current = new window.TradingView.widget(widgetConfig);
-
-      // Gestione eventi
-      widgetRef.current.onChartReady(() => {
-        setIsLoading(false);
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        if (onChartReady) {
-          onChartReady();
-        }
-      });
-
-      if (onSymbolChange) {
-        widgetRef.current.onSymbolChange((symbol: string) => {
-          onSymbolChange(symbol);
-        });
-      }
-
-      if (onIntervalChange) {
-        widgetRef.current.onIntervalChange((interval: string) => {
-          onIntervalChange(interval);
-        });
-      }
-
-      // Imposta timeout solo se il widget non è ancora pronto
-      timeoutRef.current = setTimeout(() => {
-        if (isLoading) {
-          setError('Timeout: il widget non si è caricato entro 30 secondi');
-          setIsLoading(false);
-          if (onLoadError) {
-            onLoadError(new Error('Widget initialization timeout'));
-          }
-        }
-      }, initTimeout);
     } catch (error) {
       setError("Errore durante l'inizializzazione del widget");
       setIsLoading(false);
