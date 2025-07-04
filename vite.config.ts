@@ -12,10 +12,29 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       // Proxy per tutte le richieste /api al nostro server backend
       '/api': {
-        target: 'http://localhost:10000',
-        changeOrigin: true, // Necessario per i virtual host
-        secure: false, // Non verificare il certificato SSL (per sviluppo)
+        target: 'https://student-analyst.onrender.com',
+        changeOrigin: true,
+        secure: true,
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // Aggiungi CORS headers
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          });
+        },
       },
+    },
+    headers: {
+      // Configura Content Security Policy
+      'Content-Security-Policy': [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://static.tradingview.com https://www.tradingview-widget.com",
+        "style-src 'self' 'unsafe-inline' https://s3.tradingview.com https://static.tradingview.com",
+        "img-src 'self' data: https: http:",
+        "connect-src 'self' https://student-analyst.onrender.com wss://student-analyst.onrender.com https://*.tradingview.com",
+        "frame-src 'self' https://*.tradingview.com",
+      ].join('; '),
     },
   },
   plugins: [react(), mode === 'development' && componentTagger()].filter(

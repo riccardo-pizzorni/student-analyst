@@ -52,14 +52,10 @@ export const TradingViewChart = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
-      {/* Header con dropdown ticker e switch toolbar */}
-      <div className="flex items-center justify-between gap-4">
-        {/* Dropdown per selezionare il ticker */}
-        <Select
-          value={selectedTicker || analysisState.tickers[0] || ''}
-          onValueChange={setSelectedTicker}
-        >
+    <div className="flex flex-col h-full w-full relative">
+      {/* Controlli superiori */}
+      <div className="flex items-center gap-2 mb-4">
+        <Select value={selectedTicker} onValueChange={setSelectedTicker}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Seleziona ticker" />
           </SelectTrigger>
@@ -72,49 +68,40 @@ export const TradingViewChart = () => {
           </SelectContent>
         </Select>
 
-        {/* Switch per le toolbar */}
-        <div className="flex items-center gap-2">
-          {/* Switch Top Toolbar */}
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-muted-foreground">Top:</span>
-            <button
-              className={iconStyle}
-              onClick={() => setShowTopToolbar(!showTopToolbar)}
-              title={
-                showTopToolbar
-                  ? 'Nascondi toolbar superiore'
-                  : 'Mostra toolbar superiore'
-              }
-            >
-              {showTopToolbar ? '−' : '+'}
-            </button>
-          </div>
+        <button
+          className={iconStyle}
+          onClick={() => setShowTopToolbar(v => !v)}
+          title={
+            showTopToolbar
+              ? 'Nascondi toolbar superiore'
+              : 'Mostra toolbar superiore'
+          }
+        >
+          {showTopToolbar ? '−' : '+'}T
+        </button>
 
-          {/* Switch Side Toolbar */}
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-muted-foreground">Side:</span>
-            <button
-              className={iconStyle}
-              onClick={() => setShowSideToolbar(!showSideToolbar)}
-              title={
-                showSideToolbar
-                  ? 'Nascondi toolbar laterale'
-                  : 'Mostra toolbar laterale'
-              }
-            >
-              {showSideToolbar ? '−' : '+'}
-            </button>
-          </div>
-        </div>
+        <button
+          className={iconStyle}
+          onClick={() => setShowSideToolbar(v => !v)}
+          title={
+            showSideToolbar
+              ? 'Nascondi toolbar laterale'
+              : 'Mostra toolbar laterale'
+          }
+        >
+          {showSideToolbar ? '−' : '+'}S
+        </button>
       </div>
 
-      {/* Widget TradingView */}
-      <div className="flex-1">
+      {/* Container del grafico con altezza flessibile */}
+      <div className="flex-1 min-h-[600px] relative">
         <NewTradingViewWidget
           key={widgetKey}
           symbol={symbol}
           interval={tvInterval}
           theme="dark"
+          width="100%"
+          height="100%"
           autosize
           allow_symbol_change={false}
           hide_top_toolbar={!showTopToolbar}
