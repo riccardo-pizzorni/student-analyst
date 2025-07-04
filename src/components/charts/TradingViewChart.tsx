@@ -94,7 +94,7 @@ export const TradingViewChart = () => {
       </div>
 
       {/* Container del grafico con altezza flessibile */}
-      <div className="flex-1 min-h-[600px] relative">
+      <div className="flex-1 min-h-[calc(100vh-12rem)] relative">
         <NewTradingViewWidget
           key={widgetKey}
           symbol={symbol}
