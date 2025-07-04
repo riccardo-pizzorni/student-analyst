@@ -367,6 +367,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         },
         // Eventi come parte della configurazione
         onChartReady: () => {
+          console.log(
+            '[TradingViewWidget][DEBUG] onChartReady chiamato: caricamento completato'
+          );
           DEBUG.log('Widget pronto');
           setIsLoading(false);
           setWidgetInitialized(true);
@@ -382,6 +385,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
       };
 
       DEBUG.log('Creazione widget con config:', widgetConfig);
+      console.log(
+        '[TradingViewWidget][DEBUG] Widget creato, attendo onChartReady...'
+      );
       widgetRef.current = new window.TradingView.widget(widgetConfig);
     } catch (error) {
       const initError =
@@ -390,6 +396,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           : new Error('Unknown widget initialization error');
       setError("Errore durante l'inizializzazione del widget");
       setIsLoading(false);
+      console.log(
+        '[TradingViewWidget][DEBUG] Errore inizializzazione, setIsLoading(false)'
+      );
       DEBUG.error('Errore creazione widget', initError);
       if (onLoadError) {
         onLoadError(initError);
@@ -397,15 +406,17 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     }
 
     return () => {
-      DEBUG.log('Cleanup widget effect');
+      console.log('[TradingViewWidget][DEBUG] Cleanup finale chiamato');
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       if (widgetRef.current) {
         try {
-          widgetRef.current.remove();
+          if (typeof widgetRef.current.remove === 'function') {
+            widgetRef.current.remove();
+          }
         } catch (e) {
-          DEBUG.error('Errore durante la rimozione del widget', e);
+          console.log('[TradingViewWidget] Cleanup finale');
         }
       }
     };
@@ -462,6 +473,15 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
       DEBUG.error('Errori di validazione:', validationErrors);
     }
   }, [isValid, validationErrors]);
+
+  // 1. Quando parte il caricamento
+  useEffect(() => {
+    if (isLoading) {
+      console.log(
+        '[TradingViewWidget][DEBUG] isLoading TRUE: caricamento iniziato'
+      );
+    }
+  }, [isLoading]);
 
   return (
     <div
