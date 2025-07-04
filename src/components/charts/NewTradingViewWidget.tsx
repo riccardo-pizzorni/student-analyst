@@ -3,6 +3,20 @@ import { z } from 'zod';
 
 type CSSProperties = Record<string, string | number>;
 
+// Debug utility
+const DEBUG = {
+  log: (message: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[TradingViewWidget] ${message}`, data ? data : '');
+    }
+  },
+  error: (message: string, error?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[TradingViewWidget] ${message}`, error ? error : '');
+    }
+  },
+};
+
 // Dichiarazione del tipo per TradingView
 declare global {
   interface Window {
@@ -37,6 +51,14 @@ interface TradingViewConfig {
   studies?: string[];
   width?: string | number;
   height?: string | number;
+  fullscreen?: boolean;
+  container?: string;
+  library_path?: string;
+  charts_storage_url?: string;
+  charts_storage_api_version?: string;
+  client_id?: string;
+  user_id?: string;
+  loading_screen?: { backgroundColor?: string; foregroundColor?: string };
   // Eventi come parte della configurazione
   onChartReady?: (() => void) | undefined;
   onSymbolChange?: ((symbol: string) => void) | undefined;
@@ -125,10 +147,10 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   theme = 'dark',
   width = '100%',
   height = '100%',
-  autosize = false,
+  autosize = true,
   toolbar_bg = '#f1f3f6',
-  allow_symbol_change = false,
-  save_image = false,
+  allow_symbol_change = true,
+  save_image = true,
   hide_top_toolbar = false,
   hide_side_toolbar = false,
   show_popup_button = false,
@@ -150,6 +172,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [widgetInitialized, setWidgetInitialized] = useState(false);
 
   const widgetRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -204,9 +227,34 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     ]
   );
 
+  // Debug logging
+  useEffect(() => {
+    if (debug) {
+      DEBUG.log('Component mounted with props:', {
+        symbol,
+        interval,
+        containerId,
+        theme,
+        autosize,
+        isValid,
+        validationErrors,
+      });
+    }
+  }, [
+    debug,
+    symbol,
+    interval,
+    containerId,
+    theme,
+    autosize,
+    isValid,
+    validationErrors,
+  ]);
+
   // Carica lo script TradingView una sola volta
   useEffect(() => {
     if (scriptLoaded || typeof window.TradingView !== 'undefined') {
+      DEBUG.log('Script già caricato');
       setScriptLoaded(true);
       return;
     }
@@ -216,17 +264,17 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     script.async = true;
     script.onload = () => {
       setScriptLoaded(true);
-      console.log('[TradingViewWidget] Script caricato');
+      DEBUG.log('Script caricato con successo');
     };
-    script.onerror = () => {
+    script.onerror = error => {
       setError('Errore nel caricamento dello script TradingView');
-      console.error('[TradingViewWidget] Errore caricamento script');
+      DEBUG.error('Errore caricamento script', error);
     };
 
     document.head.appendChild(script);
 
     return () => {
-      // Non rimuovere lo script al cleanup per evitare problemi
+      DEBUG.log('Cleanup script loader');
     };
   }, []);
 
@@ -236,18 +284,19 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
       !scriptLoaded ||
       !isValid ||
       typeof window.TradingView === 'undefined' ||
-      !containerRef.current
+      !containerRef.current ||
+      widgetInitialized
     ) {
       return;
     }
 
-    if (debug) {
-      console.log('[TradingViewWidget] Inizializzazione widget:', {
-        symbol,
-        interval,
-        containerId,
-      });
-    }
+    DEBUG.log('Inizializzazione widget', {
+      symbol,
+      interval,
+      containerId,
+      scriptLoaded,
+      isValid,
+    });
 
     // Pulisci il container
     if (containerRef.current) {
@@ -261,9 +310,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           widgetRef.current.remove();
         }
       } catch (e) {
-        if (debug) {
-          console.log('[TradingViewWidget] Cleanup widget precedente');
-        }
+        DEBUG.error('Errore durante la rimozione del widget precedente', e);
       }
       widgetRef.current = null;
     }
@@ -274,10 +321,12 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     // Imposta timeout per l'inizializzazione
     timeoutRef.current = setTimeout(() => {
       if (isLoading) {
+        const timeoutError = new Error('Widget initialization timeout');
         setError('Timeout: il widget non si è caricato entro 30 secondi');
         setIsLoading(false);
+        DEBUG.error('Timeout inizializzazione widget', timeoutError);
         if (onLoadError) {
-          onLoadError(new Error('Widget initialization timeout'));
+          onLoadError(timeoutError);
         }
       }
     }, initTimeout);
@@ -305,31 +354,50 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         studies: studies,
         width: width,
         height: height,
+        fullscreen: false,
+        container: containerId,
+        library_path: '/charting_library/',
+        charts_storage_url: 'https://saveload.tradingview.com',
+        charts_storage_api_version: '1.1',
+        client_id: 'tradingview.com',
+        user_id: 'public_user_id',
+        loading_screen: {
+          backgroundColor: theme === 'dark' ? '#1c1c1c' : '#ffffff',
+          foregroundColor: theme === 'dark' ? '#ffffff' : '#1c1c1c',
+        },
         // Eventi come parte della configurazione
-        onChartReady: onChartReady
-          ? () => {
-              setIsLoading(false);
-              if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-              }
-              onChartReady();
-            }
-          : undefined,
+        onChartReady: () => {
+          DEBUG.log('Widget pronto');
+          setIsLoading(false);
+          setWidgetInitialized(true);
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          if (onChartReady) {
+            onChartReady();
+          }
+        },
         onSymbolChange: onSymbolChange || undefined,
         onIntervalChange: onIntervalChange || undefined,
       };
 
+      DEBUG.log('Creazione widget con config:', widgetConfig);
       widgetRef.current = new window.TradingView.widget(widgetConfig);
     } catch (error) {
+      const initError =
+        error instanceof Error
+          ? error
+          : new Error('Unknown widget initialization error');
       setError("Errore durante l'inizializzazione del widget");
       setIsLoading(false);
-      if (onLoadError && error instanceof Error) {
-        onLoadError(error);
+      DEBUG.error('Errore creazione widget', initError);
+      if (onLoadError) {
+        onLoadError(initError);
       }
-      console.error('[TradingViewWidget] Errore creazione widget:', error);
     }
 
     return () => {
+      DEBUG.log('Cleanup widget effect');
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -337,7 +405,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         try {
           widgetRef.current.remove();
         } catch (e) {
-          // Ignora errori durante la rimozione
+          DEBUG.error('Errore durante la rimozione del widget', e);
         }
       }
     };
@@ -367,6 +435,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     onLoadError,
     initTimeout,
     debug,
+    widgetInitialized,
   ]);
 
   // Cleanup finale
@@ -387,20 +456,12 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     };
   }, []);
 
-  if (!isValid) {
-    return (
-      <div className={`tradingview-widget-error ${className}`} style={style}>
-        <div className="text-red-500 p-4">
-          <h3>Errore di validazione</h3>
-          <ul>
-            {validationErrors.map((error, index) => (
-              <li key={index}>{error.message}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    );
-  }
+  // Mostra errori di validazione in development
+  useEffect(() => {
+    if (!isValid && validationErrors.length > 0) {
+      DEBUG.error('Errori di validazione:', validationErrors);
+    }
+  }, [isValid, validationErrors]);
 
   return (
     <div className={`tradingview-widget-container ${className}`} style={style}>
@@ -408,54 +469,31 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         id={containerId}
         ref={containerRef}
         style={{
-          width: '100%',
-          height: '100%',
-          minHeight: '400px',
+          width: width,
+          height: height,
         }}
       />
-
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"
-              style={{ animation: 'spin 1s linear infinite' }}
-            />
-            <span className="text-sm text-muted-foreground">
-              Caricamento grafico TradingView...
-            </span>
-          </div>
+        <div className="tradingview-widget-loading">
+          Caricamento grafico TradingView...
         </div>
       )}
-
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="text-center p-4">
-            <div className="text-red-500 mb-2">
-              ❌ Errore caricamento grafico
+        <div className="tradingview-widget-error">
+          {error}
+          {!isValid && validationErrors.length > 0 && (
+            <div className="validation-errors">
+              {validationErrors.map(
+                (error: { message: string }, index: number) => (
+                  <div key={index} className="validation-error">
+                    {error.message}
+                  </div>
+                )
+              )}
             </div>
-            <div className="text-sm text-muted-foreground">{error}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-            >
-              Riprova
-            </button>
-          </div>
+          )}
         </div>
       )}
-
-      {/* CSS per l'animazione di caricamento */}
-      <style>{`
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 };
