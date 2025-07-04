@@ -90,10 +90,10 @@ const themeSchema = z.enum(['light', 'dark'], {
   errorMap: () => ({ message: 'Invalid theme. Must be "light" or "dark"' }),
 });
 
-// Estensione globale per TradingView
+// Dichiarazione del tipo per TradingView
 declare global {
   interface Window {
-    TradingView?: {
+    TradingView: {
       widget: new (config: any) => any;
     };
   }
@@ -305,6 +305,17 @@ function NewTradingViewWidget(props: NewTradingViewWidgetProps) {
       console.log('[TradingViewWidget] Container pulito:', internalId);
     }
 
+    // Rimuovi eventuali script precedenti per evitare conflitti
+    const existingScript = document.querySelector(
+      'script[src*="tradingview.com"]'
+    );
+    if (existingScript) {
+      console.log(
+        '[TradingViewWidget] Rimuovo script esistente per reinizializzazione'
+      );
+      existingScript.remove();
+    }
+
     timeoutRef.current = setTimeout(() => {
       setCurrentError(
         new Error(
@@ -312,166 +323,174 @@ function NewTradingViewWidget(props: NewTradingViewWidgetProps) {
         )
       );
       setDebugStatus('error');
-      setWidgetCreated(false);
-      console.error('[TradingViewWidget] Timeout inizializzazione widget');
-      if (onLoadError)
-        onLoadError(
-          new Error(
-            `Il widget non si è inizializzato entro ${initTimeout / 1000} secondi`
-          )
-        );
+      console.log('[TradingViewWidget] Timeout inizializzazione widget');
     }, initTimeout);
 
-    let script = document.getElementById(
-      'tradingview-widget-script'
-    ) as HTMLScriptElement | null;
-    if (!script) {
-      script = document.createElement('script');
-      script.id = 'tradingview-widget-script';
-      script.src = 'https://s3.tradingview.com/tv.js';
-      script.async = true;
-      script.setAttribute('data-locale', locale || 'it');
-      document.body.appendChild(script);
-      console.log('[TradingViewWidget] Script TradingView aggiunto');
-    } else {
-      console.log('[TradingViewWidget] Script TradingView già presente');
-    }
-
+    // Aggiungi script TradingView
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
     script.onload = () => {
-      try {
-        if (window.TradingView) {
-          widgetRef.current = new window.TradingView.widget({
-            container_id: internalId,
-            autosize,
-            width,
-            height,
-            symbol,
-            interval,
-            theme: theme.toLowerCase(),
-            style: '1',
-            locale,
-            toolbar_bg,
-            allow_symbol_change: true,
-            save_image,
-            hide_top_toolbar: false,
-            hide_side_toolbar: false,
-            show_popup_button,
-            popup_width,
-            popup_height,
-            ...(studies.length > 0 ? { studies } : {}),
-            onSymbolChange: onSymbolChange
-              ? (symbol: string) => onSymbolChange(symbol)
-              : undefined,
-            onIntervalChange: onIntervalChange
-              ? (interval: string) => onIntervalChange(interval)
-              : undefined,
-            onChartReady: () => {
-              if (timeoutRef.current) clearTimeout(timeoutRef.current);
-              setDebugStatus('success');
-              setWidgetCreated(true);
-              console.log('[TradingViewWidget] Widget creato e pronto!');
-              if (onChartReady) onChartReady();
-            },
-          });
+      console.log('[TradingViewWidget] Script TradingView caricato');
 
-          // Se il widget è stato creato con successo, consideriamolo come inizializzato
-          // anche se onChartReady non viene chiamato immediatamente
-          if (widgetRef.current) {
-            // Breve delay per permettere al widget di renderizzare
-            setTimeout(() => {
-              if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-                setDebugStatus('success');
-                setWidgetCreated(true);
+      // Piccolo delay per assicurarsi che il DOM sia pronto
+      setTimeout(() => {
+        if (typeof window.TradingView !== 'undefined') {
+          try {
+            console.log('[TradingViewWidget] Widget TradingView istanziato');
+            widgetRef.current = new window.TradingView.widget({
+              container_id: internalId,
+              symbol: symbol || 'NASDAQ:AAPL',
+              interval: interval || 'D',
+              timezone: 'Etc/UTC',
+              theme: theme || 'dark',
+              style: '1',
+              locale: locale || 'it',
+              toolbar_bg: toolbar_bg || '#f1f3f6',
+              enable_publishing: false,
+              allow_symbol_change: allow_symbol_change || false,
+              save_image: save_image || false,
+              hide_top_toolbar: hide_top_toolbar || false,
+              hide_side_toolbar: hide_side_toolbar || false,
+              show_popup_button: show_popup_button || false,
+              popup_width: popup_width || '1000',
+              popup_height: popup_height || '650',
+              studies: studies || [],
+              width: width || '100%',
+              height: height || '100%',
+              autosize: autosize || false,
+              onChartReady: () => {
                 console.log(
                   '[TradingViewWidget] Widget considerato pronto dopo creazione'
                 );
-                if (onChartReady) onChartReady();
-              }
-            }, 3000); // 3 secondi dovrebbero essere sufficienti per il rendering
+                setWidgetCreated(true);
+                setDebugStatus('success');
+                if (timeoutRef.current) {
+                  clearTimeout(timeoutRef.current);
+                }
+                onChartReady?.();
+              },
+            });
+          } catch (error) {
+            console.error(
+              '[TradingViewWidget] Errore creazione widget:',
+              error
+            );
+            setCurrentError(error as Error);
+            setDebugStatus('error');
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+            onLoadError?.(error as Error);
           }
-
-          console.log('[TradingViewWidget] Widget TradingView istanziato');
+        } else {
+          console.error('[TradingViewWidget] TradingView non disponibile');
+          setCurrentError(new Error('TradingView non disponibile'));
+          setDebugStatus('error');
         }
-      } catch (error) {
-        const err =
-          error instanceof Error
-            ? error
-            : new Error('Unknown error during initialization');
-        setCurrentError(err);
-        setDebugStatus('error');
-        setWidgetCreated(false);
-        console.error(
-          "[TradingViewWidget] Errore durante l'inizializzazione:",
-          err
-        );
-        if (onLoadError) onLoadError(err);
-      }
+      }, 100);
     };
 
     script.onerror = () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      const err = new Error('Failed to load TradingView script');
-      setCurrentError(err);
-      setDebugStatus('error');
-      setWidgetCreated(false);
       console.error(
         '[TradingViewWidget] Errore caricamento script TradingView'
       );
-      if (onLoadError) onLoadError(err);
+      setCurrentError(new Error('Errore caricamento script TradingView'));
+      setDebugStatus('error');
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
 
+    // Controlla se lo script è già presente
+    const existingTvScript = document.querySelector(
+      'script[src*="tradingview.com"]'
+    );
+    if (!existingTvScript) {
+      document.head.appendChild(script);
+      console.log('[TradingViewWidget] Script TradingView aggiunto');
+    } else {
+      console.log('[TradingViewWidget] Script TradingView già presente');
+      // Se lo script è già presente, prova a inizializzare direttamente
+      if (typeof window.TradingView !== 'undefined') {
+        setTimeout(() => {
+          try {
+            console.log(
+              '[TradingViewWidget] Widget TradingView istanziato (script esistente)'
+            );
+            widgetRef.current = new window.TradingView.widget({
+              container_id: internalId,
+              symbol: symbol || 'NASDAQ:AAPL',
+              interval: interval || 'D',
+              timezone: 'Etc/UTC',
+              theme: theme || 'dark',
+              style: '1',
+              locale: locale || 'it',
+              toolbar_bg: toolbar_bg || '#f1f3f6',
+              enable_publishing: false,
+              allow_symbol_change: allow_symbol_change || false,
+              save_image: save_image || false,
+              hide_top_toolbar: hide_top_toolbar || false,
+              hide_side_toolbar: hide_side_toolbar || false,
+              show_popup_button: show_popup_button || false,
+              popup_width: popup_width || '1000',
+              popup_height: popup_height || '650',
+              studies: studies || [],
+              width: width || '100%',
+              height: height || '100%',
+              autosize: autosize || false,
+              onChartReady: () => {
+                console.log(
+                  '[TradingViewWidget] Widget considerato pronto dopo creazione'
+                );
+                setWidgetCreated(true);
+                setDebugStatus('success');
+                if (timeoutRef.current) {
+                  clearTimeout(timeoutRef.current);
+                }
+                onChartReady?.();
+              },
+            });
+          } catch (error) {
+            console.error(
+              '[TradingViewWidget] Errore creazione widget:',
+              error
+            );
+            setCurrentError(error as Error);
+            setDebugStatus('error');
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+            onLoadError?.(error as Error);
+          }
+        }, 100);
+      }
+    }
+
+    // Cleanup
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
       if (widgetRef.current) {
         try {
-          // Solo se esiste la funzione remove e il DOM è ancora presente
-          if (
-            typeof widgetRef.current.remove === 'function' &&
-            widgetRef.current._innerChartWidget &&
-            widgetRef.current._innerChartWidget._hostedWidget &&
-            widgetRef.current._innerChartWidget._hostedWidget.parentNode
-          ) {
-            widgetRef.current.remove();
-            console.log('[TradingViewWidget] Widget rimosso in unmount');
-          } else {
+          // Verifica se il DOM è ancora presente
+          const container = document.getElementById(internalId);
+          if (container) {
             console.log(
               '[TradingViewWidget] Widget già rimosso o DOM non più presente'
             );
           }
-          widgetRef.current = null;
         } catch (error) {
-          if (
-            !(
-              error instanceof TypeError &&
-              error.message &&
-              error.message.includes('parentNode')
-            )
-          ) {
-            console.error(
-              '[TradingViewWidget] Errore durante la rimozione del widget TradingView:',
-              error
-            );
-          } else {
-            console.log(
-              '[TradingViewWidget] Widget già rimosso (parentNode null)'
-            );
-          }
+          console.log('[TradingViewWidget] Errore durante cleanup:', error);
         }
+        widgetRef.current = null;
       } else {
         console.log('[TradingViewWidget] Unmount: nessun widget da rimuovere');
       }
     };
-  }, [
-    // Solo le dipendenze essenziali che dovrebbero triggerare un re-mount
-    internalId,
-    symbol,
-    interval,
-    theme,
-    locale,
-    isValid,
-    initTimeout,
-  ]);
+  }, [internalId, symbol, interval, theme, locale, isValid, initTimeout]);
 
   if (!isValid) {
     return (

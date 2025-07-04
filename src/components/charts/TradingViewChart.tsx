@@ -17,29 +17,33 @@ const freqToInterval: Record<string, string> = {
 };
 
 const iconStyle =
-  'w-6 h-6 flex items-center justify-center border border-muted rounded-[1rem] bg-muted text-xl text-muted-foreground shadow transition hover:bg-accent hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 p-0';
-const iconInnerStyle =
-  'w-full h-full flex items-center justify-center pl-1 pr-1 pt-1 pb-[0.32rem] font-mono leading-none text-2xl';
+  'w-8 h-8 flex items-center justify-center border border-muted rounded-md bg-muted text-sm text-muted-foreground shadow transition hover:bg-accent hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer select-none';
 
 export const TradingViewChart = () => {
   const { analysisState } = useAnalysis();
-  const [interval, setInterval] = useState('daily');
+  const [selectedTicker, setSelectedTicker] = useState<string>('');
+  const [showTopToolbar, setShowTopToolbar] = useState(false);
+  const [showSideToolbar, setShowSideToolbar] = useState(false);
 
-  // Stabilizza symbol e interval
-  const symbol = useMemo(
-    () =>
-      analysisState.tickers[0]
-        ? `NASDAQ:${analysisState.tickers[0]}`
-        : 'NASDAQ:AAPL',
-    [analysisState.tickers]
+  // Usa la frequenza dell'analisi
+  const tvInterval = useMemo(
+    () => freqToInterval[analysisState.frequency] || 'D',
+    [analysisState.frequency]
   );
-  const tvInterval = useMemo(() => freqToInterval[interval], [interval]);
+
+  // Stabilizza symbol basato sul ticker selezionato
+  const symbol = useMemo(() => {
+    const ticker = selectedTicker || analysisState.tickers[0];
+    return ticker ? `NASDAQ:${ticker}` : 'NASDAQ:AAPL';
+  }, [selectedTicker, analysisState.tickers]);
+
   // Stabilizza studies (vuoto per ora)
   const studies = useMemo(() => [], []);
+
   // Chiave stabile
   const widgetKey = useMemo(
-    () => `${symbol}-${tvInterval}`,
-    [symbol, tvInterval]
+    () => `${symbol}-${tvInterval}-${showTopToolbar}-${showSideToolbar}`,
+    [symbol, tvInterval, showTopToolbar, showSideToolbar]
   );
 
   // Debug log
@@ -49,19 +53,62 @@ export const TradingViewChart = () => {
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-between">
-        <Select value={interval} onValueChange={setInterval}>
+      {/* Header con dropdown ticker e switch toolbar */}
+      <div className="flex items-center justify-between gap-4">
+        {/* Dropdown per selezionare il ticker */}
+        <Select
+          value={selectedTicker || analysisState.tickers[0] || ''}
+          onValueChange={setSelectedTicker}
+        >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Seleziona frequenza" />
+            <SelectValue placeholder="Seleziona ticker" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="daily">Giornaliero</SelectItem>
-            <SelectItem value="weekly">Settimanale</SelectItem>
-            <SelectItem value="monthly">Mensile</SelectItem>
+            {analysisState.tickers.map(ticker => (
+              <SelectItem key={ticker} value={ticker}>
+                {ticker}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
+
+        {/* Switch per le toolbar */}
+        <div className="flex items-center gap-2">
+          {/* Switch Top Toolbar */}
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-muted-foreground">Top:</span>
+            <button
+              className={iconStyle}
+              onClick={() => setShowTopToolbar(!showTopToolbar)}
+              title={
+                showTopToolbar
+                  ? 'Nascondi toolbar superiore'
+                  : 'Mostra toolbar superiore'
+              }
+            >
+              {showTopToolbar ? '−' : '+'}
+            </button>
+          </div>
+
+          {/* Switch Side Toolbar */}
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-muted-foreground">Side:</span>
+            <button
+              className={iconStyle}
+              onClick={() => setShowSideToolbar(!showSideToolbar)}
+              title={
+                showSideToolbar
+                  ? 'Nascondi toolbar laterale'
+                  : 'Mostra toolbar laterale'
+              }
+            >
+              {showSideToolbar ? '−' : '+'}
+            </button>
+          </div>
+        </div>
       </div>
 
+      {/* Widget TradingView */}
       <div className="flex-1">
         <NewTradingViewWidget
           key={widgetKey}
@@ -70,7 +117,8 @@ export const TradingViewChart = () => {
           theme="dark"
           autosize
           allow_symbol_change={false}
-          hide_side_toolbar
+          hide_top_toolbar={!showTopToolbar}
+          hide_side_toolbar={!showSideToolbar}
           save_image
           studies={studies}
           onChartReady={() => console.log('Chart pronto')}
