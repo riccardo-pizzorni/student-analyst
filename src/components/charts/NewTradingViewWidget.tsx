@@ -499,15 +499,17 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     widgetInitialized,
   ]);
 
-  // Log creazione e distruzione widget
+  // Log creazione e distruzione widget con timestamp
   useEffect(() => {
+    const now = new Date().toISOString();
     console.log(
-      '[NewTradingViewWidget][DEBUG] useEffect CREAZIONE widget, stack:',
+      `[NewTradingViewWidget][DEBUG][${now}] useEffect CREAZIONE widget, stack:`,
       new Error().stack
     );
     return () => {
+      const now = new Date().toISOString();
       console.log(
-        '[NewTradingViewWidget][DEBUG] useEffect DISTRUZIONE widget, stack:',
+        `[NewTradingViewWidget][DEBUG][${now}] useEffect DISTRUZIONE widget, stack:`,
         new Error().stack
       );
     };
