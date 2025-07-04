@@ -46,7 +46,7 @@ export const TradingViewChart = () => {
       </div>
 
       {/* Container del grafico con altezza fissa */}
-      <div className="w-full h-[calc(100vh-12rem)] bg-background">
+      <div className="w-full h-[600px] bg-background">
         <NewTradingViewWidget
           symbol={selectedTicker}
           interval={interval}
