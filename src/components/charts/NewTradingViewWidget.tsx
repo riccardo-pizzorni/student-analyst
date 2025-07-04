@@ -350,10 +350,10 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         show_popup_button: show_popup_button,
         popup_width: popup_width,
         popup_height: popup_height,
-        autosize: autosize,
+        autosize: false,
         studies: studies,
-        width: width,
-        height: height,
+        width: '100%',
+        height: '100%',
         fullscreen: false,
         container: containerId,
         library_path: '/charting_library/',
@@ -464,22 +464,57 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   }, [isValid, validationErrors]);
 
   return (
-    <div className={`tradingview-widget-container ${className}`} style={style}>
+    <div
+      className={`tradingview-widget-container ${className}`}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        ...style,
+      }}
+    >
       <div
         id={containerId}
         ref={containerRef}
         style={{
-          width: width,
-          height: height,
+          width: '100%',
+          height: '100%',
+          minHeight: '500px',
         }}
       />
       {isLoading && (
-        <div className="tradingview-widget-loading">
+        <div
+          className="tradingview-widget-loading"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: theme === 'dark' ? '#1c1c1c' : '#ffffff',
+            color: theme === 'dark' ? '#ffffff' : '#1c1c1c',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            zIndex: 10,
+          }}
+        >
           Caricamento grafico TradingView...
         </div>
       )}
       {error && (
-        <div className="tradingview-widget-error">
+        <div
+          className="tradingview-widget-error"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: theme === 'dark' ? '#1c1c1c' : '#ffffff',
+            color: 'red',
+            padding: '1rem',
+            borderRadius: '0.5rem',
+            zIndex: 10,
+          }}
+        >
           {error}
           {!isValid && validationErrors.length > 0 && (
             <div className="validation-errors">

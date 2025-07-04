@@ -16,13 +16,11 @@ const freqToInterval: Record<string, string> = {
   monthly: 'M',
 };
 
-const iconStyle =
-  'w-8 h-8 flex items-center justify-center border border-muted rounded-md bg-muted text-sm text-muted-foreground shadow transition hover:bg-accent hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer select-none';
-
 export const TradingViewChart = () => {
   const { analysisState } = useAnalysis();
-  const [selectedTicker, setSelectedTicker] = useState(
-    analysisState.tickers[0]
+  // Garantisco che selectedTicker non sia mai undefined usando un valore di fallback
+  const [selectedTicker, setSelectedTicker] = useState<string>(
+    analysisState.tickers[0] || 'NASDAQ:AAPL'
   );
 
   const interval = useMemo(() => {
@@ -30,12 +28,10 @@ export const TradingViewChart = () => {
   }, [analysisState.frequency]);
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
-      <div className="flex items-center gap-2">
-        <Select
-          value={selectedTicker}
-          onValueChange={value => setSelectedTicker(value)}
-        >
+    <div className="flex flex-col h-full w-full">
+      {/* Header con selettore */}
+      <div className="flex items-center gap-2 mb-4">
+        <Select defaultValue={selectedTicker} onValueChange={setSelectedTicker}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Seleziona ticker" />
           </SelectTrigger>
@@ -49,8 +45,15 @@ export const TradingViewChart = () => {
         </Select>
       </div>
 
-      <div className="relative flex-1 min-h-[calc(100vh-8rem)] w-full">
-        <NewTradingViewWidget symbol={selectedTicker} interval={interval} />
+      {/* Container del grafico con altezza fissa */}
+      <div className="w-full h-[calc(100vh-12rem)] bg-background">
+        <NewTradingViewWidget
+          symbol={selectedTicker}
+          interval={interval}
+          autosize={false}
+          height="100%"
+          width="100%"
+        />
       </div>
     </div>
   );
