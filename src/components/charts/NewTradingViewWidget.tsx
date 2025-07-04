@@ -389,6 +389,10 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         '[TradingViewWidget][DEBUG] Widget creato, attendo onChartReady...'
       );
       widgetRef.current = new window.TradingView.widget(widgetConfig);
+      console.log(
+        '[TradingViewWidget][DEBUG] widgetRef.current:',
+        widgetRef.current
+      );
     } catch (error) {
       const initError =
         error instanceof Error
@@ -482,6 +486,24 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
       );
     }
   }, [isLoading]);
+
+  // Timeout di fallback per onChartReady
+  useEffect(() => {
+    if (isLoading && !widgetInitialized) {
+      const fallbackTimeout = setTimeout(() => {
+        if (isLoading && !widgetInitialized) {
+          setIsLoading(false);
+          setError(
+            'Errore: il grafico TradingView non ha segnalato il caricamento completato.'
+          );
+          console.log(
+            '[TradingViewWidget][DEBUG] Timeout: onChartReady NON chiamato dopo 10s'
+          );
+        }
+      }, 10000);
+      return () => clearTimeout(fallbackTimeout);
+    }
+  }, [isLoading, widgetInitialized]);
 
   return (
     <div
