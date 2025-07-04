@@ -43,6 +43,15 @@ export const TradingViewChart = () => {
     analysisState.frequency,
   ]);
 
+  useEffect(() => {
+    const now = new Date().toISOString();
+    console.log(`[TradingViewChart][DEBUG][${now}] MOUNT`);
+    return () => {
+      const now = new Date().toISOString();
+      console.log(`[TradingViewChart][DEBUG][${now}] UNMOUNT`);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header con selettore */}

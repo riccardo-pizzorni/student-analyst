@@ -826,3 +826,5 @@ MIT License
 ## Support
 
 Open an issue on GitHub for any problems or feature requests.
+
+<!-- Test commit: log di debug aggiunti il {new Date().toLocaleString()} -->

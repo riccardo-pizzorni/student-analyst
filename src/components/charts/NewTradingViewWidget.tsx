@@ -594,6 +594,15 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     }
   }, [isLoading, widgetInitialized]);
 
+  useEffect(() => {
+    const now = new Date().toISOString();
+    console.log(`[NewTradingViewWidget][DEBUG][${now}] MOUNT`);
+    return () => {
+      const now = new Date().toISOString();
+      console.log(`[NewTradingViewWidget][DEBUG][${now}] UNMOUNT`);
+    };
+  }, []);
+
   return (
     <div
       className={`tradingview-widget-container ${className}`}

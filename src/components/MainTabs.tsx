@@ -8,7 +8,7 @@ import {
   Table,
   TrendingUp,
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import CorrelationMatrix from './charts/CorrelationMatrix';
 import PerformanceMetrics from './charts/PerformanceMetrics';
 import { TradingViewChart } from './charts/TradingViewChart';
@@ -23,6 +23,15 @@ export default function MainTabs({
   onShowGlossary?: () => void;
 }) {
   const { toast } = useToast();
+
+  useEffect(() => {
+    const now = new Date().toISOString();
+    console.log(`[MainTabs][DEBUG][${now}] MOUNT`);
+    return () => {
+      const now = new Date().toISOString();
+      console.log(`[MainTabs][DEBUG][${now}] UNMOUNT`);
+    };
+  }, []);
 
   // Funzioni per gestire i click sui bottoni
   const handleTheoryClick = (step: string) => {
@@ -128,13 +137,13 @@ export default function MainTabs({
 
   return (
     <div className="w-full">
-      <Tabs defaultValue={tabs[0]?.key} className="w-full">
+      <Tabs defaultValue={tabs[0]?.key ?? ''} className="w-full">
         <TabsList
           className="grid w-full bg-slate-800/50 rounded-xl p-1 border border-slate-700"
           style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
         >
           {tabs.map(tab => {
-            const TabIcon = tab.icon;
+            const TabIcon = tab.icon ?? BarChart3;
             return (
               <TabsTrigger
                 key={tab.key}
@@ -142,7 +151,7 @@ export default function MainTabs({
                 className="flex items-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300 data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-blue-500/30 text-slate-400 hover:text-slate-300"
               >
                 <TabIcon size={16} />
-                {tab.label}
+                {tab.label ?? 'Tab'}
               </TabsTrigger>
             );
           })}
@@ -335,12 +344,14 @@ export default function MainTabs({
           activeStep
         ) && (
           <>
-            <TabsContent value={tabs[0]?.key} className="mt-6">
+            <TabsContent value={tabs[0]?.key ?? ''} className="mt-6">
               <div className="dark-card rounded-xl p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">
-                    {React.createElement(tabs[0]?.icon, { size: 24 })}
-                    {tabs[0]?.label}
+                    {React.createElement(tabs[0]?.icon ?? BarChart3, {
+                      size: 24,
+                    })}
+                    {tabs[0]?.label ?? 'Tab'}
                   </h3>
                   <button
                     onClick={() => handleTheoryClick('default')}
@@ -369,8 +380,8 @@ export default function MainTabs({
               </div>
             </TabsContent>
 
-            {tabs.length > 1 && (
-              <TabsContent value={tabs[1].key} className="mt-6">
+            {tabs.length > 1 && tabs[1]?.icon && tabs[1]?.label && (
+              <TabsContent value={tabs[1].key ?? ''} className="mt-6">
                 <div className="dark-card rounded-xl p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-blue-300 flex items-center gap-3">

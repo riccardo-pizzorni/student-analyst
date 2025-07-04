@@ -1,4 +1,11 @@
-import { ReactNode, createContext, useContext, useRef, useState } from 'react';
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   AnalysisApiResponse,
   fetchAnalysisData,
@@ -62,6 +69,15 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
   // Ref per prevenire chiamate multiple
   const isAnalysisRunning = useRef(false);
+
+  useEffect(() => {
+    const now = new Date().toISOString();
+    console.log(`[AnalysisProvider][DEBUG][${now}] MOUNT`);
+    return () => {
+      const now = new Date().toISOString();
+      console.log(`[AnalysisProvider][DEBUG][${now}] UNMOUNT`);
+    };
+  }, []);
 
   const setTickers = (tickers: string[]) => {
     setAnalysisState(prev => ({ ...prev, tickers }));
