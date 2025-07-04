@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAnalysis } from '@/context/AnalysisContext';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import NewTradingViewWidget from './NewTradingViewWidget';
 
 // Mappa frequenza -> intervallo TradingView
@@ -26,6 +26,22 @@ export const TradingViewChart = () => {
   const interval = useMemo(() => {
     return freqToInterval[analysisState.frequency] || 'D';
   }, [analysisState.frequency]);
+
+  // Debug: log ogni volta che cambia ticker o interval
+  useEffect(() => {
+    console.log('[TradingViewChart][DEBUG] Cambio ticker o interval:', {
+      selectedTicker,
+      interval,
+      tickers: analysisState.tickers,
+      frequency: analysisState.frequency,
+      stack: new Error().stack,
+    });
+  }, [
+    selectedTicker,
+    interval,
+    analysisState.tickers,
+    analysisState.frequency,
+  ]);
 
   return (
     <div className="flex flex-col h-full w-full">

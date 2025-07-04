@@ -251,6 +251,52 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     validationErrors,
   ]);
 
+  // Log props all'avvio e a ogni cambio
+  useEffect(() => {
+    console.log('[NewTradingViewWidget][DEBUG] Props ricevute:', {
+      symbol,
+      interval,
+      theme,
+      width,
+      height,
+      autosize,
+      toolbar_bg,
+      allow_symbol_change,
+      save_image,
+      hide_top_toolbar,
+      hide_side_toolbar,
+      show_popup_button,
+      popup_width,
+      popup_height,
+      studies,
+      className,
+      style,
+      initTimeout,
+      debug,
+      stack: new Error().stack,
+    });
+  }, [
+    symbol,
+    interval,
+    theme,
+    width,
+    height,
+    autosize,
+    toolbar_bg,
+    allow_symbol_change,
+    save_image,
+    hide_top_toolbar,
+    hide_side_toolbar,
+    show_popup_button,
+    popup_width,
+    popup_height,
+    studies,
+    className,
+    style,
+    initTimeout,
+    debug,
+  ]);
+
   // Carica lo script TradingView una sola volta
   useEffect(() => {
     if (scriptLoaded || typeof window.TradingView !== 'undefined') {
@@ -423,6 +469,47 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           console.log('[TradingViewWidget] Cleanup finale');
         }
       }
+    };
+  }, [
+    scriptLoaded,
+    isValid,
+    symbol,
+    interval,
+    containerId,
+    theme,
+    locale,
+    toolbar_bg,
+    allow_symbol_change,
+    save_image,
+    hide_top_toolbar,
+    hide_side_toolbar,
+    show_popup_button,
+    popup_width,
+    popup_height,
+    autosize,
+    studies,
+    width,
+    height,
+    onChartReady,
+    onSymbolChange,
+    onIntervalChange,
+    onLoadError,
+    initTimeout,
+    debug,
+    widgetInitialized,
+  ]);
+
+  // Log creazione e distruzione widget
+  useEffect(() => {
+    console.log(
+      '[NewTradingViewWidget][DEBUG] useEffect CREAZIONE widget, stack:',
+      new Error().stack
+    );
+    return () => {
+      console.log(
+        '[NewTradingViewWidget][DEBUG] useEffect DISTRUZIONE widget, stack:',
+        new Error().stack
+      );
     };
   }, [
     scriptLoaded,
