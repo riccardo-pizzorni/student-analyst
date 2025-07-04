@@ -524,24 +524,6 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           minHeight: '500px',
         }}
       />
-      {isLoading && !widgetInitialized && (
-        <div
-          className="tradingview-widget-loading"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: theme === 'dark' ? '#1c1c1c' : '#ffffff',
-            color: theme === 'dark' ? '#ffffff' : '#1c1c1c',
-            padding: '1rem',
-            borderRadius: '0.5rem',
-            zIndex: 10,
-          }}
-        >
-          Caricamento grafico TradingView...
-        </div>
-      )}
       {error && (
         <div
           className="tradingview-widget-error"
