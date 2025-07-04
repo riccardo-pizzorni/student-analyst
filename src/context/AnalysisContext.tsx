@@ -10,7 +10,7 @@ interface AnalysisInputState {
   startDate: string;
   endDate: string;
   frequency: 'daily' | 'weekly' | 'monthly';
-  csvFile?: File;
+  csvFile?: File | undefined;
 }
 
 // Espandiamo lo stato per includere i risultati, lo stato di caricamento e gli errori
@@ -20,13 +20,18 @@ interface AnalysisState extends AnalysisInputState {
   error: string | null;
 }
 
+// Helper per formattare le date
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
+
 // Valori iniziali dello stato
 const initialState: AnalysisState = {
   tickers: ['AAPL', 'MSFT', 'GOOGL'],
-  startDate: new Date().toISOString().split('T')[0],
-  endDate: new Date(new Date().setMonth(new Date().getMonth() + 1))
-    .toISOString()
-    .split('T')[0],
+  startDate: formatDate(
+    new Date(new Date().setMonth(new Date().getMonth() - 1))
+  ), // Un mese fa
+  endDate: formatDate(new Date()), // Oggi
   frequency: 'daily',
   csvFile: undefined,
   analysisResults: null,
@@ -65,16 +70,14 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const setStartDate = (date: Date | undefined) => {
     setAnalysisState(prev => ({
       ...prev,
-      startDate: date
-        ? date.toISOString().split('T')[0]
-        : initialState.startDate,
+      startDate: date ? formatDate(date) : initialState.startDate,
     }));
   };
 
   const setEndDate = (date: Date | undefined) => {
     setAnalysisState(prev => ({
       ...prev,
-      endDate: date ? date.toISOString().split('T')[0] : initialState.endDate,
+      endDate: date ? formatDate(date) : initialState.endDate,
     }));
   };
 
@@ -91,7 +94,9 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
 
     // Validazione parametri
     const { tickers, startDate, endDate, frequency } = analysisState;
-    if (!tickers || tickers.length === 0) {
+
+    // Validazione base
+    if (!tickers?.length) {
       setAnalysisState(prev => ({
         ...prev,
         error: 'Seleziona almeno un ticker',
@@ -100,10 +105,49 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    // Validazione date
+    const today = new Date();
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+
+    const currentStartDate = startDate || formatDate(lastMonth);
+    const currentEndDate = endDate || formatDate(today);
+
     if (!startDate || !endDate) {
       setAnalysisState(prev => ({
         ...prev,
-        error: 'Seleziona le date di inizio e fine',
+        startDate: currentStartDate,
+        endDate: currentEndDate,
+        error: 'Date mancanti, impostate automaticamente',
+        isLoading: false,
+      }));
+      return;
+    }
+
+    const start = new Date(currentStartDate);
+    const end = new Date(currentEndDate);
+    today.setHours(23, 59, 59, 999); // Fine della giornata corrente
+
+    if (end > today) {
+      const todayStr = formatDate(today);
+      setAnalysisState(prev => ({
+        ...prev,
+        endDate: todayStr,
+        error: 'La data di fine è stata impostata a oggi',
+        isLoading: false,
+      }));
+      return;
+    }
+
+    if (start > end) {
+      const newStartDate = new Date(end);
+      newStartDate.setMonth(newStartDate.getMonth() - 1);
+      const startStr = formatDate(newStartDate);
+
+      setAnalysisState(prev => ({
+        ...prev,
+        startDate: startStr,
+        error: 'La data di inizio è stata corretta',
         isLoading: false,
       }));
       return;
@@ -121,44 +165,52 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('🚀 Avvio analisi con parametri:', {
         tickers,
-        startDate,
-        endDate,
+        startDate: currentStartDate,
+        endDate: currentEndDate,
         frequency,
       });
 
       const results = await fetchAnalysisData({
         tickers,
-        startDate,
-        endDate,
+        startDate: currentStartDate,
+        endDate: currentEndDate,
         frequency,
       });
 
       // Validazione risultati prima di salvarli
+      if (!results || typeof results !== 'object') {
+        throw new Error('Formato risposta non valido dal backend');
+      }
+
       const validatedResults = {
         ...results,
-        performanceMetrics:
-          results.performanceMetrics?.map(metric => ({
-            label: metric.label || 'Metrica',
-            value: metric.value || '0%',
-          })) || [],
-        volatility: results.volatility
-          ? {
-              annualizedVolatility:
-                results.volatility.annualizedVolatility || 0,
-              sharpeRatio: results.volatility.sharpeRatio || 0,
-            }
-          : null,
-        correlation: results.correlation
-          ? {
-              correlationMatrix: results.correlation.correlationMatrix || {
-                symbols: [],
-                matrix: [],
-              },
-              diversificationIndex:
-                results.correlation.diversificationIndex || 0,
-              averageCorrelation: results.correlation.averageCorrelation || 0,
-            }
-          : null,
+        performanceMetrics: Array.isArray(results.performanceMetrics)
+          ? results.performanceMetrics.map(metric => ({
+              label: metric.label || 'Metrica',
+              value: metric.value || '0%',
+            }))
+          : [],
+        volatility:
+          results.volatility && typeof results.volatility === 'object'
+            ? {
+                annualizedVolatility:
+                  Number(results.volatility.annualizedVolatility) || 0,
+                sharpeRatio: Number(results.volatility.sharpeRatio) || 0,
+              }
+            : null,
+        correlation:
+          results.correlation && typeof results.correlation === 'object'
+            ? {
+                correlationMatrix: results.correlation.correlationMatrix || {
+                  symbols: [],
+                  matrix: [],
+                },
+                diversificationIndex:
+                  Number(results.correlation.diversificationIndex) || 0,
+                averageCorrelation:
+                  Number(results.correlation.averageCorrelation) || 0,
+              }
+            : null,
       };
 
       setAnalysisState(prevState => ({
