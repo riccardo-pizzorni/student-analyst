@@ -7,9 +7,39 @@ type CSSProperties = Record<string, string | number>;
 declare global {
   interface Window {
     TradingView: {
-      widget: new (config: any) => any;
+      widget: new (config: TradingViewConfig) => TradingViewWidget;
     };
   }
+}
+
+interface TradingViewWidget {
+  remove: () => void;
+  onChartReady: (callback: () => void) => void;
+  onSymbolChange: (callback: (symbol: string) => void) => void;
+  onIntervalChange: (callback: (interval: string) => void) => void;
+}
+
+interface TradingViewConfig {
+  container_id: string;
+  symbol: string;
+  interval: string;
+  timezone?: string;
+  theme?: string;
+  style?: string;
+  locale?: string;
+  toolbar_bg?: string;
+  enable_publishing?: boolean;
+  allow_symbol_change?: boolean;
+  save_image?: boolean;
+  hide_top_toolbar?: boolean;
+  hide_side_toolbar?: boolean;
+  show_popup_button?: boolean;
+  popup_width?: string | number;
+  popup_height?: string | number;
+  autosize?: boolean;
+  studies?: string[];
+  width?: string | number;
+  height?: string | number;
 }
 
 // Tipizzazione delle props (senza commenti)
@@ -240,15 +270,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     setIsLoading(true);
     setError(null);
 
-    // Timeout per l'inizializzazione
-    timeoutRef.current = setTimeout(() => {
-      setError('Timeout: il widget non si è caricato entro 30 secondi');
-      setIsLoading(false);
-    }, initTimeout);
-
     try {
-      // Crea il widget
-      widgetRef.current = new window.TradingView.widget({
+      // Crea il widget con configurazione tipizzata
+      const widgetConfig: TradingViewConfig = {
         container_id: containerId,
         symbol: symbol,
         interval: interval,
@@ -265,35 +289,66 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         show_popup_button: show_popup_button,
         popup_width: popup_width,
         popup_height: popup_height,
+        autosize: autosize,
         studies: studies,
         width: width,
         height: height,
-        autosize: autosize,
-        onChartReady: () => {
-          console.log('[TradingViewWidget] Widget pronto');
-          setIsLoading(false);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          onChartReady?.();
-        },
+      };
+
+      widgetRef.current = new window.TradingView.widget(widgetConfig);
+
+      // Gestione eventi
+      widgetRef.current.onChartReady(() => {
+        setIsLoading(false);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        if (onChartReady) {
+          onChartReady();
+        }
       });
 
-      console.log('[TradingViewWidget] Widget creato');
-    } catch (error) {
-      console.error('[TradingViewWidget] Errore creazione widget:', error);
-      setError('Errore nella creazione del widget');
-      setIsLoading(false);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (onSymbolChange) {
+        widgetRef.current.onSymbolChange((symbol: string) => {
+          onSymbolChange(symbol);
+        });
       }
-      onLoadError?.(error as Error);
+
+      if (onIntervalChange) {
+        widgetRef.current.onIntervalChange((interval: string) => {
+          onIntervalChange(interval);
+        });
+      }
+
+      // Imposta timeout solo se il widget non è ancora pronto
+      timeoutRef.current = setTimeout(() => {
+        if (isLoading) {
+          setError('Timeout: il widget non si è caricato entro 30 secondi');
+          setIsLoading(false);
+          if (onLoadError) {
+            onLoadError(new Error('Widget initialization timeout'));
+          }
+        }
+      }, initTimeout);
+    } catch (error) {
+      setError("Errore durante l'inizializzazione del widget");
+      setIsLoading(false);
+      if (onLoadError && error instanceof Error) {
+        onLoadError(error);
+      }
+      console.error('[TradingViewWidget] Errore creazione widget:', error);
     }
 
-    // Cleanup
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      if (widgetRef.current) {
+        try {
+          widgetRef.current.remove();
+        } catch (e) {
+          // Ignora errori durante la rimozione
+        }
       }
     };
   }, [
@@ -301,25 +356,27 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     isValid,
     symbol,
     interval,
+    containerId,
     theme,
     locale,
-    hide_top_toolbar,
-    hide_side_toolbar,
-    containerId,
-    initTimeout,
-    onChartReady,
-    onLoadError,
-    // Altre props necessarie
-    width,
-    height,
-    autosize,
     toolbar_bg,
     allow_symbol_change,
     save_image,
+    hide_top_toolbar,
+    hide_side_toolbar,
     show_popup_button,
     popup_width,
     popup_height,
+    autosize,
     studies,
+    width,
+    height,
+    onChartReady,
+    onSymbolChange,
+    onIntervalChange,
+    onLoadError,
+    initTimeout,
+    debug,
   ]);
 
   // Cleanup finale
