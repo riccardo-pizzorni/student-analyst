@@ -284,14 +284,18 @@ function NewTradingViewWidget(props: NewTradingViewWidgetProps) {
 
   useEffect(() => {
     if (!isValid) return;
+
     console.log(
       '[TradingViewWidget] MOUNT: symbol',
       symbol,
       'interval',
       interval
     );
+
     setWidgetCreated(false);
     setContainerClean(true);
+    setCurrentError(null);
+    setDebugStatus('loading');
 
     // Svuota il container prima di ogni mount
     const container = document.getElementById(internalId);
@@ -375,7 +379,7 @@ function NewTradingViewWidget(props: NewTradingViewWidgetProps) {
           if (widgetRef.current) {
             // Breve delay per permettere al widget di renderizzare
             setTimeout(() => {
-              if (timeoutRef.current && !widgetCreated) {
+              if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
                 setDebugStatus('success');
                 setWidgetCreated(true);
@@ -405,7 +409,7 @@ function NewTradingViewWidget(props: NewTradingViewWidgetProps) {
       }
     };
 
-    script.onerror = error => {
+    script.onerror = () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       const err = new Error('Failed to load TradingView script');
       setCurrentError(err);
@@ -457,40 +461,16 @@ function NewTradingViewWidget(props: NewTradingViewWidgetProps) {
       } else {
         console.log('[TradingViewWidget] Unmount: nessun widget da rimuovere');
       }
-      // PATCH: Rimuovi lo script TradingView dal DOM per forzare il reload al prossimo mount
-      const script = document.getElementById('tradingview-widget-script');
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
-        console.log(
-          '[TradingViewWidget] Script TradingView rimosso dal DOM in unmount'
-        );
-      }
     };
   }, [
+    // Solo le dipendenze essenziali che dovrebbero triggerare un re-mount
     internalId,
     symbol,
     interval,
     theme,
-    width,
-    height,
     locale,
-    autosize,
-    studies,
-    toolbar_bg,
-    popup_width,
-    popup_height,
-    hide_top_toolbar,
-    hide_side_toolbar,
-    allow_symbol_change,
-    save_image,
-    show_popup_button,
-    onSymbolChange,
-    onIntervalChange,
-    onChartReady,
-    onLoadError,
-    initTimeout,
     isValid,
-    widgetCreated,
+    initTimeout,
   ]);
 
   if (!isValid) {
