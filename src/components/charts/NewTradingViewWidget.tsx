@@ -482,7 +482,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           minHeight: '500px',
         }}
       />
-      {isLoading && (
+      {isLoading && !widgetInitialized && (
         <div
           className="tradingview-widget-loading"
           style={{
