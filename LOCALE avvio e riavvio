@@ -1,0 +1,21 @@
+📋 GUIDA SEMPLICE - SVILUPPO LOCALE
+
+TERMINALE 1 (Backend):
+
+cd backend
+npm run dev
+
+
+
+
+TERMINALE 2 (Frontend):
+
+npm run dev
+
+
+
+
+
+(chiudere terminali):
+
+taskkill /F /IM node.exe

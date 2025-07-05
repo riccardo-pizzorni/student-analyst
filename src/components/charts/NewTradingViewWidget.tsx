@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
 
-type CSSProperties = Record<string, string | number>;
-
 // Debug utility
 const DEBUG = {
   log: (message: string, data?: any) => {
@@ -23,6 +21,7 @@ declare global {
     TradingView: {
       widget: new (config: TradingViewConfig) => TradingViewWidget;
     };
+    __prevTradingViewDeps?: Record<string, any>;
   }
 }
 
@@ -65,7 +64,7 @@ interface TradingViewConfig {
   onIntervalChange?: ((interval: string) => void) | undefined;
 }
 
-// Tipizzazione delle props (senza commenti)
+// Definisco un tipo per le props del widget
 interface NewTradingViewWidgetProps {
   symbol?: string;
   interval?: string;
@@ -84,7 +83,7 @@ interface NewTradingViewWidgetProps {
   popup_height?: string | number;
   studies?: string[];
   className?: string;
-  style?: CSSProperties;
+  style?: React.CSSProperties;
   onSymbolChange?: ((symbol: string) => void) | undefined;
   onIntervalChange?: ((interval: string) => void) | undefined;
   onChartReady?: (() => void) | undefined;
@@ -140,6 +139,31 @@ const validateTradingViewProps = (
   }
 };
 
+// Aggiungo una funzione di debug per tracciare le modifiche delle dipendenze
+const debugDependencyChanges = (
+  prevDeps: Record<string, any>,
+  currentDeps: Record<string, any>
+) => {
+  const changedDeps = Object.keys(currentDeps).filter(
+    key => JSON.stringify(prevDeps[key]) !== JSON.stringify(currentDeps[key])
+  );
+
+  if (changedDeps.length > 0) {
+    console.log(
+      '[TradingViewWidget][DEPENDENCY_CHANGE] Dipendenze modificate:',
+      {
+        changedDeps,
+        details: changedDeps.map(dep => ({
+          [dep]: {
+            prev: prevDeps[dep],
+            current: currentDeps[dep],
+          },
+        })),
+      }
+    );
+  }
+};
+
 const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   symbol = 'NASDAQ:AAPL',
   interval = 'D',
@@ -151,8 +175,8 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   toolbar_bg = '#f1f3f6',
   allow_symbol_change = true,
   save_image = true,
-  hide_top_toolbar = false,
-  hide_side_toolbar = false,
+  hide_top_toolbar = true,
+  hide_side_toolbar = true,
   show_popup_button = false,
   popup_width = '1000',
   popup_height = '650',
@@ -174,9 +198,25 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [widgetInitialized, setWidgetInitialized] = useState(false);
 
+  // Stati interni per controllare le toolbar (override delle props)
+  const [internalHideTopToolbar, setInternalHideTopToolbar] =
+    useState(hide_top_toolbar);
+  const [internalHideSideToolbar, setInternalHideSideToolbar] =
+    useState(hide_side_toolbar);
+
+  // Funzioni per toggle delle toolbar
+  const toggleTopToolbar = () => {
+    setInternalHideTopToolbar(prev => !prev);
+  };
+
+  const toggleSideToolbar = () => {
+    setInternalHideSideToolbar(prev => !prev);
+  };
+
   const widgetRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const prevPropsRef = useRef<NewTradingViewWidgetProps | null>(null);
 
   // Validazione props
   const { isValid, errors: validationErrors } = useMemo(
@@ -364,18 +404,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     setIsLoading(true);
     setError(null);
 
-    // Imposta timeout per l'inizializzazione
-    timeoutRef.current = setTimeout(() => {
-      if (isLoading) {
-        const timeoutError = new Error('Widget initialization timeout');
-        setError('Timeout: il widget non si è caricato entro 30 secondi');
-        setIsLoading(false);
-        DEBUG.error('Timeout inizializzazione widget', timeoutError);
-        if (onLoadError) {
-          onLoadError(timeoutError);
-        }
-      }
-    }, initTimeout);
+    // RIMOSSO: Timeout che causava refresh continuo ogni 30 secondi
+    // Il timeout forzava setError() e setIsLoading(false), causando re-render infiniti
+    // Ora il widget può caricarsi naturalmente senza essere interrotto
 
     try {
       // Crea il widget con configurazione tipizzata
@@ -391,8 +422,8 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         enable_publishing: false,
         allow_symbol_change: allow_symbol_change,
         save_image: save_image,
-        hide_top_toolbar: hide_top_toolbar,
-        hide_side_toolbar: hide_side_toolbar,
+        hide_top_toolbar: internalHideTopToolbar,
+        hide_side_toolbar: internalHideSideToolbar,
         show_popup_button: show_popup_button,
         popup_width: popup_width,
         popup_height: popup_height,
@@ -419,9 +450,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           DEBUG.log('Widget pronto');
           setIsLoading(false);
           setWidgetInitialized(true);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
+          // RIMOSSO: clearTimeout non più necessario
           if (onChartReady) {
             onChartReady();
           }
@@ -457,17 +486,26 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
 
     return () => {
       console.log('[TradingViewWidget][DEBUG] Cleanup finale chiamato');
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      // RIMOSSO: clearTimeout non più necessario
       if (widgetRef.current) {
         try {
           if (typeof widgetRef.current.remove === 'function') {
             widgetRef.current.remove();
           }
         } catch (e) {
-          console.log('[TradingViewWidget] Cleanup finale');
+          // Gestione migliorata degli errori di cleanup
+          if (e instanceof Error && e.message.includes('parentNode')) {
+            console.log(
+              '[TradingViewWidget][DEBUG] Widget già rimosso dal DOM'
+            );
+          } else {
+            console.error(
+              '[TradingViewWidget] Errore durante la rimozione del widget precedente',
+              e
+            );
+          }
         }
+        widgetRef.current = null;
       }
     };
   }, [
@@ -481,8 +519,8 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     toolbar_bg,
     allow_symbol_change,
     save_image,
-    hide_top_toolbar,
-    hide_side_toolbar,
+    internalHideTopToolbar,
+    internalHideSideToolbar,
     show_popup_button,
     popup_width,
     popup_height,
@@ -524,8 +562,8 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     toolbar_bg,
     allow_symbol_change,
     save_image,
-    hide_top_toolbar,
-    hide_side_toolbar,
+    internalHideTopToolbar,
+    internalHideSideToolbar,
     show_popup_button,
     popup_width,
     popup_height,
@@ -545,17 +583,26 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
   // Cleanup finale
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      // RIMOSSO: clearTimeout non più necessario
       if (widgetRef.current) {
         try {
           if (typeof widgetRef.current.remove === 'function') {
             widgetRef.current.remove();
           }
         } catch (e) {
-          console.log('[TradingViewWidget] Cleanup finale');
+          // Gestione migliorata degli errori di cleanup
+          if (e instanceof Error && e.message.includes('parentNode')) {
+            console.log(
+              '[TradingViewWidget][DEBUG] Widget già rimosso dal DOM'
+            );
+          } else {
+            console.error(
+              '[TradingViewWidget] Errore durante la rimozione del widget precedente',
+              e
+            );
+          }
         }
+        widgetRef.current = null;
       }
     };
   }, []);
@@ -576,23 +623,9 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
     }
   }, [isLoading]);
 
-  // Timeout di fallback per onChartReady
-  useEffect(() => {
-    if (isLoading && !widgetInitialized) {
-      const fallbackTimeout = setTimeout(() => {
-        if (isLoading && !widgetInitialized) {
-          setIsLoading(false);
-          setError(
-            'Errore: il grafico TradingView non ha segnalato il caricamento completato.'
-          );
-          console.log(
-            '[TradingViewWidget][DEBUG] Timeout: onChartReady NON chiamato dopo 10s'
-          );
-        }
-      }, 10000);
-      return () => clearTimeout(fallbackTimeout);
-    }
-  }, [isLoading, widgetInitialized]);
+  // RIMOSSO: Timeout di fallback che causava refresh continuo
+  // Il timeout di 10s interferiva con il normale funzionamento del widget
+  // causando un ciclo infinito di distruzione/ricreazione
 
   useEffect(() => {
     const now = new Date().toISOString();
@@ -602,6 +635,208 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
       console.log(`[NewTradingViewWidget][DEBUG][${now}] UNMOUNT`);
     };
   }, []);
+
+  // Log dettagliato delle props
+  const logPropChanges = (currentProps: NewTradingViewWidgetProps) => {
+    const now = new Date().toISOString();
+
+    if (prevPropsRef.current) {
+      const changedProps = Object.keys(currentProps).filter(
+        key =>
+          JSON.stringify(
+            currentProps[key as keyof NewTradingViewWidgetProps]
+          ) !==
+          JSON.stringify(
+            prevPropsRef.current?.[key as keyof NewTradingViewWidgetProps]
+          )
+      );
+
+      if (changedProps.length > 0) {
+        console.log(`[NewTradingViewWidget][PROPS_CHANGE][${now}]`, {
+          changedProps,
+          oldProps: prevPropsRef.current,
+          newProps: currentProps,
+        });
+      }
+    }
+    prevPropsRef.current = { ...currentProps };
+  };
+
+  useEffect(() => {
+    const now = new Date().toISOString();
+
+    console.log(`[NewTradingViewWidget][DEEP_DEBUG][${now}] MOUNT`, {
+      currentProps: {
+        symbol,
+        interval,
+        locale,
+        theme,
+        width,
+        height,
+        autosize,
+        toolbar_bg,
+        allow_symbol_change,
+        save_image,
+        hide_top_toolbar: internalHideTopToolbar,
+        hide_side_toolbar: internalHideSideToolbar,
+        show_popup_button,
+        popup_width,
+        popup_height,
+        studies,
+        className,
+        style,
+        initTimeout,
+        debug,
+      },
+      stackTrace: new Error().stack,
+    });
+
+    // Log dettagliato delle props
+    logPropChanges({
+      symbol,
+      interval,
+      locale,
+      theme,
+      width,
+      height,
+      autosize,
+      toolbar_bg,
+      allow_symbol_change,
+      save_image,
+      hide_top_toolbar: internalHideTopToolbar,
+      hide_side_toolbar: internalHideSideToolbar,
+      show_popup_button,
+      popup_width,
+      popup_height,
+      studies,
+      className,
+      style,
+      initTimeout,
+      debug,
+    });
+
+    return () => {
+      const unmountNow = new Date().toISOString();
+
+      console.log(`[NewTradingViewWidget][DEEP_DEBUG][${unmountNow}] UNMOUNT`, {
+        currentProps: {
+          symbol,
+          interval,
+          locale,
+          theme,
+          width,
+          height,
+          autosize,
+          toolbar_bg,
+          allow_symbol_change,
+          save_image,
+          hide_top_toolbar: internalHideTopToolbar,
+          hide_side_toolbar: internalHideSideToolbar,
+          show_popup_button,
+          popup_width,
+          popup_height,
+          studies,
+          className,
+          style,
+          initTimeout,
+          debug,
+        },
+        stackTrace: new Error().stack,
+      });
+    };
+  }, [
+    symbol,
+    interval,
+    locale,
+    theme,
+    width,
+    height,
+    autosize,
+    toolbar_bg,
+    allow_symbol_change,
+    save_image,
+    internalHideTopToolbar,
+    internalHideSideToolbar,
+    show_popup_button,
+    popup_width,
+    popup_height,
+    studies,
+    className,
+    style,
+    initTimeout,
+    debug,
+  ]);
+
+  // Modifico l'useEffect principale per tracciare le dipendenze
+  useEffect(() => {
+    const currentDeps = {
+      scriptLoaded,
+      isValid,
+      symbol,
+      interval,
+      containerId,
+      theme,
+      locale,
+      toolbar_bg,
+      allow_symbol_change,
+      save_image,
+      hide_top_toolbar: internalHideTopToolbar,
+      hide_side_toolbar: internalHideSideToolbar,
+      show_popup_button,
+      popup_width,
+      popup_height,
+      autosize,
+      studies,
+      width,
+      height,
+      onChartReady: onChartReady ? 'defined' : null,
+      onSymbolChange: onSymbolChange ? 'defined' : null,
+      onIntervalChange: onIntervalChange ? 'defined' : null,
+      onLoadError: onLoadError ? 'defined' : null,
+      initTimeout,
+      debug,
+      widgetInitialized,
+    };
+
+    // Memorizzo le dipendenze precedenti se non esistono
+    if (!window.__prevTradingViewDeps) {
+      window.__prevTradingViewDeps = currentDeps;
+      return () => {}; // Aggiungo un return per soddisfare il type check
+    }
+
+    // Confronto e loggo le modifiche
+    debugDependencyChanges(window.__prevTradingViewDeps, currentDeps);
+    window.__prevTradingViewDeps = currentDeps;
+
+    return () => {}; // Aggiungo un return esplicito
+  }, [
+    scriptLoaded,
+    isValid,
+    symbol,
+    interval,
+    containerId,
+    theme,
+    locale,
+    toolbar_bg,
+    allow_symbol_change,
+    save_image,
+    internalHideTopToolbar,
+    internalHideSideToolbar,
+    show_popup_button,
+    popup_width,
+    popup_height,
+    autosize,
+    studies,
+    width,
+    height,
+    onChartReady,
+    onSymbolChange,
+    onIntervalChange,
+    onLoadError,
+    initTimeout,
+    debug,
+    widgetInitialized,
+  ]);
 
   return (
     <div
@@ -622,6 +857,147 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
           minHeight: '0px',
         }}
       />
+
+      {/* Bottone toggle toolbar superiore */}
+      <button
+        onClick={toggleTopToolbar}
+        style={{
+          position: 'absolute',
+          top: '-40px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '24px',
+          height: '24px',
+          borderRadius: '12px',
+          border: '1px solid hsl(var(--input))',
+          backgroundColor: 'hsl(var(--background))',
+          color: 'hsl(var(--foreground))',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '14px',
+          fontWeight: '600',
+          lineHeight: '1',
+          zIndex: 1000,
+          boxShadow:
+            theme === 'dark'
+              ? '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          transition: 'all 0.2s ease-in-out',
+          outline: 'none',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)';
+          e.currentTarget.style.boxShadow =
+            theme === 'dark'
+              ? '0 6px 8px -1px rgba(0, 0, 0, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.3)'
+              : '0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = 'translateX(-50%) scale(1)';
+          e.currentTarget.style.boxShadow =
+            theme === 'dark'
+              ? '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+        }}
+        title={
+          internalHideTopToolbar
+            ? 'Mostra toolbar superiore'
+            : 'Nascondi toolbar superiore'
+        }
+      >
+        <span
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            fontSize: '20px',
+            fontWeight: '500',
+            lineHeight: '1',
+            fontFamily:
+              'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, monospace',
+            transform: 'translateY(-1px)',
+            textAlign: 'center',
+            letterSpacing: '0',
+          }}
+        >
+          {internalHideTopToolbar ? '+' : '−'}
+        </span>
+      </button>
+
+      {/* Bottone toggle toolbar laterale */}
+      <button
+        onClick={toggleSideToolbar}
+        style={{
+          position: 'absolute',
+          left: '-40px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '24px',
+          height: '24px',
+          borderRadius: '12px',
+          border: '1px solid hsl(var(--input))',
+          backgroundColor: 'hsl(var(--background))',
+          color: 'hsl(var(--foreground))',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '14px',
+          fontWeight: '600',
+          lineHeight: '1',
+          zIndex: 1000,
+          boxShadow:
+            theme === 'dark'
+              ? '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          transition: 'all 0.2s ease-in-out',
+          outline: 'none',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+          e.currentTarget.style.boxShadow =
+            theme === 'dark'
+              ? '0 6px 8px -1px rgba(0, 0, 0, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.3)'
+              : '0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+          e.currentTarget.style.boxShadow =
+            theme === 'dark'
+              ? '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)'
+              : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+        }}
+        title={
+          internalHideSideToolbar
+            ? 'Mostra toolbar laterale'
+            : 'Nascondi toolbar laterale'
+        }
+      >
+        <span
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            fontSize: '20px',
+            fontWeight: '500',
+            lineHeight: '1',
+            fontFamily:
+              'ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, monospace',
+            transform: 'translateY(-1px)',
+            textAlign: 'center',
+            letterSpacing: '0',
+          }}
+        >
+          {internalHideSideToolbar ? '+' : '−'}
+        </span>
+      </button>
+
       {error && (
         <div
           className="tradingview-widget-error"

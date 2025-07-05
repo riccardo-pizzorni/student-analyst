@@ -57,7 +57,7 @@ export const TradingViewChart = () => {
       {/* Header con selettore */}
       <div className="flex items-center gap-2 mb-4">
         <Select defaultValue={selectedTicker} onValueChange={setSelectedTicker}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="Seleziona ticker" />
           </SelectTrigger>
           <SelectContent>

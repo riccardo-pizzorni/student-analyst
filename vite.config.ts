@@ -24,6 +24,13 @@ export default defineConfig(({ mode }) => ({
           });
         },
       },
+      // Proxy per telemetria TradingView (elimina errori CORS)
+      '/telemetry': {
+        target: 'https://telemetry.tradingview.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: path => path.replace(/^\/telemetry/, ''),
+      },
     },
     headers: {
       // Configura Content Security Policy
@@ -32,7 +39,7 @@ export default defineConfig(({ mode }) => ({
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://static.tradingview.com https://www.tradingview-widget.com",
         "style-src 'self' 'unsafe-inline' https://s3.tradingview.com https://static.tradingview.com",
         "img-src 'self' data: https: http:",
-        "connect-src 'self' https://student-analyst.onrender.com wss://student-analyst.onrender.com https://*.tradingview.com",
+        "connect-src 'self' http://localhost:10000 https://student-analyst.onrender.com wss://student-analyst.onrender.com https://*.tradingview.com https://telemetry.tradingview.com",
         "frame-src 'self' https://*.tradingview.com",
       ].join('; '),
     },
