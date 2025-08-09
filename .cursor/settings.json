@@ -36,5 +36,8 @@
   "editor.guides.bracketPairs": "active",
   "onStartup": {
     "commands": []
-  }
+  },
+  "cSpell.enabled": false,
+  "cSpell.enableFiletypes": [],
+  "cSpell.diagnosticLevel": "Hint"
 }

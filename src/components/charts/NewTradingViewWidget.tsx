@@ -416,7 +416,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         interval: interval,
         timezone: 'Etc/UTC',
         theme: theme,
-        style: '1',
+        style: '2',
         locale: locale,
         toolbar_bg: toolbar_bg,
         enable_publishing: false,
@@ -457,6 +457,7 @@ const NewTradingViewWidget: React.FC<NewTradingViewWidgetProps> = ({
         },
         onSymbolChange: onSymbolChange || undefined,
         onIntervalChange: onIntervalChange || undefined,
+        // 3 = Line chart (default: candlesticks)
       };
 
       DEBUG.log('Creazione widget con config:', widgetConfig);

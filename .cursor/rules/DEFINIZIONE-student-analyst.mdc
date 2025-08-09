@@ -1,0 +1,265 @@
+---
+description: Definizione completa e filosofia di Student Analyst - strumento di analisi azionaria quantitativa che unisce potenza hedge fund e accessibilità totale
+globs: **/*
+alwaysApply: true
+---
+
+# 🎯 DEFINIZIONE STUDENT ANALYST
+
+---
+
+## **1. IDENTITÀ FONDAMENTALE**
+
+**Student Analyst** è uno strumento di analisi azionaria quantitativa pura che rappresenta la **coesione perfetta** tra:
+
+- **Potenza professionale** al livello dei migliori hedge fund quantitativi al mondo
+- **Accessibilità totale** per trasformare un completo inesperto in un analista quantitativo esperto
+
+**NON È:**
+
+- Solo uno strumento educativo
+- Solo uno strumento professionale
+- Un compromesso che sacrifica qualità per semplicità
+
+**È:** La sintesi impossibile che non sacrifica nulla da nessun lato.
+
+### **Motto Progettuale:**
+
+**"La Complessità Massima Resa Semplice"**
+
+Ogni tecnica, per quanto avanzata, può essere spiegata e resa accessibile con il metodo e il percorso giusti. Non esistono concetti troppo complessi, esistono solo spiegazioni inadeguate.
+
+---
+
+## **2. MISSIONE E OBIETTIVI**
+
+### **Missione Primaria - Obiettivo Doppio:**
+
+1. **Strumento di Analisi Reale**: Fornire analisi azionarie quantitative accurate e affidabili per decisioni di investimento concrete
+2. **Trasformazione dell'Utente**: Portare qualsiasi utente (dal principiante assoluto al professionista) a padroneggiare l'analisi quantitativa attraverso la pratica diretta
+
+### **Metodo Fondamentale:**
+
+**"Imparare Facendo"** - L'apprendimento avviene attraverso l'utilizzo pratico del software per analisi reali, non attraverso teoria astratta.
+
+### **Visione a 360°**
+
+**Cosa Fornisce Student Analyst:**
+
+- **Analisi Completa**: Visione totale del titolo/portafoglio
+- **Accuratezza Massima**: Risultati affidabili per decisioni reali
+- **Sicurezza Decisionale**: Fiducia nei risultati dell'analisi
+- **Indirizzamento Intelligente**: Guida senza dire esattamente cosa fare
+
+**Cosa NON Fa:**
+
+- Non prende decisioni al posto dell'utente
+- Non fornisce consigli di investimento diretti
+- Non semplifica sacrificando accuratezza
+
+---
+
+## **3. STANDARD QUALITATIVI E SOFISTICAZIONE**
+
+### **Livello Target:**
+
+- **Livello Hedge Fund**: Massima qualità possibile nei limiti di sviluppo (singola persona + strumenti gratuiti + Claude AI)
+- **Accuratezza Professionale**: Le analisi devono essere sufficientemente precise per decisioni di investimento reali
+- **Affidabilità Assoluta**: I risultati devono fornire sicurezza e indirizzare le decisioni con fiducia
+
+### **Approccio alla Complessità:**
+
+- **Complessità Massima**: Implementare le tecniche più avanzate possibili
+- **Interfaccia Perfetta**: Nascondere la complessità dietro UX/UI eccellente
+- **Spiegazione Totale**: Ogni elemento complesso deve essere spiegabile e comprensibile
+
+### **Bilanciamento Accuratezza-Velocità:**
+
+**Regola Generale:** L'accuratezza è SEMPRE più importante della velocità
+
+**Gestione Intelligente:**
+
+- Valutazione caso per caso per calcoli eccessivamente lenti
+- Compromessi solo quando il tempo non giustifica il valore aggiunto
+- Soglia di tolleranza per determinare quando un calcolo "costa troppo"
+- Mai sacrificare accuratezza per velocità senza giustificazione solida
+
+---
+
+## **4. TARGET UTENTE E FILOSOFIA**
+
+### **Target Universale:**
+
+- **Principianti Assoluti**: Che non sanno nulla di finanza
+- **Esperti Professionali**: Che vogliono uno strumento potente
+- **Aspiranti Analisti**: Che vogliono diventare esperti
+- **Investitori Seri**: Che vogliono analisi professionali
+
+### **Principio Fondamentale:**
+
+**"Uno Strumento, Tutti i Livelli"** - Non esistono versioni diverse o livelli di difficoltà. Un'unica versione perfetta accessibile a tutti.
+
+### **Filosofia Progettuale:**
+
+**Bilanciamento Perfetto:**
+
+- **Potenza Nascosta**: Complessità massima sotto interfaccia semplice
+- **Educazione Integrata**: Aspetto didattico presente ma non invasivo visivamente
+- **Pratica Diretta**: Apprendimento attraverso uso reale, non teoria
+
+**Elementi Educativi (Secondari Visivamente):**
+
+- Box sintetici teorici basati sull'analisi corrente
+- Pop-up esplicativi per ogni funzione
+- Pagine secondarie per teoria approfondita
+- Glossario completo per ogni termine tecnico
+- Guide contestuali basate sull'analisi in corso
+
+---
+
+## **5. OBIETTIVI FINALI DELL'UTENTE**
+
+Un utente dedicato che studia e usa Student Analyst deve poter raggiungere **TUTTI** questi obiettivi:
+
+### **A) Comprensione Principi Base**
+
+- Padronanza completa dell'analisi quantitativa
+- Comprensione profonda dei mercati finanziari
+
+### **B) Analisi Professionali Autonome**
+
+- Capacità di condurre analisi indipendenti
+- Sicurezza nelle proprie valutazioni
+
+### **C) Replicazione Strategie Hedge Fund**
+
+- Comprensione e applicazione delle tecniche dei migliori
+- Implementazione di strategie quantitative avanzate
+
+### **D) Sviluppo Strategie Proprie**
+
+- Creazione di metodologie personalizzate
+- Innovazione nell'analisi quantitativa
+
+---
+
+## **6. LIMITAZIONI E VINCOLI**
+
+### **Limitazioni Accettate - Vincoli di Sviluppo:**
+
+- Sviluppatore singolo
+- Solo strumenti online gratuiti
+- Budget limitato a Claude AI
+- Nessuna licenza dati enterprise
+
+### **Ambizione Nonostante i Limiti:**
+
+Creare qualcosa di **"impossibile"** - uno strumento che sembri un'utopia ma che funzioni realmente, avvicinandosi il più possibile ai software enterprise dei migliori hedge fund.
+
+### **Gestione Limitazioni Tecniche:**
+
+**Raccolta Dati:**
+
+- **Status Attuale**: Yahoo Finance funziona perfettamente senza problemi evidenti
+- **Principio Guida**: Mantenere tutto gratuito (eccetto Claude AI)
+- **Priorità Assoluta**: Revisione e ottimizzazione sistema raccolta/gestione/conservazione dati
+- **Approccio**: Trovare il metodo più efficiente entro le limitazioni esistenti
+
+**Filosofia sui Limiti:**
+
+- Accettare le limitazioni come vincoli creativi
+- Ottimizzare l'esperienza entro i limiti disponibili
+- Esplorare soluzioni creative senza costi aggiuntivi
+- Preparare il sistema per futuri potenziamenti economici
+
+---
+
+## **7. STRATEGIA DI IMPLEMENTAZIONE**
+
+### **Approccio Progressivo:**
+
+- **Partenza dalle Essenziali**: Implementazione seguendo il percorso logico dell'utente (Step 1 → Step 14)
+- **Nulla Scartato Definitivamente**: Ogni tecnica rimane nel workflow fino a valutazione approfondita
+- **Prioritizzazione Dinamica**: Le tecniche possono diventare secondarie (educativamente o professionalmente) se necessario
+- **Valutazione Continua**: Ogni critica viene analizzata in relazione alla singola tecnica, al progetto complessivo e alla visione generale
+
+### **Criteri di Priorità:**
+
+1. Essenzialità per il percorso logico dell'analista
+2. Rapporto utilità/complessità implementativa
+3. Coerenza con la visione complessiva del progetto
+4. Valore educativo vs valore professionale
+
+---
+
+## **8. EVOLUZIONE E ARCHITETTURA**
+
+### **Struttura Ideale:**
+
+- **Piattaforma Robusta**: Fondamenta solide e ben strutturate
+- **Pronta al Cambiamento**: Architettura flessibile per evoluzioni future
+- **Conservazione Base**: Mantenere e sviluppare le fondamenta già create
+- **Crescita Organica**: Espansione progressiva senza stravolgimenti
+
+### **Evoluzione Temporale:**
+
+- **Breve Termine**: Completamento delle funzionalità core
+- **Medio Termine**: Aggiornamenti e potenziamenti tecnici
+- **Lungo Termine**: Espansione con maggiori risorse economiche
+- **Continua**: Aggiornamenti per nuove tecniche e metodologie del settore
+
+---
+
+## **9. DEFINIZIONE DI SUCCESSO**
+
+### **Successo Primario - Personale:**
+
+**Student Analyst avrà successo quando:**
+
+- L'utente (creatore) potrà usarlo completamente per le proprie analisi
+- Il software saprà indirizzare verso comprensione e conoscenza in caso di dubbi
+- Sarà pronto a trasformare un principiante in analista esperto fin dal primo utilizzo
+
+### **Successo Secondario - Condivisione Limitata:**
+
+- Utilizzabile da "poche persone selezionate" (amici, professore universitario)
+- Uso privato, non commerciale (come "prestare il proprio computer")
+- Funzionamento perfetto per ogni utilizzatore del gruppo ristretto
+
+### **Standard di Completezza:**
+
+- **Ogni Tecnica Implementata Perfettamente**: Nessun compromesso sulla qualità
+- **Percorso Logico Completo**: Dalla scelta ticker alle decisioni finali di investimento
+- **Rispecchiamento Reale**: Seguire esattamente i passaggi di un vero analista quantitativo
+- **Trasformazione Garantita**: Il software deve essere il veicolo di apprendimento completo
+
+**Nota Importante:** Il successo non dipende dal diventare esperti prima dell'uso, ma dal fatto che il software sia completo e perfetto fin dall'inizio per guidare la trasformazione dell'utente.
+
+---
+
+## **10. OBIETTIVO FINALE NASCOSTO - LA SCOPERTA**
+
+### **Il Paradosso Creativo:**
+
+Poiché l'utente (creatore) ammette di non conoscere ancora:
+
+- Il fine ultimo dell'analisi azionaria quantitativa pura
+- Come lavora realmente un analista azionario quantitativo
+- Cosa fa concretamente nella pratica quotidiana
+
+### **Student Analyst come Veicolo di Scoperta:**
+
+Il software diventerà lo strumento attraverso cui:
+
+- Scoprire cosa significa essere un analista quantitativo azionario
+- Comprendere il vero scopo dell'analisi azionaria quantitativa
+- Imparare il workflow reale dei professionisti
+- Sviluppare competenze attraverso la pratica diretta
+
+### **La Rivelazione:**
+
+Creare uno strumento professionale per scoprire cosa significa essere professionali - **il software insegnerà al suo creatore cosa voleva creare**.
+
+---
+
+_Versione 2.1 - Definizione Completa e Riordinata_
